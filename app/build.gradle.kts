@@ -12,11 +12,11 @@ plugins {
 }
 
 android {
-    namespace = "ua.acclorite.book_story"
+    namespace = "ua.blindmint.codex"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "ua.acclorite.book_story"
+        applicationId = "ua.blindmint.codex"
         minSdk = 26
         targetSdk = 35
         versionCode = 13
