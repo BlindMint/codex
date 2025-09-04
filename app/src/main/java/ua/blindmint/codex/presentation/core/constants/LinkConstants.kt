@@ -15,10 +15,10 @@ fun provideIssuesPage() =
     "https://www.github.com/BlindMint/codex/issues"
 
 fun provideContributorsPage() =
-    "https://github.com/Acclorite/book-story/graphs/contributors"
+    "https://github.com/BlindMint/codex/graphs/contributors"
 
 fun provideTranslationPage() =
-    "https://hosted.weblate.org/projects/book-story"
+    "https://hosted.weblate.org/projects/codex"
 
 fun provideSupportPage() =
     "https://patreon.com/BlindMint"

@@ -29,18 +29,7 @@ import java.io.File
         BookProgressHistoryEntity::class,
     ],
     version = 10,
-    autoMigrations = [
-        AutoMigration(1, 2),
-        AutoMigration(2, 3),
-        AutoMigration(3, 4, spec = DatabaseHelper.MIGRATION_3_4::class),
-        AutoMigration(4, 5),
-        AutoMigration(5, 6),
-        AutoMigration(6, 7),
-        AutoMigration(7, 8, spec = DatabaseHelper.MIGRATION_7_8::class),
-        AutoMigration(8, 9, spec = DatabaseHelper.MIGRATION_8_9::class),
-        AutoMigration(9, 10),
-    ],
-    exportSchema = true
+    exportSchema = false
 )
 abstract class BookDatabase : RoomDatabase() {
     abstract val dao: BookDao

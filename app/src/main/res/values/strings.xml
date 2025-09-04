@@ -1,7 +1,7 @@
 <!--
    ~ Codex — free and open-source Material You eBook reader.
    ~ Copyright (C) 2024-2025 BlindMint
-   ~ SPDX-License-Identifier: GPL-3.0-only
+   ~ SPDY-License-Identifier: GPL-3.0-only
    -->
 
 <resources>
@@ -184,7 +184,7 @@
     <string name="synced_books">Synced</string>
     <string name="syncing_books">Syncing</string>
     <string name="sync_error_books">Errors</string>
-    <string name="progress_history_cleared">Progress history cleared for selected books</string>
+    <string name="progress_history_cleared_bulk">Progress history cleared for selected books</string>
     <string name="sync_success">Progress synced successfully</string>
     <string name="sync_error">Failed to sync progress</string>
     <string name="clear_progress_history">Clear progress history</string>
@@ -559,10 +559,11 @@
 
 
     <!-- Start -->
-    <string name="start_welcome">Welcome to Book\'s Story!</string>
+    <string name="start_welcome">Welcome to Codex!</string>
     <string name="start_welcome_desc">
-        To a world where words charm,
-        teach and lead on incredible adventures!
+        In the grim darkness of the far future,
+        where knowledge is power and wisdom is forged in battle.
+        Let the Codex guide your journey through the annals of lore!
         Let\'s set some things up!
     </string>
     <string name="start_language_preferences">Language preferences</string>

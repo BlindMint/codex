@@ -311,7 +311,7 @@ class LibraryModel @Inject constructor(
                 }
 
                 withContext(Dispatchers.Main) {
-                    event.context.getString(R.string.progress_history_cleared)
+                    event.context.getString(R.string.progress_history_cleared_bulk)
                         .showToast(context = event.context)
                 }
             }

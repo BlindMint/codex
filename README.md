@@ -65,7 +65,6 @@ open-source, offering you a personalized, ad-free journey through your favorite 
 - [Voyager](https://voyager.adriel.cafe/) (Voyager Website)
 - [Material Design Icons](https://fonts.google.com/icons) (Google Fonts)
 - [Material Design Fonts](https://fonts.google.com) (Google Fonts)
-- [Weblate Translators](https://hosted.weblate.org/projects/book-story) (Hosted Weblate)
 - [GitHub Badge](https://github.com/Kunzisoft/Github-badge) (GitHub)
 - [Codeberg Badge](https://codeberg.org/Codeberg/GetItOnCodeberg) (Codeberg)
 - Also listed in About > Credits.

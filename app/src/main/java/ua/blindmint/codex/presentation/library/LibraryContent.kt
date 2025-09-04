@@ -58,7 +58,7 @@ fun LibraryContent(
         actionDeleteDialog = actionDeleteDialog,
         actionClearProgressHistoryDialog = { event ->
             showClearProgressHistoryDialog(
-                LibraryEvent.OnActionClearProgressHistoryDialog(event.context)
+                LibraryEvent.OnShowClearProgressHistoryDialog
             )
         },
         dismissDialog = dismissDialog

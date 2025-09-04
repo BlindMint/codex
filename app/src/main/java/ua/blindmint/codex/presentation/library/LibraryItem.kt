@@ -62,6 +62,23 @@ fun LazyGridItemScope.LibraryItem(
         "${book.data.progress.calculateProgress(1)}%"
     }
 
+    @Composable
+    fun SyncStatusIconComposable(syncStatus: SyncStatus) {
+        val (icon, tint) = when (syncStatus) {
+            SyncStatus.NOT_SYNCED -> Icons.Default.Sync to MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.5f)
+            SyncStatus.SYNCING -> Icons.Default.Sync to MaterialTheme.colorScheme.secondary
+            SyncStatus.SYNCED -> Icons.Default.Sync to MaterialTheme.colorScheme.primary
+            SyncStatus.SYNC_ERROR -> Icons.Default.SyncProblem to MaterialTheme.colorScheme.error
+        }
+
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(12.dp),
+            tint = tint
+        )
+    }
+
     Column(
         Modifier
             .animateItem()
@@ -129,7 +146,7 @@ fun LazyGridItemScope.LibraryItem(
                         color = MaterialTheme.colorScheme.onSecondary,
                     )
                 )
-                SyncStatusIcon(book.data.syncStatus)
+                SyncStatusIconComposable(book.data.syncStatus)
             }
 
             FilledIconButton(
@@ -151,25 +168,6 @@ fun LazyGridItemScope.LibraryItem(
                 )
             }
         }
-        
-        @Composable
-        private fun SyncStatusIcon(syncStatus: SyncStatus) {
-            val (icon, tint) = when (syncStatus) {
-                SyncStatus.NOT_SYNCED -> Icons.Default.Sync to MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.5f)
-                SyncStatus.SYNCING -> Icons.Default.Sync to MaterialTheme.colorScheme.secondary
-                SyncStatus.SYNCED -> Icons.Default.Sync to MaterialTheme.colorScheme.primary
-                SyncStatus.SYNC_ERROR -> Icons.Default.SyncProblem to MaterialTheme.colorScheme.error
-            }
-        
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(12.dp),
-                tint = tint
-            )
-        }
-        
-        SyncStatusIcon(book.data.syncStatus)
         Spacer(modifier = Modifier.height(6.dp))
         StyledText(
             text = book.data.title,

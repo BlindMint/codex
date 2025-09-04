@@ -61,7 +61,7 @@ fun provideCredits() = listOf(
             UIText.StringResource(R.string.credits_translation),
             UIText.StringResource(R.string.credits_contribution)
         ),
-        website = "https://hosted.weblate.org/projects/book-story"
+        website = "https://hosted.weblate.org/projects/codex"
     ),
     Credit(
         name = "OpenDyslexic Font",

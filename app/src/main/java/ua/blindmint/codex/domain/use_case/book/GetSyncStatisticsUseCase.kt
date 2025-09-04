@@ -6,6 +6,7 @@
 
 package ua.blindmint.codex.domain.use_case.book
 
+import androidx.lifecycle.ViewModel
 import ua.blindmint.codex.domain.library.book.SyncStatus
 import ua.blindmint.codex.domain.repository.BookRepository
 import javax.inject.Inject
@@ -18,7 +19,7 @@ data class SyncStatistics(
 
 class GetSyncStatisticsUseCase @Inject constructor(
     private val bookRepository: BookRepository
-) {
+) : ViewModel() {
 
     suspend fun execute(): SyncStatistics {
         val books = bookRepository.getBooks("")

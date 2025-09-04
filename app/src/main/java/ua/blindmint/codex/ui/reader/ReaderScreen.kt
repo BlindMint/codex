@@ -47,6 +47,7 @@ import kotlinx.parcelize.Parcelize
 import ua.blindmint.codex.domain.navigator.Screen
 import ua.blindmint.codex.domain.reader.ReaderColorEffects
 import ua.blindmint.codex.domain.reader.ReaderProgressCount
+import ua.blindmint.codex.domain.reader.ReaderText
 import ua.blindmint.codex.domain.reader.ReaderTextAlignment
 import ua.blindmint.codex.presentation.core.constants.provideFonts
 import ua.blindmint.codex.presentation.core.constants.CHARACTERS_PER_PAGE
@@ -316,14 +317,14 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
                 ReaderProgressCount.PAGE -> {
                     val totalChars = state.value.text.sumOf { text ->
                         when (text) {
-                            is ReaderText.Text -> text.line.text.length
+                            is ReaderText.Text -> text.line.text.length.toInt()
                             else -> 0
                         }
                     }
                     val currentIndex = (state.value.book.progress * state.value.text.lastIndex).roundToInt()
                     val currentChars = state.value.text.take(currentIndex + 1).sumOf { text ->
                         when (text) {
-                            is ReaderText.Text -> text.line.text.length
+                            is ReaderText.Text -> text.line.text.length.toInt()
                             else -> 0
                         }
                     }

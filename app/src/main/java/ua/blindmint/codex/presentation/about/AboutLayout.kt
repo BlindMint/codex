@@ -81,7 +81,7 @@ fun AboutLayout(
         item {
             AboutItem(
                 title = stringResource(id = R.string.app_version_option),
-                description = "Book's Story v${stringResource(id = R.string.app_version)}",
+                description = "Codex v${stringResource(id = R.string.app_version)}",
             ) {
                 navigateToBrowserPage(
                     AboutEvent.OnNavigateToBrowserPage(

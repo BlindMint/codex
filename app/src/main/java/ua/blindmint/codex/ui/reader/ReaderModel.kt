@@ -41,7 +41,6 @@ import ua.blindmint.codex.domain.reader.ReaderText.Chapter
 import ua.blindmint.codex.domain.ui.UIText
 import ua.blindmint.codex.domain.use_case.book.GetBookById
 import ua.blindmint.codex.domain.use_case.book.GetText
-import ua.blindmint.codex.domain.use_case.book.SyncProgressUseCase
 import ua.blindmint.codex.domain.use_case.book.UpdateBook
 import ua.blindmint.codex.domain.use_case.history.GetLatestHistory
 import ua.blindmint.codex.presentation.core.util.coerceAndPreventNaN
@@ -60,8 +59,7 @@ class ReaderModel @Inject constructor(
     private val getBookById: GetBookById,
     private val updateBook: UpdateBook,
     private val getText: GetText,
-    private val getLatestHistory: GetLatestHistory,
-    private val syncProgressUseCase: SyncProgressUseCase
+    private val getLatestHistory: GetLatestHistory
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -269,37 +267,7 @@ class ReaderModel @Inject constructor(
                             }
 
                             updateBook.execute(_state.value.book)
-            
-                            // Sync progress
-                            viewModelScope.launch(Dispatchers.IO) {
-                                try {
-                                    syncProgressUseCase.saveProgress(_state.value.book)
-                                    // Update sync status
-                                    _state.update {
-                                        it.copy(
-                                            book = it.book.copy(syncStatus = SyncStatus.SYNCED)
-                                        )
-                                    }
-                                    // Show success notification
-                                    withContext(Dispatchers.Main) {
-                                        event.activity.getString(R.string.sync_success)
-                                            .showToast(context = event.activity, longToast = false)
-                                    }
-                                } catch (e: Exception) {
-                                    Log.e("SYNC", "Failed to sync progress", e)
-                                    _state.update {
-                                        it.copy(
-                                            book = it.book.copy(syncStatus = SyncStatus.SYNC_ERROR)
-                                        )
-                                    }
-                                    // Show error notification
-                                    withContext(Dispatchers.Main) {
-                                        event.activity.getString(R.string.sync_error)
-                                            .showToast(context = event.activity, longToast = false)
-                                    }
-                                }
-                            }
-            
+
                             LibraryScreen.refreshListChannel.trySend(0)
                             HistoryScreen.refreshListChannel.trySend(0)
                         }

@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class BookSyncData(
     val title: String,
-    val author: String,
+    val author: String?,
     val fileSize: Long,
     val fileHash: String,
     val progress: Float,
