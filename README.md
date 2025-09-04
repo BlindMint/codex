@@ -3,7 +3,6 @@
 <div align="center">
    <h1>Codex</h1>
    <h3>Material You eBook Reader for Android</h3>
-   <p>Dive into the world of adventure as you discover your favorite book's story!</p>
 </div>
 
 ---
