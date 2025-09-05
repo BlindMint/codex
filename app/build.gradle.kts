@@ -1,4 +1,5 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 
 plugins {
     id("com.android.application")
@@ -19,8 +20,8 @@ android {
         applicationId = "ua.blindmint.codex"
         minSdk = 26
         targetSdk = 35
-        versionCode = 13
-        versionName = "1.7.1"
+        versionCode = 1
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -51,9 +52,10 @@ android {
         }
     }
 
-    applicationVariants.all { variant ->
-        variant.outputs.all { output ->
-            output.outputFileName = "codex-v${variant.versionName}.apk"
+    applicationVariants.configureEach {
+        val versionName = this.versionName
+        outputs.configureEach {
+            (this as? BaseVariantOutputImpl)?.outputFileName = "codex-${versionName}.apk"
         }
     }
 
