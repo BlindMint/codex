@@ -21,7 +21,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import ua.blindmint.codex.R
 import ua.blindmint.codex.domain.reader.ColorPreset
-import ua.blindmint.codex.domain.use_case.book.GetSyncStatisticsUseCase
 import ua.blindmint.codex.domain.use_case.color_preset.DeleteColorPreset
 import ua.blindmint.codex.domain.use_case.color_preset.GetColorPresets
 import ua.blindmint.codex.domain.use_case.color_preset.ReorderColorPresets
@@ -43,7 +42,6 @@ class SettingsModel @Inject constructor(
     private val deleteColorPreset: DeleteColorPreset,
     private val grantPersistableUriPermission: GrantPersistableUriPermission,
     private val releasePersistableUriPermission: ReleasePersistableUriPermission,
-    private val getSyncStatistics: GetSyncStatisticsUseCase
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -91,13 +89,6 @@ class SettingsModel @Inject constructor(
                 )
             }
 
-            // Load sync statistics
-            val syncStatistics = getSyncStatistics.execute()
-            _state.update {
-                it.copy(
-                    syncStatistics = syncStatistics
-                )
-            }
 
             Log.i("SETTINGS", "SettingsModel is ready.")
             _isReady.update { true }

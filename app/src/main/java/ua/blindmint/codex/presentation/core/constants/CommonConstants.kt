@@ -10,7 +10,6 @@ package ua.blindmint.codex.presentation.core.constants
 
 import androidx.compose.ui.graphics.Color
 import ua.blindmint.codex.domain.library.book.Book
-import ua.blindmint.codex.domain.library.book.SyncStatus
 import ua.blindmint.codex.domain.library.category.Category
 import ua.blindmint.codex.domain.reader.ColorPreset
 import ua.blindmint.codex.domain.ui.UIText
@@ -30,8 +29,7 @@ fun provideEmptyBook() = Book(
     scrollOffset = 0,
     progress = 0f,
     lastOpened = null,
-    category = Category.READING,
-    syncStatus = SyncStatus.NOT_SYNCED
+    category = Category.READING
 )
 
 // Default Color Preset

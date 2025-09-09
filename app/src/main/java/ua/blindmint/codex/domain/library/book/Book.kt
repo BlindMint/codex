@@ -10,7 +10,6 @@ import android.net.Uri
 import android.os.Parcelable
 import androidx.compose.runtime.Immutable
 import kotlinx.parcelize.Parcelize
-import ua.blindmint.codex.domain.library.book.SyncStatus
 import ua.blindmint.codex.domain.library.category.Category
 import ua.blindmint.codex.domain.ui.UIText
 
@@ -31,6 +30,5 @@ data class Book(
     val progress: Float,
 
     val lastOpened: Long?,
-    val category: Category,
-    val syncStatus: SyncStatus = SyncStatus.NOT_SYNCED
+    val category: Category
 ) : Parcelable

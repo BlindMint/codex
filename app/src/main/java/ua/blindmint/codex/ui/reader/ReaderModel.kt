@@ -35,7 +35,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import ua.blindmint.codex.R
-import ua.blindmint.codex.domain.library.book.SyncStatus
 import ua.blindmint.codex.domain.reader.Checkpoint
 import ua.blindmint.codex.domain.reader.ReaderText.Chapter
 import ua.blindmint.codex.domain.ui.UIText
