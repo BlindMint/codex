@@ -6,7 +6,6 @@
 
 package ua.blindmint.codex.presentation.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -26,11 +24,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ua.blindmint.codex.presentation.core.components.common.StyledText
-import ua.blindmint.codex.ui.theme.dynamicListItemColor
 
 @Composable
 fun SettingsLayoutItem(
-    index: Int,
     icon: ImageVector,
     title: String,
     description: String,
@@ -48,12 +44,8 @@ fun SettingsLayoutItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.dynamicListItemColor(index))
-                .padding(12.dp)
-                .size(24.dp),
-            tint = MaterialTheme.colorScheme.onSurface
+            modifier = Modifier.size(24.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Column {

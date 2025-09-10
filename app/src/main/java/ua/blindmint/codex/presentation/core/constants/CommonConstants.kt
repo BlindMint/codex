@@ -32,14 +32,26 @@ fun provideEmptyBook() = Book(
     category = Category.READING
 )
 
-// Default Color Preset
-fun provideDefaultColorPreset() = ColorPreset(
-    id = -1,
-    name = null,
-    backgroundColor = Color(0xFFFAF8FF), // Blue Light Surface (hardcoded)
-    fontColor = Color(0xFF44464F), // Blue Light OnSurfaceVariant (hardcoded)
-    isSelected = false
+// Default Color Presets - Following Material Design guidelines
+fun provideDefaultColorPresets() = listOf(
+    ColorPreset(
+        id = 1,
+        name = "Light",
+        backgroundColor = Color(0xFFFFFFFF), // Material Design light surface (#FFFFFF)
+        fontColor = Color(0xFF1C1B1F), // Material Design light onSurface (#1C1B1F)
+        isSelected = false
+    ),
+    ColorPreset(
+        id = 2,
+        name = "Dark",
+        backgroundColor = Color(0xFF121212), // Material Design dark surface (#121212)
+        fontColor = Color(0xFFE6E1E5), // Material Design dark onSurface (#E6E1E5)
+        isSelected = false
+    )
 )
+
+// Legacy function for backward compatibility
+fun provideDefaultColorPreset() = provideDefaultColorPresets().first()
 
 // Characters per page for progress estimation
 const val CHARACTERS_PER_PAGE = 2000

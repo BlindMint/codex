@@ -26,9 +26,15 @@ import ua.blindmint.codex.domain.use_case.color_preset.GetColorPresets
 import ua.blindmint.codex.domain.use_case.color_preset.ReorderColorPresets
 import ua.blindmint.codex.domain.use_case.color_preset.SelectColorPreset
 import ua.blindmint.codex.domain.use_case.color_preset.UpdateColorPreset
+import ua.blindmint.codex.domain.use_case.data_store.GetAllSettings
+import ua.blindmint.codex.domain.use_case.data_store.SetDatastore
 import ua.blindmint.codex.domain.use_case.permission.GrantPersistableUriPermission
 import ua.blindmint.codex.domain.use_case.permission.ReleasePersistableUriPermission
+import ua.blindmint.codex.presentation.core.constants.DataStoreConstants
 import ua.blindmint.codex.presentation.core.constants.provideDefaultColorPreset
+import ua.blindmint.codex.presentation.core.constants.provideDefaultColorPresets
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
 import ua.blindmint.codex.presentation.core.util.showToast
 import javax.inject.Inject
 import kotlin.random.Random
@@ -42,6 +48,8 @@ class SettingsModel @Inject constructor(
     private val deleteColorPreset: DeleteColorPreset,
     private val grantPersistableUriPermission: GrantPersistableUriPermission,
     private val releasePersistableUriPermission: ReleasePersistableUriPermission,
+    private val getAllSettings: GetAllSettings,
+    private val setDatastore: SetDatastore,
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -64,8 +72,11 @@ class SettingsModel @Inject constructor(
             var colorPresets = getColorPresets.execute()
 
             if (colorPresets.isEmpty()) {
-                updateColorPreset.execute(provideDefaultColorPreset())
-                getColorPresets.execute().first().select()
+                // Create both Light and Dark presets
+                val defaultPresets = provideDefaultColorPresets()
+                defaultPresets.forEach { preset ->
+                    updateColorPreset.execute(preset)
+                }
                 colorPresets = getColorPresets.execute()
             }
 
@@ -92,6 +103,44 @@ class SettingsModel @Inject constructor(
 
             Log.i("SETTINGS", "SettingsModel is ready.")
             _isReady.update { true }
+        }
+    }
+
+    fun selectAppropriateColorPreset(isDarkTheme: Boolean) {
+        viewModelScope.launch {
+            // Check if auto-selection has already been completed
+            val settings = getAllSettings.execute()
+            if (settings.autoColorPresetSelected) {
+                // Auto-selection already completed, do nothing
+                return@launch
+            }
+
+            val colorPresets = _state.value.colorPresets
+            if (colorPresets.size >= 2) {
+                val appropriatePreset = if (isDarkTheme) {
+                    colorPresets.find { it.name == "Dark" }
+                } else {
+                    colorPresets.find { it.name == "Light" }
+                }
+
+                appropriatePreset?.let { preset ->
+                    if (!preset.isSelected) {
+                        preset.select(animate = true)
+                        val updatedColorPresets = colorPresets.map {
+                            it.copy(isSelected = it.id == preset.id)
+                        }
+                        _state.update {
+                            it.copy(
+                                selectedColorPreset = updatedColorPresets.selected(),
+                                colorPresets = updatedColorPresets
+                            )
+                        }
+
+                        // Mark auto-selection as completed in DataStore
+                        setDatastore.execute(DataStoreConstants.AUTO_COLOR_PRESET_SELECTED, true)
+                    }
+                }
+            }
         }
     }
 

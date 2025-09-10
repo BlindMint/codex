@@ -11,9 +11,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.DisplaySettings
 import androidx.compose.material.icons.outlined.Explore
-import androidx.compose.material.icons.outlined.LocalLibrary
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -28,7 +30,9 @@ fun SettingsLayout(
     paddingValues: PaddingValues,
     navigateToAppearanceSettings: () -> Unit,
     navigateToReaderSettings: () -> Unit,
-    navigateToBrowseSettings: () -> Unit
+    navigateToBrowseSettings: () -> Unit,
+    navigateToAbout: () -> Unit,
+    navigateToHelp: () -> Unit
 ) {
     LazyColumnWithScrollbar(
         Modifier
@@ -39,7 +43,6 @@ fun SettingsLayout(
     ) {
         item {
             SettingsLayoutItem(
-                index = 0,
                 icon = Icons.Outlined.Palette,
                 title = stringResource(id = R.string.appearance_settings),
                 description = stringResource(id = R.string.appearance_settings_desc)
@@ -50,8 +53,7 @@ fun SettingsLayout(
 
         item {
             SettingsLayoutItem(
-                index = 1,
-                icon = Icons.Outlined.LocalLibrary,
+                icon = Icons.AutoMirrored.Outlined.MenuBook,
                 title = stringResource(id = R.string.reader_settings),
                 description = stringResource(id = R.string.reader_settings_desc)
             ) {
@@ -61,12 +63,31 @@ fun SettingsLayout(
 
         item {
             SettingsLayoutItem(
-                index = 2,
                 icon = Icons.Outlined.Explore,
                 title = stringResource(id = R.string.browse_settings),
                 description = stringResource(id = R.string.browse_settings_desc)
             ) {
                 navigateToBrowseSettings()
+            }
+        }
+
+        item {
+            SettingsLayoutItem(
+                icon = Icons.AutoMirrored.Outlined.HelpOutline,
+                title = stringResource(id = R.string.help_screen),
+                description = stringResource(id = R.string.help_screen)
+            ) {
+                navigateToHelp()
+            }
+        }
+
+        item {
+            SettingsLayoutItem(
+                icon = Icons.Outlined.Info,
+                title = stringResource(id = R.string.about_screen),
+                description = stringResource(id = R.string.about_screen)
+            ) {
+                navigateToAbout()
             }
         }
     }
