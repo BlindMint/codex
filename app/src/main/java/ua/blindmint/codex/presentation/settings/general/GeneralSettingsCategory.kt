@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import ua.blindmint.codex.presentation.settings.general.components.AppLanguageOption
 import ua.blindmint.codex.presentation.settings.general.components.DoublePressExitOption
-import ua.blindmint.codex.presentation.settings.general.components.SyncProgressOption
 
 fun LazyListScope.GeneralSettingsCategory(
     topPadding: Dp = 16.dp,
@@ -31,9 +30,6 @@ fun LazyListScope.GeneralSettingsCategory(
         AppLanguageOption()
     }
 
-    item {
-        SyncProgressOption()
-    }
 
     item {
         DoublePressExitOption()

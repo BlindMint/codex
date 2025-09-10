@@ -78,7 +78,6 @@ fun HistoryTopBar(
                             HistoryEvent.OnShowDeleteWholeHistoryDialog
                         )
                     }
-                    NavigatorIconButton()
                 }
             ),
 
@@ -109,9 +108,7 @@ fun HistoryTopBar(
                         }
                     )
                 },
-                contentActions = {
-                    NavigatorIconButton()
-                }
+                contentActions = {}
             )
         )
     )

@@ -15,6 +15,8 @@ import ua.blindmint.codex.domain.navigator.Screen
 import ua.blindmint.codex.presentation.core.components.top_bar.collapsibleTopAppBarScrollBehavior
 import ua.blindmint.codex.presentation.navigator.LocalNavigator
 import ua.blindmint.codex.presentation.settings.SettingsContent
+import ua.blindmint.codex.ui.about.AboutScreen
+import ua.blindmint.codex.ui.help.HelpScreen
 
 @Parcelize
 object SettingsScreen : Screen, Parcelable {
@@ -36,6 +38,12 @@ object SettingsScreen : Screen, Parcelable {
             },
             navigateToBrowseSettings = {
                 navigator.push(BrowseSettingsScreen)
+            },
+            navigateToAbout = {
+                navigator.push(AboutScreen)
+            },
+            navigateToHelp = {
+                navigator.push(HelpScreen(fromStart = false))
             },
             navigateBack = {
                 navigator.pop()

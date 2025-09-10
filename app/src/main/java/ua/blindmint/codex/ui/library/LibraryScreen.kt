@@ -74,19 +74,14 @@ object LibraryScreen : Screen, Parcelable {
                         books = state.value.books.filter { it.data.category == Category.READING }
                     ),
                     CategoryWithBooks(
-                        category = Category.ALREADY_READ,
-                        title = UIText.StringResource(R.string.already_read_tab),
-                        books = state.value.books.filter { it.data.category == Category.ALREADY_READ }
-                    ),
-                    CategoryWithBooks(
                         category = Category.PLANNING,
                         title = UIText.StringResource(R.string.planning_tab),
                         books = state.value.books.filter { it.data.category == Category.PLANNING }
                     ),
                     CategoryWithBooks(
-                        category = Category.DROPPED,
-                        title = UIText.StringResource(R.string.dropped_tab),
-                        books = state.value.books.filter { it.data.category == Category.DROPPED }
+                        category = Category.ALREADY_READ,
+                        title = UIText.StringResource(R.string.already_read_tab),
+                        books = state.value.books.filter { it.data.category == Category.ALREADY_READ }
                     )
                 )
             }

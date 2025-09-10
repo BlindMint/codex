@@ -108,7 +108,6 @@ fun BrowseTopBar(
                     ) {
                         showFilterBottomSheet(BrowseEvent.OnShowFilterBottomSheet)
                     }
-                    NavigatorIconButton()
                 }
             ),
 
@@ -139,9 +138,7 @@ fun BrowseTopBar(
                         }
                     )
                 },
-                contentActions = {
-                    NavigatorIconButton()
-                }
+                contentActions = {}
             ),
 
             TopAppBarData(

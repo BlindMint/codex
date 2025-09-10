@@ -39,6 +39,7 @@ import ua.blindmint.codex.ui.history.HistoryScreen
 import ua.blindmint.codex.ui.library.LibraryModel
 import ua.blindmint.codex.ui.library.LibraryScreen
 import ua.blindmint.codex.ui.settings.SettingsModel
+import ua.blindmint.codex.ui.settings.SettingsScreen
 import ua.blindmint.codex.ui.start.StartScreen
 import ua.blindmint.codex.ui.theme.BookStoryTheme
 import ua.blindmint.codex.ui.theme.Transitions
@@ -109,6 +110,13 @@ class MainActivity : AppCompatActivity() {
                     tooltip = R.string.browse_content_desc,
                     selectedIcon = R.drawable.browse_screen_filled,
                     unselectedIcon = R.drawable.browse_screen_outlined
+                ),
+                NavigatorItem(
+                    screen = SettingsScreen,
+                    title = R.string.settings_screen,
+                    tooltip = R.string.settings_screen,
+                    selectedIcon = R.drawable.settings_screen_filled,
+                    unselectedIcon = R.drawable.settings_screen_outlined
                 )
             )
 
@@ -139,14 +147,14 @@ class MainActivity : AppCompatActivity() {
                         },
                         contentKey = {
                             when (it) {
-                                LibraryScreen, HistoryScreen, BrowseScreen -> "tabs"
+                                LibraryScreen, HistoryScreen, BrowseScreen, SettingsScreen -> "tabs"
                                 else -> it
                             }
                         },
                         backHandlerEnabled = { it != StartScreen }
                     ) { screen ->
                         when (screen) {
-                            LibraryScreen, HistoryScreen, BrowseScreen -> {
+                            LibraryScreen, HistoryScreen, BrowseScreen, SettingsScreen -> {
                                 NavigatorTabs(
                                     currentTab = screen,
                                     transitionSpec = {

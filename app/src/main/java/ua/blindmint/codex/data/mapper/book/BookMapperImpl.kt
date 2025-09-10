@@ -10,7 +10,6 @@ import androidx.core.net.toUri
 import ua.blindmint.codex.R
 import ua.blindmint.codex.data.local.dto.BookEntity
 import ua.blindmint.codex.domain.library.book.Book
-import ua.blindmint.codex.domain.library.book.SyncStatus
 import ua.blindmint.codex.domain.ui.UIText
 import javax.inject.Inject
 
@@ -44,8 +43,7 @@ class BookMapperImpl @Inject constructor() : BookMapper {
             filePath = bookEntity.filePath,
             lastOpened = null,
             category = bookEntity.category,
-            coverImage = bookEntity.image?.toUri(),
-            syncStatus = SyncStatus.NOT_SYNCED
+            coverImage = bookEntity.image?.toUri()
         )
     }
 }

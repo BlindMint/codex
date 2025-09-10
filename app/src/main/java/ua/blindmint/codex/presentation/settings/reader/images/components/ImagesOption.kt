@@ -8,28 +8,26 @@ package ua.blindmint.codex.presentation.settings.reader.images.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ua.blindmint.codex.R
+import ua.blindmint.codex.presentation.core.components.settings.GenericOption
+import ua.blindmint.codex.presentation.core.components.settings.OptionConfig
 import ua.blindmint.codex.presentation.core.components.settings.SwitchWithTitle
 import ua.blindmint.codex.ui.main.MainEvent
-import ua.blindmint.codex.ui.main.MainModel
 
 @Composable
 fun ImagesOption() {
-    val mainModel = hiltViewModel<MainModel>()
-    val state = mainModel.state.collectAsStateWithLifecycle()
-
-    SwitchWithTitle(
-        selected = state.value.images,
-        title = stringResource(id = R.string.images_option),
-        description = stringResource(id = R.string.images_option_desc),
-        onClick = {
-            mainModel.onEvent(
-                MainEvent.OnChangeImages(
-                    !state.value.images
+    GenericOption(
+        OptionConfig(
+            stateSelector = { it.images },
+            eventCreator = { MainEvent.OnChangeImages(it) },
+            component = { value, onChange ->
+                SwitchWithTitle(
+                    selected = value,
+                    title = stringResource(id = R.string.images_option),
+                    description = stringResource(id = R.string.images_option_desc),
+                    onClick = { onChange(!value) }
                 )
-            )
-        }
+            }
+        )
     )
 }
