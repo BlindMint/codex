@@ -78,6 +78,9 @@ class SettingsModel @Inject constructor(
                     updateColorPreset.execute(preset)
                 }
                 colorPresets = getColorPresets.execute()
+
+                // Reset auto-selection flag for fresh installation
+                setDatastore.execute(DataStoreConstants.AUTO_COLOR_PRESET_SELECTED, false)
             }
 
             val scrollIndex = colorPresets.indexOfFirst {
