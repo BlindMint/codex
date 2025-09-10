@@ -113,7 +113,6 @@ fun LibraryTopBar(
                     ) {
                         searchVisibility(LibraryEvent.OnSearchVisibility(true))
                     }
-                    NavigatorIconButton()
                 }
             ),
 
@@ -144,9 +143,7 @@ fun LibraryTopBar(
                         }
                     )
                 },
-                contentActions = {
-                    NavigatorIconButton()
-                },
+                contentActions = {},
             ),
 
             TopAppBarData(

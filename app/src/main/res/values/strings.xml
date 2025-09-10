@@ -6,7 +6,7 @@
 
 <resources>
     <!-- Basic Strings -->
-    <string name="app_version" translatable="false">1.7.1</string>
+    <!-- App version is now dynamically loaded from build.gradle.kts -->
     <string name="app_name" translatable="false">Codex</string>
     <string name="default_string">Default</string>
 
@@ -15,7 +15,7 @@
     <string name="history_screen">History</string>
     <string name="browse_screen">Browse</string>
     <string name="settings_screen">Settings</string>
-    <string name="about_screen">About app</string>
+    <string name="about_screen">About App</string>
     <string name="help_screen">Help</string>
 
     <!-- Dialog Labels -->
@@ -126,7 +126,6 @@
     <string name="reading_tab">Reading</string>
     <string name="already_read_tab">Already Read</string>
     <string name="planning_tab">Planning</string>
-    <string name="dropped_tab">Dropped</string>
     <string name="general_tab">General</string>
     <string name="display_tab">Display</string>
     <string name="color_tab">Colors</string>
@@ -564,7 +563,7 @@
     <string name="start_welcome_desc">
         In the grim darkness of the far future,
         knowledge is power and wisdom is forged in battle.
-        Let the Codex guide your journey
+        Let the Codex guide your journey.
     </string>
     <string name="start_language_preferences">Language preferences</string>
     <string name="start_theme_preferences">Theme preferences</string>

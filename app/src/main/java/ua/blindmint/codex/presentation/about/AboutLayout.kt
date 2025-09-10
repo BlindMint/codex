@@ -6,25 +6,15 @@
 
 package ua.blindmint.codex.presentation.about
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import ua.blindmint.codex.R
 import ua.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
 import ua.blindmint.codex.presentation.core.constants.provideContributorsPage
@@ -44,6 +34,15 @@ fun AboutLayout(
 ) {
     val context = LocalContext.current
 
+    val appVersion = remember {
+        try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            packageInfo.versionName ?: "Unknown"
+        } catch (e: Exception) {
+            "Unknown"
+        }
+    }
+
     LazyColumnWithScrollbar(
         Modifier
             .fillMaxSize()
@@ -51,37 +50,9 @@ fun AboutLayout(
         state = listState
     ) {
         item {
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        item {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painterResource(id = R.drawable.app_icon),
-                    contentDescription = stringResource(id = R.string.app_icon_content_desc),
-                    modifier = Modifier
-                        .padding(14.dp)
-                        .size(120.dp),
-                    tint = MaterialTheme.colorScheme.secondary
-                )
-            }
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(36.dp))
-            HorizontalDivider(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
-        }
-
-        item {
             AboutItem(
                 title = stringResource(id = R.string.app_version_option),
-                description = "Codex v${stringResource(id = R.string.app_version)}",
+                description = "Codex v$appVersion",
             ) {
                 navigateToBrowserPage(
                     AboutEvent.OnNavigateToBrowserPage(
@@ -105,7 +76,6 @@ fun AboutLayout(
                 )
             }
         }
-
 
         item {
             AboutItem(

@@ -28,7 +28,7 @@ import java.io.File
         ColorPresetEntity::class,
         BookProgressHistoryEntity::class,
     ],
-    version = 10,
+    version = 11,
     exportSchema = false
 )
 abstract class BookDatabase : RoomDatabase() {
@@ -105,4 +105,11 @@ object DatabaseHelper {
 
     @DeleteTable("FavoriteDirectoryEntity")
     class MIGRATION_8_9 : AutoMigrationSpec
+
+    val MIGRATION_10_11 = object : Migration(10, 11) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Migrate books with DROPPED category to PLANNING
+            db.execSQL("UPDATE BookEntity SET category = 'PLANNING' WHERE category = 'DROPPED'")
+        }
+    }
 }

@@ -23,8 +23,6 @@ import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Sync
-import androidx.compose.material.icons.filled.SyncProblem
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -40,7 +38,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ua.blindmint.codex.R
 import ua.blindmint.codex.domain.library.book.SelectableBook
-import ua.blindmint.codex.domain.library.book.SyncStatus
 import ua.blindmint.codex.presentation.core.components.common.AsyncCoverImage
 import ua.blindmint.codex.presentation.core.components.common.StyledText
 import ua.blindmint.codex.presentation.core.util.calculateProgress
@@ -62,22 +59,6 @@ fun LazyGridItemScope.LibraryItem(
         "${book.data.progress.calculateProgress(1)}%"
     }
 
-    @Composable
-    fun SyncStatusIconComposable(syncStatus: SyncStatus) {
-        val (icon, tint) = when (syncStatus) {
-            SyncStatus.NOT_SYNCED -> Icons.Default.Sync to MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.5f)
-            SyncStatus.SYNCING -> Icons.Default.Sync to MaterialTheme.colorScheme.secondary
-            SyncStatus.SYNCED -> Icons.Default.Sync to MaterialTheme.colorScheme.primary
-            SyncStatus.SYNC_ERROR -> Icons.Default.SyncProblem to MaterialTheme.colorScheme.error
-        }
-
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(12.dp),
-            tint = tint
-        )
-    }
 
     Column(
         Modifier
@@ -146,7 +127,6 @@ fun LazyGridItemScope.LibraryItem(
                         color = MaterialTheme.colorScheme.onSecondary,
                     )
                 )
-                SyncStatusIconComposable(book.data.syncStatus)
             }
 
             FilledIconButton(

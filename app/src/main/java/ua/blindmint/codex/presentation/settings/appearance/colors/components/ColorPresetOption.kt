@@ -11,6 +11,7 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -79,6 +80,13 @@ import ua.blindmint.codex.ui.theme.Transitions
 fun ColorPresetOption(backgroundColor: Color) {
     val settingsModel = hiltViewModel<SettingsModel>()
     val state = settingsModel.state.collectAsStateWithLifecycle()
+
+    val isDarkTheme = isSystemInDarkTheme()
+
+    // Select appropriate preset based on system theme only on first run
+    LaunchedEffect(Unit) {
+        settingsModel.selectAppropriateColorPreset(isDarkTheme)
+    }
 
     val reorderableListState = rememberReorderableLazyListState(
         lazyListState = state.value.colorPresetListState
@@ -162,6 +170,7 @@ fun ColorPresetOption(backgroundColor: Color) {
             ColorPresetOptionConfigurationItem(
                 selectedColorPreset = state.value.selectedColorPreset,
                 canDelete = state.value.colorPresets.size > 1,
+                canEditName = state.value.selectedColorPreset.name != "Light" && state.value.selectedColorPreset.name != "Dark",
                 onDelete = {
                     settingsModel.onEvent(
                         SettingsEvent.OnDeleteColorPreset(
@@ -251,9 +260,25 @@ private fun ReorderableCollectionItemScope.ColorPresetOptionRowItem(
         colorPreset.name!!
     }
 
-    val borderColor = remember(isSelected, colorPreset.fontColor) {
-        if (!isSelected) colorPreset.fontColor.copy(0.3f)
-        else colorPreset.fontColor
+    val borderColor = remember(isSelected, colorPreset.fontColor, colorPreset.backgroundColor) {
+        if (!isSelected) {
+            // For better contrast, use a darker border for light presets and lighter border for dark presets
+            // Calculate luminance manually: 0.299*R + 0.587*G + 0.114*B
+            val r = colorPreset.backgroundColor.red
+            val g = colorPreset.backgroundColor.green
+            val b = colorPreset.backgroundColor.blue
+            val luminance = 0.299f * r + 0.587f * g + 0.114f * b
+
+            if (luminance > 0.5f) {
+                // Light preset - use darker border for contrast
+                Color(0xFF1C1B1F) // Dark color for light background
+            } else {
+                // Dark preset - use the font color with some transparency
+                colorPreset.fontColor.copy(0.5f)
+            }
+        } else {
+            colorPreset.fontColor
+        }
     }
     val animatedBorderColor = animateColorAsState(
         borderColor,
@@ -338,6 +363,7 @@ private fun ReorderableCollectionItemScope.ColorPresetOptionRowItem(
 private fun ColorPresetOptionConfigurationItem(
     selectedColorPreset: ColorPreset,
     canDelete: Boolean,
+    canEditName: Boolean,
     onDelete: () -> Unit,
     onShuffle: () -> Unit,
     onTitleChange: (String) -> Unit,
@@ -364,20 +390,21 @@ private fun ColorPresetOptionConfigurationItem(
             singleLine = true,
             modifier = Modifier.weight(1f),
             textStyle = TextStyle(
-                color = MaterialTheme.colorScheme.onSurface,
+                color = if (canEditName) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = MaterialTheme.typography.titleLarge.fontSize,
                 lineHeight = MaterialTheme.typography.titleLarge.lineHeight,
                 fontFamily = MaterialTheme.typography.titleLarge.fontFamily
             ),
             onValueChange = {
-                if (it.length < 40 || it.length <= title.value.length) {
+                if (canEditName && (it.length < 40 || it.length <= title.value.length)) {
                     title.value = it
                 }
             },
             keyboardOptions = KeyboardOptions(
                 KeyboardCapitalization.Sentences
             ),
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurfaceVariant)
+            cursorBrush = if (canEditName) SolidColor(MaterialTheme.colorScheme.onSurfaceVariant) else SolidColor(Color.Transparent),
+            readOnly = !canEditName
         ) { innerText ->
             Box(
                 modifier = Modifier.fillMaxHeight(),
@@ -416,9 +443,12 @@ private fun ColorPresetOptionConfigurationItem(
             icon = Icons.Default.Shuffle,
             contentDescription = R.string.shuffle_color_preset_content_desc,
             disableOnClick = false,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            enabled = canEditName,
+            color = if (canEditName) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
         ) {
-            onShuffle()
+            if (canEditName) {
+                onShuffle()
+            }
         }
 
         IconButton(

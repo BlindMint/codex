@@ -121,7 +121,9 @@ data class MainState(
     val browseSortOrderDescending: Boolean = provideDefaultValue { true },
     val browseIncludedFilterItems: List<String> = provideDefaultValue { emptyList() },
     val browsePinnedPaths: List<String> = provideDefaultValue { emptyList() },
-    val syncDirectory: String = provideDefaultValue { "/sdcard/CodexSync" },
+
+    // Settings
+    val autoColorPresetSelected: Boolean = provideDefaultValue { false },
 ) : Parcelable {
     companion object {
         private fun <D> provideDefaultValue(calculation: () -> D): D {
@@ -372,9 +374,10 @@ data class MainState(
                         HORIZONTAL_GESTURE_PULL_ANIM
                     ) { horizontalGesturePullAnim },
 
-                    syncDirectory = provideValue(
-                        SYNC_DIRECTORY
-                    ) { syncDirectory },
+                    autoColorPresetSelected = provideValue(
+                        DataStoreConstants.AUTO_COLOR_PRESET_SELECTED
+                    ) { autoColorPresetSelected },
+
                 )
             }
         }
