@@ -11,20 +11,19 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -81,12 +80,7 @@ fun ColorPresetOption(backgroundColor: Color) {
     val settingsModel = hiltViewModel<SettingsModel>()
     val state = settingsModel.state.collectAsStateWithLifecycle()
 
-    val isDarkTheme = isSystemInDarkTheme()
-
-    // Select appropriate preset based on system theme only on first run
-    LaunchedEffect(Unit) {
-        settingsModel.selectAppropriateColorPreset(isDarkTheme)
-    }
+    // Auto-selection is now handled in MainActivity when the app starts
 
     val reorderableListState = rememberReorderableLazyListState(
         lazyListState = state.value.colorPresetListState
@@ -167,72 +161,77 @@ fun ColorPresetOption(backgroundColor: Color) {
         ) {
             Spacer(modifier = Modifier.height(18.dp))
 
-            ColorPresetOptionConfigurationItem(
-                selectedColorPreset = state.value.selectedColorPreset,
-                canDelete = state.value.colorPresets.size > 1,
-                canEditName = state.value.selectedColorPreset.name != "Light" && state.value.selectedColorPreset.name != "Dark",
-                onDelete = {
-                    settingsModel.onEvent(
-                        SettingsEvent.OnDeleteColorPreset(
-                            id = state.value.selectedColorPreset.id
+            val selectedPreset = state.value.selectedColorPreset
+            if (selectedPreset != null) {
+                ColorPresetOptionConfigurationItem(
+                    selectedColorPreset = selectedPreset,
+                    canDelete = state.value.colorPresets.size > 1,
+                    canEditName = selectedPreset.name != "Light" && selectedPreset.name != "Dark",
+                    onDelete = {
+                        settingsModel.onEvent(
+                            SettingsEvent.OnDeleteColorPreset(
+                                id = selectedPreset.id
+                            )
                         )
-                    )
-                },
-                onTitleChange = {
-                    settingsModel.onEvent(
-                        SettingsEvent.OnUpdateColorPresetTitle(
-                            id = state.value.selectedColorPreset.id,
-                            title = it
+                    },
+                    onTitleChange = {
+                        settingsModel.onEvent(
+                            SettingsEvent.OnUpdateColorPresetTitle(
+                                id = selectedPreset.id,
+                                title = it
+                            )
                         )
-                    )
-                },
-                onShuffle = {
-                    settingsModel.onEvent(
-                        SettingsEvent.OnShuffleColorPreset(
-                            id = state.value.selectedColorPreset.id
+                    },
+                    onShuffle = {
+                        settingsModel.onEvent(
+                            SettingsEvent.OnShuffleColorPreset(
+                                id = selectedPreset.id
+                            )
                         )
-                    )
-                },
-                onAdd = {
-                    settingsModel.onEvent(
-                        SettingsEvent.OnAddColorPreset(
-                            backgroundColor = defaultBackgroundColor,
-                            fontColor = defaultFontColor
+                    },
+                    onAdd = {
+                        settingsModel.onEvent(
+                            SettingsEvent.OnAddColorPreset(
+                                backgroundColor = defaultBackgroundColor,
+                                fontColor = defaultFontColor
+                            )
                         )
-                    )
-                }
-            )
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            ColorPickerWithTitle(
-                value = state.value.selectedColorPreset.backgroundColor,
-                presetId = state.value.selectedColorPreset.id,
-                title = stringResource(id = R.string.background_color_option),
-                onValueChange = {
-                    settingsModel.onEvent(
-                        SettingsEvent.OnUpdateColorPresetColor(
-                            id = state.value.selectedColorPreset.id,
-                            backgroundColor = it,
-                            fontColor = null
+            if (selectedPreset != null) {
+                ColorPickerWithTitle(
+                    value = selectedPreset.backgroundColor,
+                    presetId = selectedPreset.id,
+                    title = stringResource(id = R.string.background_color_option),
+                    onValueChange = {
+                        settingsModel.onEvent(
+                            SettingsEvent.OnUpdateColorPresetColor(
+                                id = selectedPreset.id,
+                                backgroundColor = it,
+                                fontColor = null
+                            )
                         )
-                    )
-                }
-            )
-            ColorPickerWithTitle(
-                value = state.value.selectedColorPreset.fontColor,
-                presetId = state.value.selectedColorPreset.id,
-                title = stringResource(id = R.string.font_color_option),
-                onValueChange = {
-                    settingsModel.onEvent(
-                        SettingsEvent.OnUpdateColorPresetColor(
-                            id = state.value.selectedColorPreset.id,
-                            backgroundColor = null,
-                            fontColor = it
+                    }
+                )
+                ColorPickerWithTitle(
+                    value = selectedPreset.fontColor,
+                    presetId = selectedPreset.id,
+                    title = stringResource(id = R.string.font_color_option),
+                    onValueChange = {
+                        settingsModel.onEvent(
+                            SettingsEvent.OnUpdateColorPresetColor(
+                                id = selectedPreset.id,
+                                backgroundColor = null,
+                                fontColor = it
+                            )
                         )
-                    )
-                }
-            )
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(10.dp))
         }

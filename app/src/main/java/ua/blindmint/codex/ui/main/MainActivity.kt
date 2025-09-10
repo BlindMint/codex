@@ -16,6 +16,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -123,6 +125,12 @@ class MainActivity : AppCompatActivity() {
             MainActivityKeyboardManager()
 
             if (isLoaded.value) {
+                // Perform initial color preset selection based on system theme
+                val isDarkTheme = isSystemInDarkTheme()
+                LaunchedEffect(Unit) {
+                    settingsModel.performInitialColorPresetSelection(isDarkTheme)
+                }
+
                 BookStoryTheme(
                     theme = state.value.theme,
                     isDark = state.value.darkTheme.isDark(),

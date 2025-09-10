@@ -106,6 +106,9 @@ class SettingsModel @Inject constructor(
 
             Log.i("SETTINGS", "SettingsModel is ready.")
             _isReady.update { true }
+
+            // Auto-selection will be triggered from composable context
+            // when the system theme is available
         }
     }
 
@@ -143,6 +146,16 @@ class SettingsModel @Inject constructor(
                         setDatastore.execute(DataStoreConstants.AUTO_COLOR_PRESET_SELECTED, true)
                     }
                 }
+            }
+        }
+    }
+
+    fun performInitialColorPresetSelection(isDarkTheme: Boolean) {
+        viewModelScope.launch {
+            // Only perform if we haven't done auto-selection before
+            val settings = getAllSettings.execute()
+            if (!settings.autoColorPresetSelected) {
+                selectAppropriateColorPreset(isDarkTheme)
             }
         }
     }
