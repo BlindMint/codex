@@ -2,7 +2,6 @@
 
 <div align="center">
    <h1>Codex</h1>
-   <h3>Material You eBook Reader for Android</h3>
 </div>
 
 ---
@@ -21,8 +20,10 @@
 
 </div>
 
-Enjoy a sleek, customizable **reading app** with modern design, built with Jetpack Compose. It's
-open-source, offering you a personalized, ad-free journey through your favorite books!
+A sleek, customizable **reading app** with modern material design, built with Jetpack Compose. 
+Open source, ad-free, Administratum-approved: eBook & dataslate reader for Android.
+
+> In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.
 
 ---
 
@@ -31,11 +32,11 @@ open-source, offering you a personalized, ad-free journey through your favorite 
 ## Features
 
 - Material You design with dynamic theming and custom color presets
+- Forge your reading experience with battle-tested customization
 - Support for multiple eBook formats (PDF, TXT, EPUB, FB2, HTML, HTM, MD)
 - Organized library with categories and advanced search
 - Highly customizable reader with font, text size, padding, reading speed, and more
 - Progress tracking and bookmarks
-- Cross-device synchronization
 - Browse and scan functionality
 - Storage Access Framework integration
 
@@ -59,6 +60,7 @@ open-source, offering you a personalized, ad-free journey through your favorite 
 
 ## Credits
 
+- [Book's Story](https://github.com/Acclorite/book-story) (GitHub)
 - [Tachiyomi (Mihon)](https://github.com/mihonapp/mihon) (GitHub)
 - [Kitsune](https://github.com/Drumber/Kitsune) (GitHub)
 - [Voyager](https://voyager.adriel.cafe/) (Voyager Website)
@@ -66,7 +68,7 @@ open-source, offering you a personalized, ad-free journey through your favorite 
 - [Material Design Fonts](https://fonts.google.com) (Google Fonts)
 - [GitHub Badge](https://github.com/Kunzisoft/Github-badge) (GitHub)
 - [Codeberg Badge](https://codeberg.org/Codeberg/GetItOnCodeberg) (Codeberg)
-- Also listed in About > Credits.
+- Also listed in About > Credits
 
 ---
 
@@ -76,7 +78,7 @@ open-source, offering you a personalized, ad-free journey through your favorite 
   <pre>
 
 Codex — free and open-source Material You eBook reader.
-Copyright (C) 2024-2025 BlindMint
+Copyright (C) 2025 BlindMint
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
