@@ -11,8 +11,8 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class ColorPresetEntity(
-    @PrimaryKey(true)
-    val id: Int? = null,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int,
     val name: String?,
     val backgroundColor: Long,
     val fontColor: Long,

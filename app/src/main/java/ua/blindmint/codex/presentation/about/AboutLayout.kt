@@ -20,8 +20,6 @@ import ua.blindmint.codex.presentation.core.components.common.LazyColumnWithScro
 import ua.blindmint.codex.presentation.core.constants.provideContributorsPage
 import ua.blindmint.codex.presentation.core.constants.provideIssuesPage
 import ua.blindmint.codex.presentation.core.constants.provideReleasesPage
-import ua.blindmint.codex.presentation.core.constants.provideSupportPage
-import ua.blindmint.codex.presentation.core.constants.provideTranslationPage
 import ua.blindmint.codex.ui.about.AboutEvent
 
 @Composable
@@ -109,33 +107,6 @@ fun AboutLayout(
             }
         }
 
-        item {
-            AboutItem(
-                title = stringResource(id = R.string.help_translate_option),
-                description = null
-            ) {
-                navigateToBrowserPage(
-                    AboutEvent.OnNavigateToBrowserPage(
-                        page = provideTranslationPage(),
-                        context = context
-                    )
-                )
-            }
-        }
-
-        item {
-            AboutItem(
-                title = stringResource(id = R.string.support_development_option),
-                description = null
-            ) {
-                navigateToBrowserPage(
-                    AboutEvent.OnNavigateToBrowserPage(
-                        page = provideSupportPage(),
-                        context = context
-                    )
-                )
-            }
-        }
 
         item {
             AboutBadges(

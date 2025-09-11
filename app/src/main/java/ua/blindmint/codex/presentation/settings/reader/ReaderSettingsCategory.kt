@@ -22,7 +22,6 @@ import ua.blindmint.codex.presentation.settings.reader.reading_mode.ReadingModeS
 import ua.blindmint.codex.presentation.settings.reader.reading_speed.ReadingSpeedSubcategory
 import ua.blindmint.codex.presentation.settings.reader.system.SystemSubcategory
 import ua.blindmint.codex.presentation.settings.reader.text.TextSubcategory
-import ua.blindmint.codex.presentation.settings.reader.translator.TranslatorSubcategory
 
 fun LazyListScope.ReaderSettingsCategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary }
@@ -52,9 +51,6 @@ fun LazyListScope.ReaderSettingsCategory(
         titleColor = titleColor
     )
     ProgressSubcategory(
-        titleColor = titleColor
-    )
-    TranslatorSubcategory(
         titleColor = titleColor
     )
     MiscSubcategory(

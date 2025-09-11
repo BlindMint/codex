@@ -21,12 +21,13 @@ fun StartSettings(
     navigateForward: () -> Unit
 ) {
     StartSettingsScaffold(
+        currentPage = currentPage,
         navigateForward = navigateForward
     ) {
         StartContentTransition(
             targetValue = when (currentPage) {
-                0 -> StartScreen.GENERAL_SETTINGS
-                1 -> StartScreen.APPEARANCE_SETTINGS
+                1 -> StartScreen.GENERAL_SETTINGS
+                2 -> StartScreen.APPEARANCE_SETTINGS
                 else -> StartScreen.SCAN_SETTINGS
             },
             stackEvent = stackEvent

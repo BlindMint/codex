@@ -39,7 +39,6 @@ import ua.blindmint.codex.presentation.settings.reader.reading_mode.ReadingModeS
 import ua.blindmint.codex.presentation.settings.reader.reading_speed.ReadingSpeedSubcategory
 import ua.blindmint.codex.presentation.settings.reader.system.SystemSubcategory
 import ua.blindmint.codex.presentation.settings.reader.text.TextSubcategory
-import ua.blindmint.codex.presentation.settings.reader.translator.TranslatorSubcategory
 import ua.blindmint.codex.ui.reader.ReaderEvent
 
 private var initialPage = 0
@@ -136,9 +135,6 @@ fun ReaderSettingsBottomSheet(
                             titleColor = { MaterialTheme.colorScheme.onSurface }
                         )
                         ProgressSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        TranslatorSubcategory(
                             titleColor = { MaterialTheme.colorScheme.onSurface },
                             showDivider = false
                         )

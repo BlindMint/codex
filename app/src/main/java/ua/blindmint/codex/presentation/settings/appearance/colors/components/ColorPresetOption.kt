@@ -35,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material3.Icon
@@ -51,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
@@ -114,15 +116,16 @@ fun ColorPresetOption(backgroundColor: Color) {
         ) {
             itemsIndexed(
                 state.value.colorPresets,
-                key = { _, colorPreset -> colorPreset.id }
+                key = { index, colorPreset -> "${colorPreset.id}_${colorPreset.name}_${index}" }
             ) { index, colorPreset ->
                 ReorderableItem(
                     state = reorderableListState,
                     animateItemModifier = Modifier,
-                    key = colorPreset.id
+                    key = "${colorPreset.id}_${colorPreset.name}_${index}"
                 ) {
                     ColorPresetOptionRowItem(
                         colorPreset = colorPreset,
+                        colorPresets = state.value.colorPresets,
                         isSelected = remember(
                             colorPreset.isSelected,
                             state.value.colorPresets.size
@@ -132,12 +135,6 @@ fun ColorPresetOption(backgroundColor: Color) {
                             } else true
                         },
                         enableAnimation = state.value.animateColorPreset,
-                        canDrag = remember(state.value.colorPresets.size) {
-                            state.value.colorPresets.size > 1
-                        },
-                        onDragStopped = {
-                            settingsModel.onEvent(SettingsEvent.OnConfirmReorderColorPresets)
-                        },
                         onClick = {
                             settingsModel.onEvent(
                                 SettingsEvent.OnSelectColorPreset(
@@ -145,6 +142,35 @@ fun ColorPresetOption(backgroundColor: Color) {
                                 )
                             )
                         }
+                    )
+                }
+            }
+            item {
+                androidx.compose.material3.IconButton(
+                    modifier = Modifier
+                        .height(40.dp)
+                        .clip(CircleShape)
+                        .border(
+                            width = 2.dp,
+                            color = androidx.compose.material3.SegmentedButtonDefaults.colors().activeBorderColor,
+                            shape = CircleShape
+                        )
+                        .background(Color.Transparent, CircleShape)
+                        .padding(horizontal = 12.dp),
+                    onClick = {
+                        settingsModel.onEvent(
+                            SettingsEvent.OnAddColorPreset(
+                                backgroundColor = defaultBackgroundColor,
+                                fontColor = defaultFontColor
+                            )
+                        )
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(id = R.string.create_color_preset_content_desc),
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -165,15 +191,8 @@ fun ColorPresetOption(backgroundColor: Color) {
             if (selectedPreset != null) {
                 ColorPresetOptionConfigurationItem(
                     selectedColorPreset = selectedPreset,
-                    canDelete = state.value.colorPresets.size > 1,
                     canEditName = selectedPreset.name != "Light" && selectedPreset.name != "Dark",
-                    onDelete = {
-                        settingsModel.onEvent(
-                            SettingsEvent.OnDeleteColorPreset(
-                                id = selectedPreset.id
-                            )
-                        )
-                    },
+                    canDelete = state.value.colorPresets.size > 1 && selectedPreset.name != "Light" && selectedPreset.name != "Dark",
                     onTitleChange = {
                         settingsModel.onEvent(
                             SettingsEvent.OnUpdateColorPresetTitle(
@@ -182,18 +201,17 @@ fun ColorPresetOption(backgroundColor: Color) {
                             )
                         )
                     },
-                    onShuffle = {
+                    onRestore = {
                         settingsModel.onEvent(
-                            SettingsEvent.OnShuffleColorPreset(
+                            SettingsEvent.OnRestoreDefaultColorPreset(
                                 id = selectedPreset.id
                             )
                         )
                     },
-                    onAdd = {
+                    onDelete = {
                         settingsModel.onEvent(
-                            SettingsEvent.OnAddColorPreset(
-                                backgroundColor = defaultBackgroundColor,
-                                fontColor = defaultFontColor
+                            SettingsEvent.OnDeleteColorPreset(
+                                id = selectedPreset.id
                             )
                         )
                     }
@@ -241,22 +259,22 @@ fun ColorPresetOption(backgroundColor: Color) {
 @Composable
 private fun ReorderableCollectionItemScope.ColorPresetOptionRowItem(
     colorPreset: ColorPreset,
+    colorPresets: List<ColorPreset>,
     isSelected: Selected,
-    canDrag: Boolean,
     enableAnimation: Boolean,
-    onDragStopped: () -> Unit,
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val title = remember(colorPreset) {
-        if ((colorPreset.name ?: "").isBlank()) {
-            return@remember context.getString(
-                R.string.color_preset_query,
-                colorPreset.id.toString()
-            )
-        }
+    val title = remember(colorPreset, colorPresets) {
+        // Find the index of this preset in the current list
+        val presetIndex = colorPresets.indexOf(colorPreset)
+        val displayNumber = presetIndex + 1 // 1-based numbering
 
-        colorPreset.name!!
+        if ((colorPreset.name ?: "").isBlank()) {
+            context.getString(R.string.color_preset_query, displayNumber.toString())
+        } else {
+            colorPreset.name!!
+        }
     }
 
     val borderColor = remember(isSelected, colorPreset.fontColor, colorPreset.backgroundColor) {
@@ -294,7 +312,8 @@ private fun ReorderableCollectionItemScope.ColorPresetOptionRowItem(
     )
 
     Row(
-        Modifier
+        modifier = Modifier
+            .height(40.dp)
             .clip(CircleShape)
             .border(
                 width = 2.dp,
@@ -302,12 +321,11 @@ private fun ReorderableCollectionItemScope.ColorPresetOptionRowItem(
                 else borderColor,
                 shape = CircleShape
             )
-            .padding(2.dp)
             .background(animatedBackgroundColor.value, CircleShape)
             .clickable(enabled = !isSelected) {
                 onClick()
             }
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+            .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AnimatedVisibility(
@@ -319,7 +337,7 @@ private fun ReorderableCollectionItemScope.ColorPresetOptionRowItem(
         ) {
             Icon(
                 imageVector = Icons.Default.Done,
-                contentDescription = stringResource(id = R.string.selected_content_desc),
+                contentDescription = null,
                 modifier = Modifier
                     .padding(end = 8.dp)
                     .size(18.dp),
@@ -334,26 +352,6 @@ private fun ReorderableCollectionItemScope.ColorPresetOptionRowItem(
             ),
             maxLines = 1
         )
-
-        AnimatedVisibility(
-            visible = isSelected && canDrag,
-            enter = if (enableAnimation) expandHorizontally() + fadeIn()
-            else Transitions.NoEnterAnimation,
-            exit = if (enableAnimation) shrinkHorizontally() + fadeOut()
-            else Transitions.NoExitAnimation
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.DragHandle,
-                contentDescription = stringResource(id = R.string.drag_content_desc),
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .size(18.dp)
-                    .longPressDraggableHandle(
-                        onDragStopped = onDragStopped
-                    ),
-                tint = colorPreset.fontColor
-            )
-        }
     }
 }
 
@@ -361,12 +359,11 @@ private fun ReorderableCollectionItemScope.ColorPresetOptionRowItem(
 @Composable
 private fun ColorPresetOptionConfigurationItem(
     selectedColorPreset: ColorPreset,
-    canDelete: Boolean,
     canEditName: Boolean,
-    onDelete: () -> Unit,
-    onShuffle: () -> Unit,
+    canDelete: Boolean,
     onTitleChange: (String) -> Unit,
-    onAdd: () -> Unit
+    onRestore: () -> Unit,
+    onDelete: () -> Unit
 ) {
     val title = remember(selectedColorPreset.id) {
         mutableStateOf(selectedColorPreset.name ?: "")
@@ -380,6 +377,8 @@ private fun ColorPresetOptionConfigurationItem(
         }
     }
 
+    val isDefaultPreset = selectedColorPreset.name == "Light" || selectedColorPreset.name == "Dark"
+
     Row(
         Modifier.padding(horizontal = 18.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -387,7 +386,9 @@ private fun ColorPresetOptionConfigurationItem(
         BasicTextField(
             value = title.value,
             singleLine = true,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .clearAndSetSemantics { },
             textStyle = TextStyle(
                 color = if (canEditName) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = MaterialTheme.typography.titleLarge.fontSize,
@@ -403,7 +404,8 @@ private fun ColorPresetOptionConfigurationItem(
                 KeyboardCapitalization.Sentences
             ),
             cursorBrush = if (canEditName) SolidColor(MaterialTheme.colorScheme.onSurfaceVariant) else SolidColor(Color.Transparent),
-            readOnly = !canEditName
+            readOnly = !canEditName,
+            enabled = canEditName
         ) { innerText ->
             Box(
                 modifier = Modifier.fillMaxHeight(),
@@ -424,40 +426,26 @@ private fun ColorPresetOptionConfigurationItem(
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        FadeTransitionPreservingSpace(visible = canDelete) {
+        if (isDefaultPreset) {
+            IconButton(
+                modifier = Modifier.size(24.dp),
+                icon = Icons.Default.Restore,
+                contentDescription = R.string.restore_default_colors_content_desc,
+                disableOnClick = false,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            ) {
+                onRestore()
+            }
+        } else if (canDelete) {
             IconButton(
                 modifier = Modifier.size(24.dp),
                 icon = Icons.Default.DeleteOutline,
                 contentDescription = R.string.delete_color_preset_content_desc,
                 disableOnClick = false,
-                enabled = canDelete,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             ) {
                 onDelete()
             }
-        }
-
-        IconButton(
-            modifier = Modifier.size(24.dp),
-            icon = Icons.Default.Shuffle,
-            contentDescription = R.string.shuffle_color_preset_content_desc,
-            disableOnClick = false,
-            enabled = canEditName,
-            color = if (canEditName) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
-        ) {
-            if (canEditName) {
-                onShuffle()
-            }
-        }
-
-        IconButton(
-            modifier = Modifier.size(24.dp),
-            icon = Icons.Default.Add,
-            contentDescription = R.string.create_color_preset_content_desc,
-            disableOnClick = false,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        ) {
-            onAdd()
         }
     }
 }

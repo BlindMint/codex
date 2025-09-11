@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import ua.blindmint.codex.domain.browse.display.toBrowseLayout
 import ua.blindmint.codex.domain.browse.display.toBrowseSortOrder
+import ua.blindmint.codex.domain.reader.CustomFont
 import ua.blindmint.codex.domain.reader.toColorEffects
 import ua.blindmint.codex.domain.reader.toFontThickness
 import ua.blindmint.codex.domain.reader.toHorizontalGesture
@@ -106,14 +107,24 @@ class MainModel @Inject constructor(
                 value = event.value,
                 updateState = {
                     it.copy(
-                        fontFamily = provideFonts().run {
-                            find { font ->
-                                font.id == event.value
-                            }?.id ?: get(0).id
+                        fontFamily = if (event.value.startsWith("custom_")) {
+                            // Preserve custom font IDs as-is
+                            event.value
+                        } else {
+                            // For built-in fonts, validate against available fonts
+                            provideFonts().run {
+                                find { font ->
+                                    font.id == event.value
+                                }?.id ?: get(0).id
+                            }
                         }
                     )
                 }
             )
+
+            is MainEvent.OnAddCustomFont -> handleAddCustomFont(event)
+
+            is MainEvent.OnRemoveCustomFont -> handleRemoveCustomFont(event)
 
             is MainEvent.OnChangeFontStyle -> handleDatastoreUpdate(
                 key = DataStoreConstants.IS_ITALIC,
@@ -547,6 +558,17 @@ class MainModel @Inject constructor(
         }
     }
 
+    fun reloadSettings() {
+        viewModelScope.launch(Dispatchers.Main) {
+            val settings = getAllSettings.execute()
+
+            /* All additional execution */
+            changeLanguage.execute(settings.language)
+
+            updateStateWithSavedHandle { settings }
+        }
+    }
+
     private fun handleLanguageUpdate(event: MainEvent.OnChangeLanguage) {
         viewModelScope.launch(Dispatchers.Main.immediate) {
             changeLanguage.execute(event.value)
@@ -586,6 +608,38 @@ class MainModel @Inject constructor(
                 it.copy(browsePinnedPaths = toList())
             }
         )
+    }
+
+    private fun handleAddCustomFont(event: MainEvent.OnAddCustomFont) {
+        val list = _state.value.customFonts.toMutableList()
+        list.add(event.value)
+        val stringSet = list.map { CustomFont.toString(it) }.toSet()
+        handleDatastoreUpdate(
+            key = DataStoreConstants.CUSTOM_FONTS,
+            value = stringSet,
+            updateState = {
+                it.copy(customFonts = list)
+            }
+        )
+    }
+
+    private fun handleRemoveCustomFont(event: MainEvent.OnRemoveCustomFont) {
+        val list = _state.value.customFonts.toMutableList()
+        list.remove(event.value)
+        val stringSet = list.map { CustomFont.toString(it) }.toSet()
+        handleDatastoreUpdate(
+            key = DataStoreConstants.CUSTOM_FONTS,
+            value = stringSet,
+            updateState = {
+                it.copy(customFonts = list)
+            }
+        )
+        // Clean up the font file
+        try {
+            java.io.File(event.value.filePath).delete()
+        } catch (e: Exception) {
+            // Ignore cleanup errors
+        }
     }
 
     /**

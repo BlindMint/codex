@@ -44,7 +44,7 @@ fun provideDefaultColorPresets() = listOf(
     ColorPreset(
         id = 2,
         name = "Dark",
-        backgroundColor = Color(0xFF121212), // Material Design dark surface (#121212)
+        backgroundColor = Color(0xFF0F1419), // Material Design dark surface (#0F1419)
         fontColor = Color(0xFFE6E1E5), // Material Design dark onSurface (#E6E1E5)
         isSelected = false
     )

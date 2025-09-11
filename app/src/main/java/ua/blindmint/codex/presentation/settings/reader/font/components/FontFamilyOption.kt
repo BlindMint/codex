@@ -24,8 +24,12 @@ fun FontFamilyOption() {
             stateSelector = { it.fontFamily },
             eventCreator = { MainEvent.OnChangeFontFamily(it) },
             component = { value, onChange ->
+                // Handle custom font selection - if a custom font is selected,
+                // don't show any selection in the built-in fonts
+                val selectedFontId = if (value.startsWith("custom_")) null else value
+
                 val fontFamily = provideFonts().run {
-                    find { it.id == value } ?: get(0)
+                    find { it.id == selectedFontId } ?: get(0)
                 }
 
                 ChipsWithTitle(
@@ -38,7 +42,7 @@ fun FontFamilyOption() {
                                 textStyle = MaterialTheme.typography.labelLarge.copy(
                                     fontFamily = it.font
                                 ),
-                                selected = it.id == fontFamily.id
+                                selected = selectedFontId != null && it.id == fontFamily.id
                             )
                         },
                     onClick = { onChange(it.id) }

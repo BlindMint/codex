@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.DisplaySettings
 import androidx.compose.material.icons.outlined.Explore
+import androidx.compose.material.icons.outlined.ImportExport
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.runtime.Composable
@@ -31,6 +32,7 @@ fun SettingsLayout(
     navigateToAppearanceSettings: () -> Unit,
     navigateToReaderSettings: () -> Unit,
     navigateToBrowseSettings: () -> Unit,
+    navigateToImportExportSettings: () -> Unit,
     navigateToAbout: () -> Unit,
     navigateToHelp: () -> Unit
 ) {
@@ -68,6 +70,16 @@ fun SettingsLayout(
                 description = stringResource(id = R.string.browse_settings_desc)
             ) {
                 navigateToBrowseSettings()
+            }
+        }
+
+        item {
+            SettingsLayoutItem(
+                icon = Icons.Outlined.ImportExport,
+                title = stringResource(id = R.string.import_export_settings),
+                description = stringResource(id = R.string.import_export_settings_desc)
+            ) {
+                navigateToImportExportSettings()
             }
         }
 

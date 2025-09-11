@@ -97,8 +97,11 @@ interface BookDao {
     @Upsert
     suspend fun updateColorPreset(colorPreset: ColorPresetEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertColorPreset(colorPreset: ColorPresetEntity)
+
     @Query("SELECT `order` FROM colorpresetentity WHERE :id=id")
-    suspend fun getColorPresetOrder(id: Int): Int
+    suspend fun getColorPresetOrder(id: Int): Int?
 
     @Query("SELECT COUNT(*) FROM colorpresetentity")
     suspend fun getColorPresetsSize(): Int

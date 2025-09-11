@@ -22,6 +22,7 @@ import ua.blindmint.codex.presentation.core.components.common.StyledText
 
 @Composable
 fun StartSettingsBottomBar(
+    currentPage: Int,
     navigateForward: () -> Unit
 ) {
     Column {
@@ -34,7 +35,9 @@ fun StartSettingsBottomBar(
                 .fillMaxWidth(),
             onClick = { navigateForward() }
         ) {
-            StyledText(text = stringResource(id = R.string.next))
+            StyledText(text = stringResource(
+                id = if (currentPage == 1) R.string.begin_configuration else R.string.next
+            ))
         }
     }
 }

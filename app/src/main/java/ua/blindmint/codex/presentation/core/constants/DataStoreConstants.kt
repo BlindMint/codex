@@ -29,6 +29,7 @@ object DataStoreConstants {
     val SIDE_PADDING = intPreferencesKey("side_padding")
     val VERTICAL_PADDING = intPreferencesKey("vertical_padding")
     val FONT = stringPreferencesKey("font")
+    val CUSTOM_FONTS = stringSetPreferencesKey("custom_fonts")
     val FONT_THICKNESS = stringPreferencesKey("font_thickness")
     val IS_ITALIC = booleanPreferencesKey("font_style")
     val FONT_SIZE = intPreferencesKey("font_size")

@@ -19,6 +19,7 @@ fun SettingsContent(
     navigateToAppearanceSettings: () -> Unit,
     navigateToReaderSettings: () -> Unit,
     navigateToBrowseSettings: () -> Unit,
+    navigateToImportExportSettings: () -> Unit,
     navigateToAbout: () -> Unit,
     navigateToHelp: () -> Unit,
     navigateBack: () -> Unit
@@ -29,6 +30,7 @@ fun SettingsContent(
         navigateToAppearanceSettings = navigateToAppearanceSettings,
         navigateToReaderSettings = navigateToReaderSettings,
         navigateToBrowseSettings = navigateToBrowseSettings,
+        navigateToImportExportSettings = navigateToImportExportSettings,
         navigateToAbout = navigateToAbout,
         navigateToHelp = navigateToHelp,
         navigateBack = navigateBack

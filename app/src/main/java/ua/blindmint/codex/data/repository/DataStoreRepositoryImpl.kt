@@ -69,4 +69,21 @@ class DataStoreRepositoryImpl @Inject constructor(
 
         return result.await()
     }
+
+    /**
+     * Gets all raw data from DataStore.
+     */
+    override suspend fun getAllRawData(): Map<String, Any>? {
+        val keys = dataStore.getAllData()
+        val data = ConcurrentHashMap<String, Any>()
+
+        keys?.forEach { key ->
+            val nullableData = dataStore.getNullableData(key)
+            if (nullableData != null) {
+                data[key.name] = nullableData
+            }
+        }
+
+        return data
+    }
 }

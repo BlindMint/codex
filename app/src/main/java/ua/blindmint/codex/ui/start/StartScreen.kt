@@ -47,6 +47,9 @@ object StartScreen : Screen, Parcelable {
     @IgnoredOnParcel
     const val DONE = "done"
 
+    @IgnoredOnParcel
+    const val FINAL_DONE = "final_done"
+
     @SuppressLint("InlinedApi")
     @Composable
     override fun Content() {
@@ -77,7 +80,7 @@ object StartScreen : Screen, Parcelable {
             languages = languages,
             changeLanguage = mainModel::onEvent,
             navigateForward = {
-                if (currentPage.intValue + 1 == 4) {
+                if (currentPage.intValue + 1 == 5) {
                     return@StartContent
                 }
 

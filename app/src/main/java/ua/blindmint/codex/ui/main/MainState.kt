@@ -17,6 +17,7 @@ import ua.blindmint.codex.domain.browse.display.BrowseLayout
 import ua.blindmint.codex.domain.browse.display.BrowseSortOrder
 import ua.blindmint.codex.domain.browse.display.toBrowseLayout
 import ua.blindmint.codex.domain.browse.display.toBrowseSortOrder
+import ua.blindmint.codex.domain.reader.CustomFont
 import ua.blindmint.codex.domain.reader.ReaderColorEffects
 import ua.blindmint.codex.domain.reader.ReaderFontThickness
 import ua.blindmint.codex.domain.reader.ReaderHorizontalGesture
@@ -67,6 +68,7 @@ data class MainState(
 
     // Reader Settings
     val fontFamily: String = provideDefaultValue { provideFonts()[0].id },
+    val customFonts: List<CustomFont> = provideDefaultValue { emptyList() },
     val fontThickness: ReaderFontThickness = provideDefaultValue { ReaderFontThickness.NORMAL },
     val isItalic: Boolean = provideDefaultValue { false },
     val fontSize: Int = provideDefaultValue { 16 },
@@ -177,6 +179,12 @@ data class MainState(
                     fontFamily = provideValue(
                         FONT
                     ) { fontFamily },
+
+                    customFonts = provideValue(
+                        CUSTOM_FONTS, convert = {
+                            this.mapNotNull { CustomFont.fromString(it) }
+                        }
+                    ) { customFonts },
 
                     isItalic = provideValue(
                         IS_ITALIC

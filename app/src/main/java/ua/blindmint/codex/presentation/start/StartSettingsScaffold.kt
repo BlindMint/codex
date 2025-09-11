@@ -30,6 +30,7 @@ import ua.blindmint.codex.presentation.core.components.common.StyledText
 
 @Composable
 fun StartSettingsScaffold(
+    currentPage: Int,
     navigateForward: () -> Unit,
     content: @Composable () -> Unit
 ) {
@@ -38,6 +39,7 @@ fun StartSettingsScaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         bottomBar = {
             StartSettingsBottomBar(
+                currentPage = currentPage,
                 navigateForward = navigateForward
             )
         }

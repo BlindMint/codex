@@ -14,13 +14,10 @@ import kotlinx.parcelize.Parcelize
 import ua.blindmint.codex.domain.navigator.Screen
 import ua.blindmint.codex.presentation.core.components.top_bar.collapsibleTopAppBarScrollBehavior
 import ua.blindmint.codex.presentation.navigator.LocalNavigator
-import ua.blindmint.codex.presentation.settings.SettingsContent
-import ua.blindmint.codex.ui.about.AboutScreen
-import ua.blindmint.codex.ui.help.HelpScreen
-import ua.blindmint.codex.ui.settings.ImportExportSettingsScreen
+import ua.blindmint.codex.presentation.settings.import_export.ImportExportSettingsContent
 
 @Parcelize
-object SettingsScreen : Screen, Parcelable {
+object ImportExportSettingsScreen : Screen, Parcelable {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -28,27 +25,9 @@ object SettingsScreen : Screen, Parcelable {
         val navigator = LocalNavigator.current
         val (scrollBehavior, listState) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior()
 
-        SettingsContent(
-            listState = listState,
+        ImportExportSettingsContent(
             scrollBehavior = scrollBehavior,
-            navigateToAppearanceSettings = {
-                navigator.push(AppearanceSettingsScreen)
-            },
-            navigateToReaderSettings = {
-                navigator.push(ReaderSettingsScreen)
-            },
-            navigateToBrowseSettings = {
-                navigator.push(BrowseSettingsScreen)
-            },
-            navigateToImportExportSettings = {
-                navigator.push(ImportExportSettingsScreen)
-            },
-            navigateToAbout = {
-                navigator.push(AboutScreen)
-            },
-            navigateToHelp = {
-                navigator.push(HelpScreen(fromStart = false))
-            },
+            listState = listState,
             navigateBack = {
                 navigator.pop()
             }

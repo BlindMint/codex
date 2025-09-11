@@ -17,8 +17,7 @@ class ColorPresetMapperImpl @Inject constructor() : ColorPresetMapper {
         order: Int
     ): ColorPresetEntity {
         return ColorPresetEntity(
-            id = if (colorPreset.id != -1) colorPreset.id
-            else null,
+            id = if (colorPreset.id != -1) colorPreset.id else Int.MAX_VALUE, // Use Int.MAX_VALUE to indicate new preset for auto-generation
             name = colorPreset.name,
             backgroundColor = colorPreset.backgroundColor.value.toLong(),
             fontColor = colorPreset.fontColor.value.toLong(),
@@ -29,7 +28,7 @@ class ColorPresetMapperImpl @Inject constructor() : ColorPresetMapper {
 
     override suspend fun toColorPreset(colorPresetEntity: ColorPresetEntity): ColorPreset {
         return ColorPreset(
-            id = colorPresetEntity.id!!,
+            id = colorPresetEntity.id,
             name = colorPresetEntity.name,
             backgroundColor = Color(colorPresetEntity.backgroundColor.toULong()),
             fontColor = Color(colorPresetEntity.fontColor.toULong()),

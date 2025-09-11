@@ -26,10 +26,45 @@ fun FontStyleOption() {
     val state = mainModel.state.collectAsStateWithLifecycle()
 
     val fontFamily = remember(state.value.fontFamily) {
-        provideFonts().run {
-            find {
-                it.id == state.value.fontFamily
-            } ?: get(0)
+        if (state.value.fontFamily.startsWith("custom_")) {
+            // For custom fonts, use different built-in fonts as visual indicators for preview
+            val customFontName = state.value.fontFamily.removePrefix("custom_").lowercase()
+            when {
+                customFontName.contains("serif") ||
+                customFontName.contains("times") ||
+                customFontName.contains("garamond") ||
+                customFontName.contains("georgia") -> {
+                    provideFonts().find { it.id == "noto_serif" } ?: provideFonts().first()
+                }
+                customFontName.contains("mono") ||
+                customFontName.contains("code") ||
+                customFontName.contains("fira") ||
+                customFontName.contains("jetbrains") ||
+                customFontName.contains("cascadia") ||
+                customFontName.contains("source") -> {
+                    provideFonts().find { it.id == "roboto" } ?: provideFonts().first()
+                }
+                customFontName.contains("script") ||
+                customFontName.contains("hand") ||
+                customFontName.contains("brush") -> {
+                    provideFonts().find { it.id == "lora" } ?: provideFonts().first()
+                }
+                customFontName.contains("sans") ||
+                customFontName.contains("arial") ||
+                customFontName.contains("helvetica") ||
+                customFontName.contains("verdana") -> {
+                    provideFonts().find { it.id == "open_sans" } ?: provideFonts().first()
+                }
+                else -> {
+                    provideFonts().find { it.id == "jost" } ?: provideFonts().first()
+                }
+            }
+        } else {
+            provideFonts().run {
+                find {
+                    it.id == state.value.fontFamily
+                } ?: get(0)
+            }
         }
     }
 

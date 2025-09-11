@@ -31,7 +31,7 @@ import ua.blindmint.codex.R
 import ua.blindmint.codex.presentation.core.components.common.StyledText
 
 @Composable
-fun StartDoneLayout(
+fun StartFinalDoneLayout(
     paddingValues: PaddingValues
 ) {
     Column(

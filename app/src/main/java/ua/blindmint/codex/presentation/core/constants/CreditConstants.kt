@@ -12,6 +12,15 @@ import ua.blindmint.codex.domain.ui.UIText
 
 fun provideCredits() = listOf(
     Credit(
+        name = "Book's Story",
+        source = "GitHub",
+        credits = listOf(
+            UIText.StringResource(R.string.credits_design),
+            UIText.StringResource(R.string.credits_ideas)
+        ),
+        website = "https://github.com/Acclorite/book-story"
+    ),
+    Credit(
         name = "Tachiyomi (Mihon)",
         source = "GitHub",
         credits = listOf(
@@ -19,7 +28,7 @@ fun provideCredits() = listOf(
             UIText.StringResource(R.string.credits_ideas),
             UIText.StringValue("Readme")
         ),
-        website = "https://www.github.com/mihonapp/mihon"
+        website = "https://github.com/mihonapp/mihon"
     ),
     Credit(
         name = "Kitsune",
@@ -28,7 +37,7 @@ fun provideCredits() = listOf(
             UIText.StringResource(R.string.credits_updates),
             UIText.StringResource(R.string.credits_ideas)
         ),
-        website = "https://www.github.com/Drumber/Kitsune"
+        website = "https://github.com/Drumber/Kitsune"
     ),
     Credit(
         name = "Voyager",
@@ -53,31 +62,6 @@ fun provideCredits() = listOf(
             UIText.StringResource(R.string.credits_fonts)
         ),
         website = "https://fonts.google.com"
-    ),
-    Credit(
-        name = "Weblate",
-        source = "Hosted Weblate",
-        credits = listOf(
-            UIText.StringResource(R.string.credits_translation),
-            UIText.StringResource(R.string.credits_contribution)
-        ),
-        website = "https://hosted.weblate.org/projects/codex"
-    ),
-    Credit(
-        name = "OpenDyslexic Font",
-        source = "OpenDyslexic Website",
-        credits = listOf(
-            UIText.StringResource(R.string.credits_fonts)
-        ),
-        website = "https://opendyslexic.org"
-    ),
-    Credit(
-        name = "GitLab Badge",
-        source = "Censorship Website",
-        credits = listOf(
-            UIText.StringResource(R.string.credits_icon)
-        ),
-        website = "https://censorship.no/en/index.html"
     ),
     Credit(
         name = "GitHub Badge",

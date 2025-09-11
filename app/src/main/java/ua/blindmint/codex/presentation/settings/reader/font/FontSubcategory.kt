@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import ua.blindmint.codex.R
 import ua.blindmint.codex.presentation.settings.components.SettingsSubcategory
+import ua.blindmint.codex.presentation.settings.reader.font.components.CustomFontsOption
 import ua.blindmint.codex.presentation.settings.reader.font.components.FontFamilyOption
 import ua.blindmint.codex.presentation.settings.reader.font.components.FontSizeOption
 import ua.blindmint.codex.presentation.settings.reader.font.components.FontStyleOption
@@ -35,6 +36,10 @@ fun LazyListScope.FontSubcategory(
     ) {
         item {
             FontFamilyOption()
+        }
+
+        item {
+            CustomFontsOption()
         }
 
         item {

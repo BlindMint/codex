@@ -17,4 +17,6 @@ interface DataStoreRepository {
     )
 
     suspend fun getAllSettings(): MainState
+
+    suspend fun getAllRawData(): Map<String, Any>?
 }

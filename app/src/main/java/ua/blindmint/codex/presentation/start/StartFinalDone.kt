@@ -9,11 +9,11 @@ package ua.blindmint.codex.presentation.start
 import androidx.compose.runtime.Composable
 
 @Composable
-fun StartDone(
+fun StartFinalDone(
     navigateToBrowse: () -> Unit,
     navigateToHelp: () -> Unit
 ) {
-    StartDoneScaffold(
+    StartFinalDoneScaffold(
         navigateToBrowse = navigateToBrowse,
         navigateToHelp = navigateToHelp
     )

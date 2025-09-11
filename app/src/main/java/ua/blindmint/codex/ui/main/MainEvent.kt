@@ -7,6 +7,7 @@
 package ua.blindmint.codex.ui.main
 
 import androidx.compose.runtime.Immutable
+import ua.blindmint.codex.domain.reader.CustomFont
 
 @Immutable
 sealed class MainEvent {
@@ -16,6 +17,8 @@ sealed class MainEvent {
     data class OnChangePureDark(val value: String) : MainEvent()
     data class OnChangeThemeContrast(val value: String) : MainEvent()
     data class OnChangeFontFamily(val value: String) : MainEvent()
+    data class OnAddCustomFont(val value: CustomFont) : MainEvent()
+    data class OnRemoveCustomFont(val value: CustomFont) : MainEvent()
     data class OnChangeFontStyle(val value: Boolean) : MainEvent()
     data class OnChangeFontSize(val value: Int) : MainEvent()
     data class OnChangeLineHeight(val value: Int) : MainEvent()

@@ -16,9 +16,3 @@ fun provideIssuesPage() =
 
 fun provideContributorsPage() =
     "https://github.com/BlindMint/codex/graphs/contributors"
-
-fun provideTranslationPage() =
-    "https://hosted.weblate.org/projects/codex"
-
-fun provideSupportPage() =
-    "https://patreon.com/BlindMint"

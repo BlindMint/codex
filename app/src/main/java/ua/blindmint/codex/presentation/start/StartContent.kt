@@ -29,8 +29,8 @@ fun StartContent(
     StartContentTransition(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface),
         targetValue = when {
-            currentPage in 0..2 -> StartScreen.SETTINGS
-            else -> StartScreen.DONE
+            currentPage in 1..3 -> StartScreen.SETTINGS
+            else -> StartScreen.FINAL_DONE
         },
         stackEvent = stackEvent
     ) { page ->
@@ -45,8 +45,8 @@ fun StartContent(
                 )
             }
 
-            StartScreen.DONE -> {
-                StartDone(
+            StartScreen.FINAL_DONE -> {
+                StartFinalDone(
                     navigateToBrowse = navigateToBrowse,
                     navigateToHelp = navigateToHelp
                 )

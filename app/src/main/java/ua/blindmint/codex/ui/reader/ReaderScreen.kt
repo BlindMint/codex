@@ -34,6 +34,8 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,10 +47,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.parcelize.Parcelize
 import ua.blindmint.codex.domain.navigator.Screen
+import ua.blindmint.codex.domain.reader.CustomFont
+import ua.blindmint.codex.domain.reader.FontWithName
 import ua.blindmint.codex.domain.reader.ReaderColorEffects
 import ua.blindmint.codex.domain.reader.ReaderProgressCount
 import ua.blindmint.codex.domain.reader.ReaderText
 import ua.blindmint.codex.domain.reader.ReaderTextAlignment
+import ua.blindmint.codex.domain.ui.UIText
 import ua.blindmint.codex.presentation.core.constants.provideFonts
 import ua.blindmint.codex.presentation.core.constants.CHARACTERS_PER_PAGE
 import ua.blindmint.codex.presentation.core.util.LocalActivity
@@ -118,11 +123,28 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             }
         }
 
-        val fontFamily = remember(mainState.value.fontFamily) {
-            provideFonts().run {
-                find {
-                    it.id == mainState.value.fontFamily
-                } ?: get(0)
+        val fontFamily = remember(mainState.value.fontFamily, mainState.value.customFonts) {
+            if (mainState.value.fontFamily.startsWith("custom_")) {
+                val customFontName = mainState.value.fontFamily.removePrefix("custom_")
+                val customFont = mainState.value.customFonts.find { it.name == customFontName }
+                customFont?.let {
+                    try {
+                        FontWithName(
+                            id = "custom_${it.name}",
+                            fontName = UIText.StringValue(it.name),
+                            font = FontFamily(Font(java.io.File(it.filePath)))
+                        )
+                    } catch (e: Exception) {
+                        // Fallback to default if font loading fails
+                        provideFonts().first()
+                    }
+                } ?: provideFonts().first()
+            } else {
+                provideFonts().run {
+                    find {
+                        it.id == mainState.value.fontFamily
+                    } ?: get(0)
+                }
             }
         }
         val backgroundColor = animateColorAsState(

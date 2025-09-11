@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import ua.blindmint.codex.presentation.core.util.showToast
 import javax.inject.Inject
 import kotlin.random.Random
+import kotlinx.coroutines.delay
 
 @HiltViewModel
 class SettingsModel @Inject constructor(
@@ -66,6 +67,7 @@ class SettingsModel @Inject constructor(
     private var updateColorColorPresetJob: Job? = null
     private var updateTitleColorPresetJob: Job? = null
     private var shuffleColorPresetJob: Job? = null
+    private var restoreColorPresetJob: Job? = null
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -156,6 +158,32 @@ class SettingsModel @Inject constructor(
             val settings = getAllSettings.execute()
             if (!settings.autoColorPresetSelected) {
                 selectAppropriateColorPreset(isDarkTheme)
+            }
+        }
+    }
+
+    fun reloadColorPresets() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val colorPresets = getColorPresets.execute()
+
+            val scrollIndex = colorPresets.indexOfFirst {
+                it.isSelected
+            }
+            if (scrollIndex != -1) {
+                launch(Dispatchers.Main) {
+                    try {
+                        _state.value.colorPresetListState.requestScrollToItem(index = scrollIndex)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+
+            _state.update {
+                it.copy(
+                    selectedColorPreset = colorPresets.selected(),
+                    colorPresets = colorPresets
+                )
             }
         }
     }
@@ -424,29 +452,96 @@ class SettingsModel @Inject constructor(
                 }
             }
 
+            is SettingsEvent.OnRestoreDefaultColorPreset -> {
+                viewModelScope.launch {
+                    cancelColorPresetJobs()
+                    restoreColorPresetJob = launch {
+                        val colorPreset = event.id.getColorPresetById() ?: return@launch
+
+                        yield()
+
+                        val defaultPresets = provideDefaultColorPresets()
+                        val defaultPreset = when (colorPreset.name) {
+                            "Light" -> defaultPresets.first()
+                            "Dark" -> defaultPresets.last()
+                            else -> return@launch
+                        }
+
+                        val restoredColorPreset = colorPreset.copy(
+                            backgroundColor = defaultPreset.backgroundColor,
+                            fontColor = defaultPreset.fontColor
+                        )
+
+                        yield()
+
+                        updateColorPreset.execute(restoredColorPreset)
+                        _state.update {
+                            it.copy(
+                                selectedColorPreset = restoredColorPreset,
+                                colorPresets = it.colorPresets.updateColorPreset(
+                                    restoredColorPreset
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
             is SettingsEvent.OnAddColorPreset -> {
                 viewModelScope.launch {
                     cancelColorPresetJobs()
                     addColorPresetJob = launch {
-                        yield()
+                        val currentPresets = _state.value.colorPresets
+                        val maxCurrentId = currentPresets.maxOfOrNull { it.id } ?: 0
 
-                        val newColorPreset = provideDefaultColorPreset().copy(
+                        // Create a new preset with auto-generated ID (let Room handle ID assignment)
+                        val newColorPreset = ColorPreset(
+                            id = -1, // Use -1 to indicate new preset, Room will auto-generate the actual ID
+                            name = null, // Will show as "Color Preset X"
                             backgroundColor = event.backgroundColor,
-                            fontColor = event.fontColor
+                            fontColor = event.fontColor,
+                            isSelected = false // Ensure new preset is not selected by default
                         )
+
+                        // Add the new preset to the database (Room will auto-generate the ID)
                         updateColorPreset.execute(newColorPreset)
 
-                        getColorPresets.execute().last().select()
-                        val colorPresets = getColorPresets.execute()
+                        // Small delay to ensure database operation completes
+                        kotlinx.coroutines.delay(50)
 
-                        _state.update {
-                            it.copy(
-                                selectedColorPreset = colorPresets.selected(),
-                                colorPresets = colorPresets
-                            )
+                        // Reload presets from database to get the updated list with the new preset
+                        val updatedPresets = getColorPresets.execute()
+
+                        // Find the newly created preset by looking for an ID greater than the max we had before
+                        val actualNewPreset = updatedPresets.firstOrNull { it.id > maxCurrentId }
+
+                        if (actualNewPreset != null) {
+                            // Select the new preset using the actual database version
+                            actualNewPreset.select()
+
+                            // Reload again to ensure we have the latest state after selection
+                            val finalPresets = getColorPresets.execute()
+
+                            _state.update {
+                                it.copy(
+                                    selectedColorPreset = finalPresets.selected(),
+                                    colorPresets = finalPresets
+                                )
+                            }
+
+                            // Scroll to the new preset
+                            val newPresetIndex = finalPresets.indexOf(actualNewPreset)
+                            if (newPresetIndex != -1) {
+                                onEvent(SettingsEvent.OnScrollToColorPreset(newPresetIndex))
+                            }
+                        } else {
+                            // Fallback: just update the state without selecting
+                            _state.update {
+                                it.copy(
+                                    colorPresets = updatedPresets
+                                )
+                            }
                         }
-
-                        onEvent(SettingsEvent.OnScrollToColorPreset(colorPresets.lastIndex))
                     }
                 }
             }
@@ -560,7 +655,7 @@ class SettingsModel @Inject constructor(
         }
 
         return this.map {
-            if (it.isSelected) {
+            if (it.id == colorPreset.id) {
                 colorPreset
             } else {
                 it
@@ -573,6 +668,7 @@ class SettingsModel @Inject constructor(
         addColorPresetJob?.cancel()
         updateTitleColorPresetJob?.cancel()
         shuffleColorPresetJob?.cancel()
+        restoreColorPresetJob?.cancel()
         updateColorColorPresetJob?.cancel()
         deleteColorPresetJob?.cancel()
     }

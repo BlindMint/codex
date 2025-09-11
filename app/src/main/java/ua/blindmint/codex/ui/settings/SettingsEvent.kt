@@ -47,6 +47,10 @@ sealed class SettingsEvent {
         val id: ID
     ) : SettingsEvent()
 
+    data class OnRestoreDefaultColorPreset(
+        val id: ID
+    ) : SettingsEvent()
+
     data class OnAddColorPreset(
         val backgroundColor: Color,
         val fontColor: Color
