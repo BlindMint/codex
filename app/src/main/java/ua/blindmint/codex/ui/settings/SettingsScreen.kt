@@ -1,0 +1,57 @@
+/*
+ * Codex — free and open-source Material You eBook reader.
+ * Copyright (C) 2024-2025 BlindMint
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
+
+package ua.blindmint.codex.ui.settings
+
+import android.os.Parcelable
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import kotlinx.parcelize.Parcelize
+import ua.blindmint.codex.domain.navigator.Screen
+import ua.blindmint.codex.presentation.core.components.top_bar.collapsibleTopAppBarScrollBehavior
+import ua.blindmint.codex.presentation.navigator.LocalNavigator
+import ua.blindmint.codex.presentation.settings.SettingsContent
+import ua.blindmint.codex.ui.about.AboutScreen
+import ua.blindmint.codex.ui.help.HelpScreen
+import ua.blindmint.codex.ui.settings.ImportExportSettingsScreen
+
+@Parcelize
+object SettingsScreen : Screen, Parcelable {
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.current
+        val (scrollBehavior, listState) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior()
+
+        SettingsContent(
+            listState = listState,
+            scrollBehavior = scrollBehavior,
+            navigateToAppearanceSettings = {
+                navigator.push(AppearanceSettingsScreen)
+            },
+            navigateToReaderSettings = {
+                navigator.push(ReaderSettingsScreen)
+            },
+            navigateToBrowseSettings = {
+                navigator.push(BrowseSettingsScreen)
+            },
+            navigateToImportExportSettings = {
+                navigator.push(ImportExportSettingsScreen)
+            },
+            navigateToAbout = {
+                navigator.push(AboutScreen)
+            },
+            navigateToHelp = {
+                navigator.push(HelpScreen(fromStart = false))
+            },
+            navigateBack = {
+                navigator.pop()
+            }
+        )
+    }
+}

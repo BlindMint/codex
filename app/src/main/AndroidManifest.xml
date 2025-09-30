@@ -1,0 +1,59 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+
+    <!-- Removing READ_EXTERNAL_STORAGE and WRITE_EXTERNAL_STORAGE explicitly -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        tools:node="remove"
+        tools:ignore="ScopedStorage" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:node="remove"
+        tools:ignore="ScopedStorage" />
+
+    <application
+        android:name=".Application"
+        android:allowBackup="false"
+        android:enableOnBackInvokedCallback="true"
+        android:icon="@mipmap/app_icon"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:roundIcon="@mipmap/app_icon_round"
+        android:supportsRtl="true"
+        android:theme="@style/Splash"
+        tools:ignore="DataExtractionRules"
+        tools:targetApi="tiramisu">
+
+        <!-- Main activity -->
+        <activity
+            android:name=".ui.main.MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|locale|density|uiMode"
+            android:exported="true"
+            android:theme="@style/Splash"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Crash activity -->
+        <activity
+            android:name=".ui.crash.CrashActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|locale|density|uiMode"
+            android:exported="false"
+            android:theme="@style/Codex"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Save app locales -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
+    </application>
+</manifest>
