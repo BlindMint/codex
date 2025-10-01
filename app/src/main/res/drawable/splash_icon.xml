@@ -1,0 +1,13 @@
+<!--
+  ~ Codex — free and open-source Material You eBook reader.
+  ~ Copyright (C) 2024-2025 BlindMint
+  ~ SPDX-License-Identifier: GPL-3.0-only
+-->
+
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:drawable="@drawable/app_icon"
+        android:height="80.dp"
+        android:width="80.dp"
+        android:gravity="center" />
+</layer-list>
