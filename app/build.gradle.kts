@@ -20,13 +20,9 @@ android {
         applicationId = "ua.blindmint.codex"
         minSdk = 26
         targetSdk = 35
-<<<<<<< HEAD
-        versionCode = 7
-        versionName = "1.4.0"
-=======
+
         versionCode = 8
         versionName = "1.5.0"
->>>>>>> d2726c5 (Initial commit - restore project)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
