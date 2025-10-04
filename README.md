@@ -2,6 +2,7 @@
 
 <div align="center">
    <h1>Codex</h1>
+> In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.
 </div>
 
 ---
@@ -20,10 +21,8 @@
 
 </div>
 
-A sleek, customizable **reading app** with modern material design, built with Jetpack Compose. 
+A sleek, customizable **reading app** with modern material design, built with Jetpack Compose.<br />
 Open source, ad-free, Administratum-approved: eBook & dataslate reader for Android.
-
-> In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.
 
 ---
 
