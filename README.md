@@ -1,9 +1,9 @@
 <!------------ Header ------------>
 
-<div align="center">
+<div align="center" style="margin-bottom: 1em;">
     <h1>Codex</h1>
-In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.
 <br />
+In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.
 </div>
 
 <!------------ Badges ------------>
