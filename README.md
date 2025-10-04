@@ -1,8 +1,11 @@
-# Codex
+<div align="center">
+<h1>Codex</h1>
+</div>
 
-![GitHub](https://img.shields.io/github/release/BlindMint/codex.svg?labelColor=27303D&color=3f719b&label=GitHub&logo=GitHub)
-![Codeberg](https://img.shields.io/badge/Latest-3f9b9b?label=Codeberg&labelColor=27303D&logo=codeberg)
-
+<p align="center">
+![GitHub](https://img.shields.io/github/release/BlindMint/codex.svg?label=GitHub&logo=GitHub)
+![Codeberg](https://img.shields.io/badge/v1.6.3?label=Codeberg&labelColor=27303D&logo=codeberg)
+</p>
 ---
 
 # Overview
