@@ -33,13 +33,13 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 <div align="center">
 <h2>Features</h2>
 </div>
-- Forge your reading experience with Material You design, dynamic theming, and custom color presets
-- Supports multiple eBook formats (PDF, TXT, EPUB, FB2, HTML, HTM, MD)
-- Organized library with categories and advanced search
-- Highly customizable reader with font, text size, padding, reading speed, and more
-- Progress tracking and bookmarks
-- Browse and scan functionality
-- Storage Access Framework integration
+- Forge your reading experience with Material You design, dynamic theming, and custom color presets  
+- Supports multiple eBook formats (PDF, TXT, EPUB, FB2, HTML, HTM, MD)  
+- Organized library with categories and advanced search  
+- Highly customizable reader with font, text size, padding, reading speed, and more  
+- Progress tracking and bookmarks  
+- Browse and scan functionality  
+- Storage Access Framework integration  
 
 ---
 
