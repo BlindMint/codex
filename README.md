@@ -2,9 +2,7 @@
 
 <div align="center">
     <h1>Codex</h1>
-<br />
-In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.
-<div style="height: 1em;"></div>
+In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.<br />
 </div>
 
 <!------------ Badges ------------>
