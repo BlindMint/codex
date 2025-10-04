@@ -1,14 +1,12 @@
 # Codex
 
-
-
 ![GitHub](https://img.shields.io/github/release/BlindMint/codex.svg?labelColor=27303D&color=3f719b&label=GitHub&logo=GitHub)
 ![Codeberg](https://img.shields.io/badge/Latest-3f9b9b?label=Codeberg&labelColor=27303D&logo=codeberg)
 ![License: GPL-3.0-only](https://img.shields.io/badge/GPL--3.0--only-9b3f57?label=License&labelColor=27303D)
 
 ---
 
-<h2 align="center">Overview</h2>
+# Overview
 
 In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.
 Codex is a sleek, customizable reading app with modern Material design, built with Jetpack Compose.
