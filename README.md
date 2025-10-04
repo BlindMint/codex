@@ -5,8 +5,6 @@
 In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.
 </div>
 
----
-
 <!------------ Badges ------------>
 
 <div align="center">
@@ -17,12 +15,15 @@ In the grim darkness of the far future, knowledge is power, and wisdom is forged
 </div>
 <!------------ Overview ------------>
 
+---
+
 ## Overview
 
 A sleek, customizable **reading app** with modern material design, built with Jetpack Compose.<br />
 Open source, ad-free, Administratum-approved: eBook & dataslate reader for Android.
 
----
+
+
 
 <!------------ Features ------------>
 
@@ -36,20 +37,19 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 - Browse and scan functionality
 - Storage Access Framework integration
 
----
+
+
 
 <!------------ Download guide ------------>
 
 ## Downloads
 
-- _Codex only supports **Android 8.0** and above_
-
-
 [<img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/main/get-it-on-github.png" alt='Get it on GitHub' height="80">](https://github.com/BlindMint/codex/releases/latest)
 [<img src="https://raw.githubusercontent.com/BlindMint/codex/master/fastlane/metadata/android/en-US/images/codeberg-badge.png" alt='Get it on Codeberg' height="80">](https://codeberg.org/BlindMint/codex/releases)
 
 
----
+
+
 
 <!------------ Credits and License ------------>
 
@@ -63,9 +63,9 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 - [Material Design Fonts](https://fonts.google.com) (Google Fonts)
 - [GitHub Badge](https://github.com/Kunzisoft/Github-badge) (GitHub)
 - [Codeberg Badge](https://codeberg.org/Codeberg/GetItOnCodeberg) (Codeberg)
-- Also listed in About > Credits
 
----
+
+
 
 ## License
 
