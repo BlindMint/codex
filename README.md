@@ -14,67 +14,64 @@
 <a href="">[![Codeberg](https://img.shields.io/badge/Latest-3f9b9b?label=Codeberg&labelColor=27303D&logo=codeberg)](https://codeberg.org/BlindMint/codex/releases)</a>
 <a href="">[![License: GPL-3.0-only](https://img.shields.io/badge/GPL--3.0--only-9b3f57?label=License&labelColor=27303D)](LICENSE)</a>
 
-</div>
-
 <!------------ Overview ------------>
 
-<div align="center">
 <h1>Overview</h1>
+
 </div>
 
-A sleek, customizable **reading app** with modern material design, built with Jetpack Compose.  
-Open source, ad-free, Administratum-approved: eBook & dataslate reader for Android 8.0+.  
+A sleek, customizable **reading app** with modern material design, built with Jetpack Compose. 
+Open source, ad-free, Administratum-approved: eBook & dataslate reader for Android.
 
 > In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.
 
 ---
 
 <!------------ Features ------------>
-<div align="center">
-<h2>Features</h2>
-</div>
-- Forge your reading experience with Material You design, dynamic theming, and custom color presets  
-- Supports multiple eBook formats (PDF, TXT, EPUB, FB2, HTML, HTM, MD)  
-- Organized library with categories and advanced search  
-- Highly customizable reader with font, text size, padding, reading speed, and more  
-- Progress tracking and bookmarks  
-- Browse and scan functionality  
-- Storage Access Framework integration  
+
+## Features
+
+- Forge your reading experience with Material You design, dynamic theming, and custom color presets
+- Supports multiple eBook formats (PDF, TXT, EPUB, FB2, HTML, HTM, MD)
+- Organized library with categories and advanced search
+- Highly customizable reader with font, text size, padding, reading speed, and more
+- Progress tracking and bookmarks
+- Browse and scan functionality
+- Storage Access Framework integration
 
 ---
 
 <!------------ Download guide ------------>
-<div align="center">
-<h2>Downloads</h2>
 
-_Codex only supports **Android 8.0** and above_
-</div>
-<div align="center">
+## Downloads
+
+- _Codex only supports **Android 8.0** and above_
+
 
 [<img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/main/get-it-on-github.png" alt='Get it on GitHub' height="80">](https://github.com/BlindMint/codex/releases/latest)
 [<img src="https://raw.githubusercontent.com/BlindMint/codex/master/fastlane/metadata/android/en-US/images/codeberg-badge.png" alt='Get it on Codeberg' height="80">](https://codeberg.org/BlindMint/codex/releases)
 
-</div>
+
 ---
 
 <!------------ Credits and License ------------>
-<div align="center">
-<h2>Credits</h2>
-</div>
-- [Book's Story](https://github.com/Acclorite/book-story) (GitHub)  
-- [Tachiyomi (Mihon)](https://github.com/mihonapp/mihon) (GitHub)  
-- [Kitsune](https://github.com/Drumber/Kitsune) (GitHub)  
-- [Voyager](https://voyager.adriel.cafe/) (Voyager Website)  
-- [Material Design Icons](https://fonts.google.com/icons) (Google Fonts)  
-- [Material Design Fonts](https://fonts.google.com) (Google Fonts)  
-- [GitHub Badge](https://github.com/Kunzisoft/Github-badge) (GitHub)  
-- [Codeberg Badge](https://codeberg.org/Codeberg/GetItOnCodeberg) (Codeberg)  
-- Also listed in About > Credits  
+
+## Credits
+
+- [Book's Story](https://github.com/Acclorite/book-story) (GitHub)
+- [Tachiyomi (Mihon)](https://github.com/mihonapp/mihon) (GitHub)
+- [Kitsune](https://github.com/Drumber/Kitsune) (GitHub)
+- [Voyager](https://voyager.adriel.cafe/) (Voyager Website)
+- [Material Design Icons](https://fonts.google.com/icons) (Google Fonts)
+- [Material Design Fonts](https://fonts.google.com) (Google Fonts)
+- [GitHub Badge](https://github.com/Kunzisoft/Github-badge) (GitHub)
+- [Codeberg Badge](https://codeberg.org/Codeberg/GetItOnCodeberg) (Codeberg)
+- Also listed in About > Credits
 
 ---
-<div align="center">
-<h2>License</h2>
-</div>
+
+## License
+
 <div>
   <pre>
 
