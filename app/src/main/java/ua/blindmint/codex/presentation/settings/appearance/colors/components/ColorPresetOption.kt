@@ -187,8 +187,7 @@ fun ColorPresetOption(backgroundColor: Color) {
         ) {
             Spacer(modifier = Modifier.height(18.dp))
 
-            val selectedPreset = state.value.selectedColorPreset
-            if (selectedPreset != null) {
+            state.value.selectedColorPreset?.let { selectedPreset ->
                 ColorPresetOptionConfigurationItem(
                     selectedColorPreset = selectedPreset,
                     canEditName = selectedPreset.name != "Light" && selectedPreset.name != "Dark",
@@ -216,11 +215,9 @@ fun ColorPresetOption(backgroundColor: Color) {
                         )
                     }
                 )
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            if (selectedPreset != null) {
                 ColorPickerWithTitle(
                     value = selectedPreset.backgroundColor,
                     presetId = selectedPreset.id,
