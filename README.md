@@ -2,7 +2,6 @@
 
 ![GitHub](https://img.shields.io/github/release/BlindMint/codex.svg?labelColor=27303D&color=3f719b&label=GitHub&logo=GitHub)
 ![Codeberg](https://img.shields.io/badge/Latest-3f9b9b?label=Codeberg&labelColor=27303D&logo=codeberg)
-![License: GPL-3.0-only](https://img.shields.io/badge/GPL--3.0--only-9b3f57?label=License&labelColor=27303D)
 
 ---
 
@@ -43,23 +42,4 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 - [GitHub Badge](https://github.com/Kunzisoft/Github-badge) (GitHub)
 - [Codeberg Badge](https://codeberg.org/Codeberg/GetItOnCodeberg) (Codeberg)
 - Also listed in-app under About > Credits
-
----
-
-## License
-
-Codex — free and open-source Material You eBook reader.
-Copyright (C) 2025 BlindMint
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, version 3 of the License.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
 
