@@ -22,8 +22,8 @@
 <h1>Overview</h1>
 </div>
 
-A sleek, customizable **reading app** with modern material design, built with Jetpack Compose. 
-Open source, ad-free, Administratum-approved: eBook & dataslate reader for Android 8.0+.
+A sleek, customizable **reading app** with modern material design, built with Jetpack Compose.  
+Open source, ad-free, Administratum-approved: eBook & dataslate reader for Android 8.0+.  
 
 > In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.
 
@@ -46,9 +46,9 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 <!------------ Download guide ------------>
 <div align="center">
 <h2>Downloads</h2>
-</div>
-- _Codex only supports **Android 8.0** and above_
 
+_Codex only supports **Android 8.0** and above_
+</div>
 <div align="center">
 
 [<img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/main/get-it-on-github.png" alt='Get it on GitHub' height="80">](https://github.com/BlindMint/codex/releases/latest)
@@ -61,21 +61,21 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 <div align="center">
 <h2>Credits</h2>
 </div>
-- [Book's Story](https://github.com/Acclorite/book-story) (GitHub)
-- [Tachiyomi (Mihon)](https://github.com/mihonapp/mihon) (GitHub)
-- [Kitsune](https://github.com/Drumber/Kitsune) (GitHub)
-- [Voyager](https://voyager.adriel.cafe/) (Voyager Website)
-- [Material Design Icons](https://fonts.google.com/icons) (Google Fonts)
-- [Material Design Fonts](https://fonts.google.com) (Google Fonts)
-- [GitHub Badge](https://github.com/Kunzisoft/Github-badge) (GitHub)
-- [Codeberg Badge](https://codeberg.org/Codeberg/GetItOnCodeberg) (Codeberg)
-- Also listed in About > Credits
+- [Book's Story](https://github.com/Acclorite/book-story) (GitHub)  
+- [Tachiyomi (Mihon)](https://github.com/mihonapp/mihon) (GitHub)  
+- [Kitsune](https://github.com/Drumber/Kitsune) (GitHub)  
+- [Voyager](https://voyager.adriel.cafe/) (Voyager Website)  
+- [Material Design Icons](https://fonts.google.com/icons) (Google Fonts)  
+- [Material Design Fonts](https://fonts.google.com) (Google Fonts)  
+- [GitHub Badge](https://github.com/Kunzisoft/Github-badge) (GitHub)  
+- [Codeberg Badge](https://codeberg.org/Codeberg/GetItOnCodeberg) (Codeberg)  
+- Also listed in About > Credits  
 
 ---
 <div align="center">
 <h2>License</h2>
 </div>
-<div align="center">
+<div>
   <pre>
 
 Codex — free and open-source Material You eBook reader.
