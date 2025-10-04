@@ -17,7 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 
 @SuppressLint("NewApi")
 @Composable
-fun dynamicTheme(isDark: Boolean): ColorScheme {
+fun mercuryTheme(isDark: Boolean): ColorScheme {
     return if (isDark) {
         dynamicDarkColorScheme(LocalContext.current).run {
             copy(

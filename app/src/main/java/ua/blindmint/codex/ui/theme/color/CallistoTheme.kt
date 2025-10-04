@@ -87,7 +87,7 @@ private val surfaceContainerHighestDark = Color(0xFF383433)
 
 
 @Composable
-fun redGrayTheme(isDark: Boolean): ColorScheme {
+fun callistoTheme(isDark: Boolean): ColorScheme {
     return if (isDark) {
         darkColorScheme(
             primary = primaryDark,

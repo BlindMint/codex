@@ -5,6 +5,12 @@
 -->
 
 <resources>
-    <color name="splash_bg_light">#FAFAFA</color>
-    <color name="splash_bg_dark">#101010</color>
+    <!-- Original hand-picked colors (kept for reference):
+    <color name="splash_bg_light">#d0d2d1</color>
+    <color name="splash_bg_dark">#121212</color>
+    -->
+    
+    <!-- Material 3 surface colors for better consistency with app theme -->
+    <color name="splash_bg_light">#FFFBFE</color>
+    <color name="splash_bg_dark">#1C1B1F</color>
 </resources>

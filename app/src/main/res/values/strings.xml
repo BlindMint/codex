@@ -90,6 +90,18 @@
     <string name="library_empty">
         Read your favorite books and sort them between categories
     </string>
+    <string name="library_reading_empty">
+        Start your reading journey by adding books from Browse
+    </string>
+    <string name="library_planning_empty">
+        Save books here that you\'re planning to read later
+    </string>
+    <string name="library_already_read_empty">
+        Track your reading accomplishments and completed books
+    </string>
+    <string name="library_favorites_empty">
+        Mark your most beloved books as favorites
+    </string>
     <string name="history_empty">
         Let your last book you read open the pages of a new great story of your reading journey
     </string>
@@ -136,6 +148,7 @@
     <string name="reading_tab">Reading</string>
     <string name="already_read_tab">Already Read</string>
     <string name="planning_tab">Planning</string>
+    <string name="favorites_tab">Favorites</string>
     <string name="general_tab">General</string>
     <string name="display_tab">Display</string>
     <string name="color_tab">Colors</string>

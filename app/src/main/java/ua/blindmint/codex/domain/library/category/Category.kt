@@ -12,5 +12,6 @@ import androidx.compose.runtime.Immutable
 enum class Category {
     READING,
     ALREADY_READ,
-    PLANNING
+    PLANNING,
+    FAVORITES
 }

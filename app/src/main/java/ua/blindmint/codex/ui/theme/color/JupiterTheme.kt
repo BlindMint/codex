@@ -232,7 +232,7 @@ private val surfaceContainerHighestDarkHighContrast = Color(0xFF383339)
 
 
 @Composable
-fun purpleTheme(isDark: Boolean, themeContrast: ThemeContrast): ColorScheme {
+fun jupiterTheme(isDark: Boolean, themeContrast: ThemeContrast): ColorScheme {
     return if (isDark) {
         when (themeContrast) {
             ThemeContrast.STANDARD -> {

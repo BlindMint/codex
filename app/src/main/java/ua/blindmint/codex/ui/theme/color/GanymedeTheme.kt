@@ -87,7 +87,7 @@ private val surfaceContainerHighestDark = Color(0xFF333442)
 
 
 @Composable
-fun pink2Theme(isDark: Boolean): ColorScheme {
+fun ganymedeTheme(isDark: Boolean): ColorScheme {
     return if (isDark) {
         darkColorScheme(
             primary = primaryDark,

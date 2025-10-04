@@ -6,43 +6,33 @@
 
 package ua.blindmint.codex.presentation.start
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import ua.blindmint.codex.R
 import ua.blindmint.codex.domain.navigator.StackEvent
-import ua.blindmint.codex.domain.ui.ButtonItem
-import ua.blindmint.codex.ui.main.MainEvent
 import ua.blindmint.codex.ui.start.StartScreen
 
 @Composable
 fun StartContent(
     currentPage: Int,
     stackEvent: StackEvent,
-    languages: List<ButtonItem>,
-    changeLanguage: (MainEvent.OnChangeLanguage) -> Unit,
     navigateForward: () -> Unit,
     navigateBack: () -> Unit,
     navigateToBrowse: () -> Unit,
     navigateToHelp: () -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Image(
-            painter = painterResource(id = R.drawable.closed_vault),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
         StartContentTransition(
             modifier = Modifier,
             targetValue = when {
-                currentPage in 1..3 -> StartScreen.SETTINGS
+                currentPage in 1..2 -> StartScreen.SETTINGS
                 else -> StartScreen.FINAL_DONE
             },
             stackEvent = stackEvent
@@ -52,8 +42,6 @@ fun StartContent(
                     StartSettings(
                         currentPage = currentPage,
                         stackEvent = stackEvent,
-                        languages = languages,
-                        changeLanguage = changeLanguage,
                         navigateForward = navigateForward
                     )
                 }

@@ -9,6 +9,11 @@ package ua.blindmint.codex.ui.library
 import android.os.Parcelable
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.outlined.Done
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -71,17 +76,30 @@ object LibraryScreen : Screen, Parcelable {
                     CategoryWithBooks(
                         category = Category.READING,
                         title = UIText.StringResource(R.string.reading_tab),
-                        books = state.value.books.filter { it.data.category == Category.READING }
+                        books = state.value.books.filter { it.data.category == Category.READING },
+                        emptyIcon = Icons.AutoMirrored.Outlined.MenuBook,
+                        emptyMessage = UIText.StringResource(R.string.library_reading_empty)
                     ),
                     CategoryWithBooks(
                         category = Category.PLANNING,
                         title = UIText.StringResource(R.string.planning_tab),
-                        books = state.value.books.filter { it.data.category == Category.PLANNING }
+                        books = state.value.books.filter { it.data.category == Category.PLANNING },
+                        emptyIcon = Icons.Outlined.Schedule,
+                        emptyMessage = UIText.StringResource(R.string.library_planning_empty)
                     ),
                     CategoryWithBooks(
                         category = Category.ALREADY_READ,
                         title = UIText.StringResource(R.string.already_read_tab),
-                        books = state.value.books.filter { it.data.category == Category.ALREADY_READ }
+                        books = state.value.books.filter { it.data.category == Category.ALREADY_READ },
+                        emptyIcon = Icons.Outlined.Done,
+                        emptyMessage = UIText.StringResource(R.string.library_already_read_empty)
+                    ),
+                    CategoryWithBooks(
+                        category = Category.FAVORITES,
+                        title = UIText.StringResource(R.string.favorites_tab),
+                        books = state.value.books.filter { it.data.category == Category.FAVORITES },
+                        emptyIcon = Icons.Outlined.StarBorder,
+                        emptyMessage = UIText.StringResource(R.string.library_favorites_empty)
                     )
                 )
             }

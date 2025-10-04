@@ -67,6 +67,8 @@ fun LibraryPager(
                 isLoading = isLoading,
                 isRefreshing = isRefreshing,
                 isBooksEmpty = category.value.books.isEmpty(),
+                emptyIcon = category.value.emptyIcon,
+                emptyMessage = category.value.emptyMessage,
                 navigateToBrowse = navigateToBrowse
             )
         }

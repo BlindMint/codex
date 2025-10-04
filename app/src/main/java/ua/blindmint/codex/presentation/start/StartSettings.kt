@@ -8,16 +8,12 @@ package ua.blindmint.codex.presentation.start
 
 import androidx.compose.runtime.Composable
 import ua.blindmint.codex.domain.navigator.StackEvent
-import ua.blindmint.codex.domain.ui.ButtonItem
-import ua.blindmint.codex.ui.main.MainEvent
 import ua.blindmint.codex.ui.start.StartScreen
 
 @Composable
 fun StartSettings(
     currentPage: Int,
     stackEvent: StackEvent,
-    languages: List<ButtonItem>,
-    changeLanguage: (MainEvent.OnChangeLanguage) -> Unit,
     navigateForward: () -> Unit
 ) {
     StartSettingsScaffold(
@@ -26,21 +22,13 @@ fun StartSettings(
     ) {
         StartContentTransition(
             targetValue = when (currentPage) {
-                1 -> StartScreen.GENERAL_SETTINGS
-                2 -> StartScreen.APPEARANCE_SETTINGS
+                1 -> StartScreen.APPEARANCE_SETTINGS
                 else -> StartScreen.SCAN_SETTINGS
             },
             stackEvent = stackEvent
         ) { page ->
             StartSettingsLayout {
                 when (page) {
-                    StartScreen.GENERAL_SETTINGS -> {
-                        StartSettingsLayoutGeneral(
-                            languages = languages,
-                            changeLanguage = changeLanguage
-                        )
-                    }
-
                     StartScreen.APPEARANCE_SETTINGS -> {
                         StartSettingsLayoutAppearance()
                     }

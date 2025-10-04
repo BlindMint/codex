@@ -12,15 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.text.TextStyle
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import ua.blindmint.codex.domain.navigator.Screen
 import ua.blindmint.codex.domain.navigator.StackEvent
-import ua.blindmint.codex.domain.ui.ButtonItem
-import ua.blindmint.codex.presentation.core.constants.provideLanguages
 import ua.blindmint.codex.presentation.core.util.LocalActivity
 import ua.blindmint.codex.presentation.navigator.LocalNavigator
 import ua.blindmint.codex.presentation.start.StartContent
@@ -63,24 +60,11 @@ object StartScreen : Screen, Parcelable {
         val currentPage = remember { mutableIntStateOf(1) }
         val stackEvent = remember { mutableStateOf(StackEvent.Default) }
 
-        val languages = remember(mainState.value.language) {
-            provideLanguages().sortedBy { it.second }.map {
-                ButtonItem(
-                    id = it.first,
-                    title = it.second,
-                    textStyle = TextStyle(),
-                    selected = it.first == mainState.value.language
-                )
-            }.sortedBy { it.title }
-        }
-
         StartContent(
             currentPage = currentPage.intValue,
             stackEvent = stackEvent.value,
-            languages = languages,
-            changeLanguage = mainModel::onEvent,
             navigateForward = {
-                if (currentPage.intValue + 1 == 5) {
+                if (currentPage.intValue >= 3) {
                     return@StartContent
                 }
 

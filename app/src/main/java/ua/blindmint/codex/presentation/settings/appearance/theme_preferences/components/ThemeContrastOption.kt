@@ -23,7 +23,7 @@ import ua.blindmint.codex.domain.ui.isPureDark
 import ua.blindmint.codex.presentation.core.components.settings.SegmentedButtonWithTitle
 import ua.blindmint.codex.ui.main.MainEvent
 import ua.blindmint.codex.ui.main.MainModel
-import ua.blindmint.codex.ui.theme.BookStoryTheme
+import ua.blindmint.codex.ui.theme.CodexTheme
 import ua.blindmint.codex.ui.theme.ExpandingTransition
 
 @Composable
@@ -38,7 +38,7 @@ fun ThemeContrastOption() {
         }
     }
 
-    BookStoryTheme(
+    CodexTheme(
         theme = themeContrastTheme.value,
         isDark = state.value.darkTheme.isDark(),
         isPureDark = state.value.pureDark.isPureDark(context = LocalContext.current),

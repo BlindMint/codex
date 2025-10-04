@@ -231,7 +231,7 @@ private val surfaceContainerHighestDarkHighContrast = Color(0xFF3A3337)
 
 
 @Composable
-fun lavenderTheme(isDark: Boolean, themeContrast: ThemeContrast): ColorScheme {
+fun erisTheme(isDark: Boolean, themeContrast: ThemeContrast): ColorScheme {
     return if (isDark) {
         when (themeContrast) {
             ThemeContrast.STANDARD -> {

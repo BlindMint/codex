@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Codex — free and open-source Material You eBook reader.
+  ~ Copyright (C) 2024-2025 BlindMint
+  ~ SPDX-License-Identifier: GPL-3.0-only
+-->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="24dp"
+    android:viewportWidth="120"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#1C1B1F"
+        android:pathData="M10,8 Q8,8 8,10 L8,14 Q8,16 10,16 Q12,16 12,14 L12,10 Q12,8 10,8 M10,9 Q11,9 11,10 L11,14 Q11,15 10,15 Q9,15 9,14 L9,10 Q9,9 10,9 M20,8 Q18,8 18,10 L18,14 Q18,16 20,16 L22,16 L22,15 L20,15 Q19,15 19,14 L19,10 Q19,9 20,9 L22,9 L22,8 L20,8 M30,8 L30,16 L34,16 Q36,16 36,14 L36,10 Q36,8 34,8 L30,8 M31,9 L34,9 Q35,9 35,10 L35,14 Q35,15 34,15 L31,15 L31,9 M44,8 L44,16 L48,16 L48,15 L45,15 L45,12.5 L47.5,12.5 L47.5,11.5 L45,11.5 L45,9 L48,9 L48,8 L44,8 M56,8 L54,16 L55,16 L55.5,14 L58.5,14 L59,16 L60,16 L58,8 L56,8 M57,9 L58.3,13 L55.7,13 L57,9 Z" />
+</vector>

@@ -19,7 +19,7 @@ import androidx.core.view.WindowCompat
 import ua.blindmint.codex.domain.ui.ThemeContrast
 
 @Composable
-fun BookStoryTheme(
+fun CodexTheme(
     theme: Theme,
     isDark: Boolean,
     isPureDark: Boolean,

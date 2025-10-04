@@ -13,23 +13,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import ua.blindmint.codex.R
 import ua.blindmint.codex.domain.ui.ThemeContrast
-import ua.blindmint.codex.ui.theme.color.aquaTheme
+import ua.blindmint.codex.ui.theme.color.uranusTheme
 import ua.blindmint.codex.ui.theme.color.blackTheme
-import ua.blindmint.codex.ui.theme.color.blueTheme
-import ua.blindmint.codex.ui.theme.color.dynamicTheme
-import ua.blindmint.codex.ui.theme.color.green2Theme
-import ua.blindmint.codex.ui.theme.color.greenGrayTheme
-import ua.blindmint.codex.ui.theme.color.greenTheme
-import ua.blindmint.codex.ui.theme.color.lavenderTheme
-import ua.blindmint.codex.ui.theme.color.marshTheme
-import ua.blindmint.codex.ui.theme.color.pink2Theme
-import ua.blindmint.codex.ui.theme.color.pinkTheme
-import ua.blindmint.codex.ui.theme.color.purpleGrayTheme
-import ua.blindmint.codex.ui.theme.color.purpleTheme
-import ua.blindmint.codex.ui.theme.color.redGrayTheme
-import ua.blindmint.codex.ui.theme.color.redTheme
-import ua.blindmint.codex.ui.theme.color.yellow2Theme
-import ua.blindmint.codex.ui.theme.color.yellowTheme
+import ua.blindmint.codex.ui.theme.color.neptuneTheme
+import ua.blindmint.codex.ui.theme.color.mercuryTheme
+import ua.blindmint.codex.ui.theme.color.ioTheme
+import ua.blindmint.codex.ui.theme.color.enceladusTheme
+import ua.blindmint.codex.ui.theme.color.earthTheme
+import ua.blindmint.codex.ui.theme.color.erisTheme
+import ua.blindmint.codex.ui.theme.color.plutoTheme
+import ua.blindmint.codex.ui.theme.color.ganymedeTheme
+import ua.blindmint.codex.ui.theme.color.saturnTheme
+import ua.blindmint.codex.ui.theme.color.ceresTheme
+import ua.blindmint.codex.ui.theme.color.jupiterTheme
+import ua.blindmint.codex.ui.theme.color.callistoTheme
+import ua.blindmint.codex.ui.theme.color.marsTheme
+import ua.blindmint.codex.ui.theme.color.makemakeTheme
+import ua.blindmint.codex.ui.theme.color.venusTheme
 
 
 @Immutable
@@ -87,83 +87,83 @@ fun colorScheme(
 ): ColorScheme {
     val colorScheme = when (theme) {
         Theme.DYNAMIC -> {
-            /* Dynamic Theme */
-            dynamicTheme(isDark = darkTheme)
+            /* Mercury Theme */
+            mercuryTheme(isDark = darkTheme)
         }
 
         Theme.BLUE -> {
-            /* Blue Theme */
-            blueTheme(isDark = darkTheme, themeContrast = themeContrast)
+            /* Neptune Theme */
+            neptuneTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
         Theme.PURPLE -> {
-            /* Purple Theme */
-            purpleTheme(isDark = darkTheme, themeContrast = themeContrast)
+            /* Jupiter Theme */
+            jupiterTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
         Theme.PURPLE_GRAY -> {
-            /* Purple Gray Theme */
-            purpleGrayTheme(isDark = darkTheme)
+            /* Ceres Theme */
+            ceresTheme(isDark = darkTheme)
         }
 
         Theme.GREEN -> {
-            /* Green Theme */
-            greenTheme(isDark = darkTheme, themeContrast = themeContrast)
+            /* Earth Theme */
+            earthTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
         Theme.GREEN2 -> {
-            /* Green2 Theme */
-            green2Theme(isDark = darkTheme)
+            /* Io Theme */
+            ioTheme(isDark = darkTheme)
         }
 
         Theme.GREEN_GRAY -> {
-            /* Green Gray Theme */
-            greenGrayTheme(isDark = darkTheme)
+            /* Enceladus Theme */
+            enceladusTheme(isDark = darkTheme)
         }
 
         Theme.MARSH -> {
-            /* Marsh Theme */
-            marshTheme(isDark = darkTheme, themeContrast = themeContrast)
+            /* Pluto Theme */
+            plutoTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
         Theme.PINK -> {
-            /* Pink Theme */
-            pinkTheme(isDark = darkTheme, themeContrast = themeContrast)
+            /* Saturn Theme */
+            saturnTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
         Theme.PINK2 -> {
-            /* Pink2 Theme */
-            pink2Theme(isDark = darkTheme)
+            /* Ganymede Theme */
+            ganymedeTheme(isDark = darkTheme)
         }
 
         Theme.LAVENDER -> {
-            /* Lavender Theme */
-            lavenderTheme(isDark = darkTheme, themeContrast = themeContrast)
+            /* Eris Theme */
+            erisTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
         Theme.YELLOW -> {
-            /* Yellow Theme */
-            yellowTheme(isDark = darkTheme, themeContrast = themeContrast)
+            /* Venus Theme */
+            venusTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
         Theme.YELLOW2 -> {
-            /* Yellow2 Theme */
-            yellow2Theme(isDark = darkTheme)
+            /* Makemake Theme */
+            makemakeTheme(isDark = darkTheme)
         }
 
         Theme.RED -> {
-            /* Red Theme */
-            redTheme(isDark = darkTheme, themeContrast = themeContrast)
+            /* Mars Theme */
+            marsTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
         Theme.RED_GRAY -> {
-            /* Red Gray Theme */
-            redGrayTheme(isDark = darkTheme)
+            /* Callisto Theme */
+            callistoTheme(isDark = darkTheme)
         }
 
         Theme.AQUA -> {
-            /* Aqua Theme */
-            aquaTheme(isDark = darkTheme, themeContrast = themeContrast)
+            /* Uranus Theme */
+            uranusTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
     }
 

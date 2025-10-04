@@ -61,6 +61,7 @@ fun BookInfoMoveDialog(
                     Category.READING -> stringResource(id = R.string.reading_tab)
                     Category.ALREADY_READ -> stringResource(id = R.string.already_read_tab)
                     Category.PLANNING -> stringResource(id = R.string.planning_tab)
+                    Category.FAVORITES -> stringResource(id = R.string.favorites_tab)
                 }
 
                 SelectableDialogItem(

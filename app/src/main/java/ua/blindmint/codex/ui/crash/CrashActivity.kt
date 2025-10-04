@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.core.view.WindowCompat
 import ua.blindmint.codex.domain.ui.ThemeContrast
-import ua.blindmint.codex.ui.theme.BookStoryTheme
+import ua.blindmint.codex.ui.theme.CodexTheme
 import ua.blindmint.codex.ui.theme.Theme
 
 class CrashActivity : AppCompatActivity() {
@@ -28,7 +28,7 @@ class CrashActivity : AppCompatActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            BookStoryTheme(
+            CodexTheme(
                 theme = Theme.DYNAMIC,
                 isDark = isSystemInDarkTheme(),
                 isPureDark = false,

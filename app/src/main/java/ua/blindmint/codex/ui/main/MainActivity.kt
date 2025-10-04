@@ -43,7 +43,7 @@ import ua.blindmint.codex.ui.library.LibraryScreen
 import ua.blindmint.codex.ui.settings.SettingsModel
 import ua.blindmint.codex.ui.settings.SettingsScreen
 import ua.blindmint.codex.ui.start.StartScreen
-import ua.blindmint.codex.ui.theme.BookStoryTheme
+import ua.blindmint.codex.ui.theme.CodexTheme
 import ua.blindmint.codex.ui.theme.Transitions
 import java.lang.reflect.Field
 
@@ -131,7 +131,7 @@ class MainActivity : AppCompatActivity() {
                     settingsModel.performInitialColorPresetSelection(isDarkTheme)
                 }
 
-                BookStoryTheme(
+                CodexTheme(
                     theme = state.value.theme,
                     isDark = state.value.darkTheme.isDark(),
                     isPureDark = state.value.pureDark.isPureDark(this),

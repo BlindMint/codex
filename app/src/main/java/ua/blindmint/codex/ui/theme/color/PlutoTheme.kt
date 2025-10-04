@@ -231,7 +231,7 @@ private val surfaceContainerHighestDarkHighContrast = Color(0xFF2F3635)
 
 
 @Composable
-fun marshTheme(isDark: Boolean, themeContrast: ThemeContrast): ColorScheme {
+fun plutoTheme(isDark: Boolean, themeContrast: ThemeContrast): ColorScheme {
     return if (isDark) {
         when (themeContrast) {
             ThemeContrast.STANDARD -> {
