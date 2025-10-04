@@ -1,5 +1,7 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
@@ -21,8 +23,8 @@ android {
         minSdk = 26
         targetSdk = 35
 
-        versionCode = 9
-        versionName = "1.6.0"
+        versionCode = 11
+        versionName = "1.6.2"
 
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -35,6 +37,21 @@ android {
         schemaDirectory("$projectDir/schemas")
     }
 
+    signingConfigs {
+        create("release") {
+            val keystorePropertiesFile = rootProject.file("keystore.properties")
+            if (keystorePropertiesFile.exists()) {
+                val keystoreProperties = Properties()
+                keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+                
+                storeFile = rootProject.file(keystoreProperties["storeFile"].toString())
+                storePassword = keystoreProperties["storePassword"].toString()
+                keyAlias = keystoreProperties["keyAlias"].toString()
+                keyPassword = keystoreProperties["keyPassword"].toString()
+            }
+        }
+    }
+
     buildTypes {
         getByName("debug") {
             applicationIdSuffix = ".debug"
@@ -45,6 +62,7 @@ android {
             isShrinkResources = false
 
             proguardFiles("proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
 
         create("release-debug") {
@@ -80,6 +98,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "/META-INF/gradle/incremental.annotation.processors"
         }
+    }
+
+    buildFeatures {
+        buildConfig = false
     }
 }
 

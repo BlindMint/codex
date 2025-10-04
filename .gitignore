@@ -6,6 +6,7 @@ bin/
 gen/
 .gradle/
 local.properties
+keystore.properties
 proguard/
 *.log
 .navigation/
@@ -57,8 +58,8 @@ app/schemas/
 testdata/
 
 # Fastlane (if contains sensitive info)
-fastlane/metadata/android/en-US/images/
-fastlane/metadata/android/uk/
+# fastlane/metadata/android/en-US/images/
+# fastlane/metadata/android/uk/
 
 # Other
 *.cache
