@@ -51,7 +51,7 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 <div>
 
 [<img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/main/get-it-on-github.png" alt='Get it on GitHub' height="80">](https://github.com/BlindMint/codex/releases/latest)
-[<img src="fastlane/metadata/android/en-US/images/codeberg-badge.png" alt='Get it on Codeberg' height="80">](https://codeberg.org/BlindMint/codex/releases)
+[<img src="https://raw.githubusercontent.com/BlindMint/codex/main/fastlane/metadata/android/en-US/images/codeberg-badge.png" alt='Get it on Codeberg' height="80">](https://codeberg.org/BlindMint/codex/releases)
 </div>
 
 ---
