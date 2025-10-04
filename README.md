@@ -1,17 +1,20 @@
 <!------------ Header ------------>
 
 <div align="center">
-   <h1>Codex</h1>
+    <h1>Codex</h1>
+<br />
 In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.
-<!-- </div> -->
+<br />
+</div>
 
 <!------------ Badges ------------>
 
-<!-- <div align="center"> -->
+<div align="center">
 
 <a href="">[![GitHub](https://img.shields.io/github/release/BlindMint/codex.svg?labelColor=27303D&color=3f719b&label=GitHub&logo=GitHub)](https://github.com/BlindMint/codex/releases)</a>
 <a href="">[![Codeberg](https://img.shields.io/badge/Latest-3f9b9b?label=Codeberg&labelColor=27303D&logo=codeberg)](https://codeberg.org/BlindMint/codex/releases)</a>
 <a href="">[![License: GPL-3.0-only](https://img.shields.io/badge/GPL--3.0--only-9b3f57?label=License&labelColor=27303D)](LICENSE)</a>
+
 </div>
 <!------------ Overview ------------>
 
@@ -19,7 +22,8 @@ In the grim darkness of the far future, knowledge is power, and wisdom is forged
 
 ## Overview
 
-A sleek, customizable **reading app** with modern material design, built with Jetpack Compose.<br />
+A sleek, customizable **reading app** with modern material design, built with Jetpack Compose.
+
 Open source, ad-free, Administratum-approved: eBook & dataslate reader for Android.
 
 
@@ -37,15 +41,20 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 - Browse and scan functionality
 - Storage Access Framework integration
 
-
-
+---
 
 <!------------ Download guide ------------>
 
 ## Downloads
 
+- _Codex only supports **Android 8.0** and above_
+
+<div align="center">
+
 [<img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/main/get-it-on-github.png" alt='Get it on GitHub' height="80">](https://github.com/BlindMint/codex/releases/latest)
 [<img src="https://raw.githubusercontent.com/BlindMint/codex/master/fastlane/metadata/android/en-US/images/codeberg-badge.png" alt='Get it on Codeberg' height="80">](https://codeberg.org/BlindMint/codex/releases)
+
+</div>
 
 
 
@@ -63,13 +72,16 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 - [Material Design Fonts](https://fonts.google.com) (Google Fonts)
 - [GitHub Badge](https://github.com/Kunzisoft/Github-badge) (GitHub)
 - [Codeberg Badge](https://codeberg.org/Codeberg/GetItOnCodeberg) (Codeberg)
+- Also listed in About > Credits
 
 
 
+
+---
 
 ## License
 
-<div>
+<div align="center">
   <pre>
 
 Codex — free and open-source Material You eBook reader.
