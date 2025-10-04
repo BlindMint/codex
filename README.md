@@ -2,12 +2,18 @@
     <h1>Codex</h1>
 </div>
 
+<!-- 
+![GitHub](https://img.shields.io/github/release/BlindMint/codex.svg?label=GitHub&logo=GitHub)
+![Codeberg](https://img.shields.io/badge/v1.6.3?label=Codeberg&labelColor=27303D&logo=codeberg) 
+-->
+
 <p align="center">
     <a href="https://github.com/BlindMint/codex/releases/latest" alt="latest GitHub codex release">
-        <img src="https://img.shields.io/github/release/BlindMint/codex.svg?label=GitHub&logo=GitHub" /></a>
-    <a href="https://codeberg.org/BlindMint/codex/releases/latest" alt="latest GitHub codex release">
-        <img src="https://img.shields.io/badge/v1.6.3?label=Codeberg&labelColor=27303D&logo=codeberg" /></a>
+        <img src="https://img.shields.io/badge/github-v1.6.3-orange?logo=github" /></a>
+    <a href="https://codeberg.org/BlindMint/codex/releases/latest" alt="latest Codeberg codex release">
+        <img src="https://img.shields.io/badge/codeberg-v1.6.3-2185D0?logo=codeberg" /></a>
 </p>
+
 ---
 
 # Overview
