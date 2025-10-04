@@ -44,15 +44,13 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 - [Material Design Fonts](https://fonts.google.com) (Google Fonts)
 - [GitHub Badge](https://github.com/Kunzisoft/Github-badge) (GitHub)
 - [Codeberg Badge](https://codeberg.org/Codeberg/GetItOnCodeberg) (Codeberg)
-- Also listed in About > Credits
+- Also listed in-app under About > Credits
 
 ---
 
 ## License
 
-<div align="center">
-  <pre>
-
+```
 Codex — free and open-source Material You eBook reader.
 Copyright (C) 2025 BlindMint
 
@@ -67,5 +65,4 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
-  </pre>
-</div>
+```
