@@ -31,7 +31,7 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 
 <!------------ Features ------------>
 <div align="center">
-<h2>Features</h2>
+## Features
 </div>
 - Forge your reading experience with Material You design, dynamic theming, and custom color presets
 - Supports multiple eBook formats (PDF, TXT, EPUB, FB2, HTML, HTM, MD)
@@ -45,12 +45,12 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 
 <!------------ Download guide ------------>
 <div align="center">
-<h2>Downloads</h2>
+## Downloads
 </div>
-- _Codex only supports **Android 8.0** and above_
+- _codex only suports **Android 8.0** and above_
+
 
 <div align="center">
-
 [<img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/main/get-it-on-github.png" alt='Get it on GitHub' height="80">](https://github.com/BlindMint/codex/releases/latest)
 [<img src="https://raw.githubusercontent.com/BlindMint/codex/master/fastlane/metadata/android/en-US/images/codeberg-badge.png" alt='Get it on Codeberg' height="80">](https://codeberg.org/BlindMint/codex/releases)
 
@@ -59,7 +59,7 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 
 <!------------ Credits and License ------------>
 <div align="center">
-<h2>Credits</h2>
+## Credits
 </div>
 - [Book's Story](https://github.com/Acclorite/book-story) (GitHub)
 - [Tachiyomi (Mihon)](https://github.com/mihonapp/mihon) (GitHub)
@@ -73,9 +73,9 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 
 ---
 <div align="center">
-<h2>License</h2>
+## License
 </div>
-<div align="center">
+<div>
   <pre>
 
 Codex — free and open-source Material You eBook reader.
