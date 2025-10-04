@@ -14,26 +14,27 @@
 <a href="">[![Codeberg](https://img.shields.io/badge/Latest-3f9b9b?label=Codeberg&labelColor=27303D&logo=codeberg)](https://codeberg.org/BlindMint/codex/releases)</a>
 <a href="">[![License: GPL-3.0-only](https://img.shields.io/badge/GPL--3.0--only-9b3f57?label=License&labelColor=27303D)](LICENSE)</a>
 
+</div>
+
 <!------------ Overview ------------>
 
+<div align="center">
 <h1>Overview</h1>
-
 </div>
 
 A sleek, customizable **reading app** with modern material design, built with Jetpack Compose. 
-Open source, ad-free, Administratum-approved: eBook & dataslate reader for Android.
+Open source, ad-free, Administratum-approved: eBook & dataslate reader for Android 8.0+.
 
 > In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.
 
 ---
 
 <!------------ Features ------------>
-
-## Features
-
-- Material You design with dynamic theming and custom color presets
-- Forge your reading experience with battle-tested customization
-- Support for multiple eBook formats (PDF, TXT, EPUB, FB2, HTML, HTM, MD)
+<div align="center">
+<h2>Features</h2>
+</div>
+- Forge your reading experience with Material You design, dynamic theming, and custom color presets
+- Supports multiple eBook formats (PDF, TXT, EPUB, FB2, HTML, HTM, MD)
 - Organized library with categories and advanced search
 - Highly customizable reader with font, text size, padding, reading speed, and more
 - Progress tracking and bookmarks
@@ -43,23 +44,23 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 ---
 
 <!------------ Download guide ------------>
+<div align="center">
+<h2>Downloads</h2>
+</div>
+- _Codex only supports **Android 8.0** and above_
 
-## Downloads
-
-- _The app supports only Android versions from **Android 8.0** and above_
-
-<div>
+<div align="center">
 
 [<img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/main/get-it-on-github.png" alt='Get it on GitHub' height="80">](https://github.com/BlindMint/codex/releases/latest)
-[<img src="https://raw.githubusercontent.com/BlindMint/codex/main/fastlane/metadata/android/en-US/images/codeberg-badge.png" alt='Get it on Codeberg' height="80">](https://codeberg.org/BlindMint/codex/releases)
-</div>
+[<img src="https://raw.githubusercontent.com/BlindMint/codex/master/fastlane/metadata/android/en-US/images/codeberg-badge.png" alt='Get it on Codeberg' height="80">](https://codeberg.org/BlindMint/codex/releases)
 
+</div>
 ---
 
 <!------------ Credits and License ------------>
-
-## Credits
-
+<div align="center">
+<h2>Credits</h2>
+</div>
 - [Book's Story](https://github.com/Acclorite/book-story) (GitHub)
 - [Tachiyomi (Mihon)](https://github.com/mihonapp/mihon) (GitHub)
 - [Kitsune](https://github.com/Drumber/Kitsune) (GitHub)
@@ -71,10 +72,10 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 - Also listed in About > Credits
 
 ---
-
-## License
-
-<div>
+<div align="center">
+<h2>License</h2>
+</div>
+<div align="center">
   <pre>
 
 Codex — free and open-source Material You eBook reader.
