@@ -31,11 +31,7 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 
 <!------------ Features ------------>
 <div align="center">
-<<<<<<< HEAD
-## Features
-=======
 <h2>Features</h2>
->>>>>>> aaf6962 (Update readme and gradle build file)
 </div>
 - Forge your reading experience with Material You design, dynamic theming, and custom color presets
 - Supports multiple eBook formats (PDF, TXT, EPUB, FB2, HTML, HTM, MD)
@@ -49,37 +45,22 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 
 <!------------ Download guide ------------>
 <div align="center">
-<<<<<<< HEAD
-## Downloads
-</div>
-- _codex only suports **Android 8.0** and above_
-
-=======
 <h2>Downloads</h2>
 </div>
 - _Codex only supports **Android 8.0** and above_
 
 <div align="center">
->>>>>>> aaf6962 (Update readme and gradle build file)
 
 <div align="center">
 [<img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/main/get-it-on-github.png" alt='Get it on GitHub' height="80">](https://github.com/BlindMint/codex/releases/latest)
 [<img src="https://raw.githubusercontent.com/BlindMint/codex/master/fastlane/metadata/android/en-US/images/codeberg-badge.png" alt='Get it on Codeberg' height="80">](https://codeberg.org/BlindMint/codex/releases)
-<<<<<<< HEAD
-</div>
-=======
->>>>>>> aaf6962 (Update readme and gradle build file)
 
 </div>
 ---
 
 <!------------ Credits and License ------------>
 <div align="center">
-<<<<<<< HEAD
-## Credits
-=======
 <h2>Credits</h2>
->>>>>>> aaf6962 (Update readme and gradle build file)
 </div>
 - [Book's Story](https://github.com/Acclorite/book-story) (GitHub)
 - [Tachiyomi (Mihon)](https://github.com/mihonapp/mihon) (GitHub)
@@ -93,15 +74,9 @@ Open source, ad-free, Administratum-approved: eBook & dataslate reader for Andro
 
 ---
 <div align="center">
-<<<<<<< HEAD
-## License
-</div>
-<div>
-=======
 <h2>License</h2>
 </div>
 <div align="center">
->>>>>>> aaf6962 (Update readme and gradle build file)
   <pre>
 
 Codex — free and open-source Material You eBook reader.
