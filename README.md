@@ -28,7 +28,4 @@ Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) rea
 - [Book's Story](https://github.com/Acclorite/book-story) (GitHub)
 - [Tachiyomi (Mihon)](https://github.com/mihonapp/mihon) (GitHub)
 - [Kitsune](https://github.com/Drumber/Kitsune) (GitHub)
-- [Voyager](https://voyager.adriel.cafe/) (Voyager Website)
-- [Material Design Icons](https://fonts.google.com/icons) (Google Fonts)
-- [Material Design Fonts](https://fonts.google.com) (Google Fonts)
-
+- [Voyager](https://voyager.adriel.cafe/) (Voyager Website)  
