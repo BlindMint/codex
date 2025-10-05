@@ -18,9 +18,8 @@ Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) rea
 - Forge your reading experience with modern Material You design, dynamic themes, and custom color presets
 - Supports multiple eBook formats (PDF, TXT, EPUB, FB2, HTML, HTM, MD)
 - Organize your library with categories and advanced search
-- Customizable reader with font, text size, padding, reading speed, and more (yes, add your own custom fonts!)
+- Customize font (yes, even add your own!), text size, padding, reading speed, and more
 - Progress tracking and bookmarks
-- Browse and scan functionality
 - Storage Access Framework integration
 - Built with Jetpack Compose.
 
@@ -32,5 +31,4 @@ Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) rea
 - [Voyager](https://voyager.adriel.cafe/) (Voyager Website)
 - [Material Design Icons](https://fonts.google.com/icons) (Google Fonts)
 - [Material Design Fonts](https://fonts.google.com) (Google Fonts)
-- Also listed in-app under About > Credits
 
