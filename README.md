@@ -1,23 +1,17 @@
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/BlindMint/codex/master/docs/images/codex_splash_dark.png" alt="codex_splash_dark" height="150" />
+  <img src="https://raw.githubusercontent.com/BlindMint/codex/master/docs/images/codex_splash_dark.png" alt="codex_splash_dark" width="210" />
 </div>
 
 # Codex
 
-### Material You eBook Reader for Android
-
-In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.  
-
-
 [![GitHub](https://img.shields.io/badge/github-v1.6.3-orange?logo=github)](https://github.com/BlindMint/codex/releases/latest)
 [![Codeberg](https://img.shields.io/badge/codeberg-v1.6.3-2185D0?logo=codeberg)](https://codeberg.org/BlindMint/codex/releases/latest)  
 
----
+### Material You eBook Reader for Android
 
-# Overview
-
-Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) reader for Android
+In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.  
+Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) reader for Android.  
 
 ## Features
 
