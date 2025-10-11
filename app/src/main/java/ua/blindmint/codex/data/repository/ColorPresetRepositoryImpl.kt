@@ -28,31 +28,20 @@ class ColorPresetRepositoryImpl @Inject constructor(
      * Update color preset.
      */
     override suspend fun updateColorPreset(colorPreset: ColorPreset) {
-        val order = if (colorPreset.id != -1) {
-            val existingOrder = database.getColorPresetOrder(colorPreset.id)
-            if (existingOrder != null) {
-                existingOrder
-            } else {
-                // If preset doesn't exist, find the maximum order and add 1
-                val maxOrder = database.getColorPresets().maxOfOrNull { it.order } ?: -1
-                maxOrder + 1
-            }
+        // Check if this preset already exists in the database
+        val existingOrder = database.getColorPresetOrder(colorPreset.id)
+        
+        val order = if (existingOrder != null) {
+            // Preset exists - preserve its order
+            existingOrder
         } else {
-            // For new presets, find the maximum order and add 1 to ensure uniqueness
+            // New preset - assign it the next available order
             val maxOrder = database.getColorPresets().maxOfOrNull { it.order } ?: -1
             maxOrder + 1
         }
-
+        
         val entity = colorPresetMapper.toColorPresetEntity(colorPreset, order)
-
-        if (colorPreset.id == -1) {
-            // New preset - create a copy with id=0 to trigger auto-generation
-            val newEntity = entity.copy(id = 0)
-            database.insertColorPreset(newEntity)
-        } else {
-            // Existing preset - use upsert
-            database.updateColorPreset(entity)
-        }
+        database.updateColorPreset(entity)
     }
 
     /**

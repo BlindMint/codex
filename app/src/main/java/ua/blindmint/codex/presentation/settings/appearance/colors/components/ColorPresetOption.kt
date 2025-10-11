@@ -7,6 +7,8 @@
 package ua.blindmint.codex.presentation.settings.appearance.colors.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -27,7 +29,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -114,24 +116,38 @@ fun ColorPresetOption(backgroundColor: Color) {
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             contentPadding = PaddingValues(horizontal = 18.dp)
         ) {
-            itemsIndexed(
-                state.value.colorPresets,
-                key = { index, colorPreset -> "${colorPreset.id}_${colorPreset.name}_${index}" }
-            ) { index, colorPreset ->
+            items(
+                items = state.value.colorPresets,
+                key = { colorPreset -> colorPreset.id }
+            ) { colorPreset ->
                 ReorderableItem(
                     state = reorderableListState,
-                    animateItemModifier = Modifier,
-                    key = "${colorPreset.id}_${colorPreset.name}_${index}"
+                    animateItemModifier = Modifier.animateItem(
+                        fadeInSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessLow
+                        ),
+                        fadeOutSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessLow
+                        ),
+                        placementSpec = spring(
+                            dampingRatio = Spring.DampingRatioLowBouncy,
+                            stiffness = Spring.StiffnessMediumLow
+                        )
+                    ),
+                    key = colorPreset.id
                 ) {
                     ColorPresetOptionRowItem(
                         colorPreset = colorPreset,
                         colorPresets = state.value.colorPresets,
                         isSelected = remember(
-                            colorPreset.isSelected,
+                            state.value.selectedColorPreset?.id,
+                            colorPreset.id,
                             state.value.colorPresets.size
                         ) {
                             if (state.value.colorPresets.size > 1) {
-                                colorPreset.isSelected
+                                state.value.selectedColorPreset?.id == colorPreset.id
                             } else true
                         },
                         enableAnimation = state.value.animateColorPreset,
@@ -146,7 +162,7 @@ fun ColorPresetOption(backgroundColor: Color) {
                 }
             }
             item {
-                androidx.compose.material3.IconButton(
+                Box(
                     modifier = Modifier
                         .height(40.dp)
                         .clip(CircleShape)
@@ -156,15 +172,16 @@ fun ColorPresetOption(backgroundColor: Color) {
                             shape = CircleShape
                         )
                         .background(Color.Transparent, CircleShape)
-                        .padding(horizontal = 12.dp),
-                    onClick = {
-                        settingsModel.onEvent(
-                            SettingsEvent.OnAddColorPreset(
-                                backgroundColor = defaultBackgroundColor,
-                                fontColor = defaultFontColor
+                        .clickable {
+                            settingsModel.onEvent(
+                                SettingsEvent.OnAddColorPreset(
+                                    backgroundColor = defaultBackgroundColor,
+                                    fontColor = defaultFontColor
+                                )
                             )
-                        )
-                    }
+                        }
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
@@ -262,13 +279,10 @@ private fun ReorderableCollectionItemScope.ColorPresetOptionRowItem(
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val title = remember(colorPreset, colorPresets) {
-        // Find the index of this preset in the current list
-        val presetIndex = colorPresets.indexOf(colorPreset)
-        val displayNumber = presetIndex + 1 // 1-based numbering
-
+    val title = remember(colorPreset.id, colorPreset.name) {
         if ((colorPreset.name ?: "").isBlank()) {
-            context.getString(R.string.color_preset_query, displayNumber.toString())
+            // Use the preset ID for consistent numbering
+            context.getString(R.string.color_preset_query, colorPreset.id.toString())
         } else {
             colorPreset.name!!
         }

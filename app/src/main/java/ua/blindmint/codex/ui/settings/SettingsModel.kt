@@ -492,55 +492,40 @@ class SettingsModel @Inject constructor(
                     cancelColorPresetJobs()
                     addColorPresetJob = launch {
                         val currentPresets = _state.value.colorPresets
-                        val maxCurrentId = currentPresets.maxOfOrNull { it.id } ?: 0
+                        
+                        // Find the lowest available ID starting from 3 (after Light=1 and Dark=2)
+                        val existingIds = currentPresets.map { it.id }.toSet()
+                        val newId = generateSequence(3) { it + 1 }
+                            .first { it !in existingIds }
 
-                        // Create a new preset with auto-generated ID (let Room handle ID assignment)
+                        // Create a new preset with the calculated ID
                         val newColorPreset = ColorPreset(
-                            id = -1, // Use -1 to indicate new preset, Room will auto-generate the actual ID
-                            name = null, // Will show as "Color Preset X"
+                            id = newId,
+                            name = null, // Will show as "Preset X" based on ID
                             backgroundColor = event.backgroundColor,
                             fontColor = event.fontColor,
-                            isSelected = false // Ensure new preset is not selected by default
+                            isSelected = true // Mark as selected immediately
                         )
 
-                        // Add the new preset to the database (Room will auto-generate the ID)
+                        // Immediately update local state to deselect old preset and add new one
+                        // This prevents the checkmark from briefly appearing on the old preset
+                        val updatedPresets = currentPresets.map { it.copy(isSelected = false) } + newColorPreset
+                        
+                        _state.update {
+                            it.copy(
+                                selectedColorPreset = newColorPreset,
+                                colorPresets = updatedPresets
+                            )
+                        }
+
+                        // Now persist to database
                         updateColorPreset.execute(newColorPreset)
+                        selectColorPreset.execute(newColorPreset)
 
-                        // Small delay to ensure database operation completes
-                        kotlinx.coroutines.delay(50)
-
-                        // Reload presets from database to get the updated list with the new preset
-                        val updatedPresets = getColorPresets.execute()
-
-                        // Find the newly created preset by looking for an ID greater than the max we had before
-                        val actualNewPreset = updatedPresets.firstOrNull { it.id > maxCurrentId }
-
-                        if (actualNewPreset != null) {
-                            // Select the new preset using the actual database version
-                            actualNewPreset.select()
-
-                            // Reload again to ensure we have the latest state after selection
-                            val finalPresets = getColorPresets.execute()
-
-                            _state.update {
-                                it.copy(
-                                    selectedColorPreset = finalPresets.selected(),
-                                    colorPresets = finalPresets
-                                )
-                            }
-
-                            // Scroll to the new preset
-                            val newPresetIndex = finalPresets.indexOf(actualNewPreset)
-                            if (newPresetIndex != -1) {
-                                onEvent(SettingsEvent.OnScrollToColorPreset(newPresetIndex))
-                            }
-                        } else {
-                            // Fallback: just update the state without selecting
-                            _state.update {
-                                it.copy(
-                                    colorPresets = updatedPresets
-                                )
-                            }
+                        // Scroll to the new preset
+                        val newPresetIndex = updatedPresets.indexOfFirst { it.id == newId }
+                        if (newPresetIndex != -1) {
+                            onEvent(SettingsEvent.OnScrollToColorPreset(newPresetIndex))
                         }
                     }
                 }
