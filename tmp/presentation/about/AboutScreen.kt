@@ -1,0 +1,43 @@
+/*
+ * Book's Story — free and open-source Material You eBook reader.
+ * Copyright (C) 2024-2025 Acclorite
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
+
+package ua.acclorite.book_story.presentation.about
+
+import android.os.Parcelable
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.parcelize.Parcelize
+import ua.acclorite.book_story.presentation.navigator.Screen
+import ua.acclorite.book_story.ui.about.AboutContent
+import ua.acclorite.book_story.ui.about.AboutEffects
+import ua.acclorite.book_story.ui.common.components.top_bar.collapsibleTopAppBarScrollBehavior
+
+@Parcelize
+object AboutScreen : Screen, Parcelable {
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    override fun Content() {
+        val screenModel = hiltViewModel<AboutModel>()
+
+        val (scrollBehavior, listState) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior()
+
+        AboutEffects(
+            effects = screenModel.effects
+        )
+
+        AboutContent(
+            scrollBehavior = scrollBehavior,
+            listState = listState,
+            navigateToBrowserPage = screenModel::onEvent,
+            navigateToLicenses = screenModel::onEvent,
+            navigateToCredits = screenModel::onEvent,
+            navigateBack = screenModel::onEvent
+        )
+    }
+}
