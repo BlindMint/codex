@@ -18,19 +18,24 @@ import ua.blindmint.codex.ui.main.MainModel
 import ua.blindmint.codex.ui.theme.ExpandingTransition
 
 @Composable
-fun LibraryGridSizeOption() {
+fun LibraryListSizeOption() {
     val mainModel = hiltViewModel<MainModel>()
     val state = mainModel.state.collectAsStateWithLifecycle()
 
     SliderWithTitle(
-        value = state.value.libraryGridSize to " ${stringResource(R.string.library_grid_size_per_row)}",
-        valuePlaceholder = stringResource(id = R.string.library_grid_size_auto),
-        showPlaceholder = state.value.libraryAutoGridSize,
+        value = state.value.libraryListSize to "",
+        valuePlaceholder = when (state.value.libraryListSize) {
+            0 -> stringResource(R.string.library_list_size_small)
+            1 -> stringResource(R.string.library_list_size_medium)
+            2 -> stringResource(R.string.library_list_size_large)
+            else -> stringResource(R.string.library_list_size_medium)
+        },
+        showPlaceholder = true,
         fromValue = 0,
-        toValue = 8,
-        title = stringResource(id = R.string.library_grid_size_option),
+        toValue = 2,
+        title = stringResource(id = R.string.library_list_size_option),
         onValueChange = { value ->
-            mainModel.onEvent(MainEvent.OnChangeLibraryGridSizeSettings(value))
+            mainModel.onEvent(MainEvent.OnChangeLibraryListSize(value))
         }
     )
 }

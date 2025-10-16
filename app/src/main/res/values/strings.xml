@@ -297,9 +297,19 @@
     <string name="library_grid_size_option">Grid size</string>
     <string name="library_grid_size_per_row">per row</string>
     <string name="library_grid_size_auto">Auto</string>
+    <string name="library_list_size_option">List size</string>
+    <string name="library_list_size_small">Small</string>
+    <string name="library_list_size_medium">Medium</string>
+    <string name="library_list_size_large">Large</string>
     <string name="show_category_tabs_option">Show category tabs</string>
     <string name="always_show_default_tab_option">Always show default tab</string>
     <string name="show_book_count_option">Show book count</string>
+    <string name="library_title_position_option">Title position</string>
+    <string name="library_title_position_below">Below</string>
+    <string name="library_title_position_hidden">Hidden</string>
+    <string name="library_title_position_inside">Inside</string>
+    <string name="library_show_read_button_option">Show read button</string>
+    <string name="library_show_progress_option">Show progress</string>
 
     <!-- Color presets -->
     <string name="red_color">Red</string>

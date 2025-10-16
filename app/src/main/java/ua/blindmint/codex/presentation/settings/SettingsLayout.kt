@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.DisplaySettings
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.ImportExport
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -31,6 +32,7 @@ fun SettingsLayout(
     paddingValues: PaddingValues,
     navigateToAppearanceSettings: () -> Unit,
     navigateToReaderSettings: () -> Unit,
+    navigateToLibrarySettings: () -> Unit,
     navigateToBrowseSettings: () -> Unit,
     navigateToImportExportSettings: () -> Unit,
     navigateToAbout: () -> Unit,
@@ -60,6 +62,16 @@ fun SettingsLayout(
                 description = stringResource(id = R.string.reader_settings_desc)
             ) {
                 navigateToReaderSettings()
+            }
+        }
+
+        item {
+            SettingsLayoutItem(
+                icon = Icons.AutoMirrored.Outlined.LibraryBooks,
+                title = stringResource(id = R.string.library_settings),
+                description = stringResource(id = R.string.library_settings)
+            ) {
+                navigateToLibrarySettings()
             }
         }
 

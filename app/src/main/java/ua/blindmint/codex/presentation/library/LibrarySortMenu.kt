@@ -50,6 +50,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ua.blindmint.codex.R
 import ua.blindmint.codex.domain.library.display.LibraryLayout
+import ua.blindmint.codex.domain.library.display.LibraryTitlePosition
 import ua.blindmint.codex.domain.library.sort.LibrarySortOrder
 import ua.blindmint.codex.domain.ui.ButtonItem
 import ua.blindmint.codex.presentation.core.components.common.IconButton
@@ -185,10 +186,7 @@ private fun LibrarySortTabContent() {
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .clip(MaterialTheme.shapes.medium)
-                    .background(
-                        if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                        else Color.Transparent
-                    )
+                    .background(Color.Transparent)
                     .clickable {
                         mainModel.onEvent(MainEvent.OnChangeLibrarySortOrder(sortOrder.name))
                         if (isSelected) {
@@ -202,6 +200,14 @@ private fun LibrarySortTabContent() {
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                androidx.compose.material3.Icon(
+                    imageVector = if (state.value.librarySortOrderDescending) Icons.Filled.ArrowDownward else Icons.Filled.ArrowUpward,
+                    contentDescription = stringResource(R.string.sort_order_content_desc),
+                    tint = if (isSelected) MaterialTheme.colorScheme.secondary else Color.Transparent
+                )
+
+                Spacer(modifier = Modifier.width(24.dp))
+
                 StyledText(
                     text = when (sortOrder) {
                         LibrarySortOrder.NAME -> stringResource(R.string.library_sort_order_name)
@@ -211,13 +217,6 @@ private fun LibrarySortTabContent() {
                     },
                     modifier = Modifier.weight(1f)
                 )
-
-                if (isSelected) {
-                    androidx.compose.material3.Icon(
-                        imageVector = if (state.value.librarySortOrderDescending) Icons.Filled.ArrowDownward else Icons.Filled.ArrowUpward,
-                        contentDescription = stringResource(R.string.sort_order_content_desc)
-                    )
-                }
             }
         }
     }
@@ -258,25 +257,90 @@ private fun LibraryDisplayTabContent() {
             )
         }
 
-        // Grid Size Slider (only show when Grid layout is selected)
+        // Size Slider (always visible, content changes based on layout)
         item {
-            ExpandingTransition(visible = state.value.libraryLayout == LibraryLayout.GRID) {
+            if (state.value.libraryLayout == LibraryLayout.GRID) {
                 SliderWithTitle(
-                    value = state.value.libraryGridSize
-                            to " ${stringResource(R.string.library_grid_size_per_row)}",
+                    value = state.value.libraryGridSize to " ${stringResource(R.string.library_grid_size_per_row)}",
                     valuePlaceholder = stringResource(id = R.string.library_grid_size_auto),
                     showPlaceholder = state.value.libraryAutoGridSize,
                     fromValue = 0,
                     toValue = 8,
                     title = stringResource(id = R.string.library_grid_size_option),
-                    onValueChange = {
-                        mainModel.onEvent(MainEvent.OnChangeLibraryAutoGridSize(it == 0))
+                    onValueChange = { value ->
+                        mainModel.onEvent(MainEvent.OnChangeLibraryAutoGridSize(value == 0))
                         mainModel.onEvent(
-                            MainEvent.OnChangeLibraryGridSize(it)
+                            MainEvent.OnChangeLibraryGridSize(value)
+                        )
+                    }
+                )
+            } else {
+                SliderWithTitle(
+                    value = state.value.libraryListSize to "",
+                    valuePlaceholder = when (state.value.libraryListSize) {
+                        0 -> stringResource(R.string.library_list_size_small)
+                        1 -> stringResource(R.string.library_list_size_medium)
+                        2 -> stringResource(R.string.library_list_size_large)
+                        else -> stringResource(R.string.library_list_size_medium)
+                    },
+                    showPlaceholder = true,
+                    fromValue = 0,
+                    toValue = 2,
+                    title = stringResource(id = R.string.library_list_size_option),
+                    onValueChange = { value ->
+                        mainModel.onEvent(MainEvent.OnChangeLibraryListSize(value))
+                    }
+                )
+            }
+        }
+
+        // Title Position (only visible in Grid mode)
+        item {
+            ExpandingTransition(visible = state.value.libraryLayout == LibraryLayout.GRID) {
+                SegmentedButtonWithTitle(
+                    title = stringResource(id = R.string.library_title_position_option),
+                    buttons = LibraryTitlePosition.entries.map {
+                        ua.blindmint.codex.domain.ui.ButtonItem(
+                            id = it.name,
+                            title = stringResource(
+                                when (it) {
+                                    LibraryTitlePosition.BELOW -> R.string.library_title_position_below
+                                    LibraryTitlePosition.HIDDEN -> R.string.library_title_position_hidden
+                                }
+                            ),
+                            textStyle = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
+                            selected = state.value.libraryTitlePosition == it
+                        )
+                    },
+                    onClick = {
+                        mainModel.onEvent(
+                            MainEvent.OnChangeLibraryTitlePosition(
+                                LibraryTitlePosition.valueOf(it.id)
+                            )
                         )
                     }
                 )
             }
+        }
+
+        item {
+            SwitchWithTitle(
+                selected = state.value.libraryShowReadButton,
+                title = stringResource(id = R.string.library_show_read_button_option),
+                onClick = {
+                    mainModel.onEvent(MainEvent.OnChangeLibraryShowReadButton(!state.value.libraryShowReadButton))
+                }
+            )
+        }
+
+        item {
+            SwitchWithTitle(
+                selected = state.value.libraryShowProgress,
+                title = stringResource(id = R.string.library_show_progress_option),
+                onClick = {
+                    mainModel.onEvent(MainEvent.OnChangeLibraryShowProgress(!state.value.libraryShowProgress))
+                }
+            )
         }
 
         // Tab Behavior Settings

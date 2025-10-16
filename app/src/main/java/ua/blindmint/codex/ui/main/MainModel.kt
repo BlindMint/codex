@@ -25,6 +25,7 @@ import kotlinx.coroutines.yield
 import ua.blindmint.codex.domain.browse.display.toBrowseLayout
 import ua.blindmint.codex.domain.browse.display.toBrowseSortOrder
 import ua.blindmint.codex.domain.library.display.LibraryLayout
+import ua.blindmint.codex.domain.library.display.toLibraryTitlePosition
 import ua.blindmint.codex.domain.library.sort.toLibrarySortOrder
 import ua.blindmint.codex.domain.reader.CustomFont
 import ua.blindmint.codex.domain.reader.toColorEffects
@@ -223,6 +224,8 @@ class MainModel @Inject constructor(
                     it.copy(browseGridSize = this)
                 }
             )
+
+            is MainEvent.OnChangeBrowseGridSizeSettings -> handleBrowseGridSizeSettingsUpdate(event)
 
             is MainEvent.OnChangeBrowseSortOrder -> handleDatastoreUpdate(
                 key = DataStoreConstants.BROWSE_SORT_ORDER,
@@ -553,6 +556,8 @@ class MainModel @Inject constructor(
                 }
             )
 
+            is MainEvent.OnChangeLibraryGridSizeSettings -> handleLibraryGridSizeSettingsUpdate(event)
+
             is MainEvent.OnChangeLibrarySortOrder -> handleDatastoreUpdate(
                 key = DataStoreConstants.LIBRARY_SORT_ORDER,
                 value = event.value,
@@ -590,6 +595,38 @@ class MainModel @Inject constructor(
                 value = event.value,
                 updateState = {
                     it.copy(libraryShowBookCount = this)
+                }
+            )
+
+            is MainEvent.OnChangeLibraryTitlePosition -> handleDatastoreUpdate(
+                key = DataStoreConstants.LIBRARY_TITLE_POSITION,
+                value = event.value.name,
+                updateState = {
+                    it.copy(libraryTitlePosition = event.value)
+                }
+            )
+
+            is MainEvent.OnChangeLibraryShowReadButton -> handleDatastoreUpdate(
+                key = DataStoreConstants.LIBRARY_SHOW_READ_BUTTON,
+                value = event.value,
+                updateState = {
+                    it.copy(libraryShowReadButton = this)
+                }
+            )
+
+            is MainEvent.OnChangeLibraryShowProgress -> handleDatastoreUpdate(
+                key = DataStoreConstants.LIBRARY_SHOW_PROGRESS,
+                value = event.value,
+                updateState = {
+                    it.copy(libraryShowProgress = this)
+                }
+            )
+
+            is MainEvent.OnChangeLibraryListSize -> handleDatastoreUpdate(
+                key = DataStoreConstants.LIBRARY_LIST_SIZE,
+                value = event.value,
+                updateState = {
+                    it.copy(libraryListSize = this)
                 }
             )
         }
@@ -706,6 +743,26 @@ class MainModel @Inject constructor(
             java.io.File(event.value.filePath).delete()
         } catch (e: Exception) {
             // Ignore cleanup errors
+        }
+    }
+
+    private fun handleLibraryGridSizeSettingsUpdate(event: MainEvent.OnChangeLibraryGridSizeSettings) {
+        viewModelScope.launch(Dispatchers.Main.immediate) {
+            setDatastore.execute(key = DataStoreConstants.LIBRARY_AUTO_GRID_SIZE, value = event.value == 0)
+            setDatastore.execute(key = DataStoreConstants.LIBRARY_GRID_SIZE, value = event.value)
+            updateStateWithSavedHandle {
+                it.copy(libraryAutoGridSize = event.value == 0, libraryGridSize = event.value)
+            }
+        }
+    }
+
+    private fun handleBrowseGridSizeSettingsUpdate(event: MainEvent.OnChangeBrowseGridSizeSettings) {
+        viewModelScope.launch(Dispatchers.Main.immediate) {
+            setDatastore.execute(key = DataStoreConstants.BROWSE_AUTO_GRID_SIZE, value = event.value == 0)
+            setDatastore.execute(key = DataStoreConstants.BROWSE_GRID_SIZE, value = event.value)
+            updateStateWithSavedHandle {
+                it.copy(browseAutoGridSize = event.value == 0, browseGridSize = event.value)
+            }
         }
     }
 

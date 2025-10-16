@@ -81,11 +81,15 @@ object DataStoreConstants {
     val LIBRARY_LAYOUT = stringPreferencesKey("library_layout")
     val LIBRARY_AUTO_GRID_SIZE = booleanPreferencesKey("library_auto_grid_size")
     val LIBRARY_GRID_SIZE = intPreferencesKey("library_grid_size")
+    val LIBRARY_LIST_SIZE = intPreferencesKey("library_list_size")
     val LIBRARY_SORT_ORDER = stringPreferencesKey("library_sort_order")
     val LIBRARY_SORT_ORDER_DESCENDING = booleanPreferencesKey("library_sort_order_descending")
     val LIBRARY_SHOW_CATEGORY_TABS = booleanPreferencesKey("library_show_category_tabs")
     val LIBRARY_ALWAYS_SHOW_DEFAULT_TAB = booleanPreferencesKey("library_always_show_default_tab")
     val LIBRARY_SHOW_BOOK_COUNT = booleanPreferencesKey("library_show_book_count")
+    val LIBRARY_TITLE_POSITION = stringPreferencesKey("library_title_position")
+    val LIBRARY_SHOW_READ_BUTTON = booleanPreferencesKey("library_show_read_button")
+    val LIBRARY_SHOW_PROGRESS = booleanPreferencesKey("library_show_progress")
 
     // Settings
     val AUTO_COLOR_PRESET_SELECTED = booleanPreferencesKey("auto_color_preset_selected")
