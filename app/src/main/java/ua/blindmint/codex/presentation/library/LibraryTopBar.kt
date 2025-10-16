@@ -70,7 +70,7 @@ fun LibraryTopBar(
     showMoveDialog: (LibraryEvent.OnShowMoveDialog) -> Unit,
     showDeleteDialog: (LibraryEvent.OnShowDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
-    sortMenuVisibility: (LibraryEvent.OnShowSortMenu) -> Unit
+    sortMenuVisibility: (LibraryEvent) -> Unit
 ) {
     val animatedItemCountBackgroundColor = animateColorAsState(
         if (hasSelectedItems) MaterialTheme.colorScheme.surfaceContainerHighest
@@ -127,7 +127,7 @@ fun LibraryTopBar(
                     IconButton(
                         icon = Icons.AutoMirrored.Default.Sort,
                         contentDescription = R.string.sort_content_desc,
-                        disableOnClick = true,
+                        disableOnClick = false,
                     ) {
                         sortMenuVisibility(LibraryEvent.OnShowSortMenu)
                     }

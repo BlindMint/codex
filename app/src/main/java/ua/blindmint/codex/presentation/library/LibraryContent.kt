@@ -48,7 +48,7 @@ fun LibraryContent(
     actionDeleteDialog: (LibraryEvent.OnActionDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
     dismissDialog: (LibraryEvent.OnDismissDialog) -> Unit,
-    sortMenuVisibility: (LibraryEvent.OnShowSortMenu) -> Unit,
+    sortMenuVisibility: (LibraryEvent) -> Unit,
     navigateToBrowse: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
     navigateToReader: (id: Int) -> Unit
@@ -101,7 +101,7 @@ fun LibraryContent(
     if (showSortMenu) {
         LibrarySortMenu(
             onDismiss = {
-                sortMenuVisibility(LibraryEvent.OnShowSortMenu)
+                sortMenuVisibility(LibraryEvent.OnDismissSortMenu)
             }
         )
     }
@@ -109,9 +109,11 @@ fun LibraryContent(
     LibraryBackHandler(
         hasSelectedItems = hasSelectedItems,
         showSearch = showSearch,
+        showSortMenu = showSortMenu,
         pagerState = pagerState,
         doublePressExit = doublePressExit,
         clearSelectedBooks = clearSelectedBooks,
         searchVisibility = searchVisibility,
+        sortMenuVisibility = sortMenuVisibility,
     )
 }

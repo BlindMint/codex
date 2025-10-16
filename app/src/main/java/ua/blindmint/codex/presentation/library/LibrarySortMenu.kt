@@ -70,7 +70,7 @@ fun LibrarySortMenu(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
             dismissOnBackPress = true,
-            dismissOnClickOutside = false,
+            dismissOnClickOutside = true,
             usePlatformDefaultWidth = false
         )
     ) {
@@ -90,11 +90,6 @@ fun LibrarySortMenu(
                 Modifier
                     .clip(MaterialTheme.shapes.extraLarge)
                     .background(MaterialTheme.colorScheme.surface)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = {}
-                    )
             ) {
                 LibrarySortMenuContent(
                     onDismiss = onDismiss
@@ -187,7 +182,10 @@ private fun LibrarySortTabContent() {
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .clip(MaterialTheme.shapes.medium)
                     .background(Color.Transparent)
-                    .clickable {
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
                         mainModel.onEvent(MainEvent.OnChangeLibrarySortOrder(sortOrder.name))
                         if (isSelected) {
                             mainModel.onEvent(

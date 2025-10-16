@@ -7,7 +7,7 @@
 package ua.blindmint.codex.domain.library.category
 
 import androidx.compose.runtime.Immutable
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.painter.Painter
 import ua.blindmint.codex.domain.library.book.SelectableBook
 import ua.blindmint.codex.domain.ui.UIText
 
@@ -16,6 +16,6 @@ data class CategoryWithBooks(
     val category: Category,
     val title: UIText,
     val books: List<SelectableBook>,
-    val emptyIcon: ImageVector,
+    val emptyIcon: Painter,
     val emptyMessage: UIText
 )

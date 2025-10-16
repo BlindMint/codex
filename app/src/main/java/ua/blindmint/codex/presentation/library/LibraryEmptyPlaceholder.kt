@@ -13,9 +13,9 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import ua.blindmint.codex.R
 import ua.blindmint.codex.domain.ui.UIText
 import ua.blindmint.codex.presentation.core.components.placeholder.EmptyPlaceholder
@@ -26,7 +26,7 @@ fun BoxScope.LibraryEmptyPlaceholder(
     isLoading: Boolean,
     isRefreshing: Boolean,
     isBooksEmpty: Boolean,
-    emptyIcon: ImageVector,
+    emptyIcon: Painter,
     emptyMessage: UIText,
     navigateToBrowse: () -> Unit
 ) {
@@ -40,7 +40,7 @@ fun BoxScope.LibraryEmptyPlaceholder(
     ) {
         EmptyPlaceholder(
             message = emptyMessage.asString(),
-            icon = rememberVectorPainter(emptyIcon),
+            icon = emptyIcon,
             modifier = Modifier.align(Alignment.Center),
             actionTitle = stringResource(id = R.string.add_book)
         ) {

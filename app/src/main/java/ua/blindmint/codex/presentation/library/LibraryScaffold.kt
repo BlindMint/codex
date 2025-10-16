@@ -47,7 +47,7 @@ fun LibraryScaffold(
     showMoveDialog: (LibraryEvent.OnShowMoveDialog) -> Unit,
     showDeleteDialog: (LibraryEvent.OnShowDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
-    sortMenuVisibility: (LibraryEvent.OnShowSortMenu) -> Unit,
+    sortMenuVisibility: (LibraryEvent) -> Unit,
     navigateToBrowse: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
     navigateToReader: (id: Int) -> Unit,

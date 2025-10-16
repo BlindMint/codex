@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.SentimentVeryDissatisfied
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
@@ -22,6 +23,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.channels.Channel
@@ -112,6 +114,8 @@ object LibraryScreen : Screen, Parcelable {
             }
         }
 
+        val skullPainter = painterResource(id = R.drawable.skull_24)
+
         val categories = remember(sortedBooks) {
             derivedStateOf {
                 listOf(
@@ -119,28 +123,28 @@ object LibraryScreen : Screen, Parcelable {
                         category = Category.READING,
                         title = UIText.StringResource(R.string.reading_tab),
                         books = sortedBooks.filter { it.data.category == Category.READING },
-                        emptyIcon = Icons.AutoMirrored.Outlined.MenuBook,
+                        emptyIcon = skullPainter,
                         emptyMessage = UIText.StringResource(R.string.library_reading_empty)
                     ),
                     CategoryWithBooks(
                         category = Category.PLANNING,
                         title = UIText.StringResource(R.string.planning_tab),
                         books = sortedBooks.filter { it.data.category == Category.PLANNING },
-                        emptyIcon = Icons.Outlined.Schedule,
+                        emptyIcon = skullPainter,
                         emptyMessage = UIText.StringResource(R.string.library_planning_empty)
                     ),
                     CategoryWithBooks(
                         category = Category.ALREADY_READ,
                         title = UIText.StringResource(R.string.already_read_tab),
                         books = sortedBooks.filter { it.data.category == Category.ALREADY_READ },
-                        emptyIcon = Icons.Outlined.Done,
+                        emptyIcon = skullPainter,
                         emptyMessage = UIText.StringResource(R.string.library_already_read_empty)
                     ),
                     CategoryWithBooks(
                         category = Category.FAVORITES,
                         title = UIText.StringResource(R.string.favorites_tab),
                         books = sortedBooks.filter { it.data.category == Category.FAVORITES },
-                        emptyIcon = Icons.Outlined.StarBorder,
+                        emptyIcon = skullPainter,
                         emptyMessage = UIText.StringResource(R.string.library_favorites_empty)
                     )
                 )
