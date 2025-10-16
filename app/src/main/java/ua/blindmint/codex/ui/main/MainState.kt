@@ -17,6 +17,9 @@ import ua.blindmint.codex.domain.browse.display.BrowseLayout
 import ua.blindmint.codex.domain.browse.display.BrowseSortOrder
 import ua.blindmint.codex.domain.browse.display.toBrowseLayout
 import ua.blindmint.codex.domain.browse.display.toBrowseSortOrder
+import ua.blindmint.codex.domain.library.display.LibraryLayout
+import ua.blindmint.codex.domain.library.sort.LibrarySortOrder
+import ua.blindmint.codex.domain.library.sort.toLibrarySortOrder
 import ua.blindmint.codex.domain.reader.CustomFont
 import ua.blindmint.codex.domain.reader.ReaderColorEffects
 import ua.blindmint.codex.domain.reader.ReaderFontThickness
@@ -123,6 +126,16 @@ data class MainState(
     val browseSortOrderDescending: Boolean = provideDefaultValue { true },
     val browseIncludedFilterItems: List<String> = provideDefaultValue { emptyList() },
     val browsePinnedPaths: List<String> = provideDefaultValue { emptyList() },
+
+    // Library Settings
+    val libraryLayout: LibraryLayout = provideDefaultValue { LibraryLayout.LIST },
+    val libraryAutoGridSize: Boolean = provideDefaultValue { true },
+    val libraryGridSize: Int = provideDefaultValue { 0 },
+    val librarySortOrder: LibrarySortOrder = provideDefaultValue { LibrarySortOrder.LAST_READ },
+    val librarySortOrderDescending: Boolean = provideDefaultValue { true },
+    val libraryShowCategoryTabs: Boolean = provideDefaultValue { true },
+    val libraryAlwaysShowDefaultTab: Boolean = provideDefaultValue { false },
+    val libraryShowBookCount: Boolean = provideDefaultValue { true },
 
     // Settings
     val autoColorPresetSelected: Boolean = provideDefaultValue { false },

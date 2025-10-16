@@ -165,6 +165,7 @@
     <string name="reader_settings_desc">Font, text</string>
     <string name="browse_settings">Browse</string>
     <string name="browse_settings_desc">General, filter, sort</string>
+    <string name="library_settings">Library</string>
 
     <!-- Settings subcategories -->
     <string name="font_reader_settings">Font</string>
@@ -184,6 +185,8 @@
     <string name="display_settings">Display</string>
     <string name="filter_browse_settings">Filter</string>
     <string name="sort_browse_settings">Sort</string>
+    <string name="sort_settings">Sort</string>
+    <string name="tabs_settings">Tabs</string>
 
     <!-- Settings notes -->
     <string name="browse_scan_option_note">
@@ -281,6 +284,22 @@
 
     <!-- Browse -->
     <string name="browse_grid_size_option">Grid size</string>
+
+    <!-- Library -->
+    <string name="library_sort_and_display">Sort and Display</string>
+    <string name="sort_order">Sort order</string>
+    <string name="library_sort_order_name">Alphabetically</string>
+    <string name="library_sort_order_last_read">Last read</string>
+    <string name="library_sort_order_progress">Progress</string>
+    <string name="library_sort_order_author">Author</string>
+    <string name="descending">Descending</string>
+    <string name="ascending">Ascending</string>
+    <string name="library_grid_size_option">Grid size</string>
+    <string name="library_grid_size_per_row">per row</string>
+    <string name="library_grid_size_auto">Auto</string>
+    <string name="show_category_tabs_option">Show category tabs</string>
+    <string name="always_show_default_tab_option">Always show default tab</string>
+    <string name="show_book_count_option">Show book count</string>
 
     <!-- Color presets -->
     <string name="red_color">Red</string>
@@ -656,5 +675,6 @@
     <string name="collapse_content_desc">Collapse</string>
     <string name="remove_content_desc">Remove</string>
     <string name="note_content_desc">Note</string>
+    <string name="sort_content_desc">Sort</string>
 
-</resources>
+ </resources>

@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.focus.FocusRequester
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -31,6 +32,7 @@ import kotlinx.parcelize.Parcelize
 import ua.blindmint.codex.R
 import ua.blindmint.codex.domain.library.category.Category
 import ua.blindmint.codex.domain.library.category.CategoryWithBooks
+import ua.blindmint.codex.domain.library.sort.LibrarySortOrder
 import ua.blindmint.codex.domain.navigator.Screen
 import ua.blindmint.codex.domain.ui.UIText
 import ua.blindmint.codex.presentation.library.LibraryContent
@@ -70,34 +72,74 @@ object LibraryScreen : Screen, Parcelable {
         val state = screenModel.state.collectAsStateWithLifecycle()
         val mainState = mainModel.state.collectAsStateWithLifecycle()
 
-        val categories = remember(state.value.books) {
+        val sortedBooks = remember(state.value.books, mainState.value.librarySortOrder, mainState.value.librarySortOrderDescending) {
+            val sortOrder = mainState.value.librarySortOrder
+            val isDescending = mainState.value.librarySortOrderDescending
+
+            if (sortOrder == null) {
+                state.value.books
+            } else {
+                when (sortOrder) {
+                    LibrarySortOrder.NAME -> {
+                        if (isDescending) {
+                            state.value.books.sortedByDescending { it.data.title.toString() }
+                        } else {
+                            state.value.books.sortedBy { it.data.title.toString() }
+                        }
+                    }
+                    LibrarySortOrder.LAST_READ -> {
+                        if (isDescending) {
+                            state.value.books.sortedByDescending { it.data.lastOpened }
+                        } else {
+                            state.value.books.sortedBy { it.data.lastOpened }
+                        }
+                    }
+                    LibrarySortOrder.PROGRESS -> {
+                        if (isDescending) {
+                            state.value.books.sortedByDescending { it.data.progress }
+                        } else {
+                            state.value.books.sortedBy { it.data.progress }
+                        }
+                    }
+                    LibrarySortOrder.AUTHOR -> {
+                        if (isDescending) {
+                            state.value.books.sortedByDescending { it.data.author.toString() }
+                        } else {
+                            state.value.books.sortedBy { it.data.author.toString() }
+                        }
+                    }
+                }
+            }
+        }
+
+        val categories = remember(sortedBooks) {
             derivedStateOf {
                 listOf(
                     CategoryWithBooks(
                         category = Category.READING,
                         title = UIText.StringResource(R.string.reading_tab),
-                        books = state.value.books.filter { it.data.category == Category.READING },
+                        books = sortedBooks.filter { it.data.category == Category.READING },
                         emptyIcon = Icons.AutoMirrored.Outlined.MenuBook,
                         emptyMessage = UIText.StringResource(R.string.library_reading_empty)
                     ),
                     CategoryWithBooks(
                         category = Category.PLANNING,
                         title = UIText.StringResource(R.string.planning_tab),
-                        books = state.value.books.filter { it.data.category == Category.PLANNING },
+                        books = sortedBooks.filter { it.data.category == Category.PLANNING },
                         emptyIcon = Icons.Outlined.Schedule,
                         emptyMessage = UIText.StringResource(R.string.library_planning_empty)
                     ),
                     CategoryWithBooks(
                         category = Category.ALREADY_READ,
                         title = UIText.StringResource(R.string.already_read_tab),
-                        books = state.value.books.filter { it.data.category == Category.ALREADY_READ },
+                        books = sortedBooks.filter { it.data.category == Category.ALREADY_READ },
                         emptyIcon = Icons.Outlined.Done,
                         emptyMessage = UIText.StringResource(R.string.library_already_read_empty)
                     ),
                     CategoryWithBooks(
                         category = Category.FAVORITES,
                         title = UIText.StringResource(R.string.favorites_tab),
-                        books = state.value.books.filter { it.data.category == Category.FAVORITES },
+                        books = sortedBooks.filter { it.data.category == Category.FAVORITES },
                         emptyIcon = Icons.Outlined.StarBorder,
                         emptyMessage = UIText.StringResource(R.string.library_favorites_empty)
                     )
@@ -130,12 +172,13 @@ object LibraryScreen : Screen, Parcelable {
         }
 
         LibraryContent(
-            books = state.value.books,
+            books = sortedBooks,
             selectedItemsCount = state.value.selectedItemsCount,
             hasSelectedItems = state.value.hasSelectedItems,
             showSearch = state.value.showSearch,
             searchQuery = state.value.searchQuery,
             bookCount = state.value.books.count(),
+            showSortMenu = state.value.showSortMenu,
             focusRequester = focusRequester,
             pagerState = pagerState,
             isLoading = state.value.isLoading,
@@ -156,6 +199,7 @@ object LibraryScreen : Screen, Parcelable {
             showDeleteDialog = screenModel::onEvent,
             showClearProgressHistoryDialog = screenModel::onEvent,
             dismissDialog = screenModel::onEvent,
+            sortMenuVisibility = screenModel::onEvent,
             navigateToBrowse = {
                 navigator.push(BrowseScreen)
             },

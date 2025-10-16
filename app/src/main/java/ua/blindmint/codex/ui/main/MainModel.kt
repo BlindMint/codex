@@ -24,6 +24,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import ua.blindmint.codex.domain.browse.display.toBrowseLayout
 import ua.blindmint.codex.domain.browse.display.toBrowseSortOrder
+import ua.blindmint.codex.domain.library.display.LibraryLayout
+import ua.blindmint.codex.domain.library.sort.toLibrarySortOrder
 import ua.blindmint.codex.domain.reader.CustomFont
 import ua.blindmint.codex.domain.reader.toColorEffects
 import ua.blindmint.codex.domain.reader.toFontThickness
@@ -523,6 +525,71 @@ class MainModel @Inject constructor(
                 value = event.value,
                 updateState = {
                     it.copy(horizontalGesturePullAnim = this)
+                }
+            )
+
+            // Library Events
+            is MainEvent.OnChangeLibraryLayout -> handleDatastoreUpdate(
+                key = DataStoreConstants.LIBRARY_LAYOUT,
+                value = event.value.name,
+                updateState = {
+                    it.copy(libraryLayout = LibraryLayout.valueOf(this))
+                }
+            )
+
+            is MainEvent.OnChangeLibraryAutoGridSize -> handleDatastoreUpdate(
+                key = DataStoreConstants.LIBRARY_AUTO_GRID_SIZE,
+                value = event.value,
+                updateState = {
+                    it.copy(libraryAutoGridSize = this)
+                }
+            )
+
+            is MainEvent.OnChangeLibraryGridSize -> handleDatastoreUpdate(
+                key = DataStoreConstants.LIBRARY_GRID_SIZE,
+                value = event.value,
+                updateState = {
+                    it.copy(libraryGridSize = this)
+                }
+            )
+
+            is MainEvent.OnChangeLibrarySortOrder -> handleDatastoreUpdate(
+                key = DataStoreConstants.LIBRARY_SORT_ORDER,
+                value = event.value,
+                updateState = {
+                    it.copy(librarySortOrder = toLibrarySortOrder())
+                }
+            )
+
+            is MainEvent.OnChangeLibrarySortOrderDescending -> handleDatastoreUpdate(
+                key = DataStoreConstants.LIBRARY_SORT_ORDER_DESCENDING,
+                value = event.value,
+                updateState = {
+                    it.copy(librarySortOrderDescending = this)
+                }
+            )
+
+            is MainEvent.OnChangeLibraryShowCategoryTabs -> handleDatastoreUpdate(
+                key = DataStoreConstants.LIBRARY_SHOW_CATEGORY_TABS,
+                value = event.value,
+                updateState = {
+                    it.copy(libraryShowCategoryTabs = this)
+                }
+            )
+
+            is MainEvent.OnChangeLibraryAlwaysShowDefaultTab -> handleDatastoreUpdate(
+                key = DataStoreConstants.LIBRARY_ALWAYS_SHOW_DEFAULT_TAB,
+                value = event.value,
+                updateState = {
+                    it.copy(libraryAlwaysShowDefaultTab = this)
+                }
+            )
+
+            is MainEvent.OnChangeLibraryShowBookCount -> handleDatastoreUpdate(
+                key = DataStoreConstants.LIBRARY_SHOW_BOOK_COUNT,
+                value = event.value,
+                updateState = {
+                    it.copy(libraryShowBookCount = this)
                 }
             )
         }

@@ -8,6 +8,8 @@ package ua.blindmint.codex.ui.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -24,6 +26,7 @@ import kotlinx.coroutines.yield
 import ua.blindmint.codex.R
 import ua.blindmint.codex.domain.library.book.Book
 import ua.blindmint.codex.domain.library.book.SelectableBook
+import ua.blindmint.codex.domain.library.sort.LibrarySortOrder
 import ua.blindmint.codex.domain.use_case.book.DeleteBooks
 import ua.blindmint.codex.domain.use_case.book.DeleteProgressHistoryUseCase
 import ua.blindmint.codex.domain.use_case.book.GetBooks
@@ -326,6 +329,26 @@ class LibraryModel @Inject constructor(
                 }
             }
         }
+
+        is LibraryEvent.OnShowSortMenu -> {
+            viewModelScope.launch {
+                _state.update {
+                    it.copy(
+                        showSortMenu = true
+                    )
+                }
+            }
+        }
+
+        is LibraryEvent.OnDismissSortMenu -> {
+            viewModelScope.launch {
+                _state.update {
+                    it.copy(
+                        showSortMenu = false
+                    )
+                }
+            }
+        }
         }
     }
 
@@ -343,6 +366,23 @@ class LibraryModel @Inject constructor(
                 hasSelectedItems = false,
                 isLoading = false
             )
+        }
+    }
+
+    fun getSortedBooks(books: List<Book>, sortOrder: LibrarySortOrder?, descending: Boolean): List<Book> {
+        if (sortOrder == null) return books
+
+        val comparator = when (sortOrder) {
+            LibrarySortOrder.NAME -> compareBy<Book> { it.title.toString() }
+            LibrarySortOrder.LAST_READ -> compareBy<Book> { it.lastOpened ?: 0L }
+            LibrarySortOrder.PROGRESS -> compareBy<Book> { it.progress }
+            LibrarySortOrder.AUTHOR -> compareBy<Book> { it.author.toString() }
+        }
+
+        return if (descending) {
+            books.sortedWith(comparator.reversed())
+        } else {
+            books.sortedWith(comparator)
         }
     }
 

@@ -77,6 +77,16 @@ object DataStoreConstants {
     val BROWSE_INCLUDED_FILTER_ITEMS = stringSetPreferencesKey("browse_included_filter_items")
     val BROWSE_PINNED_PATHS = stringSetPreferencesKey("browse_pinned_paths")
 
+    // Library settings
+    val LIBRARY_LAYOUT = stringPreferencesKey("library_layout")
+    val LIBRARY_AUTO_GRID_SIZE = booleanPreferencesKey("library_auto_grid_size")
+    val LIBRARY_GRID_SIZE = intPreferencesKey("library_grid_size")
+    val LIBRARY_SORT_ORDER = stringPreferencesKey("library_sort_order")
+    val LIBRARY_SORT_ORDER_DESCENDING = booleanPreferencesKey("library_sort_order_descending")
+    val LIBRARY_SHOW_CATEGORY_TABS = booleanPreferencesKey("library_show_category_tabs")
+    val LIBRARY_ALWAYS_SHOW_DEFAULT_TAB = booleanPreferencesKey("library_always_show_default_tab")
+    val LIBRARY_SHOW_BOOK_COUNT = booleanPreferencesKey("library_show_book_count")
+
     // Settings
     val AUTO_COLOR_PRESET_SELECTED = booleanPreferencesKey("auto_color_preset_selected")
 }

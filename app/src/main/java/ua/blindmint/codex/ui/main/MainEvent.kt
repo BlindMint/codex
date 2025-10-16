@@ -7,6 +7,8 @@
 package ua.blindmint.codex.ui.main
 
 import androidx.compose.runtime.Immutable
+import ua.blindmint.codex.domain.library.display.LibraryLayout
+import ua.blindmint.codex.domain.library.sort.LibrarySortOrder
 import ua.blindmint.codex.domain.reader.CustomFont
 
 @Immutable
@@ -70,4 +72,14 @@ sealed class MainEvent {
     data class OnChangeProgressCount(val value: String) : MainEvent()
     data class OnChangeHorizontalGestureAlphaAnim(val value: Boolean) : MainEvent()
     data class OnChangeHorizontalGesturePullAnim(val value: Boolean) : MainEvent()
+
+    // Library Events
+    data class OnChangeLibraryLayout(val value: LibraryLayout) : MainEvent()
+    data class OnChangeLibraryAutoGridSize(val value: Boolean) : MainEvent()
+    data class OnChangeLibraryGridSize(val value: Int) : MainEvent()
+    data class OnChangeLibrarySortOrder(val value: String) : MainEvent()
+    data class OnChangeLibrarySortOrderDescending(val value: Boolean) : MainEvent()
+    data class OnChangeLibraryShowCategoryTabs(val value: Boolean) : MainEvent()
+    data class OnChangeLibraryAlwaysShowDefaultTab(val value: Boolean) : MainEvent()
+    data class OnChangeLibraryShowBookCount(val value: Boolean) : MainEvent()
 }

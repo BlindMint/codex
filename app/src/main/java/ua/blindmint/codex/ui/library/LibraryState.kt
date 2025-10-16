@@ -24,5 +24,6 @@ data class LibraryState(
     val searchQuery: String = "",
     val hasFocused: Boolean = false,
 
+    val showSortMenu: Boolean = false,
     val dialog: Dialog? = null
 )

@@ -29,6 +29,7 @@ fun LibraryScaffold(
     showSearch: Boolean,
     searchQuery: String,
     bookCount: Int,
+    showSortMenu: Boolean,
     focusRequester: FocusRequester,
     pagerState: PagerState,
     isLoading: Boolean,
@@ -44,6 +45,7 @@ fun LibraryScaffold(
     showMoveDialog: (LibraryEvent.OnShowMoveDialog) -> Unit,
     showDeleteDialog: (LibraryEvent.OnShowDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
+    sortMenuVisibility: (LibraryEvent.OnShowSortMenu) -> Unit,
     navigateToBrowse: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
     navigateToReader: (id: Int) -> Unit,
@@ -60,6 +62,7 @@ fun LibraryScaffold(
                 showSearch = showSearch,
                 searchQuery = searchQuery,
                 bookCount = bookCount,
+                showSortMenu = showSortMenu,
                 focusRequester = focusRequester,
                 pagerState = pagerState,
                 isLoading = isLoading,
@@ -72,7 +75,8 @@ fun LibraryScaffold(
                 clearSelectedBooks = clearSelectedBooks,
                 showMoveDialog = showMoveDialog,
                 showDeleteDialog = showDeleteDialog,
-                showClearProgressHistoryDialog = showClearProgressHistoryDialog
+                showClearProgressHistoryDialog = showClearProgressHistoryDialog,
+                sortMenuVisibility = sortMenuVisibility
             )
         }
     ) { paddingValues ->

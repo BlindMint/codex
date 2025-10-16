@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MoveUp
 import androidx.compose.material.icons.outlined.RestoreFromTrash
@@ -53,6 +54,7 @@ fun LibraryTopBar(
     showSearch: Boolean,
     searchQuery: String,
     bookCount: Int,
+    showSortMenu: Boolean,
     focusRequester: FocusRequester,
     pagerState: PagerState,
     isLoading: Boolean,
@@ -65,7 +67,8 @@ fun LibraryTopBar(
     clearSelectedBooks: (LibraryEvent.OnClearSelectedBooks) -> Unit,
     showMoveDialog: (LibraryEvent.OnShowMoveDialog) -> Unit,
     showDeleteDialog: (LibraryEvent.OnShowDeleteDialog) -> Unit,
-    showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit
+    showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
+    sortMenuVisibility: (LibraryEvent.OnShowSortMenu) -> Unit
 ) {
     val animatedItemCountBackgroundColor = animateColorAsState(
         if (hasSelectedItems) MaterialTheme.colorScheme.surfaceContainerHighest
@@ -112,6 +115,13 @@ fun LibraryTopBar(
                         disableOnClick = true,
                     ) {
                         searchVisibility(LibraryEvent.OnSearchVisibility(true))
+                    }
+                    IconButton(
+                        icon = Icons.AutoMirrored.Default.Sort,
+                        contentDescription = R.string.sort_content_desc,
+                        disableOnClick = true,
+                    ) {
+                        sortMenuVisibility(LibraryEvent.OnShowSortMenu)
                     }
                 }
             ),
