@@ -60,6 +60,8 @@ fun LibraryTopBar(
     isLoading: Boolean,
     isRefreshing: Boolean,
     categories: List<CategoryWithBooks>,
+    libraryShowCategoryTabs: Boolean,
+    libraryShowBookCount: Boolean,
     searchVisibility: (LibraryEvent.OnSearchVisibility) -> Unit,
     requestFocus: (LibraryEvent.OnRequestFocus) -> Unit,
     searchQueryChange: (LibraryEvent.OnSearchQueryChange) -> Unit,
@@ -83,29 +85,35 @@ fun LibraryTopBar(
         shownTopBar = when {
             hasSelectedItems -> 2
             showSearch -> 1
-            else -> 0
+            else -> if (libraryShowCategoryTabs) 0 else 0
         },
         topBars = listOf(
             TopAppBarData(
                 contentID = 0,
                 contentNavigationIcon = {},
                 contentTitle = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        StyledText(text = stringResource(id = R.string.library_screen))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        StyledText(
-                            text = bookCount.toString(),
-                            modifier = Modifier
-                                .background(
-                                    MaterialTheme.colorScheme.surfaceContainer,
-                                    RoundedCornerShape(14.dp)
+                    if (libraryShowCategoryTabs) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            StyledText(text = stringResource(id = R.string.library_screen))
+                            if (libraryShowBookCount) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                                StyledText(
+                                    text = bookCount.toString(),
+                                    modifier = Modifier
+                                        .background(
+                                            MaterialTheme.colorScheme.surfaceContainer,
+                                            RoundedCornerShape(14.dp)
+                                        )
+                                        .padding(horizontal = 8.dp, vertical = 3.dp),
+                                    style = LocalTextStyle.current.copy(
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontSize = 16.sp
+                                    )
                                 )
-                                .padding(horizontal = 8.dp, vertical = 3.dp),
-                            style = LocalTextStyle.current.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 16.sp
-                            )
-                        )
+                            }
+                        }
+                    } else {
+                        StyledText(text = categories.getOrNull(pagerState.currentPage)?.title?.asString() ?: stringResource(id = R.string.library_screen))
                     }
                 },
                 contentActions = {
@@ -205,11 +213,14 @@ fun LibraryTopBar(
             ),
         ),
         customContent = {
-            LibraryTabs(
-                categories = categories,
-                pagerState = pagerState,
-                itemCountBackgroundColor = animatedItemCountBackgroundColor.value
-            )
+            if (libraryShowCategoryTabs) {
+                LibraryTabs(
+                    categories = categories,
+                    pagerState = pagerState,
+                    itemCountBackgroundColor = animatedItemCountBackgroundColor.value,
+                    showBookCount = libraryShowBookCount
+                )
+            }
         }
     )
 }

@@ -38,6 +38,7 @@ fun LibraryTabs(
     categories: List<CategoryWithBooks>,
     pagerState: PagerState,
     itemCountBackgroundColor: Color,
+    showBookCount: Boolean = true,
 ) {
     val scope = rememberCoroutineScope()
 
@@ -87,19 +88,21 @@ fun LibraryTabs(
                                 style = MaterialTheme.typography.bodyLarge,
                                 maxLines = 1,
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            StyledText(
-                                text = tabItem.books.count().toString(),
-                                modifier = Modifier
-                                    .background(
-                                        itemCountBackgroundColor,
-                                        MaterialTheme.shapes.medium
+                            if (showBookCount) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                                StyledText(
+                                    text = tabItem.books.count().toString(),
+                                    modifier = Modifier
+                                        .background(
+                                            itemCountBackgroundColor,
+                                            MaterialTheme.shapes.medium
+                                        )
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                            )
+                            }
                         }
                     }
                 )

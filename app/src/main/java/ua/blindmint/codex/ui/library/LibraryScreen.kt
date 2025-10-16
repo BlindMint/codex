@@ -76,7 +76,7 @@ object LibraryScreen : Screen, Parcelable {
             val sortOrder = mainState.value.librarySortOrder
             val isDescending = mainState.value.librarySortOrderDescending
 
-            if (sortOrder == null) {
+            if (sortOrder == null || sortOrder == LibrarySortOrder.LAST_READ) {
                 state.value.books
             } else {
                 when (sortOrder) {
@@ -187,6 +187,8 @@ object LibraryScreen : Screen, Parcelable {
             categories = categories.value,
             refreshState = refreshState,
             dialog = state.value.dialog,
+            libraryShowCategoryTabs = mainState.value.libraryShowCategoryTabs,
+            libraryShowBookCount = mainState.value.libraryShowBookCount,
             selectBook = screenModel::onEvent,
             searchVisibility = screenModel::onEvent,
             requestFocus = screenModel::onEvent,

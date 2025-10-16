@@ -128,7 +128,7 @@ data class MainState(
     val browsePinnedPaths: List<String> = provideDefaultValue { emptyList() },
 
     // Library Settings
-    val libraryLayout: LibraryLayout = provideDefaultValue { LibraryLayout.LIST },
+    val libraryLayout: LibraryLayout = provideDefaultValue { LibraryLayout.GRID },
     val libraryAutoGridSize: Boolean = provideDefaultValue { true },
     val libraryGridSize: Int = provideDefaultValue { 0 },
     val librarySortOrder: LibrarySortOrder = provideDefaultValue { LibrarySortOrder.LAST_READ },

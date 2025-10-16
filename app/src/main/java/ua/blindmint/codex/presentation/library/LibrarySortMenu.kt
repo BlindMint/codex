@@ -10,6 +10,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -68,7 +69,7 @@ fun LibrarySortMenu(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
             dismissOnBackPress = true,
-            dismissOnClickOutside = true,
+            dismissOnClickOutside = false,
             usePlatformDefaultWidth = false
         )
     ) {
@@ -76,13 +77,23 @@ fun LibrarySortMenu(
             Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.3f))
-                .padding(16.dp),
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onDismiss
+                )
+                .padding(horizontal = 8.dp, vertical = 16.dp),
             contentAlignment = Alignment.BottomCenter
         ) {
             Box(
                 Modifier
                     .clip(MaterialTheme.shapes.extraLarge)
                     .background(MaterialTheme.colorScheme.surface)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {}
+                    )
             ) {
                 LibrarySortMenuContent(
                     onDismiss = onDismiss
@@ -149,7 +160,7 @@ private fun LibrarySortMenuContent(
         Column(
             Modifier
                 .fillMaxWidth()
-                .height(280.dp)
+                .height(400.dp)
         ) {
             when (selectedTabIndex) {
                 0 -> LibrarySortTabContent()
@@ -165,15 +176,6 @@ private fun LibrarySortTabContent() {
     val state = mainModel.state.collectAsStateWithLifecycle()
 
     LazyColumn {
-        // Sort Order Selection
-        item {
-            StyledText(
-                text = stringResource(R.string.sort_order),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-        }
-
         items(LibrarySortOrder.entries.size) { index ->
             val sortOrder = LibrarySortOrder.entries[index]
             val isSelected = state.value.librarySortOrder == sortOrder
@@ -216,26 +218,6 @@ private fun LibrarySortTabContent() {
                         contentDescription = stringResource(R.string.sort_order_content_desc)
                     )
                 }
-            }
-        }
-
-        // Sort Direction for selected option
-        item {
-            Spacer(Modifier.height(8.dp))
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = if (state.value.librarySortOrderDescending)
-                        stringResource(R.string.descending)
-                    else stringResource(R.string.ascending),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
         }
     }
@@ -317,15 +299,6 @@ private fun LibraryDisplayTabContent() {
             )
         }
 
-        item {
-            SwitchWithTitle(
-                selected = state.value.libraryAlwaysShowDefaultTab,
-                title = stringResource(id = R.string.always_show_default_tab_option),
-                onClick = {
-                    mainModel.onEvent(MainEvent.OnChangeLibraryAlwaysShowDefaultTab(!state.value.libraryAlwaysShowDefaultTab))
-                }
-            )
-        }
 
         item {
             SwitchWithTitle(
