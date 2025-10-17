@@ -53,7 +53,8 @@ create_release:
     - glab release create --tag "$CI_COMMIT_TAG" --title "Release $CI_COMMIT_TAG" --description-file release_notes.md --draft false --prerelease false
     - glab release upload "$CI_COMMIT_TAG" app/build/outputs/apk/release/app-release.apk --name "app-release.apk"
     - glab release upload "$CI_COMMIT_TAG" app/build/outputs/apk/release/app-release.sha256 --name "app-release.sha256"
-    - echo "Release created at: https://gitlab.com/BlindMint/codex/-/releases/$CI_COMMIT_TAG"
+    - >
+      echo "Release created at: https://gitlab.com/BlindMint/codex/-/releases/$CI_COMMIT_TAG"
     - rm -f release_notes.md
   after_script:
     - echo "Pipeline complete."
