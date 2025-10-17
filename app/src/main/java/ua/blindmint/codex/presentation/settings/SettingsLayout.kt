@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ua.blindmint.codex.R
@@ -107,7 +108,7 @@ fun SettingsLayout(
 
         item {
             SettingsLayoutItem(
-                icon = Icons.Outlined.Info,
+                icon = painterResource(id = R.drawable.bottle_tonic_skull_outline),
                 title = stringResource(id = R.string.about_screen),
                 description = stringResource(id = R.string.about_screen)
             ) {
