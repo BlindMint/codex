@@ -286,7 +286,7 @@
     <string name="browse_grid_size_option">Grid size</string>
 
     <!-- Library -->
-    <string name="library_sort_and_display">Sort and Display</string>
+    <string name="library_sort_and_display">Sort &amp; Display</string>
     <string name="sort_order">Sort order</string>
     <string name="library_sort_order_name">Alphabetically</string>
     <string name="library_sort_order_last_read">Last read</string>
