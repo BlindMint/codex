@@ -23,7 +23,7 @@ Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) rea
 - Customize font (yes, even add your own!), text size, padding, reading speed, and more
 - Progress tracking and bookmarks
 - Storage Access Framework integration
-- Built with Jetpack Compose.
+- Built with Jetpack Compose
 
 ## Credits
 
