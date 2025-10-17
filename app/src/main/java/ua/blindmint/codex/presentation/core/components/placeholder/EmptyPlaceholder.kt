@@ -21,7 +21,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.SentimentVeryDissatisfied
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ua.blindmint.codex.presentation.core.components.common.StyledText
@@ -55,7 +59,7 @@ fun EmptyPlaceholder(
         Icon(
             painter = icon,
             contentDescription = message,
-            modifier = Modifier.size(150.dp),
+            modifier = Modifier.size(100.dp),
             tint = MaterialTheme.colorScheme.secondary
         )
         Spacer(modifier = Modifier.height(4.dp))

@@ -68,7 +68,7 @@ fun ReaderErrorPlaceholder(
         ) {
             ErrorPlaceholder(
                 errorMessage = errorMessage.asString(),
-                icon = painterResource(id = R.drawable.error),
+                icon = painterResource(id = R.drawable.skull_outline),
                 actionTitle = stringResource(id = R.string.change_path),
                 action = {
                     leave(

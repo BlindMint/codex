@@ -22,10 +22,12 @@ import ua.blindmint.codex.ui.library.LibraryEvent
 fun LibraryBackHandler(
     hasSelectedItems: Boolean,
     showSearch: Boolean,
+    showSortMenu: Boolean,
     pagerState: PagerState,
     doublePressExit: Boolean,
     clearSelectedBooks: (LibraryEvent.OnClearSelectedBooks) -> Unit,
-    searchVisibility: (LibraryEvent.OnSearchVisibility) -> Unit
+    searchVisibility: (LibraryEvent.OnSearchVisibility) -> Unit,
+    sortMenuVisibility: (LibraryEvent) -> Unit
 ) {
     val activity = LocalActivity.current
     val scope = rememberCoroutineScope()
@@ -34,6 +36,11 @@ fun LibraryBackHandler(
     BackHandler {
         if (hasSelectedItems) {
             clearSelectedBooks(LibraryEvent.OnClearSelectedBooks)
+            return@BackHandler
+        }
+
+        if (showSortMenu) {
+            sortMenuVisibility(LibraryEvent.OnDismissSortMenu)
             return@BackHandler
         }
 

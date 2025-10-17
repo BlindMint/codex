@@ -25,6 +25,7 @@ fun LibraryContent(
     showSearch: Boolean,
     searchQuery: String,
     bookCount: Int,
+    showSortMenu: Boolean,
     focusRequester: FocusRequester,
     pagerState: PagerState,
     isLoading: Boolean,
@@ -33,6 +34,8 @@ fun LibraryContent(
     categories: List<CategoryWithBooks>,
     refreshState: PullRefreshState,
     dialog: Dialog?,
+    libraryShowCategoryTabs: Boolean,
+    libraryShowBookCount: Boolean,
     selectBook: (LibraryEvent.OnSelectBook) -> Unit,
     searchVisibility: (LibraryEvent.OnSearchVisibility) -> Unit,
     requestFocus: (LibraryEvent.OnRequestFocus) -> Unit,
@@ -45,6 +48,7 @@ fun LibraryContent(
     actionDeleteDialog: (LibraryEvent.OnActionDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
     dismissDialog: (LibraryEvent.OnDismissDialog) -> Unit,
+    sortMenuVisibility: (LibraryEvent) -> Unit,
     navigateToBrowse: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
     navigateToReader: (id: Int) -> Unit
@@ -70,11 +74,14 @@ fun LibraryContent(
         showSearch = showSearch,
         searchQuery = searchQuery,
         bookCount = bookCount,
+        showSortMenu = showSortMenu,
         focusRequester = focusRequester,
         pagerState = pagerState,
         isLoading = isLoading,
         isRefreshing = isRefreshing,
         categories = categories,
+        libraryShowCategoryTabs = libraryShowCategoryTabs,
+        libraryShowBookCount = libraryShowBookCount,
         searchVisibility = searchVisibility,
         requestFocus = requestFocus,
         searchQueryChange = searchQueryChange,
@@ -84,18 +91,29 @@ fun LibraryContent(
         showMoveDialog = showMoveDialog,
         showDeleteDialog = showDeleteDialog,
         showClearProgressHistoryDialog = showClearProgressHistoryDialog,
+        sortMenuVisibility = sortMenuVisibility,
         refreshState = refreshState,
         navigateToBrowse = navigateToBrowse,
         navigateToBookInfo = navigateToBookInfo,
         navigateToReader = navigateToReader
     )
 
+    if (showSortMenu) {
+        LibrarySortMenu(
+            onDismiss = {
+                sortMenuVisibility(LibraryEvent.OnDismissSortMenu)
+            }
+        )
+    }
+
     LibraryBackHandler(
         hasSelectedItems = hasSelectedItems,
         showSearch = showSearch,
+        showSortMenu = showSortMenu,
         pagerState = pagerState,
         doublePressExit = doublePressExit,
         clearSelectedBooks = clearSelectedBooks,
         searchVisibility = searchVisibility,
+        sortMenuVisibility = sortMenuVisibility,
     )
 }

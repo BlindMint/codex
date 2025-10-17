@@ -12,6 +12,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +47,13 @@ fun IconButton(
     onClick: () -> Unit
 ) {
     var isClicked by remember { mutableStateOf(false) }
+    
+    LaunchedEffect(enabled) {
+        if (!enabled) {
+            isClicked = false
+        }
+    }
+    
     Tooltip(text = stringResource(id = contentDescription), enabled = enabled) {
         IconButton(
             enabled = enabled && !isClicked,
@@ -92,6 +100,13 @@ fun IconButton(
     onClick: () -> Unit
 ) {
     var isClicked by remember { mutableStateOf(false) }
+    
+    LaunchedEffect(enabled) {
+        if (!enabled) {
+            isClicked = false
+        }
+    }
+    
     Tooltip(text = stringResource(id = contentDescription)) {
         IconButton(
             enabled = enabled && !isClicked,

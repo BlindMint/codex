@@ -7,7 +7,9 @@
 package ua.blindmint.codex.presentation.library
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -15,8 +17,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ua.blindmint.codex.domain.library.category.CategoryWithBooks
+import ua.blindmint.codex.domain.library.display.LibraryLayout
 import ua.blindmint.codex.ui.library.LibraryEvent
+import ua.blindmint.codex.ui.main.MainModel
 import ua.blindmint.codex.ui.theme.DefaultTransition
 
 @Composable
@@ -40,25 +47,68 @@ fun LibraryPager(
 
         Box(modifier = Modifier.fillMaxSize()) {
             DefaultTransition(visible = !isLoading) {
-                LibraryLayout {
-                    items(
-                        category.value.books,
-                        key = { it.data.id }
-                    ) { book ->
-                        LibraryItem(
-                            book = book,
-                            hasSelectedItems = hasSelectedItems,
-                            selectBook = { select ->
-                                selectBook(
-                                    LibraryEvent.OnSelectBook(
-                                        id = book.data.id,
-                                        select = select
+                val mainModel = hiltViewModel<MainModel>()
+                val mainState = mainModel.state.collectAsStateWithLifecycle()
+
+                if (mainState.value.libraryLayout == LibraryLayout.GRID) {
+                    LibraryLayout(
+                        books = category.value.books,
+                        hasSelectedItems = hasSelectedItems,
+                        selectBook = selectBook,
+                        navigateToBrowse = navigateToBrowse,
+                        navigateToBookInfo = navigateToBookInfo,
+                        navigateToReader = navigateToReader
+                    ) {
+                        items(
+                            category.value.books.size,
+                            key = { index -> category.value.books[index].data.id }
+                        ) { index ->
+                            val book = category.value.books[index]
+                            LibraryItem(
+                                book = book,
+                                hasSelectedItems = hasSelectedItems,
+                                selectBook = { select ->
+                                    selectBook(
+                                        LibraryEvent.OnSelectBook(
+                                            id = book.data.id,
+                                            select = select
+                                        )
                                     )
-                                )
-                            },
-                            navigateToBookInfo = { navigateToBookInfo(book.data.id) },
-                            navigateToReader = { navigateToReader(book.data.id) },
-                        )
+                                },
+                                navigateToBookInfo = { navigateToBookInfo(book.data.id) },
+                                navigateToReader = { navigateToReader(book.data.id) },
+                                modifier = Modifier.animateItem()
+                            )
+                        }
+                    }
+                } else {
+                    // List layout - use LazyColumn directly
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(8.dp)
+                    ) {
+                        items(
+                            category.value.books.size,
+                            key = { index -> category.value.books[index].data.id }
+                        ) { index ->
+                            val book = category.value.books[index]
+                            LibraryListItem(
+                                book = book,
+                                hasSelectedItems = hasSelectedItems,
+                                selectBook = { select ->
+                                    selectBook(
+                                        LibraryEvent.OnSelectBook(
+                                            id = book.data.id,
+                                            select = select
+                                        )
+                                    )
+                                },
+                                navigateToBookInfo = { navigateToBookInfo(book.data.id) },
+                                navigateToReader = { navigateToReader(book.data.id) },
+                                modifier = Modifier.animateItem(),
+                                listSize = mainState.value.libraryListSize
+                            )
+                        }
                     }
                 }
             }

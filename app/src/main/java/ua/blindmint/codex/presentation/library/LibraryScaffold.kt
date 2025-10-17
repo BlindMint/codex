@@ -29,12 +29,15 @@ fun LibraryScaffold(
     showSearch: Boolean,
     searchQuery: String,
     bookCount: Int,
+    showSortMenu: Boolean,
     focusRequester: FocusRequester,
     pagerState: PagerState,
     isLoading: Boolean,
     isRefreshing: Boolean,
     refreshState: PullRefreshState,
     categories: List<CategoryWithBooks>,
+    libraryShowCategoryTabs: Boolean,
+    libraryShowBookCount: Boolean,
     searchVisibility: (LibraryEvent.OnSearchVisibility) -> Unit,
     selectBook: (LibraryEvent.OnSelectBook) -> Unit,
     requestFocus: (LibraryEvent.OnRequestFocus) -> Unit,
@@ -44,6 +47,7 @@ fun LibraryScaffold(
     showMoveDialog: (LibraryEvent.OnShowMoveDialog) -> Unit,
     showDeleteDialog: (LibraryEvent.OnShowDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
+    sortMenuVisibility: (LibraryEvent) -> Unit,
     navigateToBrowse: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
     navigateToReader: (id: Int) -> Unit,
@@ -60,11 +64,14 @@ fun LibraryScaffold(
                 showSearch = showSearch,
                 searchQuery = searchQuery,
                 bookCount = bookCount,
+                showSortMenu = showSortMenu,
                 focusRequester = focusRequester,
                 pagerState = pagerState,
                 isLoading = isLoading,
                 isRefreshing = isRefreshing,
                 categories = categories,
+                libraryShowCategoryTabs = libraryShowCategoryTabs,
+                libraryShowBookCount = libraryShowBookCount,
                 searchVisibility = searchVisibility,
                 requestFocus = requestFocus,
                 searchQueryChange = searchQueryChange,
@@ -72,7 +79,8 @@ fun LibraryScaffold(
                 clearSelectedBooks = clearSelectedBooks,
                 showMoveDialog = showMoveDialog,
                 showDeleteDialog = showDeleteDialog,
-                showClearProgressHistoryDialog = showClearProgressHistoryDialog
+                showClearProgressHistoryDialog = showClearProgressHistoryDialog,
+                sortMenuVisibility = sortMenuVisibility
             )
         }
     ) { paddingValues ->
