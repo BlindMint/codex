@@ -6,14 +6,20 @@
 
 package ua.blindmint.codex.presentation.about
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import ua.blindmint.codex.R
 import ua.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
@@ -47,6 +53,22 @@ fun AboutLayout(
             .padding(top = paddingValues.calculateTopPadding()),
         state = listState
     ) {
+        item {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(
+                        id = if (isSystemInDarkTheme()) R.drawable.codex_splash_dark_icon_transparent
+                        else R.drawable.codex_splash_light_icon_transparent
+                    ),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxWidth(0.5f)
+                )
+            }
+        }
+
         item {
             AboutItem(
                 title = stringResource(id = R.string.app_version_option),
