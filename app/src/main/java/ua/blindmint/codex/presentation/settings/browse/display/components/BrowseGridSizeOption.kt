@@ -29,13 +29,10 @@ fun BrowseGridSizeOption() {
             valuePlaceholder = stringResource(id = R.string.browse_grid_size_auto),
             showPlaceholder = state.value.browseAutoGridSize,
             fromValue = 0,
-            toValue = 10,
+            toValue = 8,
             title = stringResource(id = R.string.browse_grid_size_option),
             onValueChange = {
-                mainModel.onEvent(MainEvent.OnChangeBrowseAutoGridSize(it == 0))
-                mainModel.onEvent(
-                    MainEvent.OnChangeBrowseGridSize(it)
-                )
+                mainModel.onEvent(MainEvent.OnChangeBrowseGridSizeSettings(it))
             }
         )
     }

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
@@ -31,11 +32,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ua.blindmint.codex.R
 import ua.blindmint.codex.domain.library.book.SelectableBook
 import ua.blindmint.codex.presentation.core.components.common.AsyncCoverImage
@@ -43,12 +49,13 @@ import ua.blindmint.codex.presentation.core.components.common.StyledText
 import ua.blindmint.codex.presentation.core.util.calculateProgress
 
 @Composable
-fun LazyGridItemScope.LibraryItem(
+fun LibraryItem(
     book: SelectableBook,
     hasSelectedItems: Boolean,
     selectBook: (select: Boolean?) -> Unit,
     navigateToBookInfo: () -> Unit,
-    navigateToReader: () -> Unit
+    navigateToReader: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val backgroundColor = if (book.selected) MaterialTheme.colorScheme.secondary
     else Color.Transparent
@@ -59,10 +66,12 @@ fun LazyGridItemScope.LibraryItem(
         "${book.data.progress.calculateProgress(1)}%"
     }
 
+    // Get main state for settings
+    val mainModel = androidx.hilt.navigation.compose.hiltViewModel<ua.blindmint.codex.ui.main.MainModel>()
+    val mainState = mainModel.state.collectAsStateWithLifecycle()
 
     Column(
-        Modifier
-            .animateItem()
+        modifier
             .padding(3.dp)
             .background(
                 backgroundColor,
@@ -111,54 +120,67 @@ fun LazyGridItemScope.LibraryItem(
                 )
             }
 
-            Row(
-                modifier = Modifier
-                    .padding(6.dp)
-                    .clip(MaterialTheme.shapes.small)
-                    .background(MaterialTheme.colorScheme.secondary, MaterialTheme.shapes.small)
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                StyledText(
-                    text = progress,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSecondary,
+            if (mainState.value.libraryShowProgress) {
+                Row(
+                    modifier = Modifier
+                        .padding(6.dp)
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.secondary, MaterialTheme.shapes.small)
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    StyledText(
+                        text = progress,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSecondary,
+                        )
                     )
-                )
+                }
             }
 
-            FilledIconButton(
-                onClick = { navigateToReader() },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(6.dp)
-                    .size(32.dp),
-                shape = MaterialTheme.shapes.medium,
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.PlayArrow,
-                    contentDescription = stringResource(id = R.string.continue_reading_content_desc),
-                    Modifier.size(20.dp)
-                )
+            if (mainState.value.libraryShowReadButton) {
+                FilledIconButton(
+                    onClick = { navigateToReader() },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(6.dp)
+                        .size(32.dp),
+                    shape = MaterialTheme.shapes.medium,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.PlayArrow,
+                        contentDescription = stringResource(id = R.string.continue_reading_content_desc),
+                        Modifier.size(20.dp)
+                    )
+                }
             }
         }
-        Spacer(modifier = Modifier.height(6.dp))
-        StyledText(
-            text = book.data.title,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp),
-            style = MaterialTheme.typography.bodyMedium.copy(
-                color = fontColor
-            ),
-            minLines = 2,
-            maxLines = 2
-        )
+        // Title display based on title position setting
+
+        when (mainState.value.libraryTitlePosition) {
+            ua.blindmint.codex.domain.library.display.LibraryTitlePosition.BELOW -> {
+                Spacer(modifier = Modifier.height(6.dp))
+                StyledText(
+                    text = book.data.title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = fontColor
+                    ),
+                    minLines = 2,
+                    maxLines = 2
+                )
+            }
+            ua.blindmint.codex.domain.library.display.LibraryTitlePosition.HIDDEN -> {
+                // No title displayed, no space taken
+            }
+        }
     }
 }

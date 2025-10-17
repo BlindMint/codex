@@ -36,7 +36,7 @@ fun BoxScope.HistoryEmptyPlaceholder(
         EmptyPlaceholder(
             modifier = Modifier.align(Alignment.Center),
             message = stringResource(id = R.string.history_empty),
-            icon = painterResource(id = R.drawable.empty_history)
+            icon = painterResource(id = R.drawable.timer_sand)
         )
     }
 }

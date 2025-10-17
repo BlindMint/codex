@@ -17,6 +17,11 @@ import ua.blindmint.codex.domain.browse.display.BrowseLayout
 import ua.blindmint.codex.domain.browse.display.BrowseSortOrder
 import ua.blindmint.codex.domain.browse.display.toBrowseLayout
 import ua.blindmint.codex.domain.browse.display.toBrowseSortOrder
+import ua.blindmint.codex.domain.library.display.LibraryLayout
+import ua.blindmint.codex.domain.library.display.LibraryTitlePosition
+import ua.blindmint.codex.domain.library.display.toLibraryTitlePosition
+import ua.blindmint.codex.domain.library.sort.LibrarySortOrder
+import ua.blindmint.codex.domain.library.sort.toLibrarySortOrder
 import ua.blindmint.codex.domain.reader.CustomFont
 import ua.blindmint.codex.domain.reader.ReaderColorEffects
 import ua.blindmint.codex.domain.reader.ReaderFontThickness
@@ -123,6 +128,20 @@ data class MainState(
     val browseSortOrderDescending: Boolean = provideDefaultValue { true },
     val browseIncludedFilterItems: List<String> = provideDefaultValue { emptyList() },
     val browsePinnedPaths: List<String> = provideDefaultValue { emptyList() },
+
+    // Library Settings
+    val libraryLayout: LibraryLayout = provideDefaultValue { LibraryLayout.GRID },
+    val libraryAutoGridSize: Boolean = provideDefaultValue { true },
+    val libraryGridSize: Int = provideDefaultValue { 0 },
+    val libraryListSize: Int = provideDefaultValue { 1 }, // 0=Small, 1=Medium, 2=Large
+    val librarySortOrder: LibrarySortOrder = provideDefaultValue { LibrarySortOrder.LAST_READ },
+    val librarySortOrderDescending: Boolean = provideDefaultValue { true },
+    val libraryShowCategoryTabs: Boolean = provideDefaultValue { true },
+    val libraryAlwaysShowDefaultTab: Boolean = provideDefaultValue { false },
+    val libraryShowBookCount: Boolean = provideDefaultValue { true },
+    val libraryTitlePosition: LibraryTitlePosition = provideDefaultValue { LibraryTitlePosition.BELOW },
+    val libraryShowReadButton: Boolean = provideDefaultValue { true },
+    val libraryShowProgress: Boolean = provideDefaultValue { true },
 
     // Settings
     val autoColorPresetSelected: Boolean = provideDefaultValue { false },
@@ -385,6 +404,18 @@ data class MainState(
                     autoColorPresetSelected = provideValue(
                         DataStoreConstants.AUTO_COLOR_PRESET_SELECTED
                     ) { autoColorPresetSelected },
+
+                    libraryTitlePosition = provideValue(
+                        LIBRARY_TITLE_POSITION, convert = { toLibraryTitlePosition() }
+                    ) { libraryTitlePosition },
+
+                    libraryShowReadButton = provideValue(
+                        LIBRARY_SHOW_READ_BUTTON
+                    ) { libraryShowReadButton },
+
+                    libraryShowProgress = provideValue(
+                        LIBRARY_SHOW_PROGRESS
+                    ) { libraryShowProgress },
 
                 )
             }

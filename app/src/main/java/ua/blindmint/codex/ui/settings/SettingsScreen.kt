@@ -17,6 +17,7 @@ import ua.blindmint.codex.presentation.navigator.LocalNavigator
 import ua.blindmint.codex.presentation.settings.SettingsContent
 import ua.blindmint.codex.ui.about.AboutScreen
 import ua.blindmint.codex.ui.help.HelpScreen
+import ua.blindmint.codex.ui.library.LibrarySettingsScreen
 import ua.blindmint.codex.ui.settings.ImportExportSettingsScreen
 
 @Parcelize
@@ -36,6 +37,9 @@ object SettingsScreen : Screen, Parcelable {
             },
             navigateToReaderSettings = {
                 navigator.push(ReaderSettingsScreen)
+            },
+            navigateToLibrarySettings = {
+                navigator.push(LibrarySettingsScreen)
             },
             navigateToBrowseSettings = {
                 navigator.push(BrowseSettingsScreen)
