@@ -1,0 +1,64 @@
+stages:
+  - build
+  - release
+
+# Build the APK (runs on every commit; artifacts for release job)
+build:
+  stage: build
+  image: openjdk:11-jdk  # Or Android-specific: cimg/android:2024.04 (CircleCI image with SDK/Gradle)
+  script:
+    - chmod +x ./gradlew  # Ensure executable
+    - echo "$KEystore_PASSWORD" | ./gradlew assembleRelease -PKEYSTORE_PASSWORD="$KEystore_PASSWORD"  # Use secrets for signing
+  artifacts:
+    paths:
+      - app/build/outputs/apk/release/app-release.apk
+      - app/build/outputs/apk/release/app-release.apk.sha256  # Optional checksum
+    expire_in: 1 week
+    reports:
+      junit: app/build/test-results/testDebugUnitTest.xml  # If you have tests
+  rules:
+    - if: $CI_COMMIT_TAG  # Only build on tags for efficiency (or always with manual for debug)
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"  # Disable daemon in CI
+
+# Release Job: Create release + upload APK (triggers only on tags)
+create_release:
+  stage: release
+  image: gitlab/gitlab-runner/gitlab-glab:latest  # Or alpine:202406 with apk add glab
+  needs: ["build"]  # Depends on build artifact
+  rules:
+    - if: $CI_COMMIT_TAG  # e.g., v1.7.0
+  before_script:
+    # Auth: glab uses $CI_JOB_TOKEN automatically; explicit if needed
+    - apk add --no-cache zip curl jq  # For zip/checksum if wanted
+    # No need for glab auth login in modern setups—CI token handles it
+  script:
+    # Optional: Generate checksum
+    - sha256sum app/build/outputs/apk/release/app-release.apk > app/build/outputs/apk/release/app-release.sha256
+    
+    # Generate basic changelog from commits since last tag
+    - PREV_TAG=$(git describe --tags --abbrev=0 $(git rev-list --tags --max-count=2 | tail -n1))
+    - CHANGELOG=$(git log --pretty=format:"- %s (%an, %ar)" $PREV_TAG..HEAD)
+    
+    # Create release (with auto-notes or changelog)
+    - glab release create "$CI_COMMIT_TAG" \
+        --title "Release $CI_COMMIT_TAG" \
+        --description "Automated Android release.
+
+## Changelog
+$CHANGELOG
+
+## Download
+- [APK](https://gitlab.com/BlindMint/codex/-/releases/$CI_COMMIT_TAG/downloads/app-release.apk)"
+    
+    # Upload APK directly (no zip needed)
+    - glab release upload "$CI_COMMIT_TAG" "app/build/outputs/apk/release/app-release.apk" \
+        --name "app-release.apk"
+    
+    # Optional: Upload checksum
+    - glab release upload "$CI_COMMIT_TAG" "app/build/outputs/apk/release/app-release.sha256" \
+        --name "app-release.sha256"
+  after_script:
+    # Optional: Notify via email/slack (add integrations in Project Settings > Integrations)
+    - echo "Release $CI_COMMIT_TAG created with APK attached!"
