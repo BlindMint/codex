@@ -34,6 +34,8 @@ interface BookDao {
         """
         SELECT * FROM bookentity
         WHERE LOWER(title) LIKE '%' || LOWER(:query) || '%'
+           OR LOWER(COALESCE(author, '')) LIKE '%' || LOWER(:query) || '%'
+           OR LOWER(COALESCE(description, '')) LIKE '%' || LOWER(:query) || '%'
     """
     )
     suspend fun searchBooks(query: String): List<BookEntity>
