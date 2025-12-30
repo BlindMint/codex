@@ -12,6 +12,7 @@ import ua.blindmint.codex.domain.library.book.Book
 import ua.blindmint.codex.domain.reader.Checkpoint
 import ua.blindmint.codex.domain.reader.ReaderText
 import ua.blindmint.codex.domain.reader.ReaderText.Chapter
+import ua.blindmint.codex.domain.reader.SearchResult
 import ua.blindmint.codex.domain.ui.UIText
 import ua.blindmint.codex.domain.util.BottomSheet
 import ua.blindmint.codex.domain.util.Drawer
@@ -34,5 +35,10 @@ data class ReaderState(
     val lockMenu: Boolean = false,
 
     val bottomSheet: BottomSheet? = null,
-    val drawer: Drawer? = null
+    val drawer: Drawer? = null,
+
+    val showSearch: Boolean = false,
+    val searchQuery: String = "",
+    val searchResults: List<SearchResult> = emptyList(),
+    val currentSearchResultIndex: Int = -1
 )

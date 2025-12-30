@@ -36,7 +36,9 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import ua.blindmint.codex.R
 import ua.blindmint.codex.domain.reader.Checkpoint
+import ua.blindmint.codex.domain.reader.ReaderText
 import ua.blindmint.codex.domain.reader.ReaderText.Chapter
+import ua.blindmint.codex.domain.reader.SearchResult
 import ua.blindmint.codex.domain.ui.UIText
 import ua.blindmint.codex.domain.use_case.book.GetBookById
 import ua.blindmint.codex.domain.use_case.book.GetText
@@ -455,6 +457,88 @@ class ReaderModel @Inject constructor(
                         )
                     }
                 }
+
+                is ReaderEvent.OnShowSearch -> {
+                    _state.update {
+                        it.copy(
+                            showSearch = true,
+                            showMenu = false
+                        )
+                    }
+                }
+
+                is ReaderEvent.OnHideSearch -> {
+                    _state.update {
+                        it.copy(
+                            showSearch = false,
+                            searchQuery = "",
+                            searchResults = emptyList(),
+                            currentSearchResultIndex = -1
+                        )
+                    }
+                }
+
+                is ReaderEvent.OnSearchQueryChange -> {
+                    launch(Dispatchers.Default) {
+                        val results = if (event.query.isBlank()) {
+                            emptyList()
+                        } else {
+                            searchInText(event.query)
+                        }
+
+                        _state.update {
+                            it.copy(
+                                searchQuery = event.query,
+                                searchResults = results,
+                                currentSearchResultIndex = if (results.isNotEmpty()) 0 else -1
+                            )
+                        }
+
+                        if (results.isNotEmpty()) {
+                            scrollToSearchResult(0)
+                        }
+                    }
+                }
+
+                is ReaderEvent.OnNextSearchResult -> {
+                    launch {
+                        val results = _state.value.searchResults
+                        val currentIndex = _state.value.currentSearchResultIndex
+                        if (results.isEmpty()) return@launch
+
+                        val nextIndex = (currentIndex + 1) % results.size
+                        _state.update {
+                            it.copy(currentSearchResultIndex = nextIndex)
+                        }
+                        scrollToSearchResult(nextIndex)
+                    }
+                }
+
+                is ReaderEvent.OnPrevSearchResult -> {
+                    launch {
+                        val results = _state.value.searchResults
+                        val currentIndex = _state.value.currentSearchResultIndex
+                        if (results.isEmpty()) return@launch
+
+                        val prevIndex = if (currentIndex <= 0) results.lastIndex else currentIndex - 1
+                        _state.update {
+                            it.copy(currentSearchResultIndex = prevIndex)
+                        }
+                        scrollToSearchResult(prevIndex)
+                    }
+                }
+
+                is ReaderEvent.OnScrollToSearchResult -> {
+                    launch {
+                        val results = _state.value.searchResults
+                        if (event.resultIndex in results.indices) {
+                            _state.update {
+                                it.copy(currentSearchResultIndex = event.resultIndex)
+                            }
+                            scrollToSearchResult(event.resultIndex)
+                        }
+                    }
+                }
             }
         }
     }
@@ -632,6 +716,34 @@ class ReaderModel @Inject constructor(
                 else hide(WindowInsetsCompat.Type.systemBars())
             }
         }
+    }
+
+    private fun searchInText(query: String): List<SearchResult> {
+        val results = mutableListOf<SearchResult>()
+        val queryLower = query.lowercase()
+
+        _state.value.text.forEachIndexed { index, readerText ->
+            val text = when (readerText) {
+                is ReaderText.Text -> readerText.line.text
+                is Chapter -> readerText.title
+                else -> null
+            }
+
+            if (text != null && text.lowercase().contains(queryLower)) {
+                results.add(SearchResult(textIndex = index, text = text))
+            }
+        }
+
+        return results
+    }
+
+    private suspend fun scrollToSearchResult(resultIndex: Int) {
+        val results = _state.value.searchResults
+        if (resultIndex !in results.indices) return
+
+        val result = results[resultIndex]
+        _state.value.listState.requestScrollToItem(result.textIndex)
+        updateChapter(result.textIndex)
     }
 
     fun resetScreen() {

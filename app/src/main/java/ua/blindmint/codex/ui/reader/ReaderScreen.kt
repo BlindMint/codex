@@ -520,6 +520,15 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             dismissBottomSheet = screenModel::onEvent,
             showChaptersDrawer = screenModel::onEvent,
             dismissDrawer = screenModel::onEvent,
+            showSearch = screenModel::onEvent,
+            hideSearch = screenModel::onEvent,
+            searchQuery = state.value.searchQuery,
+            searchResults = state.value.searchResults,
+            currentSearchResultIndex = state.value.currentSearchResultIndex,
+            isSearchVisible = state.value.showSearch,
+            onSearchQueryChange = screenModel::onEvent,
+            onNextSearchResult = screenModel::onEvent,
+            onPrevSearchResult = screenModel::onEvent,
             navigateBack = {
                 navigator.pop()
             },
