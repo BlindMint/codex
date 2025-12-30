@@ -35,6 +35,7 @@ import ua.blindmint.codex.domain.reader.ReaderText
 import ua.blindmint.codex.domain.reader.ReaderText.Chapter
 import ua.blindmint.codex.domain.reader.ReaderTextAlignment
 import ua.blindmint.codex.domain.util.HorizontalAlignment
+import ua.blindmint.codex.domain.reader.SearchResult
 import ua.blindmint.codex.presentation.core.components.common.AnimatedVisibility
 import ua.blindmint.codex.ui.reader.ReaderEvent
 import ua.blindmint.codex.ui.settings.SettingsEvent
@@ -105,6 +106,15 @@ fun ReaderScaffold(
     openDictionary: (ReaderEvent.OnOpenDictionary) -> Unit,
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
+    showSearch: (ReaderEvent.OnShowSearch) -> Unit,
+    hideSearch: (ReaderEvent.OnHideSearch) -> Unit,
+    searchQuery: String,
+    searchResults: List<SearchResult>,
+    currentSearchResultIndex: Int,
+    isSearchVisible: Boolean,
+    onSearchQueryChange: (ReaderEvent.OnSearchQueryChange) -> Unit,
+    onNextSearchResult: (ReaderEvent.OnNextSearchResult) -> Unit,
+    onPrevSearchResult: (ReaderEvent.OnPrevSearchResult) -> Unit,
     navigateToBookInfo: (changePath: Boolean) -> Unit,
     navigateBack: () -> Unit
 ) {
@@ -115,7 +125,23 @@ fun ReaderScaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             AnimatedVisibility(
-                visible = showMenu,
+                visible = isSearchVisible,
+                enter = slideInVertically { -it },
+                exit = slideOutVertically { -it }
+            ) {
+                ReaderSearchBar(
+                    searchQuery = searchQuery,
+                    searchResultsCount = searchResults.size,
+                    currentResultIndex = currentSearchResultIndex,
+                    onQueryChange = onSearchQueryChange,
+                    onNextResult = onNextSearchResult,
+                    onPrevResult = onPrevSearchResult,
+                    onHideSearch = hideSearch
+                )
+            }
+
+            AnimatedVisibility(
+                visible = showMenu && !isSearchVisible,
                 enter = slideInVertically { -it },
                 exit = slideOutVertically { -it }
             ) {
@@ -131,6 +157,7 @@ fun ReaderScaffold(
                     selectNextPreset = selectNextPreset,
                     showSettingsBottomSheet = showSettingsBottomSheet,
                     showChaptersDrawer = showChaptersDrawer,
+                    showSearch = showSearch,
                     navigateBack = navigateBack,
                     navigateToBookInfo = navigateToBookInfo
                 )

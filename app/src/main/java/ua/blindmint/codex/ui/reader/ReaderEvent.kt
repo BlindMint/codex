@@ -74,4 +74,20 @@ sealed class ReaderEvent {
     data object OnShowChaptersDrawer : ReaderEvent()
 
     data object OnDismissDrawer : ReaderEvent()
+
+    data object OnShowSearch : ReaderEvent()
+
+    data object OnHideSearch : ReaderEvent()
+
+    data class OnSearchQueryChange(
+        val query: String
+    ) : ReaderEvent()
+
+    data object OnNextSearchResult : ReaderEvent()
+
+    data object OnPrevSearchResult : ReaderEvent()
+
+    data class OnScrollToSearchResult(
+        val resultIndex: Int
+    ) : ReaderEvent()
 }

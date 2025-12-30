@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.rounded.Menu
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LinearProgressIndicator
@@ -53,6 +54,7 @@ fun ReaderTopBar(
     selectNextPreset: (SettingsEvent.OnSelectNextPreset) -> Unit,
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
+    showSearch: (ReaderEvent.OnShowSearch) -> Unit,
     navigateToBookInfo: (changePath: Boolean) -> Unit,
     navigateBack: () -> Unit
 ) {
@@ -127,6 +129,15 @@ fun ReaderTopBar(
                 )
             },
             actions = {
+                IconButton(
+                    icon = Icons.Rounded.Search,
+                    contentDescription = R.string.search_in_book_content_desc,
+                    disableOnClick = false,
+                    enabled = !lockMenu
+                ) {
+                    showSearch(ReaderEvent.OnShowSearch)
+                }
+
                 if (currentChapter != null) {
                     IconButton(
                         icon = Icons.Rounded.Menu,

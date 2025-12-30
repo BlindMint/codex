@@ -26,6 +26,7 @@ import ua.blindmint.codex.domain.reader.ReaderHorizontalGesture
 import ua.blindmint.codex.domain.reader.ReaderText
 import ua.blindmint.codex.domain.reader.ReaderText.Chapter
 import ua.blindmint.codex.domain.reader.ReaderTextAlignment
+import ua.blindmint.codex.domain.reader.SearchResult
 import ua.blindmint.codex.domain.ui.UIText
 import ua.blindmint.codex.domain.util.BottomSheet
 import ua.blindmint.codex.domain.util.Drawer
@@ -104,6 +105,15 @@ fun ReaderContent(
     dismissBottomSheet: (ReaderEvent.OnDismissBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
     dismissDrawer: (ReaderEvent.OnDismissDrawer) -> Unit,
+    showSearch: (ReaderEvent.OnShowSearch) -> Unit,
+    hideSearch: (ReaderEvent.OnHideSearch) -> Unit,
+    searchQuery: String,
+    searchResults: List<SearchResult>,
+    currentSearchResultIndex: Int,
+    isSearchVisible: Boolean,
+    onSearchQueryChange: (ReaderEvent.OnSearchQueryChange) -> Unit,
+    onNextSearchResult: (ReaderEvent.OnNextSearchResult) -> Unit,
+    onPrevSearchResult: (ReaderEvent.OnPrevSearchResult) -> Unit,
     navigateToBookInfo: (changePath: Boolean) -> Unit,
     navigateBack: () -> Unit
 ) {
@@ -179,6 +189,15 @@ fun ReaderContent(
             openDictionary = openDictionary,
             showSettingsBottomSheet = showSettingsBottomSheet,
             showChaptersDrawer = showChaptersDrawer,
+            showSearch = showSearch,
+            hideSearch = hideSearch,
+            searchQuery = searchQuery,
+            searchResults = searchResults,
+            currentSearchResultIndex = currentSearchResultIndex,
+            isSearchVisible = isSearchVisible,
+            onSearchQueryChange = onSearchQueryChange,
+            onNextSearchResult = onNextSearchResult,
+            onPrevSearchResult = onPrevSearchResult,
             navigateBack = navigateBack,
             navigateToBookInfo = navigateToBookInfo
         )
