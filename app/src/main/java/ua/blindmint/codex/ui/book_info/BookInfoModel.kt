@@ -65,6 +65,14 @@ class BookInfoModel @Inject constructor(
                     }
                 }
 
+                is BookInfoEvent.OnShowEditBottomSheet -> {
+                    _state.update {
+                        it.copy(
+                            bottomSheet = BookInfoScreen.EDIT_BOTTOM_SHEET
+                        )
+                    }
+                }
+
                 is BookInfoEvent.OnShowChangeCoverBottomSheet -> {
                     _state.update {
                         it.copy(
@@ -406,6 +414,27 @@ class BookInfoModel @Inject constructor(
                         it.copy(
                             dialog = null
                         )
+                    }
+                }
+
+                is BookInfoEvent.OnResetTitle -> {
+                    withContext(Dispatchers.Main) {
+                        event.context.getString(R.string.reset_no_original)
+                            .showToast(context = event.context)
+                    }
+                }
+
+                is BookInfoEvent.OnResetAuthor -> {
+                    withContext(Dispatchers.Main) {
+                        event.context.getString(R.string.reset_no_original)
+                            .showToast(context = event.context)
+                    }
+                }
+
+                is BookInfoEvent.OnResetDescription -> {
+                    withContext(Dispatchers.Main) {
+                        event.context.getString(R.string.reset_no_original)
+                            .showToast(context = event.context)
                     }
                 }
             }

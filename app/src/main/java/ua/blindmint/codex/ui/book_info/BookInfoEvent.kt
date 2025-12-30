@@ -17,6 +17,8 @@ sealed class BookInfoEvent {
 
     data object OnShowDetailsBottomSheet : BookInfoEvent()
 
+    data object OnShowEditBottomSheet : BookInfoEvent()
+
     data object OnShowChangeCoverBottomSheet : BookInfoEvent()
 
     data class OnChangeCover(
@@ -84,4 +86,16 @@ sealed class BookInfoEvent {
     ) : BookInfoEvent()
 
     data object OnDismissDialog : BookInfoEvent()
+
+    data class OnResetTitle(
+        val context: Context
+    ) : BookInfoEvent()
+
+    data class OnResetAuthor(
+        val context: Context
+    ) : BookInfoEvent()
+
+    data class OnResetDescription(
+        val context: Context
+    ) : BookInfoEvent()
 }
