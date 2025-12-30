@@ -689,6 +689,7 @@
     <string name="sort_content_desc">Sort</string>
     <string name="reset_content_desc">Reset to original</string>
     <string name="edit_metadata">Edit Metadata</string>
+    <string name="alignment_original">Original</string>
     <string name="title">Title</string>
     <string name="description">Description</string>
     <string name="reset_success">Reset to original value</string>

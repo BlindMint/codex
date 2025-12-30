@@ -217,7 +217,7 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
         }
         val horizontalAlignment = remember(mainState.value.textAlignment) {
             when (mainState.value.textAlignment) {
-                ReaderTextAlignment.START, ReaderTextAlignment.JUSTIFY -> Alignment.Start
+                ReaderTextAlignment.START, ReaderTextAlignment.JUSTIFY, ReaderTextAlignment.ORIGINAL -> Alignment.Start
                 ReaderTextAlignment.CENTER -> Alignment.CenterHorizontally
                 ReaderTextAlignment.END -> Alignment.End
             }
