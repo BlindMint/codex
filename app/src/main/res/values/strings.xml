@@ -417,6 +417,7 @@
     <string name="cover_image_deleted">Cover Image was successfully deleted.</string>
     <string name="book_deleted">This book was successfully deleted.</string>
     <string name="book_moved">This book was successfully moved.</string>
+    <string name="book_added">Added: %1$s</string>
     <string name="copied">Copied</string>
     <string name="history_deleted">History was successfully deleted.</string>
     <string name="cover_reset">Cover image was successfully reset.</string>
