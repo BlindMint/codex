@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+// import androidx.compose.material.icons.automirrored.outlined.HelpOutline  // Help disabled
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.DisplaySettings
 import androidx.compose.material.icons.outlined.Explore
@@ -96,15 +96,16 @@ fun SettingsLayout(
             }
         }
 
-        item {
-            SettingsLayoutItem(
-                icon = Icons.AutoMirrored.Outlined.HelpOutline,
-                title = stringResource(id = R.string.help_screen),
-                description = stringResource(id = R.string.help_screen)
-            ) {
-                navigateToHelp()
-            }
-        }
+        // Help menu item disabled - see to-do.md
+        // item {
+        //     SettingsLayoutItem(
+        //         icon = Icons.AutoMirrored.Outlined.HelpOutline,
+        //         title = stringResource(id = R.string.help_screen),
+        //         description = stringResource(id = R.string.help_screen)
+        //     ) {
+        //         navigateToHelp()
+        //     }
+        // }
 
         item {
             SettingsLayoutItem(
