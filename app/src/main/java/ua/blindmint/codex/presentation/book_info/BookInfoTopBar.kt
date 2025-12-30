@@ -8,6 +8,7 @@ package ua.blindmint.codex.presentation.book_info
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +30,7 @@ import ua.blindmint.codex.ui.theme.DefaultTransition
 fun BookInfoTopBar(
     book: Book,
     listState: LazyListState,
+    showEditBottomSheet: (BookInfoEvent.OnShowEditBottomSheet) -> Unit,
     showDetailsBottomSheet: (BookInfoEvent.OnShowDetailsBottomSheet) -> Unit,
     navigateBack: () -> Unit
 ) {
@@ -64,6 +66,14 @@ fun BookInfoTopBar(
                     }
                 },
                 contentActions = {
+                    IconButton(
+                        icon = Icons.Outlined.Edit,
+                        contentDescription = R.string.edit_metadata,
+                        disableOnClick = false,
+                        onClick = {
+                            showEditBottomSheet(BookInfoEvent.OnShowEditBottomSheet)
+                        }
+                    )
                     IconButton(
                         icon = Icons.Outlined.Info,
                         contentDescription = R.string.file_details,

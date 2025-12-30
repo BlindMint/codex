@@ -18,6 +18,12 @@ fun BookInfoBottomSheet(
     book: Book,
     canResetCover: Boolean,
     showPathDialog: (BookInfoEvent.OnShowPathDialog) -> Unit,
+    showTitleDialog: (BookInfoEvent.OnShowTitleDialog) -> Unit,
+    showAuthorDialog: (BookInfoEvent.OnShowAuthorDialog) -> Unit,
+    showDescriptionDialog: (BookInfoEvent.OnShowDescriptionDialog) -> Unit,
+    resetTitle: (BookInfoEvent.OnResetTitle) -> Unit,
+    resetAuthor: (BookInfoEvent.OnResetAuthor) -> Unit,
+    resetDescription: (BookInfoEvent.OnResetDescription) -> Unit,
     clearProgressHistory: (BookInfoEvent.OnClearProgressHistory) -> Unit,
     changeCover: (BookInfoEvent.OnChangeCover) -> Unit,
     resetCover: (BookInfoEvent.OnResetCover) -> Unit,
@@ -43,6 +49,19 @@ fun BookInfoBottomSheet(
                 book = book,
                 showPathDialog = showPathDialog,
                 clearProgressHistory = clearProgressHistory,
+                dismissBottomSheet = dismissBottomSheet
+            )
+        }
+
+        BookInfoScreen.EDIT_BOTTOM_SHEET -> {
+            BookInfoEditBottomSheet(
+                book = book,
+                showTitleDialog = showTitleDialog,
+                showAuthorDialog = showAuthorDialog,
+                showDescriptionDialog = showDescriptionDialog,
+                resetTitle = resetTitle,
+                resetAuthor = resetAuthor,
+                resetDescription = resetDescription,
                 dismissBottomSheet = dismissBottomSheet
             )
         }
