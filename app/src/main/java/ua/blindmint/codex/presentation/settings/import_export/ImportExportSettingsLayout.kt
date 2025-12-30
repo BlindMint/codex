@@ -35,6 +35,10 @@ fun ImportExportSettingsLayout(
         state = listState
     ) {
         item {
+            ImportSettingsItem(snackbarHostState)
+        }
+
+        item {
             ExportSettingsItem { result ->
                 scope.launch {
                     val message = if (result.isSuccess) {
@@ -45,10 +49,6 @@ fun ImportExportSettingsLayout(
                     snackbarHostState.showSnackbar(message)
                 }
             }
-        }
-
-        item {
-            ImportSettingsItem(snackbarHostState)
         }
     }
 }
