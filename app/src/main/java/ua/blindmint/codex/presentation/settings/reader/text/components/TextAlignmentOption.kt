@@ -34,6 +34,7 @@ fun TextAlignmentOption() {
                                 ReaderTextAlignment.JUSTIFY -> stringResource(id = R.string.alignment_justify)
                                 ReaderTextAlignment.CENTER -> stringResource(id = R.string.alignment_center)
                                 ReaderTextAlignment.END -> stringResource(id = R.string.alignment_end)
+                                ReaderTextAlignment.ORIGINAL -> stringResource(id = R.string.alignment_original)
                             },
                             textStyle = MaterialTheme.typography.labelLarge,
                             selected = it.toString() == value

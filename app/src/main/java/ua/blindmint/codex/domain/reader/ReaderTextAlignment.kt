@@ -14,7 +14,8 @@ enum class ReaderTextAlignment(val textAlignment: TextAlign) {
     START(TextAlign.Start),
     JUSTIFY(TextAlign.Justify),
     CENTER(TextAlign.Center),
-    END(TextAlign.End)
+    END(TextAlign.End),
+    ORIGINAL(TextAlign.Start)  // Uses original EPUB formatting, disables user overrides
 }
 
 fun String.toTextAlignment(): ReaderTextAlignment {
