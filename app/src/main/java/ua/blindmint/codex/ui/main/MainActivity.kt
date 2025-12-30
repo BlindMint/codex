@@ -9,8 +9,11 @@
 package ua.blindmint.codex.ui.main
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.database.CursorWindow
+import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -18,17 +21,29 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.internal.immutableListOf
 import ua.blindmint.codex.R
+import ua.blindmint.codex.domain.file.CachedFileCompat
+import ua.blindmint.codex.domain.library.book.NullableBook
 import ua.blindmint.codex.domain.navigator.NavigatorItem
 import ua.blindmint.codex.domain.navigator.StackEvent
 import ua.blindmint.codex.domain.ui.isDark
 import ua.blindmint.codex.domain.ui.isPureDark
+import ua.blindmint.codex.domain.use_case.book.InsertBook
+import ua.blindmint.codex.domain.use_case.file_system.GetBookFromFile
 import ua.blindmint.codex.presentation.core.components.navigation_bar.NavigationBar
 import ua.blindmint.codex.presentation.core.components.navigation_rail.NavigationRail
 import ua.blindmint.codex.presentation.main.MainActivityKeyboardManager
@@ -46,6 +61,7 @@ import ua.blindmint.codex.ui.start.StartScreen
 import ua.blindmint.codex.ui.theme.CodexTheme
 import ua.blindmint.codex.ui.theme.Transitions
 import java.lang.reflect.Field
+import javax.inject.Inject
 
 
 @SuppressLint("DiscouragedPrivateApi")
@@ -54,6 +70,13 @@ class MainActivity : AppCompatActivity() {
     // Creating an instance of Models
     private val mainModel: MainModel by viewModels()
     private val settingsModel: SettingsModel by viewModels()
+
+    // Injected use cases for handling file intents
+    @Inject lateinit var getBookFromFile: GetBookFromFile
+    @Inject lateinit var insertBook: InsertBook
+
+    // Pending file URI from external intent
+    private var pendingFileUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Splash screen
@@ -65,6 +88,9 @@ class MainActivity : AppCompatActivity() {
 
         // Default super
         super.onCreate(savedInstanceState)
+
+        // Handle file open intent from external file managers
+        handleIncomingIntent(intent)
 
         // Bigger Cursor size for Room
         try {
@@ -131,6 +157,74 @@ class MainActivity : AppCompatActivity() {
                     settingsModel.performInitialColorPresetSelection(isDarkTheme)
                 }
 
+                // Track pending file import state
+                var fileImportSuccess by remember { mutableStateOf(false) }
+                var fileImportBookTitle by remember { mutableStateOf<String?>(null) }
+                val scope = rememberCoroutineScope()
+
+                // Handle pending file import from external intent
+                LaunchedEffect(pendingFileUri) {
+                    val uri = pendingFileUri ?: return@LaunchedEffect
+                    pendingFileUri = null // Clear to prevent re-processing
+
+                    scope.launch {
+                        try {
+                            val cachedFile = CachedFileCompat.fromUri(this@MainActivity, uri)
+                            val result = withContext(Dispatchers.IO) {
+                                getBookFromFile.execute(cachedFile)
+                            }
+                            when (result) {
+                                is NullableBook.NotNull -> {
+                                    val bookTitle = result.bookWithCover!!.book.title
+                                    withContext(Dispatchers.IO) {
+                                        insertBook.execute(result.bookWithCover!!)
+                                    }
+                                    fileImportBookTitle = bookTitle
+                                    fileImportSuccess = true
+                                }
+                                is NullableBook.Null -> {
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(
+                                            this@MainActivity,
+                                            result.message?.asString(this@MainActivity)
+                                                ?: getString(R.string.error_something_went_wrong),
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    getString(R.string.error_something_went_wrong),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    }
+                }
+
+                // Show success toast after import
+                LaunchedEffect(fileImportSuccess) {
+                    if (fileImportSuccess) {
+                        fileImportSuccess = false
+                        Toast.makeText(
+                            this@MainActivity,
+                            getString(R.string.book_added, fileImportBookTitle ?: ""),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        // Trigger library refresh
+                        libraryModel.onEvent(
+                            ua.blindmint.codex.ui.library.LibraryEvent.OnRefreshList(
+                                loading = false,
+                                hideSearch = true
+                            )
+                        )
+                    }
+                }
+
                 CodexTheme(
                     theme = state.value.theme,
                     isDark = state.value.darkTheme.isDark(),
@@ -182,6 +276,19 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIncomingIntent(intent)
+    }
+
+    private fun handleIncomingIntent(intent: Intent?) {
+        if (intent?.action == Intent.ACTION_VIEW) {
+            intent.data?.let { uri ->
+                pendingFileUri = uri
             }
         }
     }
