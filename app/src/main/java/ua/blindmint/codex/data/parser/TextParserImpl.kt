@@ -10,6 +10,7 @@ import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import ua.blindmint.codex.data.parser.epub.EpubTextParser
+import ua.blindmint.codex.data.parser.fodt.FodtTextParser
 import ua.blindmint.codex.data.parser.html.HtmlTextParser
 import ua.blindmint.codex.data.parser.pdf.PdfTextParser
 import ua.blindmint.codex.data.parser.txt.TxtTextParser
@@ -28,7 +29,8 @@ class TextParserImpl @Inject constructor(
     // Document parser (HTML+Markdown)
     private val epubTextParser: EpubTextParser,
     private val htmlTextParser: HtmlTextParser,
-    private val xmlTextParser: XmlTextParser
+    private val xmlTextParser: XmlTextParser,
+    private val fodtTextParser: FodtTextParser
 ) : TextParser {
 
     override suspend fun parse(cachedFile: CachedFile): List<ReaderText> {
@@ -66,6 +68,10 @@ class TextParserImpl @Inject constructor(
 
                 ".md" -> {
                     htmlTextParser.parse(cachedFile)
+                }
+
+                ".fodt" -> {
+                    fodtTextParser.parse(cachedFile)
                 }
 
                 else -> {

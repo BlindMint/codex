@@ -9,6 +9,7 @@ package ua.blindmint.codex.data.parser
 import android.util.Log
 import ua.blindmint.codex.data.parser.epub.EpubFileParser
 import ua.blindmint.codex.data.parser.fb2.Fb2FileParser
+import ua.blindmint.codex.data.parser.fodt.FodtFileParser
 import ua.blindmint.codex.data.parser.html.HtmlFileParser
 import ua.blindmint.codex.data.parser.pdf.PdfFileParser
 import ua.blindmint.codex.data.parser.txt.TxtFileParser
@@ -24,6 +25,7 @@ class FileParserImpl @Inject constructor(
     private val epubFileParser: EpubFileParser,
     private val fb2FileParser: Fb2FileParser,
     private val htmlFileParser: HtmlFileParser,
+    private val fodtFileParser: FodtFileParser,
 ) : FileParser {
 
     override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
@@ -60,6 +62,10 @@ class FileParserImpl @Inject constructor(
 
             ".md" -> {
                 txtFileParser.parse(cachedFile)
+            }
+
+            ".fodt" -> {
+                fodtFileParser.parse(cachedFile)
             }
 
             else -> {
