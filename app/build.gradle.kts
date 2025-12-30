@@ -15,11 +15,11 @@ plugins {
 }
 
 android {
-    namespace = "ua.blindmint.codex"
+    namespace = "us.blindmint.codex"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "ua.blindmint.codex"
+        applicationId = "us.blindmint.codex"
         minSdk = 26
         targetSdk = 35
 
