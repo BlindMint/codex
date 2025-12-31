@@ -22,6 +22,7 @@ import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.ReaderTextAlignment
 import us.blindmint.codex.domain.util.HorizontalAlignment
 import us.blindmint.codex.ui.reader.ReaderEvent
+import androidx.compose.ui.graphics.Color as ComposeColor
 
 @Composable
 fun LazyItemScope.ReaderLayoutText(
@@ -50,7 +51,9 @@ fun LazyItemScope.ReaderLayoutText(
     highlightedReadingThickness: FontWeight,
     toolbarHidden: Boolean,
     openTranslator: (ReaderEvent.OnOpenTranslator) -> Unit,
-    menuVisibility: (ReaderEvent.OnMenuVisibility) -> Unit
+    menuVisibility: (ReaderEvent.OnMenuVisibility) -> Unit,
+    searchQuery: String,
+    searchHighlightColor: ComposeColor
 ) {
     when (entry) {
         is ReaderText.Image -> {
@@ -104,7 +107,9 @@ fun LazyItemScope.ReaderLayoutText(
                 highlightedReadingThickness = highlightedReadingThickness,
                 toolbarHidden = toolbarHidden,
                 openTranslator = openTranslator,
-                menuVisibility = menuVisibility
+                menuVisibility = menuVisibility,
+                searchQuery = searchQuery,
+                searchHighlightColor = searchHighlightColor
             )
         }
     }

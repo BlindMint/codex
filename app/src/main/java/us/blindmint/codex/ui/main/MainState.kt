@@ -49,6 +49,8 @@ import us.blindmint.codex.presentation.core.constants.provideLanguages
 import us.blindmint.codex.ui.theme.Theme
 import us.blindmint.codex.ui.theme.toTheme
 import java.util.Locale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 
 /**
  * Main State.
@@ -119,6 +121,8 @@ data class MainState(
     val progressBarAlignment: HorizontalAlignment = provideDefaultValue { HorizontalAlignment.CENTER },
     val progressBarFontSize: Int = provideDefaultValue { 8 },
     val progressCount: ReaderProgressCount = provideDefaultValue { ReaderProgressCount.PERCENTAGE },
+    // Default: Yellow with 50% alpha (#80FFEB3B)
+    val searchHighlightColor: Long = provideDefaultValue { 0x80FFEB3B },
 
     // Browse Settings
     val browseLayout: BrowseLayout = provideDefaultValue { BrowseLayout.LIST },
@@ -392,6 +396,10 @@ data class MainState(
                     progressCount = provideValue(
                         PROGRESS_COUNT, convert = { toProgressCount() }
                     ) { progressCount },
+
+                    searchHighlightColor = provideValue(
+                        SEARCH_HIGHLIGHT_COLOR, convert = { toLongOrNull() ?: 0x80FFEB3B }
+                    ) { searchHighlightColor },
 
                     horizontalGestureAlphaAnim = provideValue(
                         HORIZONTAL_GESTURE_ALPHA_ANIM

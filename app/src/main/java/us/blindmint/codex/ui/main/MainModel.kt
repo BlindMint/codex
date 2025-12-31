@@ -531,6 +531,14 @@ class MainModel @Inject constructor(
                 }
             )
 
+            is MainEvent.OnChangeSearchHighlightColor -> handleDatastoreUpdate(
+                key = DataStoreConstants.SEARCH_HIGHLIGHT_COLOR,
+                value = event.value.toString(),
+                updateState = {
+                    it.copy(searchHighlightColor = this.toLongOrNull() ?: 0x80FFEB3B)
+                }
+            )
+
             // Library Events
             is MainEvent.OnChangeLibraryLayout -> handleDatastoreUpdate(
                 key = DataStoreConstants.LIBRARY_LAYOUT,
