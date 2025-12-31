@@ -96,6 +96,17 @@ class BookRepositoryImpl @Inject constructor(
     }
 
     /**
+     * Get a book by its file path.
+     * Returns null if no book with that path exists.
+     */
+    override suspend fun getBookByFilePath(filePath: String): Book? {
+        val entity = database.findBookByFilePath(filePath) ?: return null
+        val book = bookMapper.toBook(entity)
+        val lastHistory = database.getLatestHistoryForBook(book.id)
+        return book.copy(lastOpened = lastHistory?.time)
+    }
+
+    /**
      * Loads text from the book. Already formatted.
      */
     override suspend fun getBookText(bookId: Int): List<ReaderText> {

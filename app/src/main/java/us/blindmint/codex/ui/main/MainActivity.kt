@@ -42,8 +42,10 @@ import us.blindmint.codex.domain.navigator.NavigatorItem
 import us.blindmint.codex.domain.navigator.StackEvent
 import us.blindmint.codex.domain.ui.isDark
 import us.blindmint.codex.domain.ui.isPureDark
+import us.blindmint.codex.domain.use_case.book.GetBookByFilePath
 import us.blindmint.codex.domain.use_case.book.InsertBook
 import us.blindmint.codex.domain.use_case.file_system.GetBookFromFile
+import us.blindmint.codex.ui.reader.ReaderScreen
 import us.blindmint.codex.presentation.core.components.navigation_bar.NavigationBar
 import us.blindmint.codex.presentation.core.components.navigation_rail.NavigationRail
 import us.blindmint.codex.presentation.main.MainActivityKeyboardManager
@@ -74,6 +76,7 @@ class MainActivity : AppCompatActivity() {
     // Injected use cases for handling file intents
     @Inject lateinit var getBookFromFile: GetBookFromFile
     @Inject lateinit var insertBook: InsertBook
+    @Inject lateinit var getBookByFilePath: GetBookByFilePath
 
     // Pending file URI from external intent
     private var pendingFileUri: Uri? = null
@@ -158,8 +161,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 // Track pending file import state
-                var fileImportSuccess by remember { mutableStateOf(false) }
-                var fileImportBookTitle by remember { mutableStateOf<String?>(null) }
+                var fileImportBookId by remember { mutableStateOf<Int?>(null) }
+                var fileImportMessage by remember { mutableStateOf<String?>(null) }
                 val scope = rememberCoroutineScope()
 
                 // Handle pending file import from external intent
@@ -170,26 +173,53 @@ class MainActivity : AppCompatActivity() {
                     scope.launch {
                         try {
                             val cachedFile = CachedFileCompat.fromUri(this@MainActivity, uri)
-                            val result = withContext(Dispatchers.IO) {
-                                getBookFromFile.execute(cachedFile)
+                            val filePath = cachedFile.path
+
+                            // Check if book already exists in library
+                            val existingBook = withContext(Dispatchers.IO) {
+                                getBookByFilePath.execute(filePath)
                             }
-                            when (result) {
-                                is NullableBook.NotNull -> {
-                                    val bookTitle = result.bookWithCover!!.book.title
-                                    withContext(Dispatchers.IO) {
-                                        insertBook.execute(result.bookWithCover!!)
-                                    }
-                                    fileImportBookTitle = bookTitle
-                                    fileImportSuccess = true
+
+                            if (existingBook != null) {
+                                // Book already exists - open it directly
+                                fileImportBookId = existingBook.id
+                                fileImportMessage = getString(R.string.opening_existing_book, existingBook.title)
+                            } else {
+                                // Book doesn't exist - import it
+                                val result = withContext(Dispatchers.IO) {
+                                    getBookFromFile.execute(cachedFile)
                                 }
-                                is NullableBook.Null -> {
-                                    withContext(Dispatchers.Main) {
-                                        Toast.makeText(
-                                            this@MainActivity,
-                                            result.message?.asString(this@MainActivity)
-                                                ?: getString(R.string.error_something_went_wrong),
-                                            Toast.LENGTH_LONG
-                                        ).show()
+                                when (result) {
+                                    is NullableBook.NotNull -> {
+                                        val bookTitle = result.bookWithCover!!.book.title
+                                        withContext(Dispatchers.IO) {
+                                            insertBook.execute(result.bookWithCover!!)
+                                        }
+                                        // Get the newly inserted book to get its ID
+                                        val newBook = withContext(Dispatchers.IO) {
+                                            getBookByFilePath.execute(filePath)
+                                        }
+                                        if (newBook != null) {
+                                            fileImportBookId = newBook.id
+                                            fileImportMessage = getString(R.string.book_added, bookTitle)
+                                            // Trigger library refresh
+                                            libraryModel.onEvent(
+                                                us.blindmint.codex.ui.library.LibraryEvent.OnRefreshList(
+                                                    loading = false,
+                                                    hideSearch = true
+                                                )
+                                            )
+                                        }
+                                    }
+                                    is NullableBook.Null -> {
+                                        withContext(Dispatchers.Main) {
+                                            Toast.makeText(
+                                                this@MainActivity,
+                                                result.message?.asString(this@MainActivity)
+                                                    ?: getString(R.string.error_something_went_wrong),
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
                                     }
                                 }
                             }
@@ -206,22 +236,14 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                // Show success toast after import
-                LaunchedEffect(fileImportSuccess) {
-                    if (fileImportSuccess) {
-                        fileImportSuccess = false
-                        Toast.makeText(
-                            this@MainActivity,
-                            getString(R.string.book_added, fileImportBookTitle ?: ""),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        // Trigger library refresh
-                        libraryModel.onEvent(
-                            us.blindmint.codex.ui.library.LibraryEvent.OnRefreshList(
-                                loading = false,
-                                hideSearch = true
-                            )
-                        )
+                // Show message and navigate to reader after import/open
+                LaunchedEffect(fileImportBookId) {
+                    val bookId = fileImportBookId ?: return@LaunchedEffect
+                    fileImportBookId = null
+
+                    fileImportMessage?.let {
+                        Toast.makeText(this@MainActivity, it, Toast.LENGTH_SHORT).show()
+                        fileImportMessage = null
                     }
                 }
 

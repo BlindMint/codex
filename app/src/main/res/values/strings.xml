@@ -699,5 +699,6 @@
     <string name="previous_result_content_desc">Previous result</string>
     <string name="next_result_content_desc">Next result</string>
     <string name="search_in_book_content_desc">Search in book</string>
+    <string name="opening_existing_book">Opening: %1$s</string>
 
  </resources>

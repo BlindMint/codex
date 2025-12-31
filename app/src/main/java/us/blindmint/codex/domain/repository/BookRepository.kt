@@ -21,6 +21,10 @@ interface BookRepository {
         ids: List<Int>
     ): List<Book>
 
+    suspend fun getBookByFilePath(
+        filePath: String
+    ): Book?
+
     suspend fun getBookText(
         bookId: Int
     ): List<ReaderText>

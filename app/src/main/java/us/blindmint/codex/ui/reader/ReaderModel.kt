@@ -479,6 +479,12 @@ class ReaderModel @Inject constructor(
                 }
 
                 is ReaderEvent.OnSearchQueryChange -> {
+                    // Update query immediately on main thread to keep text field responsive
+                    _state.update {
+                        it.copy(searchQuery = event.query)
+                    }
+
+                    // Then search in background
                     launch(Dispatchers.Default) {
                         val results = if (event.query.isBlank()) {
                             emptyList()
@@ -488,7 +494,6 @@ class ReaderModel @Inject constructor(
 
                         _state.update {
                             it.copy(
-                                searchQuery = event.query,
                                 searchResults = results,
                                 currentSearchResultIndex = if (results.isNotEmpty()) 0 else -1
                             )
