@@ -46,6 +46,9 @@ interface BookDao {
     @Query("SELECT * FROM bookentity WHERE id IN (:ids)")
     suspend fun findBooksById(ids: List<Int>): List<BookEntity>
 
+    @Query("SELECT * FROM bookentity WHERE filePath=:filePath LIMIT 1")
+    suspend fun findBookByFilePath(filePath: String): BookEntity?
+
     @Delete
     suspend fun deleteBooks(books: List<BookEntity>)
 

@@ -153,7 +153,7 @@ private fun SegmentedButton(
                 else Color.Transparent,
                 shape = shape
             )
-            .padding(horizontal = 18.dp),
+            .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AnimatedVisibility(
