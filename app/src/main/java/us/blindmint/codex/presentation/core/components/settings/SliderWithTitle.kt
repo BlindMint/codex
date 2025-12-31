@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.presentation.core.components.common.StyledText
+import us.blindmint.codex.presentation.core.constants.SettingsHorizontalPadding
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 import kotlin.math.roundToInt
 
@@ -57,7 +58,7 @@ fun SliderWithTitle(
     fromValue: Int,
     toValue: Int,
     title: String,
-    horizontalPadding: Dp = 18.dp,
+    horizontalPadding: Dp = SettingsHorizontalPadding,
     verticalPadding: Dp = 8.dp,
     onValueChange: (Int) -> Unit
 ) {
@@ -149,7 +150,7 @@ fun SliderWithTitle(
     showPlaceholder: Boolean = false,
     title: String,
     toValue: Int,
-    horizontalPadding: Dp = 18.dp,
+    horizontalPadding: Dp = SettingsHorizontalPadding,
     verticalPadding: Dp = 8.dp,
     onValueChange: (Float) -> Unit
 ) {

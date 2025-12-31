@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.domain.ui.ButtonItem
 import us.blindmint.codex.presentation.core.components.common.StyledText
+import us.blindmint.codex.presentation.core.constants.SettingsHorizontalPadding
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 
 /**
@@ -30,7 +31,7 @@ fun ChipsWithTitle(
     modifier: Modifier = Modifier,
     title: String,
     chips: List<ButtonItem>,
-    horizontalPadding: Dp = 18.dp,
+    horizontalPadding: Dp = SettingsHorizontalPadding,
     verticalPadding: Dp = 8.dp,
     onClick: (ButtonItem) -> Unit
 ) {
