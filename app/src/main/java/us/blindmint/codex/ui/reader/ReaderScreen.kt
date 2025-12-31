@@ -518,7 +518,14 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             openShareApp = screenModel::onEvent,
             openWebBrowser = screenModel::onEvent,
             openTranslator = screenModel::onEvent,
-            openDictionary = screenModel::onEvent,
+            openDictionary = { event ->
+                screenModel.onEvent(
+                    event.copy(
+                        dictionarySource = mainState.value.dictionarySource,
+                        customDictionaryUrl = mainState.value.customDictionaryUrl
+                    )
+                )
+            },
             scrollToChapter = screenModel::onEvent,
             showSettingsBottomSheet = screenModel::onEvent,
             dismissBottomSheet = screenModel::onEvent,

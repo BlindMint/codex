@@ -14,6 +14,8 @@ import androidx.compose.runtime.Immutable
 import androidx.datastore.preferences.core.Preferences
 import kotlinx.parcelize.Parcelize
 import us.blindmint.codex.domain.browse.display.BrowseLayout
+import us.blindmint.codex.domain.dictionary.DictionarySource
+import us.blindmint.codex.domain.dictionary.toDictionarySource
 import us.blindmint.codex.domain.browse.display.BrowseSortOrder
 import us.blindmint.codex.domain.browse.display.toBrowseLayout
 import us.blindmint.codex.domain.browse.display.toBrowseSortOrder
@@ -123,6 +125,11 @@ data class MainState(
     val progressCount: ReaderProgressCount = provideDefaultValue { ReaderProgressCount.PERCENTAGE },
     // Default: Yellow with 50% alpha (#80FFEB3B)
     val searchHighlightColor: Long = provideDefaultValue { 0x80FFEB3B },
+
+    // Dictionary Settings
+    val dictionarySource: DictionarySource = provideDefaultValue { DictionarySource.SYSTEM_DEFAULT },
+    val customDictionaryUrl: String = provideDefaultValue { "" },
+    val doubleTapDictionary: Boolean = provideDefaultValue { false },
 
     // Browse Settings
     val browseLayout: BrowseLayout = provideDefaultValue { BrowseLayout.LIST },
@@ -400,6 +407,18 @@ data class MainState(
                     searchHighlightColor = provideValue(
                         SEARCH_HIGHLIGHT_COLOR, convert = { toLongOrNull() ?: 0x80FFEB3B }
                     ) { searchHighlightColor },
+
+                    dictionarySource = provideValue(
+                        DICTIONARY_SOURCE, convert = { toDictionarySource() }
+                    ) { dictionarySource },
+
+                    customDictionaryUrl = provideValue(
+                        CUSTOM_DICTIONARY_URL
+                    ) { customDictionaryUrl },
+
+                    doubleTapDictionary = provideValue(
+                        DOUBLE_TAP_DICTIONARY
+                    ) { doubleTapDictionary },
 
                     horizontalGestureAlphaAnim = provideValue(
                         HORIZONTAL_GESTURE_ALPHA_ANIM

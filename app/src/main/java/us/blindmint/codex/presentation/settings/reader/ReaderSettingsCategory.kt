@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import us.blindmint.codex.presentation.settings.reader.chapters.ChaptersSubcategory
+import us.blindmint.codex.presentation.settings.reader.dictionary.DictionarySubcategory
 import us.blindmint.codex.presentation.settings.reader.font.FontSubcategory
 import us.blindmint.codex.presentation.settings.reader.images.ImagesSubcategory
 import us.blindmint.codex.presentation.settings.reader.misc.MiscSubcategory
@@ -55,6 +56,9 @@ fun LazyListScope.ReaderSettingsCategory(
         titleColor = titleColor
     )
     SearchSubcategory(
+        titleColor = titleColor
+    )
+    DictionarySubcategory(
         titleColor = titleColor
     )
     MiscSubcategory(

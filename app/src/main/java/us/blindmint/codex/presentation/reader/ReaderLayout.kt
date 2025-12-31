@@ -134,7 +134,7 @@ fun ReaderLayout(
         onDictionaryRequested = { textToDefine ->
             openDictionary(
                 ReaderEvent.OnOpenDictionary(
-                    textToDefine,
+                    textToDefine = textToDefine,
                     activity = activity
                 )
             )

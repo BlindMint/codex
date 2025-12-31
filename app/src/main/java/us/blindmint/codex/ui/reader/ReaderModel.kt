@@ -35,6 +35,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import us.blindmint.codex.R
+import us.blindmint.codex.domain.dictionary.DictionarySource
 import us.blindmint.codex.domain.reader.Checkpoint
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.ReaderText.Chapter
@@ -50,6 +51,7 @@ import us.blindmint.codex.presentation.core.util.setBrightness
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.history.HistoryScreen
 import us.blindmint.codex.ui.library.LibraryScreen
+import java.net.URLEncoder
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
@@ -385,37 +387,63 @@ class ReaderModel @Inject constructor(
 
                 is ReaderEvent.OnOpenDictionary -> {
                     launch {
-                        val dictionaryIntent = Intent()
-                        val browserIntent = Intent()
+                        val word = event.textToDefine.trim()
+                        val encodedWord = URLEncoder.encode(word, "UTF-8")
 
-                        dictionaryIntent.type = "text/plain"
-                        dictionaryIntent.action = Intent.ACTION_PROCESS_TEXT
-                        dictionaryIntent.putExtra(
-                            Intent.EXTRA_PROCESS_TEXT,
-                            event.textToDefine.trim()
-                        )
-                        dictionaryIntent.putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true)
-
-                        browserIntent.action = Intent.ACTION_VIEW
-                        val text = event.textToDefine.trim().replace(" ", "+")
-                        browserIntent.data = "https://www.onelook.com/?w=$text".toUri()
-
-                        yield()
-
-                        dictionaryIntent.launchActivity(
-                            activity = event.activity,
-                            createChooser = true,
-                            success = {
-                                return@launch
+                        // Try system dictionary app first if SYSTEM_DEFAULT is selected
+                        if (event.dictionarySource == DictionarySource.SYSTEM_DEFAULT) {
+                            val dictionaryIntent = Intent().apply {
+                                type = "text/plain"
+                                action = Intent.ACTION_PROCESS_TEXT
+                                putExtra(Intent.EXTRA_PROCESS_TEXT, word)
+                                putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true)
                             }
-                        )
 
-                        browserIntent.launchActivity(
-                            activity = event.activity,
-                            success = {
-                                return@launch
+                            yield()
+
+                            dictionaryIntent.launchActivity(
+                                activity = event.activity,
+                                createChooser = true,
+                                success = {
+                                    return@launch
+                                }
+                            )
+
+                            // Fallback to OneLook if no dictionary app found
+                            val fallbackIntent = Intent(Intent.ACTION_VIEW).apply {
+                                data = "https://www.onelook.com/?w=$encodedWord".toUri()
                             }
-                        )
+                            fallbackIntent.launchActivity(
+                                activity = event.activity,
+                                success = {
+                                    return@launch
+                                }
+                            )
+                        } else {
+                            // Use the selected web dictionary source
+                            val urlTemplate = when (event.dictionarySource) {
+                                DictionarySource.ONELOOK -> "https://www.onelook.com/?w=%s"
+                                DictionarySource.WIKTIONARY -> "https://en.wiktionary.org/wiki/%s"
+                                DictionarySource.GOOGLE_DEFINE -> "https://www.google.com/search?q=define+%s"
+                                DictionarySource.MERRIAM_WEBSTER -> "https://www.merriam-webster.com/dictionary/%s"
+                                DictionarySource.CUSTOM -> event.customDictionaryUrl.ifBlank { "https://www.onelook.com/?w=%s" }
+                                else -> "https://www.onelook.com/?w=%s"
+                            }
+
+                            val url = urlTemplate.replace("%s", encodedWord)
+                            val browserIntent = Intent(Intent.ACTION_VIEW).apply {
+                                data = url.toUri()
+                            }
+
+                            yield()
+
+                            browserIntent.launchActivity(
+                                activity = event.activity,
+                                success = {
+                                    return@launch
+                                }
+                            )
+                        }
 
                         withContext(Dispatchers.Main) {
                             event.activity.getString(R.string.error_no_dictionary)

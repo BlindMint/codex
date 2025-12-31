@@ -8,6 +8,7 @@ package us.blindmint.codex.ui.reader
 
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Immutable
+import us.blindmint.codex.domain.dictionary.DictionarySource
 import us.blindmint.codex.domain.reader.ReaderText.Chapter
 
 @Immutable
@@ -64,7 +65,9 @@ sealed class ReaderEvent {
 
     data class OnOpenDictionary(
         val textToDefine: String,
-        val activity: ComponentActivity
+        val activity: ComponentActivity,
+        val dictionarySource: DictionarySource = DictionarySource.SYSTEM_DEFAULT,
+        val customDictionaryUrl: String = ""
     ) : ReaderEvent()
 
     data object OnShowSettingsBottomSheet : ReaderEvent()
