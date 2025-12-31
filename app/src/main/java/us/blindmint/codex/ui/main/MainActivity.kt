@@ -49,6 +49,7 @@ import us.blindmint.codex.ui.reader.ReaderScreen
 import us.blindmint.codex.presentation.core.components.navigation_bar.NavigationBar
 import us.blindmint.codex.presentation.core.components.navigation_rail.NavigationRail
 import us.blindmint.codex.presentation.main.MainActivityKeyboardManager
+import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.presentation.navigator.Navigator
 import us.blindmint.codex.presentation.navigator.NavigatorTabs
 import us.blindmint.codex.ui.browse.BrowseModel
@@ -236,17 +237,6 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                // Show message and navigate to reader after import/open
-                LaunchedEffect(fileImportBookId) {
-                    val bookId = fileImportBookId ?: return@LaunchedEffect
-                    fileImportBookId = null
-
-                    fileImportMessage?.let {
-                        Toast.makeText(this@MainActivity, it, Toast.LENGTH_SHORT).show()
-                        fileImportMessage = null
-                    }
-                }
-
                 CodexTheme(
                     theme = state.value.theme,
                     isDark = state.value.darkTheme.isDark(),
@@ -277,6 +267,22 @@ class MainActivity : AppCompatActivity() {
                         },
                         backHandlerEnabled = { it != StartScreen }
                     ) { screen ->
+                        // Handle file import navigation
+                        val navigator = LocalNavigator.current
+                        LaunchedEffect(fileImportBookId) {
+                            val bookId = fileImportBookId ?: return@LaunchedEffect
+                            fileImportBookId = null
+
+                            fileImportMessage?.let {
+                                Toast.makeText(this@MainActivity, it, Toast.LENGTH_SHORT).show()
+                                fileImportMessage = null
+                            }
+
+                            // Navigate to the reader with the imported/existing book
+                            HistoryScreen.insertHistoryChannel.trySend(bookId)
+                            navigator.push(ReaderScreen(bookId))
+                        }
+
                         when (screen) {
                             LibraryScreen, HistoryScreen, BrowseScreen, SettingsScreen -> {
                                 NavigatorTabs(
