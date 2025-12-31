@@ -13,14 +13,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextIndent
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import us.blindmint.codex.domain.reader.FontWithName
@@ -53,8 +58,18 @@ fun LazyItemScope.ReaderLayoutTextParagraph(
     highlightedReadingThickness: FontWeight,
     toolbarHidden: Boolean,
     openTranslator: (ReaderEvent.OnOpenTranslator) -> Unit,
-    menuVisibility: (ReaderEvent.OnMenuVisibility) -> Unit
+    menuVisibility: (ReaderEvent.OnMenuVisibility) -> Unit,
+    searchQuery: String,
+    searchHighlightColor: Color
 ) {
+    // Apply search highlighting to the text if there's a search query
+    val highlightedText = remember(paragraph.line, searchQuery, searchHighlightColor) {
+        if (searchQuery.isBlank()) {
+            paragraph.line
+        } else {
+            highlightSearchMatches(paragraph.line, searchQuery, searchHighlightColor)
+        }
+    }
     Column(
         modifier = Modifier
             .animateItem(fadeInSpec = null, fadeOutSpec = null)
@@ -64,7 +79,7 @@ fun LazyItemScope.ReaderLayoutTextParagraph(
         horizontalAlignment = horizontalAlignment
     ) {
         StyledText(
-            text = paragraph.line,
+            text = highlightedText,
             modifier = Modifier.then(
                 if (doubleClickTranslation && toolbarHidden) {
                     Modifier.noRippleClickable(
@@ -105,5 +120,46 @@ fun LazyItemScope.ReaderLayoutTextParagraph(
             highlightText = highlightedReading,
             highlightThickness = highlightedReadingThickness
         )
+    }
+}
+
+/**
+ * Highlights all occurrences of the search query in the text with the specified background color.
+ */
+private fun highlightSearchMatches(
+    text: AnnotatedString,
+    query: String,
+    highlightColor: Color
+): AnnotatedString {
+    if (query.isBlank()) return text
+
+    val originalText = text.text
+    val queryLower = query.lowercase()
+    val textLower = originalText.lowercase()
+
+    // Find all match positions
+    val matches = mutableListOf<IntRange>()
+    var searchIndex = 0
+    while (true) {
+        val foundIndex = textLower.indexOf(queryLower, searchIndex)
+        if (foundIndex == -1) break
+        matches.add(foundIndex until (foundIndex + query.length))
+        searchIndex = foundIndex + 1
+    }
+
+    if (matches.isEmpty()) return text
+
+    return buildAnnotatedString {
+        // First, copy all existing spans from the original text
+        append(text)
+
+        // Then add background highlight spans for each match
+        matches.forEach { range ->
+            addStyle(
+                style = SpanStyle(background = highlightColor),
+                start = range.first,
+                end = range.last + 1
+            )
+        }
     }
 }

@@ -173,6 +173,9 @@
     <string name="translator_reader_settings">Translator</string>
     <string name="padding_reader_settings">Margins</string>
     <string name="misc_reader_settings">Misc</string>
+    <string name="search_reader_settings">Search</string>
+    <string name="search_highlight_color">Search highlight color</string>
+    <string name="alpha_opacity">Opacity</string>
     <string name="reading_speed_reader_settings">Reading speed</string>
     <string name="reading_mode_reader_settings">Reading mode</string>
     <string name="system_reader_settings">System</string>

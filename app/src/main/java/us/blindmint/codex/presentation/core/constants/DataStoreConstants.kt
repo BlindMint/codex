@@ -67,6 +67,7 @@ object DataStoreConstants {
     val PROGRESS_BAR_ALIGNMENT = stringPreferencesKey("progress_bar_alignment")
     val PROGRESS_BAR_FONT_SIZE = intPreferencesKey("progress_bar_font_size")
     val PROGRESS_COUNT = stringPreferencesKey("progress_count")
+    val SEARCH_HIGHLIGHT_COLOR = stringPreferencesKey("search_highlight_color")
 
     // Browse settings
     val BROWSE_LAYOUT = stringPreferencesKey("browse_layout")

@@ -39,6 +39,7 @@ import us.blindmint.codex.domain.reader.ReaderHorizontalGesture
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.ReaderTextAlignment
 import us.blindmint.codex.domain.util.HorizontalAlignment
+import androidx.compose.ui.graphics.Color as ComposeColor
 import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
 import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
 import us.blindmint.codex.presentation.core.components.common.SelectionContainer
@@ -93,7 +94,9 @@ fun ReaderLayout(
     openShareApp: (ReaderEvent.OnOpenShareApp) -> Unit,
     openWebBrowser: (ReaderEvent.OnOpenWebBrowser) -> Unit,
     openTranslator: (ReaderEvent.OnOpenTranslator) -> Unit,
-    openDictionary: (ReaderEvent.OnOpenDictionary) -> Unit
+    openDictionary: (ReaderEvent.OnOpenDictionary) -> Unit,
+    searchQuery: String,
+    searchHighlightColor: ComposeColor
 ) {
     val activity = LocalActivity.current
     SelectionContainer(
@@ -220,7 +223,9 @@ fun ReaderLayout(
                                     highlightedReadingThickness = highlightedReadingThickness,
                                     toolbarHidden = toolbarHidden,
                                     openTranslator = openTranslator,
-                                    menuVisibility = menuVisibility
+                                    menuVisibility = menuVisibility,
+                                    searchQuery = searchQuery,
+                                    searchHighlightColor = searchHighlightColor
                                 )
                             }
                         }

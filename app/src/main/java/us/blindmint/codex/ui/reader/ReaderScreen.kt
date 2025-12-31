@@ -65,6 +65,7 @@ import us.blindmint.codex.ui.book_info.BookInfoScreen
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.settings.SettingsModel
 import kotlin.math.roundToInt
+import androidx.compose.ui.graphics.Color
 
 @Parcelize
 data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
@@ -259,6 +260,9 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
         }
         val progressBarFontSize = remember(mainState.value.progressBarFontSize) {
             (mainState.value.progressBarFontSize * 2).sp
+        }
+        val searchHighlightColor = remember(mainState.value.searchHighlightColor) {
+            Color(mainState.value.searchHighlightColor)
         }
 
         val layoutDirection = LocalLayoutDirection.current
@@ -525,6 +529,7 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             searchQuery = state.value.searchQuery,
             searchResults = state.value.searchResults,
             currentSearchResultIndex = state.value.currentSearchResultIndex,
+            searchHighlightColor = searchHighlightColor,
             isSearchVisible = state.value.showSearch,
             onSearchQueryChange = screenModel::onEvent,
             onNextSearchResult = screenModel::onEvent,

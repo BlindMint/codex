@@ -111,6 +111,7 @@ fun ReaderScaffold(
     searchQuery: String,
     searchResults: List<SearchResult>,
     currentSearchResultIndex: Int,
+    searchHighlightColor: Color,
     isSearchVisible: Boolean,
     onSearchQueryChange: (ReaderEvent.OnSearchQueryChange) -> Unit,
     onNextSearchResult: (ReaderEvent.OnNextSearchResult) -> Unit,
@@ -229,7 +230,9 @@ fun ReaderScaffold(
             openShareApp = openShareApp,
             openWebBrowser = openWebBrowser,
             openTranslator = openTranslator,
-            openDictionary = openDictionary
+            openDictionary = openDictionary,
+            searchQuery = searchQuery,
+            searchHighlightColor = searchHighlightColor
         )
 
         ReaderPerceptionExpander(
