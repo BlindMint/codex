@@ -45,6 +45,7 @@ import us.blindmint.codex.R
 import us.blindmint.codex.domain.ui.ButtonItem
 import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
 import us.blindmint.codex.presentation.core.components.common.StyledText
+import us.blindmint.codex.presentation.core.constants.SettingsHorizontalPadding
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 
 /**
@@ -66,7 +67,7 @@ fun SegmentedButtonWithTitle(
     title: String,
     buttons: List<ButtonItem>,
     enabled: Boolean = true,
-    horizontalPadding: Dp = 18.dp,
+    horizontalPadding: Dp = SettingsHorizontalPadding,
     verticalPadding: Dp = 8.dp,
     onClick: (ButtonItem) -> Unit
 ) {

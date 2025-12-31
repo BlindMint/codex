@@ -38,6 +38,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
+import us.blindmint.codex.presentation.core.constants.Spacing
 
 /**
  * Snackbar with vertical Swipe-To-Dismiss and animation.
@@ -94,7 +95,7 @@ fun Snackbar(modifier: Modifier = Modifier, snackbarState: SnackbarHostState) {
         Box(
             modifier = modifier
                 .offset { IntOffset(0, offset.roundToInt()) }
-                .padding(vertical = 4.dp)
+                .padding(vertical = Spacing.small)
                 .fillMaxWidth()
                 .draggable(
                     interactionSource = mutableInteractionSource,

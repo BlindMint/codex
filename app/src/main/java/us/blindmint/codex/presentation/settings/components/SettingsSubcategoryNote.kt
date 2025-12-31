@@ -22,11 +22,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.core.components.common.StyledText
+import us.blindmint.codex.presentation.core.constants.SettingsHorizontalPadding
 
 @Composable
 fun SettingsSubcategoryNote(
     text: String,
-    horizontalPadding: Dp = 18.dp,
+    horizontalPadding: Dp = SettingsHorizontalPadding,
     verticalPadding: Dp = 8.dp
 ) {
     Column(
