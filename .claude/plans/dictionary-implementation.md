@@ -1,119 +1,108 @@
-# Dictionary Support Implementation Plan
+# Offline Dictionary Implementation Plan
 
 Branch: `feature/dictionary-support`
 
 ---
 
+## Overview
+
+Implement a **self-contained, offline dictionary** for Codex that:
+- Is optional and downloadable (not bundled with APK)
+- Can be enabled during initial app setup or later via Settings
+- Provides a "Look Up" menu item in the text selection menu
+- Shows definitions in an in-app bottom sheet (not external apps)
+- Works completely offline once downloaded
+
+---
+
 ## Table of Contents
-1. [Current Implementation Analysis](#current-implementation-analysis)
-2. [Proposed Features](#proposed-features)
+1. [Feature Requirements](#feature-requirements)
+2. [Dictionary Data Source](#dictionary-data-source)
 3. [Architecture Design](#architecture-design)
-4. [File Modifications](#file-modifications)
-5. [Implementation Steps](#implementation-steps)
-6. [Testing Checklist](#testing-checklist)
+4. [UI/UX Flow](#uiux-flow)
+5. [File Structure](#file-structure)
+6. [Implementation Steps](#implementation-steps)
+7. [Testing Checklist](#testing-checklist)
 
 ---
 
-## Current Implementation Analysis
+## Feature Requirements
 
-### Existing Dictionary Flow
+### Core Features
+1. **Downloadable Dictionary**
+   - Dictionary data stored as SQLite database or compressed JSON
+   - Download size ~5-15MB (English dictionary)
+   - Stored in app's internal storage
+   - Can be deleted to free space
 
-The app currently has basic dictionary support via text selection:
+2. **Setup Integration**
+   - Optional prompt during first app launch: "Download offline dictionary?"
+   - Skip option available
+   - Can enable/download later from Settings
 
-**Entry Point: Text Selection**
-- File: `SelectionContainer.kt` (lines 39, 78-80, 217-230, 265, 289)
-- When user selects text, a floating action menu appears with "Dictionary" option (`MENU_ITEM_DICTIONARY = 4`)
-- Menu item triggers `onDictionaryRequested` callback with selected text
+3. **Settings Integration**
+   - Toggle: Enable/Disable offline dictionary
+   - Download button (if not downloaded)
+   - Delete button (if downloaded)
+   - Show download size and storage used
 
-**Event Handling**
-- File: `ReaderEvent.kt` (lines 65-68)
-```kotlin
-data class OnOpenDictionary(
-    val textToDefine: String,
-    val activity: ComponentActivity
-) : ReaderEvent()
-```
+4. **Text Selection Menu**
+   - "Look Up" menu item in selection toolbar
+   - Only appears if offline dictionary is enabled AND downloaded
+   - Separate from Android's built-in dictionary
 
-**Current Logic: ReaderModel.kt (lines 386-425)**
-```kotlin
-is ReaderEvent.OnOpenDictionary -> {
-    launch {
-        val dictionaryIntent = Intent()
-        val browserIntent = Intent()
+5. **Definition Display**
+   - Bottom sheet with word definition
+   - Shows: word, pronunciation (text, e.g., "/ˈwɜːrd/"), part of speech, definitions
+   - Multiple definitions if available
+   - Swipe to dismiss
 
-        // 1. Try ACTION_PROCESS_TEXT (dictionary apps like Google, Livio)
-        dictionaryIntent.type = "text/plain"
-        dictionaryIntent.action = Intent.ACTION_PROCESS_TEXT
-        dictionaryIntent.putExtra(Intent.EXTRA_PROCESS_TEXT, event.textToDefine.trim())
-        dictionaryIntent.putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true)
-
-        // 2. Fallback to web browser (onelook.com)
-        browserIntent.action = Intent.ACTION_VIEW
-        val text = event.textToDefine.trim().replace(" ", "+")
-        browserIntent.data = "https://www.onelook.com/?w=$text".toUri()
-
-        // Launch dictionary first, browser as fallback
-        dictionaryIntent.launchActivity(...)
-        browserIntent.launchActivity(...)
-
-        // Toast error if neither works
-        "No dictionary app found".showToast(...)
-    }
-}
-```
-
-**String Resources**
-- `strings.xml` line 71: `<string name="error_no_dictionary">No dictionary app found.</string>`
-- `strings.xml` line 124: `<string name="dictionary">Dictionary</string>`
-
-### Current Limitations
-
-1. **No user configuration** - Users cannot choose preferred dictionary app
-2. **Single fallback URL** - Only onelook.com, no alternatives
-3. **No offline support** - No embedded dictionary data
-4. **No word history** - No tracking of looked-up words
-5. **No inline definition preview** - Always opens external app/browser
-6. **Limited multi-word handling** - Works but not optimized for phrases
+### Nice-to-Have (Future)
+- Multiple language dictionaries
+- Word history/vocabulary list
+- Favorite words
+- Search dictionary directly (not just from text selection)
 
 ---
 
-## Proposed Features
+## Dictionary Data Source
 
-### Phase 1: Enhanced External Dictionary Support (Priority)
+### Option 1: WordNet (Recommended)
+- **Source**: Princeton WordNet 3.1
+- **License**: BSD-style, free for commercial use
+- **Size**: ~12MB compressed, ~30MB uncompressed SQLite
+- **Content**: 155,000+ words, definitions, synonyms, examples
+- **Format**: Can be converted to SQLite
 
-1. **Dictionary App Selection**
-   - Settings option to choose preferred dictionary app
-   - Auto-detect installed dictionary apps
-   - Allow manual app selection from installed apps
-   - Remember user's choice
+### Option 2: Simple English Dictionary
+- **Source**: Various open-source JSON dictionaries on GitHub
+- **Size**: ~3-5MB
+- **Content**: Basic definitions, fewer words
+- **Format**: JSON or SQLite
 
-2. **Multiple Web Fallbacks**
-   - Add settings for web dictionary URL
-   - Built-in options: OneLook, Wiktionary, Google Define, Merriam-Webster
-   - Custom URL option with `%s` placeholder for word
+### Chosen Approach
+Use a **pre-processed WordNet SQLite database** hosted on GitHub releases or a CDN.
 
-3. **Double-Tap Dictionary** (like existing double-tap translate)
-   - Setting to enable/disable
-   - Double-tap on word opens dictionary directly
+**Database Schema:**
+```sql
+CREATE TABLE words (
+    id INTEGER PRIMARY KEY,
+    word TEXT NOT NULL,
+    pronunciation TEXT,  -- IPA pronunciation
+    UNIQUE(word)
+);
 
-### Phase 2: Enhanced UX Features
+CREATE TABLE definitions (
+    id INTEGER PRIMARY KEY,
+    word_id INTEGER NOT NULL,
+    part_of_speech TEXT,  -- noun, verb, adj, adv, etc.
+    definition TEXT NOT NULL,
+    example TEXT,
+    FOREIGN KEY (word_id) REFERENCES words(id)
+);
 
-4. **Word History / Vocabulary List**
-   - Store looked-up words with timestamp
-   - View history from library or reader
-   - Export vocabulary list
-   - Optional: Mark words as "learned"
-
-5. **Inline Definition Preview** (Optional/Advanced)
-   - Show brief definition in bottom sheet before opening full dictionary
-   - Requires API integration (free APIs limited)
-
-### Phase 3: Offline Dictionary (Future)
-
-6. **Embedded Dictionary Data**
-   - Download offline dictionary files
-   - Support StarDict/dict.cc formats
-   - Pronunciation support
+CREATE INDEX idx_word ON words(word);
+```
 
 ---
 
@@ -121,369 +110,399 @@ is ReaderEvent.OnOpenDictionary -> {
 
 ### Data Layer
 
-**New Domain Model:**
-```kotlin
-// domain/dictionary/DictionarySource.kt
-enum class DictionarySource(val displayName: String, val urlTemplate: String?) {
-    SYSTEM_DEFAULT("System Default", null),
-    ONELOOK("OneLook", "https://www.onelook.com/?w=%s"),
-    WIKTIONARY("Wiktionary", "https://en.wiktionary.org/wiki/%s"),
-    GOOGLE_DEFINE("Google Define", "https://www.google.com/search?q=define+%s"),
-    MERRIAM_WEBSTER("Merriam-Webster", "https://www.merriam-webster.com/dictionary/%s"),
-    CUSTOM("Custom URL", null)
-}
+**New Files:**
+```
+data/
+├── dictionary/
+│   ├── DictionaryDatabase.kt      # Room database for dictionary
+│   ├── DictionaryDao.kt           # Data access object
+│   ├── DictionaryRepository.kt    # Repository interface
+│   └── DictionaryRepositoryImpl.kt
+│
+└── local/dto/
+    ├── DictionaryWordEntity.kt    # Word entity
+    └── DictionaryDefinitionEntity.kt  # Definition entity
 ```
 
-**Word History Entity (Phase 2):**
-```kotlin
-// data/local/dto/WordHistoryEntity.kt
-@Entity(tableName = "word_history")
-data class WordHistoryEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val word: String,
-    val bookId: Int?,
-    val bookTitle: String?,
-    val timestamp: Long = System.currentTimeMillis(),
-    val learned: Boolean = false
-)
+**Domain Layer:**
+```
+domain/
+├── dictionary/
+│   ├── DictionaryWord.kt          # Domain model
+│   ├── DictionaryDefinition.kt
+│   └── DictionaryStatus.kt        # NOT_DOWNLOADED, DOWNLOADING, READY, ERROR
+│
+└── use_case/dictionary/
+    ├── LookupWord.kt              # Look up a word
+    ├── DownloadDictionary.kt      # Download dictionary file
+    ├── DeleteDictionary.kt        # Delete dictionary data
+    └── GetDictionaryStatus.kt     # Check if downloaded/enabled
 ```
 
 ### State Management
 
 **MainState additions:**
 ```kotlin
-// ui/main/MainState.kt
-val dictionarySource: DictionarySource = DictionarySource.SYSTEM_DEFAULT,
-val customDictionaryUrl: String = "",
-val preferredDictionaryPackage: String? = null,  // e.g., "livio.pack.lang.en_US"
-val doubleTapDictionary: Boolean = false
+val offlineDictionaryEnabled: Boolean = false,
+val offlineDictionaryDownloaded: Boolean = false,
+val offlineDictionaryDownloading: Boolean = false,
+val offlineDictionaryProgress: Float = 0f  // 0.0 to 1.0
 ```
 
 **MainEvent additions:**
 ```kotlin
-// ui/main/MainEvent.kt
-data class OnChangeDictionarySource(val value: DictionarySource) : MainEvent()
-data class OnChangeCustomDictionaryUrl(val value: String) : MainEvent()
-data class OnChangePreferredDictionaryPackage(val value: String?) : MainEvent()
-data class OnChangeDoubleTapDictionary(val value: Boolean) : MainEvent()
+data class OnToggleOfflineDictionary(val enabled: Boolean) : MainEvent()
+data object OnDownloadDictionary : MainEvent()
+data object OnDeleteDictionary : MainEvent()
+data class OnDictionaryDownloadProgress(val progress: Float) : MainEvent()
+data class OnDictionaryDownloadComplete(val success: Boolean) : MainEvent()
 ```
 
-**DataStore Constants:**
+**ReaderState additions:**
 ```kotlin
-// core/datastore/DataStoreConstants.kt
-val DICTIONARY_SOURCE = stringPreferencesKey("dictionary_source")
-val CUSTOM_DICTIONARY_URL = stringPreferencesKey("custom_dictionary_url")
-val PREFERRED_DICTIONARY_PACKAGE = stringPreferencesKey("preferred_dictionary_package")
-val DOUBLE_TAP_DICTIONARY = booleanPreferencesKey("double_tap_dictionary")
+val dictionaryBottomSheet: DictionaryResult? = null  // null = hidden
 ```
 
-### Settings UI Structure
-
+**ReaderEvent additions:**
+```kotlin
+data class OnLookupWord(val word: String) : ReaderEvent()
+data object OnDismissDictionarySheet : ReaderEvent()
 ```
-Settings
-└── Reader Settings
-    └── Dictionary (new subcategory)
-        ├── Dictionary App (dropdown/dialog)
-        │   ├── System Default
-        │   ├── [Detected apps...]
-        │   └── Custom
-        ├── Web Fallback (dropdown)
-        │   ├── OneLook
-        │   ├── Wiktionary
-        │   ├── Google Define
-        │   ├── Merriam-Webster
-        │   └── Custom URL
-        ├── Custom URL (text field, shown when Custom selected)
-        └── Double-Tap Dictionary (toggle)
+
+### DataStore Constants
+```kotlin
+val OFFLINE_DICTIONARY_ENABLED = booleanPreferencesKey("offline_dictionary_enabled")
+// Downloaded status determined by checking if database file exists
 ```
 
 ---
 
-## File Modifications
+## UI/UX Flow
+
+### Initial Setup Flow
+```
+App First Launch
+    ↓
+Welcome Screen
+    ↓
+"Would you like to download the offline dictionary?"
+"This allows you to look up word definitions without internet."
+[Download size: ~12MB]
+    ↓
+[Download Now]  [Skip for Now]
+    ↓
+If Download: Show progress → Complete → Continue to app
+If Skip: Continue to app (can download later in Settings)
+```
+
+### Settings UI
+```
+Settings
+└── Reader Settings
+    └── Dictionary
+        ├── Offline Dictionary [Toggle]
+        │   └── (if OFF and not downloaded): "Download dictionary to enable"
+        │   └── (if OFF and downloaded): "Dictionary downloaded but disabled"
+        │   └── (if ON): "Dictionary ready"
+        │
+        ├── Download Dictionary [Button] (if not downloaded)
+        │   └── Shows progress bar while downloading
+        │
+        └── Delete Dictionary [Button] (if downloaded)
+            └── "Free up 12MB of storage"
+```
+
+### Text Selection Flow
+```
+User selects text in reader
+    ↓
+Floating toolbar appears with:
+[Copy] [Share] [Web Search] [Translate] [Look Up]
+                                            ↑
+                            (only if dictionary enabled + downloaded)
+    ↓
+User taps "Look Up"
+    ↓
+Bottom Sheet appears:
+┌─────────────────────────────────────┐
+│  example                            │
+│  /ɪɡˈzæmpəl/                       │
+│                                     │
+│  noun                               │
+│  1. A thing characteristic of its   │
+│     kind or illustrating a rule.    │
+│     "it's a good example of how     │
+│     European cities work"           │
+│                                     │
+│  2. A person or thing regarded as   │
+│     a model to be imitated.         │
+│                                     │
+│  verb                               │
+│  1. Be illustrated or exemplified.  │
+│     "the extent of Allied          │
+│     preparations is exampled by..." │
+└─────────────────────────────────────┘
+```
+
+---
+
+## File Structure
 
 ### New Files to Create
 
 ```
 app/src/main/java/us/blindmint/codex/
-├── domain/dictionary/
-│   └── DictionarySource.kt                    # Enum for dictionary sources
+
+├── data/dictionary/
+│   ├── DictionaryDatabase.kt
+│   ├── DictionaryDao.kt
+│   ├── DictionaryRepository.kt
+│   └── DictionaryRepositoryImpl.kt
 │
 ├── data/local/dto/
-│   └── WordHistoryEntity.kt                   # (Phase 2) Word history entity
+│   ├── DictionaryWordEntity.kt
+│   └── DictionaryDefinitionEntity.kt
+│
+├── domain/dictionary/
+│   ├── DictionaryWord.kt
+│   ├── DictionaryDefinition.kt
+│   ├── DictionaryResult.kt
+│   └── DictionaryStatus.kt
+│
+├── domain/use_case/dictionary/
+│   ├── LookupWord.kt
+│   ├── DownloadDictionary.kt
+│   ├── DeleteDictionary.kt
+│   └── GetDictionaryStatus.kt
+│
+├── presentation/reader/
+│   └── DictionaryBottomSheet.kt
 │
 ├── presentation/settings/reader/dictionary/
-│   ├── DictionarySubcategory.kt               # Settings subcategory container
+│   ├── DictionarySubcategory.kt
 │   └── components/
-│       ├── DictionaryAppOption.kt             # App selection dialog
-│       ├── DictionaryWebFallbackOption.kt     # Web fallback dropdown
-│       ├── DictionaryCustomUrlOption.kt       # Custom URL input
-│       └── DoubleTapDictionaryOption.kt       # Toggle option
+│       ├── OfflineDictionaryToggle.kt
+│       ├── DownloadDictionaryButton.kt
+│       └── DeleteDictionaryButton.kt
 │
-└── core/util/
-    └── DictionaryUtils.kt                     # Helper functions
+└── presentation/start/
+    └── DictionarySetupScreen.kt  (or integrate into existing StartScreen)
 ```
 
-### Existing Files to Modify
+### Files to Modify
 
 | File | Changes |
 |------|---------|
-| `MainState.kt` | Add dictionary-related state fields |
-| `MainEvent.kt` | Add dictionary-related events |
-| `MainModel.kt` | Handle new events, persist settings |
-| `DataStoreConstants.kt` | Add dictionary preference keys |
-| `ReaderModel.kt` | Update `OnOpenDictionary` handler to use settings |
-| `ReaderSettingsCategory.kt` | Add DictionarySubcategory import/call |
-| `ReaderSettingsBottomSheet.kt` | Add DictionarySubcategory to in-book settings |
+| `MainState.kt` | Add offline dictionary state fields |
+| `MainEvent.kt` | Add dictionary download/toggle events |
+| `MainModel.kt` | Handle dictionary events |
+| `DataStoreConstants.kt` | Add offline dictionary preference key |
+| `ReaderState.kt` | Add dictionary bottom sheet state |
+| `ReaderEvent.kt` | Add lookup/dismiss events |
+| `ReaderModel.kt` | Handle lookup, show bottom sheet |
+| `ReaderScaffold.kt` | Include DictionaryBottomSheet |
+| `SelectionContainer.kt` | Conditionally show "Look Up" based on dictionary status |
+| `StartScreen.kt` | Add dictionary setup prompt |
 | `strings.xml` | Add dictionary-related strings |
-| `BookDao.kt` | (Phase 2) Add word history queries |
-| `CodexDatabase.kt` | (Phase 2) Add WordHistoryEntity |
+| `RepositoryModule.kt` | Add DI for dictionary repository |
 
 ---
 
 ## Implementation Steps
 
-### Step 1: Domain Model Setup
+### Phase 1: Dictionary Data & Storage
 
-1. Create `DictionarySource.kt` enum:
-   ```kotlin
-   package us.blindmint.codex.domain.dictionary
+1. **Create dictionary database schema**
+   - `DictionaryWordEntity.kt`
+   - `DictionaryDefinitionEntity.kt`
+   - `DictionaryDatabase.kt` (separate from main CodexDatabase)
+   - `DictionaryDao.kt`
 
-   enum class DictionarySource(
-       val id: String,
-       val displayNameRes: Int,
-       val urlTemplate: String?
-   ) {
-       SYSTEM_DEFAULT("system_default", R.string.dictionary_system_default, null),
-       ONELOOK("onelook", R.string.dictionary_onelook, "https://www.onelook.com/?w=%s"),
-       WIKTIONARY("wiktionary", R.string.dictionary_wiktionary, "https://en.wiktionary.org/wiki/%s"),
-       GOOGLE_DEFINE("google_define", R.string.dictionary_google, "https://www.google.com/search?q=define+%s"),
-       MERRIAM_WEBSTER("merriam_webster", R.string.dictionary_merriam_webster, "https://www.merriam-webster.com/dictionary/%s"),
-       CUSTOM("custom", R.string.dictionary_custom_url, null);
+2. **Create dictionary repository**
+   - `DictionaryRepository.kt` interface
+   - `DictionaryRepositoryImpl.kt` with download, lookup, delete methods
 
-       companion object {
-           fun fromId(id: String): DictionarySource =
-               entries.find { it.id == id } ?: SYSTEM_DEFAULT
-       }
-   }
-   ```
+3. **Prepare dictionary data file**
+   - Process WordNet into SQLite database
+   - Host on GitHub releases or CDN
+   - Create download URL constant
 
-### Step 2: State & Events
+### Phase 2: Download & Management
 
-2. Add to `MainState.kt`:
-   ```kotlin
-   val dictionarySource: String = DictionarySource.SYSTEM_DEFAULT.id,
-   val customDictionaryUrl: String = "",
-   val preferredDictionaryPackage: String? = null,
-   val doubleTapDictionary: Boolean = false
-   ```
+4. **Implement download functionality**
+   - Use `DownloadManager` or `OkHttp` for downloading
+   - Show progress in notification and UI
+   - Handle errors, resume interrupted downloads
 
-3. Add to `MainEvent.kt`:
-   ```kotlin
-   data class OnChangeDictionarySource(val value: String) : MainEvent()
-   data class OnChangeCustomDictionaryUrl(val value: String) : MainEvent()
-   data class OnChangePreferredDictionaryPackage(val value: String?) : MainEvent()
-   data class OnChangeDoubleTapDictionary(val value: Boolean) : MainEvent()
-   ```
+5. **Add state management**
+   - Update `MainState.kt`, `MainEvent.kt`, `MainModel.kt`
+   - Persist enabled state in DataStore
+   - Check download status by file existence
 
-4. Add to `DataStoreConstants.kt`:
-   ```kotlin
-   val DICTIONARY_SOURCE = stringPreferencesKey("dictionary_source")
-   val CUSTOM_DICTIONARY_URL = stringPreferencesKey("custom_dictionary_url")
-   val PREFERRED_DICTIONARY_PACKAGE = stringPreferencesKey("preferred_dictionary_package")
-   val DOUBLE_TAP_DICTIONARY = booleanPreferencesKey("double_tap_dictionary")
-   ```
+6. **Create settings UI**
+   - `OfflineDictionaryToggle.kt`
+   - `DownloadDictionaryButton.kt` with progress
+   - `DeleteDictionaryButton.kt` with confirmation
 
-5. Add handlers in `MainModel.kt`:
-   ```kotlin
-   is MainEvent.OnChangeDictionarySource -> {
-       _state.update { it.copy(dictionarySource = event.value) }
-       // Persist to datastore
-   }
-   // ... similar for other events
-   ```
+### Phase 3: Lookup & Display
 
-### Step 3: Settings UI
+7. **Create lookup use case**
+   - `LookupWord.kt` - queries local database
+   - Handle word not found
+   - Return `DictionaryResult` with definitions
 
-6. Create `DictionarySubcategory.kt`:
-   ```kotlin
-   @Composable
-   fun DictionarySubcategory(
-       dictionarySource: String,
-       customDictionaryUrl: String,
-       preferredDictionaryPackage: String?,
-       doubleTapDictionary: Boolean,
-       onChangeDictionarySource: (String) -> Unit,
-       onChangeCustomDictionaryUrl: (String) -> Unit,
-       onChangePreferredDictionaryPackage: (String?) -> Unit,
-       onChangeDoubleTapDictionary: (Boolean) -> Unit
-   ) {
-       SettingsSubcategory(
-           title = stringResource(id = R.string.dictionary_settings),
-           showDivider = true
-       ) {
-           DictionaryWebFallbackOption(...)
-           if (dictionarySource == DictionarySource.CUSTOM.id) {
-               DictionaryCustomUrlOption(...)
-           }
-           DoubleTapDictionaryOption(...)
-       }
-   }
-   ```
+8. **Create definition bottom sheet**
+   - `DictionaryBottomSheet.kt`
+   - Show word, pronunciation, part of speech, definitions
+   - Swipe to dismiss
 
-7. Create individual option components following existing patterns (e.g., `FontFamilyOption.kt`)
+9. **Integrate with text selection**
+   - Update `SelectionContainer.kt` to check dictionary status
+   - Only show "Look Up" if enabled AND downloaded
+   - Fire `OnLookupWord` event
 
-8. Add `DictionarySubcategory` to:
-   - `ReaderSettingsCategory.kt` (full settings)
-   - `ReaderSettingsBottomSheet.kt` (in-book settings)
+10. **Connect to reader**
+    - Update `ReaderState.kt`, `ReaderEvent.kt`, `ReaderModel.kt`
+    - Show bottom sheet on lookup
+    - Handle dismiss
 
-### Step 4: Update Dictionary Handler
+### Phase 4: Setup Integration
 
-9. Modify `ReaderModel.kt` `OnOpenDictionary` handler:
-   ```kotlin
-   is ReaderEvent.OnOpenDictionary -> {
-       launch {
-           val word = event.textToDefine.trim()
-           val source = DictionarySource.fromId(mainState.dictionarySource)
+11. **Add setup prompt**
+    - Modify `StartScreen.kt` or create `DictionarySetupScreen.kt`
+    - Show optional dictionary download prompt
+    - Skip option available
 
-           // Try preferred app if set
-           mainState.preferredDictionaryPackage?.let { pkg ->
-               val intent = Intent(Intent.ACTION_PROCESS_TEXT).apply {
-                   type = "text/plain"
-                   `package` = pkg
-                   putExtra(Intent.EXTRA_PROCESS_TEXT, word)
-                   putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true)
-               }
-               if (intent.launchActivity(...)) return@launch
-           }
+---
 
-           // Try system default (ACTION_PROCESS_TEXT chooser)
-           if (source == DictionarySource.SYSTEM_DEFAULT) {
-               // existing ACTION_PROCESS_TEXT logic
-           }
+## Dictionary Download URL
 
-           // Use configured web fallback
-           val url = when (source) {
-               DictionarySource.CUSTOM -> mainState.customDictionaryUrl
-               else -> source.urlTemplate
-           }?.replace("%s", URLEncoder.encode(word, "UTF-8"))
+Host the dictionary database file at:
+```
+https://github.com/BlindMint/codex/releases/download/dictionary-v1/english-dictionary.db
+```
 
-           if (url != null) {
-               Intent(Intent.ACTION_VIEW, url.toUri()).launchActivity(...)
-           }
-       }
-   }
-   ```
+Or use a CDN for faster downloads.
 
-### Step 5: Double-Tap Dictionary (Optional)
+**File details:**
+- Filename: `english-dictionary.db`
+- Format: SQLite database
+- Size: ~12MB compressed, ~30MB uncompressed
+- Location in app: `context.filesDir/dictionary/english-dictionary.db`
 
-10. Add double-tap detection to text rendering (similar to existing double-tap translate):
-    - Check `doubleTapDictionary` setting
-    - On double-tap, extract word at tap position
-    - Fire `OnOpenDictionary` event
+---
 
-### Step 6: String Resources
+## String Resources
 
-11. Add to `strings.xml`:
-    ```xml
-    <!-- Dictionary Settings -->
-    <string name="dictionary_settings">Dictionary</string>
-    <string name="dictionary_settings_desc">Configure dictionary lookups</string>
-    <string name="dictionary_web_fallback">Web Dictionary</string>
-    <string name="dictionary_web_fallback_desc">Website to use when no dictionary app is available</string>
-    <string name="dictionary_custom_url">Custom URL</string>
-    <string name="dictionary_custom_url_desc">Use %s as placeholder for the word</string>
-    <string name="double_tap_dictionary">Double-Tap Dictionary</string>
-    <string name="double_tap_dictionary_desc">Double-tap a word to look it up</string>
-    <string name="dictionary_system_default">System Default</string>
-    <string name="dictionary_onelook">OneLook</string>
-    <string name="dictionary_wiktionary">Wiktionary</string>
-    <string name="dictionary_google">Google Define</string>
-    <string name="dictionary_merriam_webster">Merriam-Webster</string>
-    <string name="dictionary_custom_url_option">Custom URL</string>
-    ```
+```xml
+<!-- Dictionary Setup -->
+<string name="dictionary_setup_title">Offline Dictionary</string>
+<string name="dictionary_setup_description">Download the offline dictionary to look up word definitions without internet.</string>
+<string name="dictionary_setup_size">Download size: %s</string>
+<string name="dictionary_download_now">Download Now</string>
+<string name="dictionary_skip">Skip for Now</string>
+
+<!-- Dictionary Settings -->
+<string name="dictionary_settings">Dictionary</string>
+<string name="offline_dictionary">Offline Dictionary</string>
+<string name="offline_dictionary_enabled">Dictionary ready</string>
+<string name="offline_dictionary_disabled">Dictionary downloaded but disabled</string>
+<string name="offline_dictionary_not_downloaded">Download dictionary to enable</string>
+<string name="download_dictionary">Download Dictionary</string>
+<string name="downloading_dictionary">Downloading…</string>
+<string name="delete_dictionary">Delete Dictionary</string>
+<string name="delete_dictionary_confirm">Delete offline dictionary? This will free up %s of storage.</string>
+<string name="dictionary_download_failed">Download failed. Please try again.</string>
+<string name="dictionary_download_complete">Dictionary downloaded successfully</string>
+
+<!-- Dictionary Bottom Sheet -->
+<string name="word_not_found">Word not found in dictionary</string>
+<string name="definition_example">Example:</string>
+
+<!-- Text Selection Menu -->
+<string name="look_up">Look Up</string>
+```
 
 ---
 
 ## Testing Checklist
 
-### Phase 1 Tests
+### Download & Storage
+- [ ] Dictionary downloads successfully
+- [ ] Download progress shows correctly
+- [ ] Download can be cancelled
+- [ ] Interrupted download can be resumed (or restarted)
+- [ ] Downloaded file is stored correctly
+- [ ] Delete removes file and frees space
+- [ ] Storage space shown correctly
 
-- [ ] Dictionary menu item appears on text selection
-- [ ] System default opens app chooser with dictionary apps
-- [ ] OneLook fallback works when selected
-- [ ] Wiktionary fallback works when selected
-- [ ] Google Define fallback works when selected
-- [ ] Merriam-Webster fallback works when selected
-- [ ] Custom URL works with `%s` placeholder
-- [ ] Custom URL validates URL format
-- [ ] Settings persist after app restart
-- [ ] Special characters in words are URL-encoded
-- [ ] Multi-word phrases work correctly
-- [ ] Double-tap dictionary toggle works (if implemented)
-- [ ] Double-tap opens dictionary when enabled
-- [ ] Settings visible in both full settings and reader bottom sheet
+### Settings
+- [ ] Toggle enables/disables dictionary
+- [ ] Toggle state persists after app restart
+- [ ] Download button shows when not downloaded
+- [ ] Delete button shows when downloaded
+- [ ] Delete confirmation dialog works
+
+### Lookup & Display
+- [ ] "Look Up" appears in text selection menu (when enabled + downloaded)
+- [ ] "Look Up" hidden when dictionary disabled
+- [ ] "Look Up" hidden when dictionary not downloaded
+- [ ] Bottom sheet shows for found words
+- [ ] "Not found" message for unknown words
+- [ ] Multiple definitions display correctly
+- [ ] Pronunciation displays correctly
+- [ ] Part of speech displays correctly
+- [ ] Bottom sheet dismisses on swipe
+- [ ] Bottom sheet dismisses on outside tap
+
+### Setup
+- [ ] Setup prompt appears on first launch
+- [ ] "Download Now" downloads dictionary
+- [ ] "Skip" continues without download
+- [ ] Setup doesn't show again after first completion
 
 ### Edge Cases
-
-- [ ] No dictionary apps installed - shows web fallback
-- [ ] No internet - shows appropriate error
-- [ ] Empty text selection - handled gracefully
-- [ ] Very long text selection - truncated appropriately
-- [ ] Special characters only - handled gracefully
+- [ ] Works offline after download
+- [ ] Handles special characters in words
+- [ ] Handles multi-word selections (looks up first word or shows error)
+- [ ] Low storage warning before download
+- [ ] Handles corrupted database file
 
 ---
 
 ## Dependencies
 
-No new dependencies required. Uses:
-- `Intent.ACTION_PROCESS_TEXT` (Android standard)
-- `Intent.ACTION_VIEW` (Android standard)
-- Existing Jetpack Compose components
-- Existing DataStore infrastructure
+**New dependencies (if needed):**
+```kotlin
+// For ZIP extraction (if dictionary is compressed)
+implementation("org.apache.commons:commons-compress:1.26.0")
+
+// OR use Android's built-in GZIPInputStream for .gz files
+```
+
+**Existing dependencies used:**
+- Room (for SQLite database)
+- Hilt (for dependency injection)
+- Compose (for UI)
+- DataStore (for preferences)
+- OkHttp or DownloadManager (for downloading)
 
 ---
 
 ## Notes
 
-### Dictionary App Detection
+### Database Separation
+The dictionary database should be **separate** from the main `CodexDatabase` to:
+- Allow independent download/delete
+- Avoid migration issues
+- Keep dictionary data isolated
 
-To detect installed dictionary apps:
-```kotlin
-val intent = Intent(Intent.ACTION_PROCESS_TEXT).apply {
-    type = "text/plain"
-    putExtra(Intent.EXTRA_PROCESS_TEXT, "test")
-}
-val resolvedActivities = context.packageManager.queryIntentActivities(
-    intent, PackageManager.MATCH_ALL
-)
-```
+### File Size Considerations
+- Compress the database file for download (~12MB → ~5MB with gzip)
+- Decompress on device after download
+- Show accurate size in UI (download size vs extracted size)
 
-### Popular Dictionary Apps
-
-Common packages to recognize:
-- `livio.pack.lang.en_US` - Livio Dictionary
-- `com.google.android.googlequicksearchbox` - Google
-- `com.dictionary` - Dictionary.com
-- `com.wordweb.android.free` - WordWeb
-
-### URL Templates
-
-| Service | URL Template |
-|---------|--------------|
-| OneLook | `https://www.onelook.com/?w=%s` |
-| Wiktionary | `https://en.wiktionary.org/wiki/%s` |
-| Google | `https://www.google.com/search?q=define+%s` |
-| Merriam-Webster | `https://www.merriam-webster.com/dictionary/%s` |
-| Cambridge | `https://dictionary.cambridge.org/dictionary/english/%s` |
-| Oxford Learner's | `https://www.oxfordlearnersdictionaries.com/definition/english/%s` |
-
----
-
-## Future Enhancements (Phase 2+)
-
-1. **Word History Database** - Track all looked-up words
-2. **Vocabulary Export** - Export words for flashcard apps
-3. **Offline Dictionary** - Embedded dictionary files
-4. **Pronunciation** - Audio pronunciation support
-5. **Definition Preview** - Show brief definition in bottom sheet
-6. **Language Detection** - Auto-select dictionary based on book language
+### Offline-First
+- Once downloaded, dictionary works completely offline
+- No network requests for lookups
+- Only network needed for initial download
