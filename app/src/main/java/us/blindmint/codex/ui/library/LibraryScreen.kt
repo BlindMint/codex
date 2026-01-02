@@ -78,37 +78,33 @@ object LibraryScreen : Screen, Parcelable {
             val sortOrder = mainState.value.librarySortOrder
             val isDescending = mainState.value.librarySortOrderDescending
 
-            if (sortOrder == null || sortOrder == LibrarySortOrder.LAST_READ) {
-                state.value.books
-            } else {
-                when (sortOrder) {
-                    LibrarySortOrder.NAME -> {
-                        if (isDescending) {
-                            state.value.books.sortedByDescending { it.data.title.toString() }
-                        } else {
-                            state.value.books.sortedBy { it.data.title.toString() }
-                        }
+            when (sortOrder) {
+                LibrarySortOrder.NAME -> {
+                    if (isDescending) {
+                        state.value.books.sortedByDescending { it.data.title.toString() }
+                    } else {
+                        state.value.books.sortedBy { it.data.title.toString() }
                     }
-                    LibrarySortOrder.LAST_READ -> {
-                        if (isDescending) {
-                            state.value.books.sortedByDescending { it.data.lastOpened }
-                        } else {
-                            state.value.books.sortedBy { it.data.lastOpened }
-                        }
+                }
+                LibrarySortOrder.LAST_READ -> {
+                    if (isDescending) {
+                        state.value.books.sortedByDescending { it.data.lastOpened }
+                    } else {
+                        state.value.books.sortedBy { it.data.lastOpened }
                     }
-                    LibrarySortOrder.PROGRESS -> {
-                        if (isDescending) {
-                            state.value.books.sortedByDescending { it.data.progress }
-                        } else {
-                            state.value.books.sortedBy { it.data.progress }
-                        }
+                }
+                LibrarySortOrder.PROGRESS -> {
+                    if (isDescending) {
+                        state.value.books.sortedByDescending { it.data.progress }
+                    } else {
+                        state.value.books.sortedBy { it.data.progress }
                     }
-                    LibrarySortOrder.AUTHOR -> {
-                        if (isDescending) {
-                            state.value.books.sortedByDescending { it.data.author.toString() }
-                        } else {
-                            state.value.books.sortedBy { it.data.author.toString() }
-                        }
+                }
+                LibrarySortOrder.AUTHOR -> {
+                    if (isDescending) {
+                        state.value.books.sortedByDescending { it.data.author.toString() }
+                    } else {
+                        state.value.books.sortedBy { it.data.author.toString() }
                     }
                 }
             }
