@@ -270,7 +270,8 @@ private fun WebViewContent(
                     useWideViewPort = true
                     builtInZoomControls = true
                     displayZoomControls = false
-                    cacheMode = WebSettings.LOAD_DEFAULT
+                    // Use LOAD_NO_CACHE to avoid ERR_CACHE_MISS errors
+                    cacheMode = WebSettings.LOAD_NO_CACHE
                     mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
 
                     // Better text rendering
