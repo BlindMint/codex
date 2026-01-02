@@ -72,6 +72,7 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
 
     companion object {
         const val CHAPTERS_DRAWER = "chapters_drawer"
+        const val BOOKMARKS_DRAWER = "bookmarks_drawer"
         const val SETTINGS_BOTTOM_SHEET = "settings_bottom_sheet"
     }
 
@@ -521,6 +522,7 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             showSettingsBottomSheet = screenModel::onEvent,
             dismissBottomSheet = screenModel::onEvent,
             showChaptersDrawer = screenModel::onEvent,
+            showBookmarksDrawer = screenModel::onEvent,
             dismissDrawer = screenModel::onEvent,
             showSearch = screenModel::onEvent,
             hideSearch = screenModel::onEvent,

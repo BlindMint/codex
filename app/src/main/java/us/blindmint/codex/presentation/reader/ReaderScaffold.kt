@@ -104,6 +104,7 @@ fun ReaderScaffold(
     onTextSelected: (ReaderEvent.OnTextSelected) -> Unit,
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
+    showBookmarksDrawer: (ReaderEvent.OnShowBookmarksDrawer) -> Unit,
     showSearch: (ReaderEvent.OnShowSearch) -> Unit,
     hideSearch: (ReaderEvent.OnHideSearch) -> Unit,
     searchQuery: String,
@@ -156,6 +157,7 @@ fun ReaderScaffold(
                     selectNextPreset = selectNextPreset,
                     showSettingsBottomSheet = showSettingsBottomSheet,
                     showChaptersDrawer = showChaptersDrawer,
+                    showBookmarksDrawer = showBookmarksDrawer,
                     showSearch = showSearch,
                     navigateBack = navigateBack,
                     navigateToBookInfo = navigateToBookInfo

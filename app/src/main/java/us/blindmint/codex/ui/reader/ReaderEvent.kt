@@ -117,6 +117,8 @@ sealed class ReaderEvent {
 
     data object OnShowChaptersDrawer : ReaderEvent()
 
+    data object OnShowBookmarksDrawer : ReaderEvent()
+
     data object OnDismissDrawer : ReaderEvent()
 
     data object OnShowSearch : ReaderEvent()

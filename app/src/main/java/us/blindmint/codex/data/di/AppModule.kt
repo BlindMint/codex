@@ -62,6 +62,7 @@ object AppModule {
                 DatabaseHelper.MIGRATION_4_5, // creates ColorPresetEntity table(if does not exist)
                 DatabaseHelper.MIGRATION_5_6, // creates FavoriteDirectoryEntity table(if does not exist)
                 DatabaseHelper.MIGRATION_10_11, // migrates DROPPED category to PLANNING
+                DatabaseHelper.MIGRATION_11_12, // creates BookmarkEntity table
             )
             .allowMainThreadQueries()
             .build()
