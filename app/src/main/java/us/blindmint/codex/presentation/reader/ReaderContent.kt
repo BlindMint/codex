@@ -50,6 +50,7 @@ fun ReaderContent(
     text: List<ReaderText>,
     bottomSheet: BottomSheet?,
     drawer: Drawer?,
+    bookmarks: List<us.blindmint.codex.domain.bookmark.Bookmark>,
     listState: LazyListState,
     currentChapter: Chapter?,
     nestedScrollConnection: NestedScrollConnection,
@@ -113,7 +114,9 @@ fun ReaderContent(
     dismissBottomSheet: (ReaderEvent.OnDismissBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
     showBookmarksDrawer: (ReaderEvent.OnShowBookmarksDrawer) -> Unit,
+    scrollToBookmark: (ReaderEvent.OnScrollToBookmark) -> Unit,
     dismissDrawer: (ReaderEvent.OnDismissDrawer) -> Unit,
+    onDeleteBookmark: (bookmark: us.blindmint.codex.domain.bookmark.Bookmark) -> Unit,
     showSearch: (ReaderEvent.OnShowSearch) -> Unit,
     hideSearch: (ReaderEvent.OnHideSearch) -> Unit,
     searchQuery: String,
@@ -235,10 +238,13 @@ fun ReaderContent(
     ReaderDrawer(
         drawer = drawer,
         chapters = remember(text) { text.filterIsInstance<Chapter>() },
+        bookmarks = bookmarks,
         currentChapter = currentChapter,
         currentChapterProgress = currentChapterProgress,
         scrollToChapter = scrollToChapter,
-        dismissDrawer = dismissDrawer
+        scrollToBookmark = scrollToBookmark,
+        dismissDrawer = dismissDrawer,
+        deleteBookmark = onDeleteBookmark
     )
 
     ReaderBackHandler(

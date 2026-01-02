@@ -44,6 +44,9 @@ import us.blindmint.codex.domain.ui.UIText
 import us.blindmint.codex.domain.use_case.book.GetBookById
 import us.blindmint.codex.domain.use_case.book.GetText
 import us.blindmint.codex.domain.use_case.book.UpdateBook
+import us.blindmint.codex.domain.use_case.bookmark.GetBookmarksByBookId
+import us.blindmint.codex.domain.use_case.bookmark.InsertBookmark
+import us.blindmint.codex.domain.use_case.bookmark.DeleteBookmark
 import us.blindmint.codex.domain.use_case.history.GetLatestHistory
 import us.blindmint.codex.presentation.core.util.coerceAndPreventNaN
 import us.blindmint.codex.presentation.core.util.launchActivity
@@ -62,7 +65,10 @@ class ReaderModel @Inject constructor(
     private val getBookById: GetBookById,
     private val updateBook: UpdateBook,
     private val getText: GetText,
-    private val getLatestHistory: GetLatestHistory
+    private val getLatestHistory: GetLatestHistory,
+    private val getBookmarksByBookId: GetBookmarksByBookId,
+    private val insertBookmark: InsertBookmark,
+    private val deleteBookmark: DeleteBookmark
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -140,6 +146,14 @@ class ReaderModel @Inject constructor(
                                     )
                                 }
 
+                                // Load bookmarks for the current book
+                                launch(Dispatchers.IO) {
+                                    val bookmarks = getBookmarksByBookId.execute(_state.value.book.id)
+                                    _state.update {
+                                        it.copy(bookmarks = bookmarks)
+                                    }
+                                }
+
                                 return@collectLatest
                             }
                         }
@@ -203,6 +217,25 @@ class ReaderModel @Inject constructor(
                                     progress = calculateProgress(chapterIndex),
                                     firstVisibleItemIndex = chapterIndex,
                                     firstVisibleItemOffset = 0
+                                )
+                            )
+                        }
+                    }
+                }
+
+                is ReaderEvent.OnScrollToBookmark -> {
+                    launch {
+                        _state.value.apply {
+                            listState.requestScrollToItem(
+                                event.scrollIndex,
+                                event.scrollOffset
+                            )
+                            updateChapter(index = event.scrollIndex)
+                            onEvent(
+                                ReaderEvent.OnChangeProgress(
+                                    progress = calculateProgress(event.scrollIndex),
+                                    firstVisibleItemIndex = event.scrollIndex,
+                                    firstVisibleItemOffset = event.scrollOffset
                                 )
                             )
                         }
@@ -507,8 +540,21 @@ class ReaderModel @Inject constructor(
                 }
 
                 is ReaderEvent.OnBookmarkSelection -> {
-                    // Placeholder for future bookmark feature
-                    // TODO: Implement bookmarking when bookmark system is added
+                    launch(Dispatchers.IO) {
+                        val currentBookmark = us.blindmint.codex.domain.bookmark.Bookmark(
+                            bookId = _state.value.book.id,
+                            scrollIndex = _state.value.listState.firstVisibleItemIndex,
+                            scrollOffset = _state.value.listState.firstVisibleItemScrollOffset,
+                            timestamp = System.currentTimeMillis()
+                        )
+                        insertBookmark.execute(currentBookmark)
+
+                        // Reload bookmarks to update the list
+                        val bookmarks = getBookmarksByBookId.execute(_state.value.book.id)
+                        _state.update {
+                            it.copy(bookmarks = bookmarks)
+                        }
+                    }
                 }
 
                 is ReaderEvent.OnWebSearch -> {
@@ -588,6 +634,15 @@ class ReaderModel @Inject constructor(
                     _state.update {
                         it.copy(
                             drawer = ReaderScreen.CHAPTERS_DRAWER,
+                            bottomSheet = null
+                        )
+                    }
+                }
+
+                is ReaderEvent.OnShowBookmarksDrawer -> {
+                    _state.update {
+                        it.copy(
+                            drawer = ReaderScreen.BOOKMARKS_DRAWER,
                             bottomSheet = null
                         )
                     }
@@ -901,6 +956,18 @@ class ReaderModel @Inject constructor(
 
             yield()
             _state.update { ReaderState() }
+        }
+    }
+
+    fun deleteBookmarkItem(bookmark: us.blindmint.codex.domain.bookmark.Bookmark) {
+        viewModelScope.launch(Dispatchers.IO) {
+            deleteBookmark.execute(bookmark)
+
+            // Reload bookmarks to update the list
+            val bookmarks = getBookmarksByBookId.execute(_state.value.book.id)
+            _state.update {
+                it.copy(bookmarks = bookmarks)
+            }
         }
     }
 

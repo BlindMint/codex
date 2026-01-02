@@ -460,6 +460,7 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             text = state.value.text,
             bottomSheet = state.value.bottomSheet,
             drawer = state.value.drawer,
+            bookmarks = state.value.bookmarks,
             listState = listState,
             currentChapter = state.value.currentChapter,
             nestedScrollConnection = nestedScrollConnection.value,
@@ -523,7 +524,11 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             dismissBottomSheet = screenModel::onEvent,
             showChaptersDrawer = screenModel::onEvent,
             showBookmarksDrawer = screenModel::onEvent,
+            scrollToBookmark = screenModel::onEvent,
             dismissDrawer = screenModel::onEvent,
+            onDeleteBookmark = { bookmark ->
+                screenModel.deleteBookmarkItem(bookmark)
+            },
             showSearch = screenModel::onEvent,
             hideSearch = screenModel::onEvent,
             searchQuery = state.value.searchQuery,

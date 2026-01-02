@@ -7,6 +7,7 @@
 package us.blindmint.codex.presentation.reader
 
 import androidx.compose.runtime.Composable
+import us.blindmint.codex.domain.bookmark.Bookmark
 import us.blindmint.codex.domain.reader.ReaderText.Chapter
 import us.blindmint.codex.domain.util.Drawer
 import us.blindmint.codex.ui.reader.ReaderEvent
@@ -16,10 +17,13 @@ import us.blindmint.codex.ui.reader.ReaderScreen
 fun ReaderDrawer(
     drawer: Drawer?,
     chapters: List<Chapter>,
+    bookmarks: List<Bookmark>,
     currentChapter: Chapter?,
     currentChapterProgress: Float,
     scrollToChapter: (ReaderEvent.OnScrollToChapter) -> Unit,
-    dismissDrawer: (ReaderEvent.OnDismissDrawer) -> Unit
+    scrollToBookmark: (ReaderEvent.OnScrollToBookmark) -> Unit,
+    dismissDrawer: (ReaderEvent.OnDismissDrawer) -> Unit,
+    deleteBookmark: (Bookmark) -> Unit
 ) {
     ReaderChaptersDrawer(
         show = drawer == ReaderScreen.CHAPTERS_DRAWER,
@@ -28,5 +32,13 @@ fun ReaderDrawer(
         currentChapterProgress = currentChapterProgress,
         scrollToChapter = scrollToChapter,
         dismissDrawer = dismissDrawer
+    )
+
+    ReaderBookmarksDrawer(
+        show = drawer == ReaderScreen.BOOKMARKS_DRAWER,
+        bookmarks = bookmarks,
+        scrollToBookmark = scrollToBookmark,
+        dismissDrawer = dismissDrawer,
+        deleteBookmark = deleteBookmark
     )
 }

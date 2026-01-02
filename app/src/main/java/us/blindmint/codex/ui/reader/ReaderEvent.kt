@@ -39,6 +39,11 @@ sealed class ReaderEvent {
         val chapter: Chapter
     ) : ReaderEvent()
 
+    data class OnScrollToBookmark(
+        val scrollIndex: Int,
+        val scrollOffset: Int
+    ) : ReaderEvent()
+
     data class OnScroll(
         val progress: Float
     ) : ReaderEvent()

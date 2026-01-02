@@ -8,6 +8,7 @@ package us.blindmint.codex.ui.reader
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Immutable
+import us.blindmint.codex.domain.bookmark.Bookmark
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.reader.TextSelectionContext
 import us.blindmint.codex.domain.reader.Checkpoint
@@ -45,5 +46,8 @@ data class ReaderState(
 
     // Text selection for bottom sheet menu
     val textSelectionContext: TextSelectionContext? = null,
-    val webViewUrl: String? = null
+    val webViewUrl: String? = null,
+
+    // Bookmarks
+    val bookmarks: List<Bookmark> = emptyList()
 )
