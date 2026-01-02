@@ -6,6 +6,7 @@
 
 package us.blindmint.codex.presentation.core.components.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,9 +16,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.FlowPreview
@@ -37,6 +42,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.core.components.common.IconButton
+import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 
 @OptIn(FlowPreview::class)
@@ -52,6 +58,9 @@ fun ColorPickerWithTitle(
 ) {
     val initialValue = rememberSaveable(presetId) { value.value.toString() }
     var color by remember(value) { mutableStateOf(value) }
+    var hexValue by remember(color) {
+        mutableStateOf(String.format("%08X", color.value.toLong()))
+    }
 
     LaunchedEffect(color) {
         snapshotFlow {
@@ -71,28 +80,53 @@ fun ColorPickerWithTitle(
             padding = 0.dp
         )
         Spacer(modifier = Modifier.height(8.dp))
+
+        // HEX Color Input
+        OutlinedTextField(
+            value = hexValue,
+            onValueChange = { newHex ->
+                hexValue = newHex.uppercase().take(8)
+                if (hexValue.length == 8) {
+                    try {
+                        val colorValue = newHex.toLong(16)
+                        color = Color(colorValue)
+                    } catch (e: Exception) {
+                        // Invalid hex, keep current value
+                    }
+                }
+            },
+            label = { Text(stringResource(id = R.string.hex_color)) },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
         RevertibleSlider(
-            value = color.red to "",
+            value = color.red to ((color.red * 255).toInt().toString()),
             initialValue = Color(initialValue.toULong()).red,
             title = stringResource(id = R.string.red_color),
             onValueChange = {
                 color = color.copy(red = it)
+                hexValue = String.format("%08X", color.value.toLong())
             }
         )
         RevertibleSlider(
-            value = color.green to "",
+            value = color.green to ((color.green * 255).toInt().toString()),
             initialValue = Color(initialValue.toULong()).green,
             title = stringResource(id = R.string.green_color),
             onValueChange = {
                 color = color.copy(green = it)
+                hexValue = String.format("%08X", color.value.toLong())
             }
         )
         RevertibleSlider(
-            value = color.blue to "",
+            value = color.blue to ((color.blue * 255).toInt().toString()),
             initialValue = Color(initialValue.toULong()).blue,
             title = stringResource(id = R.string.blue_color),
             onValueChange = {
                 color = color.copy(blue = it)
+                hexValue = String.format("%08X", color.value.toLong())
             }
         )
     }
@@ -107,6 +141,9 @@ private fun RevertibleSlider(
     verticalPadding: Dp = 8.dp,
     onValueChange: (Float) -> Unit
 ) {
+    var isEditing by remember { mutableStateOf(false) }
+    var editValue by remember(value.second) { mutableStateOf(value.second) }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -128,6 +165,35 @@ private fun RevertibleSlider(
         )
 
         Spacer(modifier = Modifier.width(10.dp))
+
+        // Editable RGB value field
+        OutlinedTextField(
+            value = editValue,
+            onValueChange = { newValue ->
+                editValue = newValue.take(3) // Max 3 digits (0-255)
+                val intValue = newValue.toIntOrNull()
+                if (intValue != null && intValue in 0..255) {
+                    onValueChange(intValue / 255f)
+                }
+            },
+            modifier = Modifier
+                .width(60.dp)
+                .noRippleClickable {
+                    isEditing = !isEditing
+                },
+            readOnly = !isEditing,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            textStyle = MaterialTheme.typography.labelSmall,
+            colors = androidx.compose.material3.TextFieldDefaults.outlinedTextFieldColors(
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledTextColor = MaterialTheme.colorScheme.onSurface
+            ),
+            enabled = true
+        )
+
+        Spacer(modifier = Modifier.width(6.dp))
+
         IconButton(
             modifier = Modifier.size(28.dp),
             icon = Icons.Default.History,
@@ -138,6 +204,7 @@ private fun RevertibleSlider(
             else MaterialTheme.colorScheme.onSurface
         ) {
             onValueChange(initialValue)
+            editValue = ((initialValue * 255).toInt()).toString()
         }
     }
 }
