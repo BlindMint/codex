@@ -14,6 +14,8 @@ import us.blindmint.codex.data.local.data_store.DataStore
 import us.blindmint.codex.data.local.data_store.DataStoreImpl
 import us.blindmint.codex.data.mapper.book.BookMapper
 import us.blindmint.codex.data.mapper.book.BookMapperImpl
+import us.blindmint.codex.data.mapper.bookmark.BookmarkMapper
+import us.blindmint.codex.data.mapper.bookmark.BookmarkMapperImpl
 import us.blindmint.codex.data.mapper.color_preset.ColorPresetMapper
 import us.blindmint.codex.data.mapper.color_preset.ColorPresetMapperImpl
 import us.blindmint.codex.data.mapper.history.HistoryMapper
@@ -22,12 +24,14 @@ import us.blindmint.codex.data.parser.FileParser
 import us.blindmint.codex.data.parser.FileParserImpl
 import us.blindmint.codex.data.parser.TextParser
 import us.blindmint.codex.data.parser.TextParserImpl
+import us.blindmint.codex.data.repository.BookmarkRepositoryImpl
 import us.blindmint.codex.data.repository.BookRepositoryImpl
 import us.blindmint.codex.data.repository.ColorPresetRepositoryImpl
 import us.blindmint.codex.data.repository.DataStoreRepositoryImpl
 import us.blindmint.codex.data.repository.FileSystemRepositoryImpl
 import us.blindmint.codex.data.repository.HistoryRepositoryImpl
 import us.blindmint.codex.data.repository.PermissionRepositoryImpl
+import us.blindmint.codex.domain.repository.BookmarkRepository
 import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.repository.ColorPresetRepository
 import us.blindmint.codex.domain.repository.DataStoreRepository
@@ -56,6 +60,12 @@ abstract class RepositoryModule {
     abstract fun bindHistoryRepository(
         historyRepositoryImpl: HistoryRepositoryImpl
     ): HistoryRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBookmarkRepository(
+        bookmarkRepositoryImpl: BookmarkRepositoryImpl
+    ): BookmarkRepository
 
     @Binds
     @Singleton
@@ -92,6 +102,12 @@ abstract class RepositoryModule {
     abstract fun bindHistoryMapper(
         historyMapperImpl: HistoryMapperImpl
     ): HistoryMapper
+
+    @Binds
+    @Singleton
+    abstract fun bindBookmarkMapper(
+        bookmarkMapperImpl: BookmarkMapperImpl
+    ): BookmarkMapper
 
     @Binds
     @Singleton

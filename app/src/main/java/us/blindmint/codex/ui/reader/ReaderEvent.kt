@@ -39,6 +39,11 @@ sealed class ReaderEvent {
         val chapter: Chapter
     ) : ReaderEvent()
 
+    data class OnScrollToBookmark(
+        val scrollIndex: Int,
+        val scrollOffset: Int
+    ) : ReaderEvent()
+
     data class OnScroll(
         val progress: Float
     ) : ReaderEvent()
@@ -89,7 +94,9 @@ sealed class ReaderEvent {
         val text: String
     ) : ReaderEvent()
 
-    data object OnBookmarkSelection : ReaderEvent()
+    data class OnBookmarkSelection(
+        val customName: String = ""
+    ) : ReaderEvent()
 
     data class OnWebSearch(
         val engine: WebSearchEngine,
@@ -116,6 +123,8 @@ sealed class ReaderEvent {
     data object OnDismissBottomSheet : ReaderEvent()
 
     data object OnShowChaptersDrawer : ReaderEvent()
+
+    data object OnShowBookmarksDrawer : ReaderEvent()
 
     data object OnDismissDrawer : ReaderEvent()
 

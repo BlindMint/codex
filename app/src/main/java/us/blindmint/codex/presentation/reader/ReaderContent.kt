@@ -50,6 +50,7 @@ fun ReaderContent(
     text: List<ReaderText>,
     bottomSheet: BottomSheet?,
     drawer: Drawer?,
+    bookmarks: List<us.blindmint.codex.domain.bookmark.Bookmark>,
     listState: LazyListState,
     currentChapter: Chapter?,
     nestedScrollConnection: NestedScrollConnection,
@@ -112,7 +113,11 @@ fun ReaderContent(
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     dismissBottomSheet: (ReaderEvent.OnDismissBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
+    showBookmarksDrawer: (ReaderEvent.OnShowBookmarksDrawer) -> Unit,
+    scrollToBookmark: (ReaderEvent.OnScrollToBookmark) -> Unit,
     dismissDrawer: (ReaderEvent.OnDismissDrawer) -> Unit,
+    onDeleteBookmark: (bookmark: us.blindmint.codex.domain.bookmark.Bookmark) -> Unit,
+    onClearAllBookmarks: () -> Unit,
     showSearch: (ReaderEvent.OnShowSearch) -> Unit,
     hideSearch: (ReaderEvent.OnHideSearch) -> Unit,
     searchQuery: String,
@@ -208,6 +213,7 @@ fun ReaderContent(
             onTextSelected = onTextSelected,
             showSettingsBottomSheet = showSettingsBottomSheet,
             showChaptersDrawer = showChaptersDrawer,
+            showBookmarksDrawer = showBookmarksDrawer,
             showSearch = showSearch,
             hideSearch = hideSearch,
             searchQuery = searchQuery,
@@ -233,10 +239,17 @@ fun ReaderContent(
     ReaderDrawer(
         drawer = drawer,
         chapters = remember(text) { text.filterIsInstance<Chapter>() },
+        bookmarks = bookmarks,
         currentChapter = currentChapter,
         currentChapterProgress = currentChapterProgress,
         scrollToChapter = scrollToChapter,
-        dismissDrawer = dismissDrawer
+        scrollToBookmark = scrollToBookmark,
+        dismissDrawer = dismissDrawer,
+        deleteBookmark = onDeleteBookmark,
+        clearAllBookmarks = onClearAllBookmarks,
+        onQuickBookmark = { customName ->
+            onBookmarkSelection(ReaderEvent.OnBookmarkSelection(customName = customName))
+        }
     )
 
     ReaderBackHandler(
@@ -261,7 +274,10 @@ fun ReaderContent(
                 onCopySelection(ReaderEvent.OnCopySelection(textSelectionContext.selectedText))
             },
             onBookmark = {
-                onBookmarkSelection(ReaderEvent.OnBookmarkSelection)
+                onBookmarkSelection(ReaderEvent.OnBookmarkSelection())
+            },
+            onBookmarkWithName = { customName ->
+                onBookmarkSelection(ReaderEvent.OnBookmarkSelection(customName = customName))
             },
             onWebSearch = { engine ->
                 onWebSearch(

@@ -16,6 +16,7 @@ import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import us.blindmint.codex.data.local.dto.BookEntity
+import us.blindmint.codex.data.local.dto.BookmarkEntity
 import us.blindmint.codex.data.local.dto.BookProgressHistoryEntity
 import us.blindmint.codex.data.local.dto.ColorPresetEntity
 import us.blindmint.codex.data.local.dto.HistoryEntity
@@ -27,8 +28,9 @@ import java.io.File
         HistoryEntity::class,
         ColorPresetEntity::class,
         BookProgressHistoryEntity::class,
+        BookmarkEntity::class,
     ],
-    version = 11,
+    version = 13,
     exportSchema = false
 )
 abstract class BookDatabase : RoomDatabase() {
@@ -110,6 +112,28 @@ object DatabaseHelper {
         override fun migrate(db: SupportSQLiteDatabase) {
             // Migrate books with DROPPED category to PLANNING
             db.execSQL("UPDATE BookEntity SET category = 'PLANNING' WHERE category = 'DROPPED'")
+        }
+    }
+
+    val MIGRATION_11_12 = object : Migration(11, 12) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `BookmarkEntity` (" +
+                        "`id` INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "`bookId` INTEGER NOT NULL, " +
+                        "`scrollIndex` INTEGER NOT NULL, " +
+                        "`scrollOffset` INTEGER NOT NULL, " +
+                        "`timestamp` INTEGER NOT NULL" +
+                        ")"
+            )
+        }
+    }
+
+    val MIGRATION_12_13 = object : Migration(12, 13) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `BookmarkEntity` ADD COLUMN `selectedText` TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE `BookmarkEntity` ADD COLUMN `customName` TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE `BookmarkEntity` ADD COLUMN `pageNumber` INTEGER NOT NULL DEFAULT 0")
         }
     }
 }

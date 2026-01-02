@@ -30,6 +30,8 @@ import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,7 +64,8 @@ import us.blindmint.codex.presentation.core.components.modal_bottom_sheet.ModalB
 enum class TextSelectionSubmenu {
     NONE,
     WEB_SEARCH,
-    DICTIONARY
+    DICTIONARY,
+    BOOKMARK
 }
 
 /**
@@ -83,6 +86,7 @@ fun TextSelectionBottomSheet(
     onDismiss: () -> Unit,
     onCopy: () -> Unit,
     onBookmark: () -> Unit,
+    onBookmarkWithName: (customName: String) -> Unit,
     onWebSearch: (WebSearchEngine) -> Unit,
     onDictionary: (WebDictionary) -> Unit,
     onExpandSelection: (expandLeading: Boolean) -> Unit
@@ -116,10 +120,7 @@ fun TextSelectionBottomSheet(
                             onCopy()
                             onDismiss()
                         },
-                        onBookmark = {
-                            onBookmark()
-                            onDismiss()
-                        },
+                        onBookmarkClick = { currentSubmenu = TextSelectionSubmenu.BOOKMARK },
                         onWebSearchClick = { currentSubmenu = TextSelectionSubmenu.WEB_SEARCH },
                         onDictionaryClick = { currentSubmenu = TextSelectionSubmenu.DICTIONARY },
                         onExpandSelection = onExpandSelection
@@ -145,6 +146,16 @@ fun TextSelectionBottomSheet(
                         }
                     )
                 }
+                TextSelectionSubmenu.BOOKMARK -> {
+                    BookmarkNamingSubmenu(
+                        selectedText = selectionContext.selectedText,
+                        onBack = { currentSubmenu = TextSelectionSubmenu.NONE },
+                        onSelect = { customName ->
+                            onBookmarkWithName(customName)
+                            onDismiss()
+                        }
+                    )
+                }
             }
         }
     }
@@ -154,7 +165,7 @@ fun TextSelectionBottomSheet(
 private fun MainSelectionContent(
     selectionContext: TextSelectionContext,
     onCopy: () -> Unit,
-    onBookmark: () -> Unit,
+    onBookmarkClick: () -> Unit,
     onWebSearchClick: () -> Unit,
     onDictionaryClick: () -> Unit,
     onExpandSelection: (expandLeading: Boolean) -> Unit
@@ -182,7 +193,8 @@ private fun MainSelectionContent(
             ActionItem(
                 icon = { Icon(Icons.Default.BookmarkBorder, contentDescription = null) },
                 label = stringResource(R.string.bookmark),
-                onClick = onBookmark
+                onClick = onBookmarkClick,
+                showArrow = true
             )
         }
 
@@ -440,5 +452,59 @@ private fun SubmenuHeader(
                 overflow = TextOverflow.Ellipsis
             )
         }
+    }
+}
+
+@Composable
+private fun BookmarkNamingSubmenu(
+    selectedText: String,
+    onBack: () -> Unit,
+    onSelect: (customName: String) -> Unit
+) {
+    var customName by remember { mutableStateOf(selectedText) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        SubmenuHeader(
+            title = stringResource(R.string.bookmark),
+            subtitle = selectedText,
+            onBack = onBack
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = customName,
+            onValueChange = { customName = it },
+            label = { Text(stringResource(R.string.bookmark_name)) },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = false,
+            maxLines = 3
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            TextButton(
+                onClick = onBack
+            ) {
+                Text(stringResource(R.string.cancel_button))
+            }
+            TextButton(
+                onClick = {
+                    onSelect(if (customName.isBlank()) selectedText else customName)
+                }
+            ) {
+                Text(stringResource(R.string.confirm_button))
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }

@@ -14,6 +14,7 @@ import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Upsert
 import us.blindmint.codex.data.local.dto.BookEntity
+import us.blindmint.codex.data.local.dto.BookmarkEntity
 import us.blindmint.codex.data.local.dto.BookProgressHistoryEntity
 import us.blindmint.codex.data.local.dto.ColorPresetEntity
 import us.blindmint.codex.data.local.dto.HistoryEntity
@@ -119,5 +120,26 @@ interface BookDao {
 
     @Query("DELETE FROM colorpresetentity")
     suspend fun deleteColorPresets()
+    /* - - - - - - - - - - - - - - - - - - - - - - */
+
+
+    /* ------ BookmarkEntity ------------------- */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertBookmark(bookmark: BookmarkEntity)
+
+    @Query("SELECT * FROM bookmarkentity WHERE bookId = :bookId ORDER BY timestamp DESC")
+    suspend fun getBookmarksByBookId(bookId: Int): List<BookmarkEntity>
+
+    @Query("SELECT * FROM bookmarkentity WHERE id = :bookmarkId")
+    suspend fun getBookmarkById(bookmarkId: Int): BookmarkEntity?
+
+    @Delete
+    suspend fun deleteBookmark(bookmark: BookmarkEntity)
+
+    @Query("DELETE FROM bookmarkentity WHERE bookId = :bookId")
+    suspend fun deleteBookmarksByBookId(bookId: Int)
+
+    @Query("DELETE FROM bookmarkentity")
+    suspend fun deleteAllBookmarks()
     /* - - - - - - - - - - - - - - - - - - - - - - */
 }
