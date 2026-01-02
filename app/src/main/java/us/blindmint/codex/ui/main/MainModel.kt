@@ -539,6 +539,47 @@ class MainModel @Inject constructor(
                 }
             )
 
+            // Dictionary Events
+            is MainEvent.OnChangeDictionarySource -> handleDatastoreUpdate(
+                key = DataStoreConstants.DICTIONARY_SOURCE,
+                value = event.value.id,
+                updateState = {
+                    it.copy(dictionarySource = event.value)
+                }
+            )
+
+            is MainEvent.OnChangeCustomDictionaryUrl -> handleDatastoreUpdate(
+                key = DataStoreConstants.CUSTOM_DICTIONARY_URL,
+                value = event.value,
+                updateState = {
+                    it.copy(customDictionaryUrl = this)
+                }
+            )
+
+            is MainEvent.OnChangeDoubleTapDictionary -> handleDatastoreUpdate(
+                key = DataStoreConstants.DOUBLE_TAP_DICTIONARY,
+                value = event.value,
+                updateState = {
+                    it.copy(doubleTapDictionary = this)
+                }
+            )
+
+            is MainEvent.OnChangeOfflineDictionaryEnabled -> handleDatastoreUpdate(
+                key = DataStoreConstants.OFFLINE_DICTIONARY_ENABLED,
+                value = event.value,
+                updateState = {
+                    it.copy(offlineDictionaryEnabled = this)
+                }
+            )
+
+            is MainEvent.OnChangeOpenLookupsInApp -> handleDatastoreUpdate(
+                key = DataStoreConstants.OPEN_LOOKUPS_IN_APP,
+                value = event.value,
+                updateState = {
+                    it.copy(openLookupsInApp = this)
+                }
+            )
+
             // Library Events
             is MainEvent.OnChangeLibraryLayout -> handleDatastoreUpdate(
                 key = DataStoreConstants.LIBRARY_LAYOUT,

@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Internet permission for in-app dictionary/search lookups -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Removing READ_EXTERNAL_STORAGE and WRITE_EXTERNAL_STORAGE explicitly -->
     <uses-permission

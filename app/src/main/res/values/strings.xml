@@ -119,9 +119,10 @@
     <string name="never">Never</string>
     <string name="undo">Undo</string>
     <string name="copy">Copy</string>
+    <string name="bookmark">Bookmark</string>
     <string name="report">Report</string>
     <string name="translate">Translate</string>
-    <string name="dictionary">Dictionary</string>
+    <string name="dictionary">Look Up</string>
     <string name="next">Next</string>
     <string name="yes_go_to_help">Yes, go to Help</string>
     <string name="no">No</string>
@@ -176,6 +177,59 @@
     <string name="search_reader_settings">Search</string>
     <string name="search_highlight_color">Search highlight color</string>
     <string name="alpha_opacity">Opacity</string>
+    <string name="dictionary_settings">Dictionary</string>
+    <string name="dictionary_source_option">Web Dictionary</string>
+    <string name="dictionary_system_default">System Default</string>
+    <string name="dictionary_onelook">OneLook</string>
+    <string name="dictionary_wiktionary">Wiktionary</string>
+    <string name="dictionary_google">Google Define</string>
+    <string name="dictionary_merriam_webster">Merriam-Webster</string>
+    <string name="dictionary_custom">Custom URL</string>
+    <string name="dictionary_custom_url_label">Custom dictionary URL</string>
+    <string name="dictionary_custom_url_hint">Use %s as placeholder for the word</string>
+    <string name="double_tap_dictionary_option">Double-tap dictionary</string>
+    <string name="double_tap_dictionary_option_desc">Double-tap a word to look it up</string>
+    <string name="open_lookups_in_app_option">Open lookups in app</string>
+    <string name="open_lookups_in_app_option_desc">Show dictionary and search results in an in-app browser</string>
+    <string name="offline_dictionary_option">Offline Dictionary</string>
+    <string name="offline_dictionary_not_downloaded">Download dictionary to enable</string>
+    <string name="offline_dictionary_ready">Dictionary ready</string>
+    <string name="offline_dictionary_downloading">Downloading…</string>
+    <string name="download_dictionary">Download Dictionary</string>
+    <string name="download_dictionary_desc">Download size: ~5 MB</string>
+    <string name="delete_dictionary">Delete Dictionary</string>
+    <string name="delete_dictionary_desc">Free up storage space</string>
+    <string name="dictionary_download_complete">Dictionary downloaded successfully</string>
+    <string name="dictionary_download_failed">Download failed. Please try again.</string>
+    <string name="dictionary_deleted">Dictionary deleted</string>
+    <string name="word_not_found">Word not found in dictionary</string>
+    <string name="dictionary_download_now">Download Now</string>
+
+    <!-- Dictionary Setup -->
+    <string name="start_dictionary_title">Offline Dictionary</string>
+    <string name="start_dictionary_description">Download an offline dictionary to look up word definitions without internet. This is optional and can be done later in Settings.</string>
+    <string name="start_dictionary_skip_note">You can skip this and download later from Settings → Reader → Dictionary</string>
+
+    <!-- Dictionary Sources -->
+    <string name="dictionary_source_github">GitHub</string>
+    <string name="dictionary_source_github_desc">Pre-built dictionary (~12 MB)</string>
+    <string name="dictionary_source_gitlab">GitLab</string>
+    <string name="dictionary_source_gitlab_desc">Pre-built dictionary (~12 MB)</string>
+    <string name="dictionary_source_codeberg">Codeberg</string>
+    <string name="dictionary_source_codeberg_desc">Pre-built dictionary (~12 MB)</string>
+    <string name="dictionary_source_kaikki">Kaikki.org</string>
+    <string name="dictionary_source_kaikki_desc">Wiktionary data (~28 MB, converts locally)</string>
+    <string name="dictionary_sources_title">Choose Download Source</string>
+    <string name="dictionary_sources_installed">Installed</string>
+    <string name="dictionary_update">Update Dictionary</string>
+    <string name="dictionary_update_desc">Re-download from current source</string>
+    <string name="dictionary_override_title">Replace Dictionary?</string>
+    <string name="dictionary_override_message">A dictionary is already installed. Downloading a new one will replace it.</string>
+    <string name="dictionary_override_confirm">Replace</string>
+    <string name="dictionary_override_cancel">Cancel</string>
+    <string name="dictionary_converting">Converting dictionary…</string>
+    <string name="dictionary_conversion_failed">Conversion failed. Please try again.</string>
+
     <string name="reading_speed_reader_settings">Reading speed</string>
     <string name="reading_mode_reader_settings">Reading mode</string>
     <string name="system_reader_settings">System</string>
@@ -702,6 +756,9 @@
     <string name="previous_result_content_desc">Previous result</string>
     <string name="next_result_content_desc">Next result</string>
     <string name="search_in_book_content_desc">Search in book</string>
+    <string name="close_content_desc">Close</string>
+    <string name="refresh_content_desc">Refresh</string>
+    <string name="open_in_browser">Open in browser</string>
     <string name="opening_existing_book">Opening: %1$s</string>
 
  </resources>

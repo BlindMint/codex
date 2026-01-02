@@ -7,6 +7,7 @@
 package us.blindmint.codex.ui.main
 
 import androidx.compose.runtime.Immutable
+import us.blindmint.codex.domain.dictionary.DictionarySource
 import us.blindmint.codex.domain.library.display.LibraryLayout
 import us.blindmint.codex.domain.library.sort.LibrarySortOrder
 import us.blindmint.codex.domain.reader.CustomFont
@@ -74,6 +75,13 @@ sealed class MainEvent {
     data class OnChangeHorizontalGestureAlphaAnim(val value: Boolean) : MainEvent()
     data class OnChangeHorizontalGesturePullAnim(val value: Boolean) : MainEvent()
     data class OnChangeSearchHighlightColor(val value: Long) : MainEvent()
+
+    // Dictionary Events
+    data class OnChangeDictionarySource(val value: DictionarySource) : MainEvent()
+    data class OnChangeCustomDictionaryUrl(val value: String) : MainEvent()
+    data class OnChangeDoubleTapDictionary(val value: Boolean) : MainEvent()
+    data class OnChangeOfflineDictionaryEnabled(val value: Boolean) : MainEvent()
+    data class OnChangeOpenLookupsInApp(val value: Boolean) : MainEvent()
 
     // Library Events
     data class OnChangeLibraryLayout(val value: LibraryLayout) : MainEvent()

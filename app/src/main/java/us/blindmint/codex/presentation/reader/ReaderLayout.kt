@@ -42,7 +42,7 @@ import us.blindmint.codex.domain.util.HorizontalAlignment
 import androidx.compose.ui.graphics.Color as ComposeColor
 import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
 import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
-import us.blindmint.codex.presentation.core.components.common.SelectionContainer
+import us.blindmint.codex.presentation.core.components.common.SelectionContainerWithBottomSheet
 import us.blindmint.codex.presentation.core.components.common.SpacedItem
 import us.blindmint.codex.presentation.core.util.LocalActivity
 import us.blindmint.codex.presentation.core.util.noRippleClickable
@@ -91,51 +91,27 @@ fun ReaderLayout(
     isLoading: Boolean,
     showMenu: Boolean,
     menuVisibility: (ReaderEvent.OnMenuVisibility) -> Unit,
-    openShareApp: (ReaderEvent.OnOpenShareApp) -> Unit,
-    openWebBrowser: (ReaderEvent.OnOpenWebBrowser) -> Unit,
     openTranslator: (ReaderEvent.OnOpenTranslator) -> Unit,
-    openDictionary: (ReaderEvent.OnOpenDictionary) -> Unit,
+    onTextSelected: (ReaderEvent.OnTextSelected) -> Unit,
     searchQuery: String,
     searchHighlightColor: ComposeColor
 ) {
     val activity = LocalActivity.current
-    SelectionContainer(
-        onCopyRequested = {
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-                activity.getString(R.string.copied)
-                    .showToast(context = activity, longToast = false)
+    SelectionContainerWithBottomSheet(
+        onTextSelected = { selectedText ->
+            // Build paragraph context from the text list
+            val paragraphContext = text.joinToString(" ") { item ->
+                when (item) {
+                    is ReaderText.Text -> item.line.text
+                    is ReaderText.Chapter -> item.title
+                    else -> ""
+                }
             }
-        },
-        onShareRequested = { textToShare ->
-            openShareApp(
-                ReaderEvent.OnOpenShareApp(
-                    textToShare = textToShare,
-                    activity = activity
-                )
-            )
-        },
-        onWebSearchRequested = { textToSearch ->
-            openWebBrowser(
-                ReaderEvent.OnOpenWebBrowser(
-                    textToSearch = textToSearch,
-                    activity = activity
-                )
-            )
-        },
-        onTranslateRequested = { textToTranslate ->
-            openTranslator(
-                ReaderEvent.OnOpenTranslator(
-                    textToTranslate = textToTranslate,
-                    translateWholeParagraph = false,
-                    activity = activity
-                )
-            )
-        },
-        onDictionaryRequested = { textToDefine ->
-            openDictionary(
-                ReaderEvent.OnOpenDictionary(
-                    textToDefine,
-                    activity = activity
+
+            onTextSelected(
+                ReaderEvent.OnTextSelected(
+                    selectedText = selectedText,
+                    paragraphText = paragraphContext
                 )
             )
         }

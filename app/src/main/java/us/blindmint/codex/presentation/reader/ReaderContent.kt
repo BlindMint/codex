@@ -18,7 +18,17 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.os.Build
 import us.blindmint.codex.domain.library.book.Book
+import us.blindmint.codex.domain.lookup.WebDictionary
+import us.blindmint.codex.domain.lookup.WebSearchEngine
+import us.blindmint.codex.domain.reader.TextSelectionContext
+import us.blindmint.codex.presentation.core.util.LocalActivity
+import us.blindmint.codex.presentation.core.util.showToast
+import us.blindmint.codex.R
 import us.blindmint.codex.domain.reader.Checkpoint
 import us.blindmint.codex.domain.reader.FontWithName
 import us.blindmint.codex.domain.reader.ReaderFontThickness
@@ -96,10 +106,8 @@ fun ReaderContent(
     restoreCheckpoint: (ReaderEvent.OnRestoreCheckpoint) -> Unit,
     scroll: (ReaderEvent.OnScroll) -> Unit,
     changeProgress: (ReaderEvent.OnChangeProgress) -> Unit,
-    openShareApp: (ReaderEvent.OnOpenShareApp) -> Unit,
-    openWebBrowser: (ReaderEvent.OnOpenWebBrowser) -> Unit,
     openTranslator: (ReaderEvent.OnOpenTranslator) -> Unit,
-    openDictionary: (ReaderEvent.OnOpenDictionary) -> Unit,
+    onTextSelected: (ReaderEvent.OnTextSelected) -> Unit,
     scrollToChapter: (ReaderEvent.OnScrollToChapter) -> Unit,
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     dismissBottomSheet: (ReaderEvent.OnDismissBottomSheet) -> Unit,
@@ -115,9 +123,21 @@ fun ReaderContent(
     onSearchQueryChange: (ReaderEvent.OnSearchQueryChange) -> Unit,
     onNextSearchResult: (ReaderEvent.OnNextSearchResult) -> Unit,
     onPrevSearchResult: (ReaderEvent.OnPrevSearchResult) -> Unit,
+    textSelectionContext: TextSelectionContext?,
+    onDismissTextSelection: (ReaderEvent.OnDismissTextSelection) -> Unit,
+    onExpandSelection: (ReaderEvent.OnExpandSelection) -> Unit,
+    onCopySelection: (ReaderEvent.OnCopySelection) -> Unit,
+    onBookmarkSelection: (ReaderEvent.OnBookmarkSelection) -> Unit,
+    onWebSearch: (ReaderEvent.OnWebSearch) -> Unit,
+    onDictionaryLookup: (ReaderEvent.OnDictionaryLookup) -> Unit,
+    webViewUrl: String?,
+    onDismissWebView: (ReaderEvent.OnDismissWebView) -> Unit,
+    onOpenExternalBrowser: (String) -> Unit,
+    openLookupsInApp: Boolean,
     navigateToBookInfo: (changePath: Boolean) -> Unit,
     navigateBack: () -> Unit
 ) {
+    val activity = LocalActivity.current
     ReaderBottomSheet(
         bottomSheet = bottomSheet,
         fullscreenMode = fullscreenMode,
@@ -184,10 +204,8 @@ fun ReaderContent(
             restoreCheckpoint = restoreCheckpoint,
             scroll = scroll,
             changeProgress = changeProgress,
-            openShareApp = openShareApp,
-            openWebBrowser = openWebBrowser,
             openTranslator = openTranslator,
-            openDictionary = openDictionary,
+            onTextSelected = onTextSelected,
             showSettingsBottomSheet = showSettingsBottomSheet,
             showChaptersDrawer = showChaptersDrawer,
             showSearch = showSearch,
@@ -225,4 +243,58 @@ fun ReaderContent(
         leave = leave,
         navigateBack = navigateBack
     )
+
+    // Text Selection Bottom Sheet
+    if (textSelectionContext != null) {
+        TextSelectionBottomSheet(
+            selectionContext = textSelectionContext,
+            onDismiss = { onDismissTextSelection(ReaderEvent.OnDismissTextSelection) },
+            onCopy = {
+                // Copy to clipboard
+                val clipboardManager = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboardManager.setPrimaryClip(
+                    ClipData.newPlainText("Selected text", textSelectionContext.selectedText)
+                )
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                    activity.getString(R.string.copied).showToast(context = activity, longToast = false)
+                }
+                onCopySelection(ReaderEvent.OnCopySelection(textSelectionContext.selectedText))
+            },
+            onBookmark = {
+                onBookmarkSelection(ReaderEvent.OnBookmarkSelection)
+            },
+            onWebSearch = { engine ->
+                onWebSearch(
+                    ReaderEvent.OnWebSearch(
+                        engine = engine,
+                        query = textSelectionContext.selectedText,
+                        activity = activity,
+                        openInApp = openLookupsInApp
+                    )
+                )
+            },
+            onDictionary = { dictionary ->
+                onDictionaryLookup(
+                    ReaderEvent.OnDictionaryLookup(
+                        dictionary = dictionary,
+                        word = textSelectionContext.selectedText,
+                        activity = activity,
+                        openInApp = openLookupsInApp
+                    )
+                )
+            },
+            onExpandSelection = { expandLeading ->
+                onExpandSelection(ReaderEvent.OnExpandSelection(expandLeading = expandLeading))
+            }
+        )
+    }
+
+    // WebView Bottom Sheet for in-app browser
+    if (webViewUrl != null) {
+        WebViewBottomSheet(
+            url = webViewUrl,
+            onDismiss = { onDismissWebView(ReaderEvent.OnDismissWebView) },
+            onOpenExternal = { url -> onOpenExternalBrowser(url) }
+        )
+    }
 }

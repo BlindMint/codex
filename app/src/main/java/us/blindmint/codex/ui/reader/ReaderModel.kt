@@ -35,6 +35,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import us.blindmint.codex.R
+import us.blindmint.codex.domain.dictionary.DictionarySource
 import us.blindmint.codex.domain.reader.Checkpoint
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.ReaderText.Chapter
@@ -50,6 +51,7 @@ import us.blindmint.codex.presentation.core.util.setBrightness
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.history.HistoryScreen
 import us.blindmint.codex.ui.library.LibraryScreen
+import java.net.URLEncoder
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
@@ -385,37 +387,63 @@ class ReaderModel @Inject constructor(
 
                 is ReaderEvent.OnOpenDictionary -> {
                     launch {
-                        val dictionaryIntent = Intent()
-                        val browserIntent = Intent()
+                        val word = event.textToDefine.trim()
+                        val encodedWord = URLEncoder.encode(word, "UTF-8")
 
-                        dictionaryIntent.type = "text/plain"
-                        dictionaryIntent.action = Intent.ACTION_PROCESS_TEXT
-                        dictionaryIntent.putExtra(
-                            Intent.EXTRA_PROCESS_TEXT,
-                            event.textToDefine.trim()
-                        )
-                        dictionaryIntent.putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true)
-
-                        browserIntent.action = Intent.ACTION_VIEW
-                        val text = event.textToDefine.trim().replace(" ", "+")
-                        browserIntent.data = "https://www.onelook.com/?w=$text".toUri()
-
-                        yield()
-
-                        dictionaryIntent.launchActivity(
-                            activity = event.activity,
-                            createChooser = true,
-                            success = {
-                                return@launch
+                        // Try system dictionary app first if SYSTEM_DEFAULT is selected
+                        if (event.dictionarySource == DictionarySource.SYSTEM_DEFAULT) {
+                            val dictionaryIntent = Intent().apply {
+                                type = "text/plain"
+                                action = Intent.ACTION_PROCESS_TEXT
+                                putExtra(Intent.EXTRA_PROCESS_TEXT, word)
+                                putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true)
                             }
-                        )
 
-                        browserIntent.launchActivity(
-                            activity = event.activity,
-                            success = {
-                                return@launch
+                            yield()
+
+                            dictionaryIntent.launchActivity(
+                                activity = event.activity,
+                                createChooser = true,
+                                success = {
+                                    return@launch
+                                }
+                            )
+
+                            // Fallback to OneLook if no dictionary app found
+                            val fallbackIntent = Intent(Intent.ACTION_VIEW).apply {
+                                data = "https://www.onelook.com/?w=$encodedWord".toUri()
                             }
-                        )
+                            fallbackIntent.launchActivity(
+                                activity = event.activity,
+                                success = {
+                                    return@launch
+                                }
+                            )
+                        } else {
+                            // Use the selected web dictionary source
+                            val urlTemplate = when (event.dictionarySource) {
+                                DictionarySource.ONELOOK -> "https://www.onelook.com/?w=%s"
+                                DictionarySource.WIKTIONARY -> "https://en.wiktionary.org/wiki/%s"
+                                DictionarySource.GOOGLE_DEFINE -> "https://www.google.com/search?q=define+%s"
+                                DictionarySource.MERRIAM_WEBSTER -> "https://www.merriam-webster.com/dictionary/%s"
+                                DictionarySource.CUSTOM -> event.customDictionaryUrl.ifBlank { "https://www.onelook.com/?w=%s" }
+                                else -> "https://www.onelook.com/?w=%s"
+                            }
+
+                            val url = urlTemplate.replace("%s", encodedWord)
+                            val browserIntent = Intent(Intent.ACTION_VIEW).apply {
+                                data = url.toUri()
+                            }
+
+                            yield()
+
+                            browserIntent.launchActivity(
+                                activity = event.activity,
+                                success = {
+                                    return@launch
+                                }
+                            )
+                        }
 
                         withContext(Dispatchers.Main) {
                             event.activity.getString(R.string.error_no_dictionary)
@@ -438,6 +466,121 @@ class ReaderModel @Inject constructor(
                         it.copy(
                             bottomSheet = null
                         )
+                    }
+                }
+
+                // Text Selection Bottom Sheet Events
+                is ReaderEvent.OnTextSelected -> {
+                    val context = us.blindmint.codex.domain.reader.TextSelectionContext.fromSelection(
+                        selectedText = event.selectedText,
+                        paragraphText = event.paragraphText.ifEmpty { event.selectedText }
+                    )
+                    _state.update {
+                        it.copy(
+                            textSelectionContext = context,
+                            bottomSheet = null,
+                            drawer = null
+                        )
+                    }
+                }
+
+                is ReaderEvent.OnDismissTextSelection -> {
+                    _state.update {
+                        it.copy(
+                            textSelectionContext = null
+                        )
+                    }
+                }
+
+                is ReaderEvent.OnExpandSelection -> {
+                    _state.value.textSelectionContext?.let { currentContext ->
+                        val expandedContext = currentContext.expandSelection(event.expandLeading)
+                        _state.update {
+                            it.copy(textSelectionContext = expandedContext)
+                        }
+                    }
+                }
+
+                is ReaderEvent.OnCopySelection -> {
+                    val clipboardManager = android.content.ClipboardManager::class.java
+                    // Copy is handled directly in the UI since we need context
+                }
+
+                is ReaderEvent.OnBookmarkSelection -> {
+                    // Placeholder for future bookmark feature
+                    // TODO: Implement bookmarking when bookmark system is added
+                }
+
+                is ReaderEvent.OnWebSearch -> {
+                    launch {
+                        val url = event.engine.buildUrl(event.query)
+                        if (event.openInApp) {
+                            _state.update {
+                                it.copy(
+                                    webViewUrl = url,
+                                    textSelectionContext = null
+                                )
+                            }
+                        } else {
+                            _state.update {
+                                it.copy(textSelectionContext = null)
+                            }
+                            val browserIntent = Intent(Intent.ACTION_VIEW).apply {
+                                data = url.toUri()
+                            }
+                            browserIntent.launchActivity(
+                                activity = event.activity,
+                                success = { return@launch }
+                            )
+                            withContext(Dispatchers.Main) {
+                                event.activity.getString(R.string.error_no_browser)
+                                    .showToast(context = event.activity, longToast = false)
+                            }
+                        }
+                    }
+                }
+
+                is ReaderEvent.OnDictionaryLookup -> {
+                    launch {
+                        val url = event.dictionary.buildUrl(event.word)
+                        if (event.openInApp) {
+                            _state.update {
+                                it.copy(
+                                    webViewUrl = url,
+                                    textSelectionContext = null
+                                )
+                            }
+                        } else {
+                            _state.update {
+                                it.copy(textSelectionContext = null)
+                            }
+                            val browserIntent = Intent(Intent.ACTION_VIEW).apply {
+                                data = url.toUri()
+                            }
+                            browserIntent.launchActivity(
+                                activity = event.activity,
+                                success = { return@launch }
+                            )
+                            withContext(Dispatchers.Main) {
+                                event.activity.getString(R.string.error_no_browser)
+                                    .showToast(context = event.activity, longToast = false)
+                            }
+                        }
+                    }
+                }
+
+                is ReaderEvent.OnOpenInAppWebView -> {
+                    _state.update {
+                        it.copy(
+                            webViewUrl = event.url,
+                            textSelectionContext = null
+                        )
+                    }
+                }
+
+                is ReaderEvent.OnDismissWebView -> {
+                    _state.update {
+                        it.copy(webViewUrl = null)
                     }
                 }
 

@@ -515,10 +515,8 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             scroll = screenModel::onEvent,
             changeProgress = screenModel::onEvent,
             menuVisibility = screenModel::onEvent,
-            openShareApp = screenModel::onEvent,
-            openWebBrowser = screenModel::onEvent,
             openTranslator = screenModel::onEvent,
-            openDictionary = screenModel::onEvent,
+            onTextSelected = screenModel::onEvent,
             scrollToChapter = screenModel::onEvent,
             showSettingsBottomSheet = screenModel::onEvent,
             dismissBottomSheet = screenModel::onEvent,
@@ -534,6 +532,22 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             onSearchQueryChange = screenModel::onEvent,
             onNextSearchResult = screenModel::onEvent,
             onPrevSearchResult = screenModel::onEvent,
+            textSelectionContext = state.value.textSelectionContext,
+            onDismissTextSelection = screenModel::onEvent,
+            onExpandSelection = screenModel::onEvent,
+            onCopySelection = screenModel::onEvent,
+            onBookmarkSelection = screenModel::onEvent,
+            onWebSearch = screenModel::onEvent,
+            onDictionaryLookup = screenModel::onEvent,
+            webViewUrl = state.value.webViewUrl,
+            onDismissWebView = screenModel::onEvent,
+            onOpenExternalBrowser = { url ->
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                    data = android.net.Uri.parse(url)
+                }
+                activity.startActivity(intent)
+            },
+            openLookupsInApp = mainState.value.openLookupsInApp,
             navigateBack = {
                 navigator.pop()
             },
