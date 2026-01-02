@@ -39,6 +39,7 @@ import us.blindmint.codex.presentation.core.components.common.StyledText
 fun SwitchWithTitle(
     modifier: Modifier = Modifier,
     selected: Boolean,
+    enabled: Boolean = true,
     title: String,
     description: String? = null,
     horizontalPadding: Dp = 18.dp,
@@ -47,7 +48,7 @@ fun SwitchWithTitle(
 ) {
     Row(
         modifier = modifier
-            .clickable { onClick() }
+            .clickable(enabled = enabled) { onClick() }
             .padding(horizontal = horizontalPadding, vertical = verticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -78,6 +79,7 @@ fun SwitchWithTitle(
         Spacer(modifier = Modifier.width(18.dp))
         Switch(
             checked = selected,
+            enabled = enabled,
             onCheckedChange = null,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = MaterialTheme.colorScheme.secondary,
