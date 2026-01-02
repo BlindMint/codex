@@ -17,7 +17,6 @@ import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
 import us.blindmint.codex.presentation.settings.reader.dictionary.components.DictionarySourceOption
 import us.blindmint.codex.presentation.settings.reader.dictionary.components.DoubleTapDictionaryOption
-import us.blindmint.codex.presentation.settings.reader.dictionary.components.OfflineDictionaryOption
 import us.blindmint.codex.presentation.settings.reader.dictionary.components.OpenLookupsInAppOption
 
 fun LazyListScope.DictionarySubcategory(
@@ -32,10 +31,6 @@ fun LazyListScope.DictionarySubcategory(
         showTitle = showTitle,
         showDivider = showDivider,
     ) {
-        item {
-            OfflineDictionaryOption()
-        }
-
         item {
             DictionarySourceOption()
         }

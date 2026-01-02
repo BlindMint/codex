@@ -73,12 +73,6 @@ sealed class ReaderEvent {
         val customDictionaryUrl: String = ""
     ) : ReaderEvent()
 
-    data class OnLookupWordOffline(
-        val word: String
-    ) : ReaderEvent()
-
-    data object OnShowDictionaryBottomSheet : ReaderEvent()
-
     // Text selection bottom sheet events
     data class OnTextSelected(
         val selectedText: String,

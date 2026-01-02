@@ -41,7 +41,6 @@ import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.ReaderText.Chapter
 import us.blindmint.codex.domain.reader.SearchResult
 import us.blindmint.codex.domain.ui.UIText
-import us.blindmint.codex.domain.repository.DictionaryRepository
 import us.blindmint.codex.domain.use_case.book.GetBookById
 import us.blindmint.codex.domain.use_case.book.GetText
 import us.blindmint.codex.domain.use_case.book.UpdateBook
@@ -63,8 +62,7 @@ class ReaderModel @Inject constructor(
     private val getBookById: GetBookById,
     private val updateBook: UpdateBook,
     private val getText: GetText,
-    private val getLatestHistory: GetLatestHistory,
-    private val dictionaryRepository: DictionaryRepository
+    private val getLatestHistory: GetLatestHistory
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -458,29 +456,6 @@ class ReaderModel @Inject constructor(
                     _state.update {
                         it.copy(
                             bottomSheet = ReaderScreen.SETTINGS_BOTTOM_SHEET,
-                            drawer = null
-                        )
-                    }
-                }
-
-                is ReaderEvent.OnLookupWordOffline -> {
-                    launch(Dispatchers.IO) {
-                        val result = dictionaryRepository.lookupWord(event.word)
-                        _state.update {
-                            it.copy(
-                                dictionaryResult = result,
-                                dictionaryLookupWord = event.word,
-                                bottomSheet = ReaderScreen.DICTIONARY_BOTTOM_SHEET,
-                                drawer = null
-                            )
-                        }
-                    }
-                }
-
-                is ReaderEvent.OnShowDictionaryBottomSheet -> {
-                    _state.update {
-                        it.copy(
-                            bottomSheet = ReaderScreen.DICTIONARY_BOTTOM_SHEET,
                             drawer = null
                         )
                     }

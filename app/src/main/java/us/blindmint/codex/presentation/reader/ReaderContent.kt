@@ -22,7 +22,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
-import us.blindmint.codex.domain.dictionary.DictionaryResult
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.lookup.WebDictionary
 import us.blindmint.codex.domain.lookup.WebSearchEngine
@@ -124,8 +123,6 @@ fun ReaderContent(
     onSearchQueryChange: (ReaderEvent.OnSearchQueryChange) -> Unit,
     onNextSearchResult: (ReaderEvent.OnNextSearchResult) -> Unit,
     onPrevSearchResult: (ReaderEvent.OnPrevSearchResult) -> Unit,
-    dictionaryResult: DictionaryResult?,
-    dictionaryLookupWord: String,
     textSelectionContext: TextSelectionContext?,
     onDismissTextSelection: (ReaderEvent.OnDismissTextSelection) -> Unit,
     onExpandSelection: (ReaderEvent.OnExpandSelection) -> Unit,
@@ -144,8 +141,6 @@ fun ReaderContent(
     ReaderBottomSheet(
         bottomSheet = bottomSheet,
         fullscreenMode = fullscreenMode,
-        dictionaryResult = dictionaryResult,
-        dictionaryLookupWord = dictionaryLookupWord,
         menuVisibility = menuVisibility,
         dismissBottomSheet = dismissBottomSheet
     )
