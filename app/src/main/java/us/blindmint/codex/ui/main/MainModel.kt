@@ -564,6 +564,22 @@ class MainModel @Inject constructor(
                 }
             )
 
+            is MainEvent.OnChangeOfflineDictionaryEnabled -> handleDatastoreUpdate(
+                key = DataStoreConstants.OFFLINE_DICTIONARY_ENABLED,
+                value = event.value,
+                updateState = {
+                    it.copy(offlineDictionaryEnabled = this)
+                }
+            )
+
+            is MainEvent.OnChangeOpenLookupsInApp -> handleDatastoreUpdate(
+                key = DataStoreConstants.OPEN_LOOKUPS_IN_APP,
+                value = event.value,
+                updateState = {
+                    it.copy(openLookupsInApp = this)
+                }
+            )
+
             // Library Events
             is MainEvent.OnChangeLibraryLayout -> handleDatastoreUpdate(
                 key = DataStoreConstants.LIBRARY_LAYOUT,

@@ -17,6 +17,8 @@ import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
 import us.blindmint.codex.presentation.settings.reader.dictionary.components.DictionarySourceOption
 import us.blindmint.codex.presentation.settings.reader.dictionary.components.DoubleTapDictionaryOption
+import us.blindmint.codex.presentation.settings.reader.dictionary.components.OfflineDictionaryOption
+import us.blindmint.codex.presentation.settings.reader.dictionary.components.OpenLookupsInAppOption
 
 fun LazyListScope.DictionarySubcategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary },
@@ -31,11 +33,19 @@ fun LazyListScope.DictionarySubcategory(
         showDivider = showDivider,
     ) {
         item {
+            OfflineDictionaryOption()
+        }
+
+        item {
             DictionarySourceOption()
         }
 
         item {
             DoubleTapDictionaryOption()
+        }
+
+        item {
+            OpenLookupsInAppOption()
         }
     }
 }

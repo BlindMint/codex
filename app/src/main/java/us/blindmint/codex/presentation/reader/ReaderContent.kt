@@ -136,6 +136,7 @@ fun ReaderContent(
     webViewUrl: String?,
     onDismissWebView: (ReaderEvent.OnDismissWebView) -> Unit,
     onOpenExternalBrowser: (String) -> Unit,
+    openLookupsInApp: Boolean,
     navigateToBookInfo: (changePath: Boolean) -> Unit,
     navigateBack: () -> Unit
 ) {
@@ -272,7 +273,8 @@ fun ReaderContent(
                     ReaderEvent.OnWebSearch(
                         engine = engine,
                         query = textSelectionContext.selectedText,
-                        activity = activity
+                        activity = activity,
+                        openInApp = openLookupsInApp
                     )
                 )
             },
@@ -281,7 +283,8 @@ fun ReaderContent(
                     ReaderEvent.OnDictionaryLookup(
                         dictionary = dictionary,
                         word = textSelectionContext.selectedText,
-                        activity = activity
+                        activity = activity,
+                        openInApp = openLookupsInApp
                     )
                 )
             },

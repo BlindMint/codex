@@ -554,6 +554,7 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
                 }
                 activity.startActivity(intent)
             },
+            openLookupsInApp = mainState.value.openLookupsInApp,
             navigateBack = {
                 navigator.pop()
             },

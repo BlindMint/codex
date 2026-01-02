@@ -80,6 +80,8 @@ sealed class MainEvent {
     data class OnChangeDictionarySource(val value: DictionarySource) : MainEvent()
     data class OnChangeCustomDictionaryUrl(val value: String) : MainEvent()
     data class OnChangeDoubleTapDictionary(val value: Boolean) : MainEvent()
+    data class OnChangeOfflineDictionaryEnabled(val value: Boolean) : MainEvent()
+    data class OnChangeOpenLookupsInApp(val value: Boolean) : MainEvent()
 
     // Library Events
     data class OnChangeLibraryLayout(val value: LibraryLayout) : MainEvent()

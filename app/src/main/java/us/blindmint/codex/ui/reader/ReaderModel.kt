@@ -537,24 +537,60 @@ class ReaderModel @Inject constructor(
                 }
 
                 is ReaderEvent.OnWebSearch -> {
-                    val url = event.engine.buildUrl(event.query)
-                    // Open in in-app WebView (setting to control this will be added)
-                    _state.update {
-                        it.copy(
-                            webViewUrl = url,
-                            textSelectionContext = null
-                        )
+                    launch {
+                        val url = event.engine.buildUrl(event.query)
+                        if (event.openInApp) {
+                            _state.update {
+                                it.copy(
+                                    webViewUrl = url,
+                                    textSelectionContext = null
+                                )
+                            }
+                        } else {
+                            _state.update {
+                                it.copy(textSelectionContext = null)
+                            }
+                            val browserIntent = Intent(Intent.ACTION_VIEW).apply {
+                                data = url.toUri()
+                            }
+                            browserIntent.launchActivity(
+                                activity = event.activity,
+                                success = { return@launch }
+                            )
+                            withContext(Dispatchers.Main) {
+                                event.activity.getString(R.string.error_no_browser)
+                                    .showToast(context = event.activity, longToast = false)
+                            }
+                        }
                     }
                 }
 
                 is ReaderEvent.OnDictionaryLookup -> {
-                    val url = event.dictionary.buildUrl(event.word)
-                    // Open in in-app WebView (setting to control this will be added)
-                    _state.update {
-                        it.copy(
-                            webViewUrl = url,
-                            textSelectionContext = null
-                        )
+                    launch {
+                        val url = event.dictionary.buildUrl(event.word)
+                        if (event.openInApp) {
+                            _state.update {
+                                it.copy(
+                                    webViewUrl = url,
+                                    textSelectionContext = null
+                                )
+                            }
+                        } else {
+                            _state.update {
+                                it.copy(textSelectionContext = null)
+                            }
+                            val browserIntent = Intent(Intent.ACTION_VIEW).apply {
+                                data = url.toUri()
+                            }
+                            browserIntent.launchActivity(
+                                activity = event.activity,
+                                success = { return@launch }
+                            )
+                            withContext(Dispatchers.Main) {
+                                event.activity.getString(R.string.error_no_browser)
+                                    .showToast(context = event.activity, longToast = false)
+                            }
+                        }
                     }
                 }
 

@@ -73,6 +73,8 @@ object DataStoreConstants {
     val DICTIONARY_SOURCE = stringPreferencesKey("dictionary_source")
     val CUSTOM_DICTIONARY_URL = stringPreferencesKey("custom_dictionary_url")
     val DOUBLE_TAP_DICTIONARY = booleanPreferencesKey("double_tap_dictionary")
+    val OFFLINE_DICTIONARY_ENABLED = booleanPreferencesKey("offline_dictionary_enabled")
+    val OPEN_LOOKUPS_IN_APP = booleanPreferencesKey("open_lookups_in_app")
 
     // Browse settings
     val BROWSE_LAYOUT = stringPreferencesKey("browse_layout")

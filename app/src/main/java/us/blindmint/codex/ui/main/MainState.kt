@@ -130,6 +130,8 @@ data class MainState(
     val dictionarySource: DictionarySource = provideDefaultValue { DictionarySource.SYSTEM_DEFAULT },
     val customDictionaryUrl: String = provideDefaultValue { "" },
     val doubleTapDictionary: Boolean = provideDefaultValue { false },
+    val offlineDictionaryEnabled: Boolean = provideDefaultValue { false },
+    val openLookupsInApp: Boolean = provideDefaultValue { true },
 
     // Browse Settings
     val browseLayout: BrowseLayout = provideDefaultValue { BrowseLayout.LIST },
@@ -419,6 +421,14 @@ data class MainState(
                     doubleTapDictionary = provideValue(
                         DOUBLE_TAP_DICTIONARY
                     ) { doubleTapDictionary },
+
+                    offlineDictionaryEnabled = provideValue(
+                        OFFLINE_DICTIONARY_ENABLED
+                    ) { offlineDictionaryEnabled },
+
+                    openLookupsInApp = provideValue(
+                        OPEN_LOOKUPS_IN_APP
+                    ) { openLookupsInApp },
 
                     horizontalGestureAlphaAnim = provideValue(
                         HORIZONTAL_GESTURE_ALPHA_ANIM

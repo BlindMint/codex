@@ -100,13 +100,15 @@ sealed class ReaderEvent {
     data class OnWebSearch(
         val engine: WebSearchEngine,
         val query: String,
-        val activity: ComponentActivity
+        val activity: ComponentActivity,
+        val openInApp: Boolean = true
     ) : ReaderEvent()
 
     data class OnDictionaryLookup(
         val dictionary: WebDictionary,
         val word: String,
-        val activity: ComponentActivity
+        val activity: ComponentActivity,
+        val openInApp: Boolean = true
     ) : ReaderEvent()
 
     data class OnOpenInAppWebView(

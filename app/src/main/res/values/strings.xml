@@ -189,6 +189,8 @@
     <string name="dictionary_custom_url_hint">Use %s as placeholder for the word</string>
     <string name="double_tap_dictionary_option">Double-tap dictionary</string>
     <string name="double_tap_dictionary_option_desc">Double-tap a word to look it up</string>
+    <string name="open_lookups_in_app_option">Open lookups in app</string>
+    <string name="open_lookups_in_app_option_desc">Show dictionary and search results in an in-app browser</string>
     <string name="offline_dictionary_option">Offline Dictionary</string>
     <string name="offline_dictionary_not_downloaded">Download dictionary to enable</string>
     <string name="offline_dictionary_ready">Dictionary ready</string>
