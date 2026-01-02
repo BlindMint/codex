@@ -12,7 +12,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,10 +32,30 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.rounded.DragHandle
@@ -224,13 +243,20 @@ fun ColorPresetOption(backgroundColor: Color) {
                             )
                         )
                     },
-                    onDelete = {
-                        settingsModel.onEvent(
-                            SettingsEvent.OnDeleteColorPreset(
-                                id = selectedPreset.id
-                            )
-                        )
-                    }
+                     onDelete = {
+                         settingsModel.onEvent(
+                             SettingsEvent.OnDeleteColorPreset(
+                                 id = selectedPreset.id
+                             )
+                         )
+                     },
+                     onToggleLock = {
+                         settingsModel.onEvent(
+                             SettingsEvent.OnToggleColorPresetLock(
+                                 id = selectedPreset.id
+                             )
+                         )
+                     }
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -374,8 +400,10 @@ private fun ColorPresetOptionConfigurationItem(
     canDelete: Boolean,
     onTitleChange: (String) -> Unit,
     onRestore: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onToggleLock: () -> Unit
 ) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
     val title = remember(selectedColorPreset.id) {
         mutableStateOf(selectedColorPreset.name ?: "")
     }
@@ -447,16 +475,65 @@ private fun ColorPresetOptionConfigurationItem(
             ) {
                 onRestore()
             }
-        } else if (canDelete) {
+        } else {
+            // Lock/Unlock button
             IconButton(
                 modifier = Modifier.size(24.dp),
-                icon = Icons.Default.DeleteOutline,
-                contentDescription = R.string.delete_color_preset_content_desc,
+                icon = if (selectedColorPreset.isLocked) Icons.Default.Lock else Icons.Default.LockOpen,
+                contentDescription = if (selectedColorPreset.isLocked)
+                    stringResource(id = R.string.unlock_color_preset_content_desc)
+                else
+                    stringResource(id = R.string.lock_color_preset_content_desc),
                 disableOnClick = false,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (selectedColorPreset.isLocked)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.onSurfaceVariant
             ) {
-                onDelete()
+                onToggleLock()
             }
+
+            // Delete button (only if not locked)
+            if (canDelete && !selectedColorPreset.isLocked) {
+                Spacer(modifier = Modifier.width(4.dp))
+                IconButton(
+                    modifier = Modifier.size(24.dp),
+                    icon = Icons.Default.DeleteOutline,
+                    contentDescription = R.string.delete_color_preset_content_desc,
+                    disableOnClick = false,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ) {
+                    showDeleteDialog = true
+                }
+            }
+        }
+
+        // Delete confirmation dialog
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = {
+                    Text(text = stringResource(id = R.string.delete_color_preset_title))
+                },
+                text = {
+                    Text(text = stringResource(id = R.string.delete_color_preset_message, selectedColorPreset.name ?: "Color Preset"))
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showDeleteDialog = false
+                            onDelete()
+                        }
+                    ) {
+                        Text(text = stringResource(id = R.string.delete))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) {
+                        Text(text = stringResource(id = R.string.cancel))
+                    }
+                }
+            )
         }
     }
 }

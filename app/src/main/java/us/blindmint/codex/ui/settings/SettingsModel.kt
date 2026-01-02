@@ -389,6 +389,22 @@ class SettingsModel @Inject constructor(
                 }
             }
 
+            is SettingsEvent.OnToggleColorPresetLock -> {
+                viewModelScope.launch {
+                    cancelColorPresetJobs()
+                    updateColorColorPresetJob = launch {
+                        val colorPreset = event.id.getColorPresetById() ?: return@launch
+                        val updatedPreset = colorPreset.copy(isLocked = !colorPreset.isLocked)
+                        updateColorPreset.execute(updatedPreset)
+
+                        val colorPresets = getColorPresets.execute()
+                        _state.update {
+                            it.copy(colorPresets = colorPresets)
+                        }
+                    }
+                }
+            }
+
             is SettingsEvent.OnUpdateColorPresetTitle -> {
                 viewModelScope.launch {
                     cancelColorPresetJobs()
