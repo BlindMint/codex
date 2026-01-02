@@ -133,6 +133,9 @@ fun ReaderContent(
     onBookmarkSelection: (ReaderEvent.OnBookmarkSelection) -> Unit,
     onWebSearch: (ReaderEvent.OnWebSearch) -> Unit,
     onDictionaryLookup: (ReaderEvent.OnDictionaryLookup) -> Unit,
+    webViewUrl: String?,
+    onDismissWebView: (ReaderEvent.OnDismissWebView) -> Unit,
+    onOpenExternalBrowser: (String) -> Unit,
     navigateToBookInfo: (changePath: Boolean) -> Unit,
     navigateBack: () -> Unit
 ) {
@@ -285,6 +288,15 @@ fun ReaderContent(
             onExpandSelection = { expandLeading ->
                 onExpandSelection(ReaderEvent.OnExpandSelection(expandLeading = expandLeading))
             }
+        )
+    }
+
+    // WebView Bottom Sheet for in-app browser
+    if (webViewUrl != null) {
+        WebViewBottomSheet(
+            url = webViewUrl,
+            onDismiss = { onDismissWebView(ReaderEvent.OnDismissWebView) },
+            onOpenExternal = { url -> onOpenExternalBrowser(url) }
         )
     }
 }

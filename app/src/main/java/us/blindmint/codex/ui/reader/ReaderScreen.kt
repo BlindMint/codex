@@ -546,6 +546,14 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             onBookmarkSelection = screenModel::onEvent,
             onWebSearch = screenModel::onEvent,
             onDictionaryLookup = screenModel::onEvent,
+            webViewUrl = state.value.webViewUrl,
+            onDismissWebView = screenModel::onEvent,
+            onOpenExternalBrowser = { url ->
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                    data = android.net.Uri.parse(url)
+                }
+                activity.startActivity(intent)
+            },
             navigateBack = {
                 navigator.pop()
             },

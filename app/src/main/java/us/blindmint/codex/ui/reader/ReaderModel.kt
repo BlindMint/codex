@@ -537,38 +537,24 @@ class ReaderModel @Inject constructor(
                 }
 
                 is ReaderEvent.OnWebSearch -> {
-                    launch {
-                        val url = event.engine.buildUrl(event.query)
-                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                            data = url.toUri()
-                        }
-                        intent.launchActivity(
-                            activity = event.activity,
-                            success = {},
-                            error = {
-                                event.activity.getString(R.string.error_no_browser)
-                                    .showToast(context = event.activity)
-                            }
+                    val url = event.engine.buildUrl(event.query)
+                    // Open in in-app WebView (setting to control this will be added)
+                    _state.update {
+                        it.copy(
+                            webViewUrl = url,
+                            textSelectionContext = null
                         )
-                        _state.update { it.copy(textSelectionContext = null) }
                     }
                 }
 
                 is ReaderEvent.OnDictionaryLookup -> {
-                    launch {
-                        val url = event.dictionary.buildUrl(event.word)
-                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                            data = url.toUri()
-                        }
-                        intent.launchActivity(
-                            activity = event.activity,
-                            success = {},
-                            error = {
-                                event.activity.getString(R.string.error_no_browser)
-                                    .showToast(context = event.activity)
-                            }
+                    val url = event.dictionary.buildUrl(event.word)
+                    // Open in in-app WebView (setting to control this will be added)
+                    _state.update {
+                        it.copy(
+                            webViewUrl = url,
+                            textSelectionContext = null
                         )
-                        _state.update { it.copy(textSelectionContext = null) }
                     }
                 }
 
