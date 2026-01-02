@@ -78,31 +78,36 @@ fun ColorPickerWithTitle(
             .fillMaxWidth()
             .padding(vertical = verticalPadding, horizontal = horizontalPadding)
     ) {
-        SettingsSubcategoryTitle(
-            title = title,
-            padding = 0.dp
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // HEX Color Input
-        OutlinedTextField(
-            value = hexValue,
-            onValueChange = { newHex ->
-                hexValue = newHex.uppercase().take(8)
-                if (hexValue.length == 8) {
-                    try {
-                        val colorValue = newHex.toLong(16)
-                        color = Color(colorValue)
-                    } catch (e: Exception) {
-                        // Invalid hex, keep current value
+        // HEX Color Input - inline with title
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            OutlinedTextField(
+                value = hexValue,
+                onValueChange = { newHex ->
+                    hexValue = newHex.uppercase().take(8)
+                    if (hexValue.length == 8) {
+                        try {
+                            val colorValue = newHex.toLong(16)
+                            color = Color(colorValue)
+                        } catch (e: Exception) {
+                            // Invalid hex, keep current value
+                        }
                     }
-                }
-            },
-            label = { Text(stringResource(id = R.string.hex_color)) },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
-            singleLine = true
-        )
+                },
+                label = { Text(stringResource(id = R.string.hex_color)) },
+                modifier = Modifier.weight(1f),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
+                singleLine = true
+            )
+        }
         Spacer(modifier = Modifier.height(12.dp))
 
         RevertibleSlider(
@@ -141,15 +146,8 @@ private fun RevertibleSlider(
     verticalPadding: Dp = 8.dp,
     onValueChange: (Float) -> Unit
 ) {
-    var isEditing by remember { mutableStateOf(false) }
     var editValue by remember(value.second) { mutableStateOf(value.second) }
     val focusRequester = remember { FocusRequester() }
-
-    LaunchedEffect(isEditing) {
-        if (isEditing) {
-            focusRequester.requestFocus()
-        }
-    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -186,18 +184,12 @@ private fun RevertibleSlider(
             modifier = Modifier
                 .width(60.dp)
                 .focusRequester(focusRequester)
-                .clickable(enabled = !isEditing) {
-                    isEditing = true
+                .clickable {
+                    focusRequester.requestFocus()
                 },
-            readOnly = !isEditing,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
-            textStyle = MaterialTheme.typography.labelSmall,
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledBorderColor = MaterialTheme.colorScheme.outline,
-                disabledTextColor = MaterialTheme.colorScheme.onSurface
-            ),
-            enabled = true
+            textStyle = MaterialTheme.typography.labelSmall
         )
 
         Spacer(modifier = Modifier.width(6.dp))

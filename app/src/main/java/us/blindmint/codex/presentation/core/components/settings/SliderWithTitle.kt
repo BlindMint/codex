@@ -78,13 +78,6 @@ fun SliderWithTitle(
     ) {
         Column(Modifier.fillMaxWidth(0.2f)) {
             SettingsSubcategoryTitle(title = title, padding = 0.dp)
-            Spacer(modifier = Modifier.height(4.dp))
-            StyledText(
-                text = placeholder.value,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            )
         }
         Spacer(modifier = Modifier.width(8.dp))
         Slider(
@@ -170,13 +163,6 @@ fun SliderWithTitle(
     ) {
         Column(Modifier.fillMaxWidth(0.2f)) {
             SettingsSubcategoryTitle(title = title, padding = 0.dp)
-            Spacer(modifier = Modifier.height(4.dp))
-            StyledText(
-                text = placeholder.value,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            )
         }
         Spacer(modifier = Modifier.width(8.dp))
         Slider(
