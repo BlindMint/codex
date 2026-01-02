@@ -17,5 +17,6 @@ data class ColorPresetEntity(
     val backgroundColor: Long,
     val fontColor: Long,
     val isSelected: Boolean,
+    val isLocked: Boolean = false,
     val order: Int
 )

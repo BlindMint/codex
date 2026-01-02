@@ -30,7 +30,7 @@ import java.io.File
         BookProgressHistoryEntity::class,
         BookmarkEntity::class,
     ],
-    version = 13,
+    version = 14,
     exportSchema = false
 )
 abstract class BookDatabase : RoomDatabase() {
@@ -134,6 +134,12 @@ object DatabaseHelper {
             db.execSQL("ALTER TABLE `BookmarkEntity` ADD COLUMN `selectedText` TEXT NOT NULL DEFAULT ''")
             db.execSQL("ALTER TABLE `BookmarkEntity` ADD COLUMN `customName` TEXT NOT NULL DEFAULT ''")
             db.execSQL("ALTER TABLE `BookmarkEntity` ADD COLUMN `pageNumber` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
+    val MIGRATION_13_14 = object : Migration(13, 14) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `ColorPresetEntity` ADD COLUMN `isLocked` INTEGER NOT NULL DEFAULT 0")
         }
     }
 }

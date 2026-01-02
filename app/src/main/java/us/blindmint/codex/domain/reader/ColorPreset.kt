@@ -16,5 +16,6 @@ data class ColorPreset(
     val name: String?,
     val backgroundColor: Color,
     val fontColor: Color,
-    val isSelected: Selected
+    val isSelected: Selected,
+    val isLocked: Boolean = false
 )
