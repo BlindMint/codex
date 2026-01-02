@@ -52,14 +52,19 @@ object LookupDefaults {
             urlTemplate = "https://www.merriam-webster.com/dictionary/%s"
         ),
         WebDictionary(
-            id = "wiktionary",
-            name = "Wiktionary",
-            urlTemplate = "https://en.wiktionary.org/wiki/%s"
-        ),
-        WebDictionary(
             id = "dictionary_com",
             name = "Dictionary.com",
             urlTemplate = "https://www.dictionary.com/browse/%s"
+        ),
+        WebDictionary(
+            id = "grokipedia",
+            name = "Grokipedia",
+            urlTemplate = "https://grokipedia.com/search?q=%s"
+        ),
+        WebDictionary(
+            id = "wiktionary",
+            name = "Wiktionary",
+            urlTemplate = "https://en.wiktionary.org/wiki/%s"
         ),
         WebDictionary(
             id = "google_define",
