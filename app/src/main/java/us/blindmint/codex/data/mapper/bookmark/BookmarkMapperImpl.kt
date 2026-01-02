@@ -17,7 +17,10 @@ class BookmarkMapperImpl @Inject constructor() : BookmarkMapper {
             bookId = bookmark.bookId,
             scrollIndex = bookmark.scrollIndex,
             scrollOffset = bookmark.scrollOffset,
-            timestamp = bookmark.timestamp
+            timestamp = bookmark.timestamp,
+            selectedText = bookmark.selectedText,
+            customName = bookmark.customName,
+            pageNumber = bookmark.pageNumber
         )
     }
 
@@ -27,7 +30,10 @@ class BookmarkMapperImpl @Inject constructor() : BookmarkMapper {
             bookId = bookmarkEntity.bookId,
             scrollIndex = bookmarkEntity.scrollIndex,
             scrollOffset = bookmarkEntity.scrollOffset,
-            timestamp = bookmarkEntity.timestamp
+            timestamp = bookmarkEntity.timestamp,
+            selectedText = bookmarkEntity.selectedText,
+            customName = bookmarkEntity.customName,
+            pageNumber = bookmarkEntity.pageNumber
         )
     }
 }

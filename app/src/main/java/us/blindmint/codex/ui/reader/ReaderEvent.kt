@@ -94,7 +94,9 @@ sealed class ReaderEvent {
         val text: String
     ) : ReaderEvent()
 
-    data object OnBookmarkSelection : ReaderEvent()
+    data class OnBookmarkSelection(
+        val customName: String = ""
+    ) : ReaderEvent()
 
     data class OnWebSearch(
         val engine: WebSearchEngine,

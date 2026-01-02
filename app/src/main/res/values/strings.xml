@@ -372,6 +372,7 @@
     <string name="red_color">Red</string>
     <string name="green_color">Green</string>
     <string name="blue_color">Blue</string>
+    <string name="hex_color">HEX Color</string>
     <string name="color_preset_placeholder">Name a preset…</string>
 
     <!-- Dark Theme properties -->
@@ -498,6 +499,17 @@
     <!-- Reader -->
     <string name="no_chapters">No chapters</string>
     <string name="chapters">Chapters</string>
+    <string name="no_bookmarks">No bookmarks</string>
+    <string name="bookmarks">Bookmarks</string>
+    <string name="delete_bookmark">Delete Bookmark?</string>
+    <string name="delete_button">Delete</string>
+    <string name="clear_button">Clear</string>
+    <string name="clear_all_bookmarks">Clear All Bookmarks</string>
+    <string name="clear_all_bookmarks_confirm">This will delete all bookmarks for this book. This action cannot be undone.</string>
+    <string name="bookmark_name">Bookmark name</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="confirm_button">Confirm</string>
+    <string name="quick_bookmark">Quick Bookmark</string>
 
     <!-- About -->
     <!-- Options -->
@@ -734,6 +746,8 @@
     <string name="checkpoint_back_content_desc">Checkpoint back</string>
     <string name="checkpoint_forward_content_desc">Checkpoint forward</string>
     <string name="chapters_content_desc">Chapters</string>
+    <string name="bookmarks_content_desc">Bookmarks</string>
+    <string name="delete_bookmark_content_desc">Delete bookmark</string>
     <string name="more_content_desc">More</string>
     <string name="pin_content_desc">Pin</string>
     <string name="show_less_content_desc">Show less</string>

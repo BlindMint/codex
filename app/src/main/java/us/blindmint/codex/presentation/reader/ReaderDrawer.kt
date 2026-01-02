@@ -23,7 +23,9 @@ fun ReaderDrawer(
     scrollToChapter: (ReaderEvent.OnScrollToChapter) -> Unit,
     scrollToBookmark: (ReaderEvent.OnScrollToBookmark) -> Unit,
     dismissDrawer: (ReaderEvent.OnDismissDrawer) -> Unit,
-    deleteBookmark: (Bookmark) -> Unit
+    deleteBookmark: (Bookmark) -> Unit,
+    clearAllBookmarks: () -> Unit,
+    onQuickBookmark: (customName: String) -> Unit
 ) {
     ReaderChaptersDrawer(
         show = drawer == ReaderScreen.CHAPTERS_DRAWER,
@@ -39,6 +41,8 @@ fun ReaderDrawer(
         bookmarks = bookmarks,
         scrollToBookmark = scrollToBookmark,
         dismissDrawer = dismissDrawer,
-        deleteBookmark = deleteBookmark
+        deleteBookmark = deleteBookmark,
+        clearAllBookmarks = clearAllBookmarks,
+        onQuickBookmark = onQuickBookmark
     )
 }

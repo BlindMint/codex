@@ -117,6 +117,7 @@ fun ReaderContent(
     scrollToBookmark: (ReaderEvent.OnScrollToBookmark) -> Unit,
     dismissDrawer: (ReaderEvent.OnDismissDrawer) -> Unit,
     onDeleteBookmark: (bookmark: us.blindmint.codex.domain.bookmark.Bookmark) -> Unit,
+    onClearAllBookmarks: () -> Unit,
     showSearch: (ReaderEvent.OnShowSearch) -> Unit,
     hideSearch: (ReaderEvent.OnHideSearch) -> Unit,
     searchQuery: String,
@@ -244,7 +245,11 @@ fun ReaderContent(
         scrollToChapter = scrollToChapter,
         scrollToBookmark = scrollToBookmark,
         dismissDrawer = dismissDrawer,
-        deleteBookmark = onDeleteBookmark
+        deleteBookmark = onDeleteBookmark,
+        clearAllBookmarks = onClearAllBookmarks,
+        onQuickBookmark = { customName ->
+            onBookmarkSelection(ReaderEvent.OnBookmarkSelection(customName = customName))
+        }
     )
 
     ReaderBackHandler(
@@ -269,7 +274,10 @@ fun ReaderContent(
                 onCopySelection(ReaderEvent.OnCopySelection(textSelectionContext.selectedText))
             },
             onBookmark = {
-                onBookmarkSelection(ReaderEvent.OnBookmarkSelection)
+                onBookmarkSelection(ReaderEvent.OnBookmarkSelection())
+            },
+            onBookmarkWithName = { customName ->
+                onBookmarkSelection(ReaderEvent.OnBookmarkSelection(customName = customName))
             },
             onWebSearch = { engine ->
                 onWebSearch(

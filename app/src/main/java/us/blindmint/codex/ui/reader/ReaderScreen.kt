@@ -529,6 +529,9 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             onDeleteBookmark = { bookmark ->
                 screenModel.deleteBookmarkItem(bookmark)
             },
+            onClearAllBookmarks = {
+                screenModel.clearAllBookmarks()
+            },
             showSearch = screenModel::onEvent,
             hideSearch = screenModel::onEvent,
             searchQuery = state.value.searchQuery,

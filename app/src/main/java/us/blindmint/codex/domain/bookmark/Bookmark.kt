@@ -14,5 +14,8 @@ data class Bookmark(
     val bookId: Int,
     val scrollIndex: Int,
     val scrollOffset: Int,
-    val timestamp: Long
+    val timestamp: Long,
+    val selectedText: String = "",
+    val customName: String = "",
+    val pageNumber: Int = 0
 )

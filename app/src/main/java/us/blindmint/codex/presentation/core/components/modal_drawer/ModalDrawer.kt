@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
@@ -30,6 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -44,6 +46,10 @@ import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScro
 import us.blindmint.codex.presentation.core.constants.providePrimaryScrollbar
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 
+enum class DrawerSide {
+    LEFT, RIGHT
+}
+
 /**
  * Modal Drawer.
  * Follows Material3 guidelines. Does not require to wrap screen's content and works independently.
@@ -52,16 +58,20 @@ import us.blindmint.codex.presentation.core.util.noRippleClickable
  *
  * @param show Whether should be shown. Animates enter and exit.
  * @param startIndex Start index of the item to show when opening drawer.
+ * @param side Which side the drawer should open from (LEFT or RIGHT).
  * @param onDismissRequest Dismiss callback. Called when dragging, pressing back or clicking outside drawer.
  * @param header Header of the drawer. Shown at the top.
+ * @param footer Footer of the drawer. Shown at the bottom (fixed, does not scroll).
  * @param content Content inside drawer.
  */
 @Composable
 fun ModalDrawer(
     show: Boolean,
     startIndex: Int = 0,
+    side: DrawerSide = DrawerSide.LEFT,
     onDismissRequest: () -> Unit,
     header: @Composable () -> Unit = {},
+    footer: @Composable () -> Unit = {},
     content: LazyListScope.() -> Unit
 ) {
     val layoutDirection = LocalLayoutDirection.current
@@ -96,22 +106,37 @@ fun ModalDrawer(
     ) {
         AnimatedVisibility(
             visible = show,
+            modifier = Modifier.align(
+                if (side == DrawerSide.LEFT) Alignment.CenterStart else Alignment.CenterEnd
+            ),
             enter = slideInHorizontally {
-                if (layoutDirection == LayoutDirection.Ltr) (-it + with(density) { -20.dp.toPx() }).toInt()
-                else (it + with(density) { 20.dp.toPx() }).toInt()
+                if (side == DrawerSide.LEFT) {
+                    if (layoutDirection == LayoutDirection.Ltr) (-it + with(density) { -20.dp.toPx() }).toInt()
+                    else (it + with(density) { 20.dp.toPx() }).toInt()
+                } else {
+                    if (layoutDirection == LayoutDirection.Ltr) (it + with(density) { 20.dp.toPx() }).toInt()
+                    else (-it + with(density) { -20.dp.toPx() }).toInt()
+                }
             },
             exit = slideOutHorizontally {
-                if (layoutDirection == LayoutDirection.Ltr) (-it + with(density) { -20.dp.toPx() }).toInt()
-                else (it + with(density) { 20.dp.toPx() }).toInt()
+                if (side == DrawerSide.LEFT) {
+                    if (layoutDirection == LayoutDirection.Ltr) (-it + with(density) { -20.dp.toPx() }).toInt()
+                    else (it + with(density) { 20.dp.toPx() }).toInt()
+                } else {
+                    if (layoutDirection == LayoutDirection.Ltr) (it + with(density) { 20.dp.toPx() }).toInt()
+                    else (-it + with(density) { -20.dp.toPx() }).toInt()
+                }
             }
         ) {
             Column(
                 modifier = Modifier
                     .offset {
                         IntOffset(
-                            x = animatedOffset.value
-                                .toPx()
-                                .toInt(),
+                            x = if (side == DrawerSide.LEFT) {
+                                animatedOffset.value.toPx().toInt()
+                            } else {
+                                (-animatedOffset.value).toPx().toInt()
+                            },
                             y = 0
                         )
                     }
@@ -119,8 +144,10 @@ fun ModalDrawer(
                     .width(360.dp)
                     .clip(
                         MaterialTheme.shapes.large.copy(
-                            topStart = CornerSize(0.dp),
-                            bottomStart = CornerSize(0.dp)
+                            topStart = if (side == DrawerSide.LEFT) CornerSize(0.dp) else MaterialTheme.shapes.large.topStart,
+                            bottomStart = if (side == DrawerSide.LEFT) CornerSize(0.dp) else MaterialTheme.shapes.large.bottomStart,
+                            topEnd = if (side == DrawerSide.RIGHT) CornerSize(0.dp) else MaterialTheme.shapes.large.topEnd,
+                            bottomEnd = if (side == DrawerSide.RIGHT) CornerSize(0.dp) else MaterialTheme.shapes.large.bottomEnd
                         )
                     )
                     .background(MaterialTheme.colorScheme.surfaceContainerLow)
@@ -130,25 +157,37 @@ fun ModalDrawer(
                             onDragStart = { offset.floatValue = 0f },
                             onDragCancel = { offset.floatValue = 0f },
                             onDragEnd = {
-                                if (offset.floatValue.toDp() < (-60).dp) onDismissRequest()
+                                if (side == DrawerSide.LEFT && offset.floatValue.toDp() < (-60).dp) onDismissRequest()
+                                else if (side == DrawerSide.RIGHT && offset.floatValue.toDp() > 60.dp) onDismissRequest()
                                 else offset.floatValue = 0f
                             }
                         ) { _, dragAmount ->
-                            offset.floatValue = (if (layoutDirection == LayoutDirection.Ltr) {
-                                offset.floatValue + dragAmount
-                            } else offset.floatValue + (-dragAmount)).coerceAtMost(0f)
+                            offset.floatValue = if (side == DrawerSide.LEFT) {
+                                (if (layoutDirection == LayoutDirection.Ltr) {
+                                    offset.floatValue + dragAmount
+                                } else offset.floatValue + (-dragAmount)).coerceAtMost(0f)
+                            } else {
+                                (if (layoutDirection == LayoutDirection.Ltr) {
+                                    offset.floatValue + dragAmount
+                                } else offset.floatValue + (-dragAmount)).coerceAtLeast(0f)
+                            }
                         }
                     }
                     .systemBarsPadding()
             ) {
-                header()
-                LazyColumnWithScrollbar(
-                    state = rememberLazyListState(startIndex),
-                    modifier = Modifier.fillMaxSize(),
-                    scrollbarSettings = providePrimaryScrollbar(),
-                    contentPadding = PaddingValues(vertical = 9.dp)
-                ) {
-                    content()
+                Column(modifier = Modifier.fillMaxHeight()) {
+                    header()
+                    Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                        LazyColumnWithScrollbar(
+                            state = rememberLazyListState(startIndex),
+                            modifier = Modifier.fillMaxSize(),
+                            scrollbarSettings = providePrimaryScrollbar(),
+                            contentPadding = PaddingValues(vertical = 9.dp)
+                        ) {
+                            content()
+                        }
+                    }
+                    footer()
                 }
             }
 

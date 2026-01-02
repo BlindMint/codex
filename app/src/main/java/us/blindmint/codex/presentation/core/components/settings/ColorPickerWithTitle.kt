@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,6 +33,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -59,7 +62,7 @@ fun ColorPickerWithTitle(
     val initialValue = rememberSaveable(presetId) { value.value.toString() }
     var color by remember(value) { mutableStateOf(value) }
     var hexValue by remember(color) {
-        mutableStateOf(String.format("%08X", color.value.toLong()))
+        mutableStateOf(String.format("%08X", color.value.toLong() and 0xFFFFFFFFL))
     }
 
     LaunchedEffect(color) {
@@ -108,7 +111,6 @@ fun ColorPickerWithTitle(
             title = stringResource(id = R.string.red_color),
             onValueChange = {
                 color = color.copy(red = it)
-                hexValue = String.format("%08X", color.value.toLong())
             }
         )
         RevertibleSlider(
@@ -117,7 +119,6 @@ fun ColorPickerWithTitle(
             title = stringResource(id = R.string.green_color),
             onValueChange = {
                 color = color.copy(green = it)
-                hexValue = String.format("%08X", color.value.toLong())
             }
         )
         RevertibleSlider(
@@ -126,7 +127,6 @@ fun ColorPickerWithTitle(
             title = stringResource(id = R.string.blue_color),
             onValueChange = {
                 color = color.copy(blue = it)
-                hexValue = String.format("%08X", color.value.toLong())
             }
         )
     }
@@ -143,6 +143,13 @@ private fun RevertibleSlider(
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var editValue by remember(value.second) { mutableStateOf(value.second) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(isEditing) {
+        if (isEditing) {
+            focusRequester.requestFocus()
+        }
+    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -178,14 +185,15 @@ private fun RevertibleSlider(
             },
             modifier = Modifier
                 .width(60.dp)
-                .noRippleClickable {
-                    isEditing = !isEditing
+                .focusRequester(focusRequester)
+                .clickable(enabled = !isEditing) {
+                    isEditing = true
                 },
             readOnly = !isEditing,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             textStyle = MaterialTheme.typography.labelSmall,
-            colors = androidx.compose.material3.TextFieldDefaults.outlinedTextFieldColors(
+            colors = OutlinedTextFieldDefaults.colors(
                 disabledBorderColor = MaterialTheme.colorScheme.outline,
                 disabledTextColor = MaterialTheme.colorScheme.onSurface
             ),

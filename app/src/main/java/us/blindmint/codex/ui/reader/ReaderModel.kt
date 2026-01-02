@@ -47,6 +47,7 @@ import us.blindmint.codex.domain.use_case.book.UpdateBook
 import us.blindmint.codex.domain.use_case.bookmark.GetBookmarksByBookId
 import us.blindmint.codex.domain.use_case.bookmark.InsertBookmark
 import us.blindmint.codex.domain.use_case.bookmark.DeleteBookmark
+import us.blindmint.codex.domain.use_case.bookmark.DeleteBookmarksByBookId
 import us.blindmint.codex.domain.use_case.history.GetLatestHistory
 import us.blindmint.codex.presentation.core.util.coerceAndPreventNaN
 import us.blindmint.codex.presentation.core.util.launchActivity
@@ -68,7 +69,8 @@ class ReaderModel @Inject constructor(
     private val getLatestHistory: GetLatestHistory,
     private val getBookmarksByBookId: GetBookmarksByBookId,
     private val insertBookmark: InsertBookmark,
-    private val deleteBookmark: DeleteBookmark
+    private val deleteBookmark: DeleteBookmark,
+    private val deleteBookmarksByBookId: DeleteBookmarksByBookId
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -541,18 +543,31 @@ class ReaderModel @Inject constructor(
 
                 is ReaderEvent.OnBookmarkSelection -> {
                     launch(Dispatchers.IO) {
+                        // Use the first visible item index as a proxy for page position
+                        val pageNumber = _state.value.listState.firstVisibleItemIndex
+
+                        val selectedText = _state.value.textSelectionContext?.selectedText.orEmpty()
+                        val customName = event.customName
+
                         val currentBookmark = us.blindmint.codex.domain.bookmark.Bookmark(
                             bookId = _state.value.book.id,
                             scrollIndex = _state.value.listState.firstVisibleItemIndex,
                             scrollOffset = _state.value.listState.firstVisibleItemScrollOffset,
-                            timestamp = System.currentTimeMillis()
+                            timestamp = System.currentTimeMillis(),
+                            selectedText = selectedText,
+                            customName = customName,
+                            pageNumber = pageNumber
                         )
                         insertBookmark.execute(currentBookmark)
 
                         // Reload bookmarks to update the list
                         val bookmarks = getBookmarksByBookId.execute(_state.value.book.id)
                         _state.update {
-                            it.copy(bookmarks = bookmarks)
+                            it.copy(
+                                bookmarks = bookmarks,
+                                textSelectionContext = null,  // Clear text selection after creating bookmark
+                                drawer = "bookmarks_drawer"  // Auto-open bookmarks panel
+                            )
                         }
                     }
                 }
@@ -967,6 +982,17 @@ class ReaderModel @Inject constructor(
             val bookmarks = getBookmarksByBookId.execute(_state.value.book.id)
             _state.update {
                 it.copy(bookmarks = bookmarks)
+            }
+        }
+    }
+
+    fun clearAllBookmarks() {
+        viewModelScope.launch(Dispatchers.IO) {
+            deleteBookmarksByBookId.execute(_state.value.book.id)
+
+            // Clear bookmarks list in UI
+            _state.update {
+                it.copy(bookmarks = emptyList())
             }
         }
     }
