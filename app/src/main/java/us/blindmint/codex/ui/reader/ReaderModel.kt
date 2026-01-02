@@ -41,6 +41,7 @@ import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.ReaderText.Chapter
 import us.blindmint.codex.domain.reader.SearchResult
 import us.blindmint.codex.domain.ui.UIText
+import us.blindmint.codex.domain.repository.DictionaryRepository
 import us.blindmint.codex.domain.use_case.book.GetBookById
 import us.blindmint.codex.domain.use_case.book.GetText
 import us.blindmint.codex.domain.use_case.book.UpdateBook
@@ -62,7 +63,8 @@ class ReaderModel @Inject constructor(
     private val getBookById: GetBookById,
     private val updateBook: UpdateBook,
     private val getText: GetText,
-    private val getLatestHistory: GetLatestHistory
+    private val getLatestHistory: GetLatestHistory,
+    private val dictionaryRepository: DictionaryRepository
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -461,11 +463,127 @@ class ReaderModel @Inject constructor(
                     }
                 }
 
+                is ReaderEvent.OnLookupWordOffline -> {
+                    launch(Dispatchers.IO) {
+                        val result = dictionaryRepository.lookupWord(event.word)
+                        _state.update {
+                            it.copy(
+                                dictionaryResult = result,
+                                dictionaryLookupWord = event.word,
+                                bottomSheet = ReaderScreen.DICTIONARY_BOTTOM_SHEET,
+                                drawer = null
+                            )
+                        }
+                    }
+                }
+
+                is ReaderEvent.OnShowDictionaryBottomSheet -> {
+                    _state.update {
+                        it.copy(
+                            bottomSheet = ReaderScreen.DICTIONARY_BOTTOM_SHEET,
+                            drawer = null
+                        )
+                    }
+                }
+
                 is ReaderEvent.OnDismissBottomSheet -> {
                     _state.update {
                         it.copy(
                             bottomSheet = null
                         )
+                    }
+                }
+
+                // Text Selection Bottom Sheet Events
+                is ReaderEvent.OnTextSelected -> {
+                    val context = us.blindmint.codex.domain.reader.TextSelectionContext.fromSelection(
+                        selectedText = event.selectedText,
+                        paragraphText = event.paragraphText.ifEmpty { event.selectedText }
+                    )
+                    _state.update {
+                        it.copy(
+                            textSelectionContext = context,
+                            bottomSheet = null,
+                            drawer = null
+                        )
+                    }
+                }
+
+                is ReaderEvent.OnDismissTextSelection -> {
+                    _state.update {
+                        it.copy(
+                            textSelectionContext = null
+                        )
+                    }
+                }
+
+                is ReaderEvent.OnExpandSelection -> {
+                    _state.value.textSelectionContext?.let { currentContext ->
+                        val expandedContext = currentContext.expandSelection(event.expandLeading)
+                        _state.update {
+                            it.copy(textSelectionContext = expandedContext)
+                        }
+                    }
+                }
+
+                is ReaderEvent.OnCopySelection -> {
+                    val clipboardManager = android.content.ClipboardManager::class.java
+                    // Copy is handled directly in the UI since we need context
+                }
+
+                is ReaderEvent.OnBookmarkSelection -> {
+                    // Placeholder for future bookmark feature
+                    // TODO: Implement bookmarking when bookmark system is added
+                }
+
+                is ReaderEvent.OnWebSearch -> {
+                    launch {
+                        val url = event.engine.buildUrl(event.query)
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            data = url.toUri()
+                        }
+                        intent.launchActivity(
+                            activity = event.activity,
+                            success = {},
+                            error = {
+                                event.activity.getString(R.string.error_no_browser)
+                                    .showToast(context = event.activity)
+                            }
+                        )
+                        _state.update { it.copy(textSelectionContext = null) }
+                    }
+                }
+
+                is ReaderEvent.OnDictionaryLookup -> {
+                    launch {
+                        val url = event.dictionary.buildUrl(event.word)
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            data = url.toUri()
+                        }
+                        intent.launchActivity(
+                            activity = event.activity,
+                            success = {},
+                            error = {
+                                event.activity.getString(R.string.error_no_browser)
+                                    .showToast(context = event.activity)
+                            }
+                        )
+                        _state.update { it.copy(textSelectionContext = null) }
+                    }
+                }
+
+                is ReaderEvent.OnOpenInAppWebView -> {
+                    _state.update {
+                        it.copy(
+                            webViewUrl = event.url,
+                            textSelectionContext = null
+                        )
+                    }
+                }
+
+                is ReaderEvent.OnDismissWebView -> {
+                    _state.update {
+                        it.copy(webViewUrl = null)
                     }
                 }
 

@@ -100,10 +100,8 @@ fun ReaderScaffold(
     restoreCheckpoint: (ReaderEvent.OnRestoreCheckpoint) -> Unit,
     scroll: (ReaderEvent.OnScroll) -> Unit,
     changeProgress: (ReaderEvent.OnChangeProgress) -> Unit,
-    openShareApp: (ReaderEvent.OnOpenShareApp) -> Unit,
-    openWebBrowser: (ReaderEvent.OnOpenWebBrowser) -> Unit,
     openTranslator: (ReaderEvent.OnOpenTranslator) -> Unit,
-    openDictionary: (ReaderEvent.OnOpenDictionary) -> Unit,
+    onTextSelected: (ReaderEvent.OnTextSelected) -> Unit,
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
     showSearch: (ReaderEvent.OnShowSearch) -> Unit,
@@ -227,10 +225,8 @@ fun ReaderScaffold(
             isLoading = isLoading,
             showMenu = showMenu,
             menuVisibility = menuVisibility,
-            openShareApp = openShareApp,
-            openWebBrowser = openWebBrowser,
             openTranslator = openTranslator,
-            openDictionary = openDictionary,
+            onTextSelected = onTextSelected,
             searchQuery = searchQuery,
             searchHighlightColor = searchHighlightColor
         )

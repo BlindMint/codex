@@ -137,7 +137,7 @@ private class FloatingTextActionModeCallback(
 }
 
 /**
- * Selection Toolbar.
+ * Selection Toolbar (legacy version with ActionMode menu).
  * Used in pair with [SelectionContainer] to display custom toolbar.
  */
 private class SelectionToolbar(
@@ -249,9 +249,55 @@ private class SelectionToolbar(
 }
 
 /**
- * Selection container.
+ * Selection Toolbar that shows a custom bottom sheet instead of ActionMode menu.
+ * When text is selected, captures the text and calls [onTextSelected] callback.
+ */
+private class BottomSheetSelectionToolbar(
+    context: Context,
+    private val onTextSelected: (String) -> Unit
+) : TextToolbar {
+    private val clipboardManager =
+        context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+
+    override var status: TextToolbarStatus by mutableStateOf(TextToolbarStatus.Hidden)
+
+    override fun showMenu(
+        rect: Rect,
+        onCopyRequested: (() -> Unit)?,
+        onPasteRequested: (() -> Unit)?,
+        onCutRequested: (() -> Unit)?,
+        onSelectAllRequested: (() -> Unit)?
+    ) {
+        // Capture the selected text via clipboard
+        val previousClipboard = clipboardManager.primaryClip
+        onCopyRequested?.invoke()
+        val selectedText = clipboardManager.text?.toString() ?: ""
+
+        // Restore previous clipboard
+        if (previousClipboard != null) {
+            clipboardManager.setPrimaryClip(previousClipboard)
+        } else {
+            clipboardManager.setPrimaryClip(ClipData.newPlainText(null, " "))
+        }
+
+        // Only trigger callback if we have actual text
+        if (selectedText.isNotBlank()) {
+            status = TextToolbarStatus.Shown
+            onTextSelected(selectedText)
+        }
+    }
+
+    override fun hide() {
+        status = TextToolbarStatus.Hidden
+    }
+}
+
+/**
+ * Selection container (legacy version with ActionMode menu).
  *
  * @param onCopyRequested Callback for when the copy option is clicked.
+ * @param onShareRequested Callback for when the share option is clicked.
+ * @param onWebSearchRequested Callback for when the web search option is clicked.
  * @param onTranslateRequested Callback for when the translate option is clicked.
  * @param onDictionaryRequested Callback for when the dictionary option is clicked.
  * @param content Selection container content.
@@ -288,6 +334,43 @@ fun SelectionContainer(
             onDictionaryRequest = {
                 onDictionaryRequested(it)
             }
+        )
+    }
+    val isToolbarHidden = remember(selectionToolbar.status) {
+        derivedStateOf {
+            selectionToolbar.status == TextToolbarStatus.Hidden
+        }
+    }
+
+    CompositionLocalProvider(
+        LocalTextToolbar provides selectionToolbar
+    ) {
+        SelectionContainer {
+            content(isToolbarHidden.value)
+        }
+    }
+}
+
+/**
+ * Selection container that shows a custom bottom sheet instead of ActionMode menu.
+ *
+ * When text is selected, the [onTextSelected] callback is invoked with the selected text.
+ * No ActionMode menu is shown - the caller is expected to show a custom bottom sheet.
+ *
+ * @param onTextSelected Callback when text is selected, receives the selected text.
+ * @param content Selection container content.
+ */
+@Composable
+fun SelectionContainerWithBottomSheet(
+    onTextSelected: (String) -> Unit,
+    content: @Composable (toolbarHidden: Boolean) -> Unit
+) {
+    val context = LocalContext.current
+
+    val selectionToolbar = remember {
+        BottomSheetSelectionToolbar(
+            context = context,
+            onTextSelected = onTextSelected
         )
     }
     val isToolbarHidden = remember(selectionToolbar.status) {

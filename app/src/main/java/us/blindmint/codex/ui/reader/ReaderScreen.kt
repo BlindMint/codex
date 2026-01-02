@@ -61,8 +61,10 @@ import us.blindmint.codex.presentation.core.util.calculateProgress
 import us.blindmint.codex.presentation.core.util.setBrightness
 import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.presentation.reader.ReaderContent
+import us.blindmint.codex.domain.dictionary.DictionaryStatus
 import us.blindmint.codex.ui.book_info.BookInfoScreen
 import us.blindmint.codex.ui.main.MainModel
+import us.blindmint.codex.ui.settings.DictionarySettingsModel
 import us.blindmint.codex.ui.settings.SettingsModel
 import kotlin.math.roundToInt
 import androidx.compose.ui.graphics.Color
@@ -73,6 +75,7 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
     companion object {
         const val CHAPTERS_DRAWER = "chapters_drawer"
         const val SETTINGS_BOTTOM_SHEET = "settings_bottom_sheet"
+        const val DICTIONARY_BOTTOM_SHEET = "dictionary_bottom_sheet"
     }
 
     @OptIn(ExperimentalLayoutApi::class)
@@ -82,10 +85,12 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
         val screenModel = hiltViewModel<ReaderModel>()
         val mainModel = hiltViewModel<MainModel>()
         val settingsModel = hiltViewModel<SettingsModel>()
+        val dictionarySettingsModel = hiltViewModel<DictionarySettingsModel>()
 
         val state = screenModel.state.collectAsStateWithLifecycle()
         val mainState = mainModel.state.collectAsStateWithLifecycle()
         val settingsState = settingsModel.state.collectAsStateWithLifecycle()
+        val dictionaryStatus = dictionarySettingsModel.dictionaryStatus.collectAsStateWithLifecycle()
 
         val activity = LocalActivity.current
         val density = LocalDensity.current
@@ -515,17 +520,8 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             scroll = screenModel::onEvent,
             changeProgress = screenModel::onEvent,
             menuVisibility = screenModel::onEvent,
-            openShareApp = screenModel::onEvent,
-            openWebBrowser = screenModel::onEvent,
             openTranslator = screenModel::onEvent,
-            openDictionary = { event ->
-                screenModel.onEvent(
-                    event.copy(
-                        dictionarySource = mainState.value.dictionarySource,
-                        customDictionaryUrl = mainState.value.customDictionaryUrl
-                    )
-                )
-            },
+            onTextSelected = screenModel::onEvent,
             scrollToChapter = screenModel::onEvent,
             showSettingsBottomSheet = screenModel::onEvent,
             dismissBottomSheet = screenModel::onEvent,
@@ -541,6 +537,15 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             onSearchQueryChange = screenModel::onEvent,
             onNextSearchResult = screenModel::onEvent,
             onPrevSearchResult = screenModel::onEvent,
+            dictionaryResult = state.value.dictionaryResult,
+            dictionaryLookupWord = state.value.dictionaryLookupWord,
+            textSelectionContext = state.value.textSelectionContext,
+            onDismissTextSelection = screenModel::onEvent,
+            onExpandSelection = screenModel::onEvent,
+            onCopySelection = screenModel::onEvent,
+            onBookmarkSelection = screenModel::onEvent,
+            onWebSearch = screenModel::onEvent,
+            onDictionaryLookup = screenModel::onEvent,
             navigateBack = {
                 navigator.pop()
             },

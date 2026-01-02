@@ -8,7 +8,9 @@ package us.blindmint.codex.ui.reader
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Immutable
+import us.blindmint.codex.domain.dictionary.DictionaryResult
 import us.blindmint.codex.domain.library.book.Book
+import us.blindmint.codex.domain.reader.TextSelectionContext
 import us.blindmint.codex.domain.reader.Checkpoint
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.ReaderText.Chapter
@@ -40,5 +42,12 @@ data class ReaderState(
     val showSearch: Boolean = false,
     val searchQuery: String = "",
     val searchResults: List<SearchResult> = emptyList(),
-    val currentSearchResultIndex: Int = -1
+    val currentSearchResultIndex: Int = -1,
+
+    val dictionaryResult: DictionaryResult? = null,
+    val dictionaryLookupWord: String = "",
+
+    // Text selection for bottom sheet menu
+    val textSelectionContext: TextSelectionContext? = null,
+    val webViewUrl: String? = null
 )
