@@ -62,8 +62,25 @@ fun ColorPickerWithTitle(
 ) {
     val initialValue = rememberSaveable(presetId) { value.value.toString() }
     var color by remember(value) { mutableStateOf(value) }
-    var hexValue by remember(color) {
-        mutableStateOf(String.format("%08X", color.value.toLong() and 0xFFFFFFFFL))
+    var hexValue by remember {
+        mutableStateOf(
+            String.format("%08X",
+                ((value.alpha * 255).toInt() shl 24) or
+                ((value.red * 255).toInt() shl 16) or
+                ((value.green * 255).toInt() shl 8) or
+                (value.blue * 255).toInt()
+            )
+        )
+    }
+
+    // Update hexValue when color changes
+    LaunchedEffect(color) {
+        hexValue = String.format("%08X",
+            ((color.alpha * 255).toInt() shl 24) or
+            ((color.red * 255).toInt() shl 16) or
+            ((color.green * 255).toInt() shl 8) or
+            (color.blue * 255).toInt()
+        )
     }
 
     LaunchedEffect(color) {
@@ -105,6 +122,7 @@ fun ColorPickerWithTitle(
                 },
                 label = { Text(stringResource(id = R.string.hex_color)) },
                 modifier = Modifier.weight(1f),
+                enabled = !isLocked,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
                 singleLine = true
             )
