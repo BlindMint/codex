@@ -55,49 +55,69 @@ data class TextSelectionContext(
                 )
             }
 
-            // Split paragraph into words while preserving positions
+            // Split both paragraph and selection into words
             val paragraphWords = paragraphText.split(Regex("\\s+")).filter { it.isNotEmpty() }
+            val selectionWords = trimmedSelection.split(Regex("\\s+")).filter { it.isNotEmpty() }
 
-            // Find the selection in the paragraph
-            val selectionStart = paragraphText.indexOf(trimmedSelection)
-            if (selectionStart == -1) {
-                // Selection not found in paragraph, return just the selection
-                val words = trimmedSelection.split(Regex("\\s+")).filter { it.isNotEmpty() }
+            if (paragraphWords.isEmpty()) {
+                // Empty paragraph, just return the selection
                 return TextSelectionContext(
                     selectedText = trimmedSelection,
-                    selectedWords = words,
+                    selectedWords = selectionWords,
                     leadingContext = emptyList(),
                     trailingContext = emptyList(),
                     paragraphText = paragraphText,
                     selectionStartIndex = 0,
-                    selectionEndIndex = words.size
+                    selectionEndIndex = selectionWords.size
                 )
             }
 
-            // Find word indices for selection boundaries
-            var charIndex = 0
-            var startWordIndex = 0
-            var endWordIndex = paragraphWords.size
+            // Find the selection words in the paragraph words (word-by-word matching)
+            // This is more forgiving of whitespace and formatting differences than indexOf()
+            var startWordIndex = -1
+            var endWordIndex = -1
 
-            for ((index, word) in paragraphWords.withIndex()) {
-                val wordStart = paragraphText.indexOf(word, charIndex)
-                val wordEnd = wordStart + word.length
-
-                if (wordStart <= selectionStart && selectionStart < wordEnd) {
-                    startWordIndex = index
+            for (i in 0..paragraphWords.size - selectionWords.size) {
+                var matches = true
+                for (j in selectionWords.indices) {
+                    // Normalize words by removing punctuation and comparing
+                    val paragraphWord = paragraphWords[i + j].replace(Regex("[^\\w]"), "").lowercase()
+                    val selectionWord = selectionWords[j].replace(Regex("[^\\w]"), "").lowercase()
+                    if (paragraphWord != selectionWord) {
+                        matches = false
+                        break
+                    }
                 }
-                if (selectionStart + trimmedSelection.length <= wordEnd) {
-                    endWordIndex = index + 1
+                if (matches) {
+                    startWordIndex = i
+                    endWordIndex = i + selectionWords.size
                     break
                 }
-                charIndex = wordEnd
             }
 
-            // Extract selected words (auto-completed to whole words)
-            val selectedWords = paragraphWords.subList(
-                startWordIndex.coerceIn(0, paragraphWords.size),
-                endWordIndex.coerceIn(0, paragraphWords.size)
-            )
+            // If not found with normalized matching, try exact matching as fallback
+            if (startWordIndex == -1) {
+                for (i in 0..paragraphWords.size - selectionWords.size) {
+                    if (paragraphWords.subList(i, i + selectionWords.size) == selectionWords) {
+                        startWordIndex = i
+                        endWordIndex = i + selectionWords.size
+                        break
+                    }
+                }
+            }
+
+            // If still not found, just return the selection without context
+            if (startWordIndex == -1) {
+                return TextSelectionContext(
+                    selectedText = trimmedSelection,
+                    selectedWords = selectionWords,
+                    leadingContext = emptyList(),
+                    trailingContext = emptyList(),
+                    paragraphText = paragraphText,
+                    selectionStartIndex = 0,
+                    selectionEndIndex = selectionWords.size
+                )
+            }
 
             // Extract context words
             val leadingStart = (startWordIndex - CONTEXT_WORD_COUNT).coerceAtLeast(0)
@@ -109,9 +129,12 @@ data class TextSelectionContext(
                 trailingEnd
             )
 
+            // Get the actual selected words from the paragraph to preserve formatting
+            val selectedWordsFromParagraph = paragraphWords.subList(startWordIndex, endWordIndex)
+
             return TextSelectionContext(
-                selectedText = selectedWords.joinToString(" "),
-                selectedWords = selectedWords,
+                selectedText = selectedWordsFromParagraph.joinToString(" "),
+                selectedWords = selectedWordsFromParagraph,
                 leadingContext = leadingContext,
                 trailingContext = trailingContext,
                 paragraphText = paragraphText,
