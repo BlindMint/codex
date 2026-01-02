@@ -99,9 +99,19 @@ fun ReaderLayout(
     val activity = LocalActivity.current
     SelectionContainerWithBottomSheet(
         onTextSelected = { selectedText ->
+            // Build paragraph context from the text list
+            val paragraphContext = text.joinToString(" ") { item ->
+                when (item) {
+                    is ReaderText.Text -> item.line.text
+                    is ReaderText.Chapter -> item.title
+                    else -> ""
+                }
+            }
+
             onTextSelected(
                 ReaderEvent.OnTextSelected(
-                    selectedText = selectedText
+                    selectedText = selectedText,
+                    paragraphText = paragraphContext
                 )
             )
         }
