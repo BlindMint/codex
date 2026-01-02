@@ -57,6 +57,7 @@ fun ColorPickerWithTitle(
     title: String,
     horizontalPadding: Dp = 18.dp,
     verticalPadding: Dp = 8.dp,
+    isLocked: Boolean = false,
     onValueChange: (Color) -> Unit
 ) {
     val initialValue = rememberSaveable(presetId) { value.value.toString() }
@@ -114,6 +115,7 @@ fun ColorPickerWithTitle(
             value = color.red to ((color.red * 255).toInt().toString()),
             initialValue = Color(initialValue.toULong()).red,
             title = stringResource(id = R.string.red_color),
+            isLocked = isLocked,
             onValueChange = {
                 color = color.copy(red = it)
             }
@@ -122,6 +124,7 @@ fun ColorPickerWithTitle(
             value = color.green to ((color.green * 255).toInt().toString()),
             initialValue = Color(initialValue.toULong()).green,
             title = stringResource(id = R.string.green_color),
+            isLocked = isLocked,
             onValueChange = {
                 color = color.copy(green = it)
             }
@@ -130,6 +133,7 @@ fun ColorPickerWithTitle(
             value = color.blue to ((color.blue * 255).toInt().toString()),
             initialValue = Color(initialValue.toULong()).blue,
             title = stringResource(id = R.string.blue_color),
+            isLocked = isLocked,
             onValueChange = {
                 color = color.copy(blue = it)
             }
@@ -144,6 +148,7 @@ private fun RevertibleSlider(
     title: String,
     horizontalPadding: Dp = 0.dp,
     verticalPadding: Dp = 8.dp,
+    isLocked: Boolean = false,
     onValueChange: (Float) -> Unit
 ) {
     var editValue by remember(value.second) { mutableStateOf(value.second) }
@@ -162,6 +167,7 @@ private fun RevertibleSlider(
             value = value,
             title = title,
             toValue = 255,
+            enabled = !isLocked,
             onValueChange = {
                 onValueChange(it)
             },
@@ -184,9 +190,10 @@ private fun RevertibleSlider(
             modifier = Modifier
                 .width(60.dp)
                 .focusRequester(focusRequester)
-                .clickable {
+                .clickable(enabled = !isLocked) {
                     focusRequester.requestFocus()
                 },
+            enabled = !isLocked,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             textStyle = MaterialTheme.typography.labelSmall
@@ -199,7 +206,7 @@ private fun RevertibleSlider(
             icon = Icons.Default.History,
             contentDescription = R.string.revert_content_desc,
             disableOnClick = false,
-            enabled = initialValue != value.first,
+            enabled = !isLocked && initialValue != value.first,
             color = if (initialValue == value.first) MaterialTheme.colorScheme.onSurfaceVariant
             else MaterialTheme.colorScheme.onSurface
         ) {

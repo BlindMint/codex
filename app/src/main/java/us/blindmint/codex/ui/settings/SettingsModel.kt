@@ -399,7 +399,10 @@ class SettingsModel @Inject constructor(
 
                         val colorPresets = getColorPresets.execute()
                         _state.update {
-                            it.copy(colorPresets = colorPresets)
+                            it.copy(
+                                selectedColorPreset = colorPresets.selected(),
+                                colorPresets = colorPresets
+                            )
                         }
                     }
                 }

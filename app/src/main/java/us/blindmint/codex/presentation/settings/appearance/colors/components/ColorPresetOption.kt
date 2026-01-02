@@ -34,6 +34,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.Icons
@@ -247,11 +248,12 @@ fun ColorPresetOption(backgroundColor: Color) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                ColorPickerWithTitle(
-                    value = selectedPreset.backgroundColor,
-                    presetId = selectedPreset.id,
-                    title = stringResource(id = R.string.background_color_option),
-                    onValueChange = {
+                 ColorPickerWithTitle(
+                     value = selectedPreset.backgroundColor,
+                     presetId = selectedPreset.id,
+                     title = stringResource(id = R.string.background_color_option),
+                     isLocked = selectedPreset.isLocked,
+                     onValueChange = {
                         settingsModel.onEvent(
                             SettingsEvent.OnUpdateColorPresetColor(
                                 id = selectedPreset.id,
@@ -259,13 +261,19 @@ fun ColorPresetOption(backgroundColor: Color) {
                                 fontColor = null
                             )
                         )
-                    }
-                )
-                ColorPickerWithTitle(
-                    value = selectedPreset.fontColor,
-                    presetId = selectedPreset.id,
-                    title = stringResource(id = R.string.font_color_option),
-                    onValueChange = {
+                     }
+                 )
+
+                 Spacer(modifier = Modifier.height(16.dp))
+                 HorizontalDivider()
+                 Spacer(modifier = Modifier.height(16.dp))
+
+                 ColorPickerWithTitle(
+                     value = selectedPreset.fontColor,
+                     presetId = selectedPreset.id,
+                     title = stringResource(id = R.string.font_color_option),
+                     isLocked = selectedPreset.isLocked,
+                     onValueChange = {
                         settingsModel.onEvent(
                             SettingsEvent.OnUpdateColorPresetColor(
                                 id = selectedPreset.id,
@@ -403,6 +411,7 @@ private fun ColorPresetOptionConfigurationItem(
     }
 
     val isDefaultPreset = selectedColorPreset.name == "Light" || selectedColorPreset.name == "Dark"
+    val hasBeenCustomized = selectedColorPreset.name?.isNotEmpty() == true
 
     Row(
         Modifier.padding(horizontal = 18.dp),
@@ -461,7 +470,7 @@ private fun ColorPresetOptionConfigurationItem(
             ) {
                 onRestore()
             }
-        } else {
+        } else if (hasBeenCustomized) {
             // Lock/Unlock button
             IconButton(
                 modifier = Modifier.size(24.dp),

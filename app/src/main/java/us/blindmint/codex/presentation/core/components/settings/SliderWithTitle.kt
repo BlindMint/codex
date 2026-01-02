@@ -60,6 +60,7 @@ fun SliderWithTitle(
     title: String,
     horizontalPadding: Dp = SettingsHorizontalPadding,
     verticalPadding: Dp = 8.dp,
+    enabled: Boolean = true,
     onValueChange: (Int) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -83,6 +84,7 @@ fun SliderWithTitle(
         Slider(
             valueRange = fromValue.toFloat()..toValue.toFloat(),
             value = value.first.toFloat(),
+            enabled = enabled,
             onValueChange = {
                 onValueChange(it.roundToInt())
             },
@@ -145,6 +147,7 @@ fun SliderWithTitle(
     toValue: Int,
     horizontalPadding: Dp = SettingsHorizontalPadding,
     verticalPadding: Dp = 8.dp,
+    enabled: Boolean = true,
     onValueChange: (Float) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -168,6 +171,7 @@ fun SliderWithTitle(
         Slider(
             valueRange = 0f..1f,
             value = value.first,
+            enabled = enabled,
             onValueChange = {
                 onValueChange(it)
             },
