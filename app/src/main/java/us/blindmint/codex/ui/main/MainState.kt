@@ -24,8 +24,11 @@ import us.blindmint.codex.domain.library.display.LibraryTitlePosition
 import us.blindmint.codex.domain.library.display.toLibraryTitlePosition
 import us.blindmint.codex.domain.library.sort.LibrarySortOrder
 import us.blindmint.codex.domain.library.sort.toLibrarySortOrder
+import us.blindmint.codex.domain.reader.BackgroundImage
+import us.blindmint.codex.domain.reader.BackgroundScaleMode
 import us.blindmint.codex.domain.reader.CustomFont
 import us.blindmint.codex.domain.reader.ReaderColorEffects
+import us.blindmint.codex.domain.reader.toBackgroundScaleMode
 import us.blindmint.codex.domain.reader.ReaderFontThickness
 import us.blindmint.codex.domain.reader.ReaderHorizontalGesture
 import us.blindmint.codex.domain.reader.ReaderProgressCount
@@ -125,6 +128,12 @@ data class MainState(
     val progressCount: ReaderProgressCount = provideDefaultValue { ReaderProgressCount.PERCENTAGE },
     // Default: Yellow with 50% alpha (#80FFEB3B)
     val searchHighlightColor: Long = provideDefaultValue { 0x80FFEB3B },
+
+    // Background Image Settings
+    val backgroundImage: BackgroundImage? = provideDefaultValue { null },
+    val customBackgroundImages: List<BackgroundImage> = provideDefaultValue { emptyList() },
+    val backgroundImageOpacity: Float = provideDefaultValue { 0.3f },
+    val backgroundScaleMode: BackgroundScaleMode = provideDefaultValue { BackgroundScaleMode.COVER },
 
     // Dictionary Settings
     val dictionarySource: DictionarySource = provideDefaultValue { DictionarySource.SYSTEM_DEFAULT },
@@ -409,6 +418,24 @@ data class MainState(
                     searchHighlightColor = provideValue(
                         SEARCH_HIGHLIGHT_COLOR, convert = { toLongOrNull() ?: 0x80FFEB3B }
                     ) { searchHighlightColor },
+
+                    backgroundImage = provideValue(
+                        BACKGROUND_IMAGE, convert = { BackgroundImage.fromString(this) }
+                    ) { backgroundImage },
+
+                    customBackgroundImages = provideValue(
+                        CUSTOM_BACKGROUND_IMAGES, convert = {
+                            this.mapNotNull { BackgroundImage.fromString(it) }
+                        }
+                    ) { customBackgroundImages },
+
+                    backgroundImageOpacity = provideValue(
+                        BACKGROUND_IMAGE_OPACITY, convert = { toFloat() }
+                    ) { backgroundImageOpacity },
+
+                    backgroundScaleMode = provideValue(
+                        BACKGROUND_SCALE_MODE, convert = { toBackgroundScaleMode() }
+                    ) { backgroundScaleMode },
 
                     dictionarySource = provideValue(
                         DICTIONARY_SOURCE, convert = { toDictionarySource() }

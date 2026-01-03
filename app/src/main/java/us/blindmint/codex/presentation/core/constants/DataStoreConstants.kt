@@ -99,6 +99,12 @@ object DataStoreConstants {
     val LIBRARY_SHOW_READ_BUTTON = booleanPreferencesKey("library_show_read_button")
     val LIBRARY_SHOW_PROGRESS = booleanPreferencesKey("library_show_progress")
 
+    // Background image settings
+    val BACKGROUND_IMAGE = stringPreferencesKey("background_image")
+    val CUSTOM_BACKGROUND_IMAGES = stringSetPreferencesKey("custom_background_images")
+    val BACKGROUND_IMAGE_OPACITY = doublePreferencesKey("background_image_opacity")
+    val BACKGROUND_SCALE_MODE = stringPreferencesKey("background_scale_mode")
+
     // Settings
     val AUTO_COLOR_PRESET_SELECTED = booleanPreferencesKey("auto_color_preset_selected")
 }

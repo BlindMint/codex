@@ -32,8 +32,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.reader.FontWithName
+import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.domain.reader.ReaderFontThickness
 import us.blindmint.codex.domain.reader.ReaderHorizontalGesture
 import us.blindmint.codex.domain.reader.ReaderText
@@ -97,6 +100,9 @@ fun ReaderLayout(
     searchHighlightColor: ComposeColor
 ) {
     val activity = LocalActivity.current
+    val mainModel = hiltViewModel<MainModel>()
+    val mainState = mainModel.state.collectAsStateWithLifecycle()
+
     SelectionContainerWithBottomSheet(
         onTextSelected = { selectedText ->
             // Build paragraph context from the text list
@@ -116,38 +122,43 @@ fun ReaderLayout(
             )
         }
     ) { toolbarHidden ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .background(backgroundColor)
-                .then(
-                    if (!isLoading && toolbarHidden) {
-                        Modifier.noRippleClickable(
-                            onClick = {
-                                menuVisibility(
-                                    ReaderEvent.OnMenuVisibility(
-                                        show = !showMenu,
-                                        fullscreenMode = fullscreenMode,
-                                        saveCheckpoint = true,
-                                        activity = activity
-                                    )
-                                )
-                            }
-                        )
-                    } else Modifier
-                )
-                .padding(contentPadding)
-                .padding(vertical = verticalPadding)
-                .readerHorizontalGesture(
-                    listState = listState,
-                    horizontalGesture = horizontalGesture,
-                    horizontalGestureScroll = horizontalGestureScroll,
-                    horizontalGestureSensitivity = horizontalGestureSensitivity,
-                    horizontalGestureAlphaAnim = horizontalGestureAlphaAnim,
-                    horizontalGesturePullAnim = horizontalGesturePullAnim,
-                    isLoading = isLoading
-                )
+        ReaderBackground(
+            backgroundImage = mainState.value.backgroundImage,
+            backgroundColor = backgroundColor,
+            backgroundImageOpacity = mainState.value.backgroundImageOpacity,
+            backgroundScaleMode = mainState.value.backgroundScaleMode
         ) {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (!isLoading && toolbarHidden) {
+                            Modifier.noRippleClickable(
+                                onClick = {
+                                    menuVisibility(
+                                        ReaderEvent.OnMenuVisibility(
+                                            show = !showMenu,
+                                            fullscreenMode = fullscreenMode,
+                                            saveCheckpoint = true,
+                                            activity = activity
+                                        )
+                                    )
+                                }
+                            )
+                        } else Modifier
+                    )
+                    .padding(contentPadding)
+                    .padding(vertical = verticalPadding)
+                    .readerHorizontalGesture(
+                        listState = listState,
+                        horizontalGesture = horizontalGesture,
+                        horizontalGestureScroll = horizontalGestureScroll,
+                        horizontalGestureSensitivity = horizontalGestureSensitivity,
+                        horizontalGestureAlphaAnim = horizontalGestureAlphaAnim,
+                        horizontalGesturePullAnim = horizontalGesturePullAnim,
+                        isLoading = isLoading
+                    )
+            ) {
             LazyColumnWithScrollbar(
                 state = listState,
                 enableScrollbar = false,
@@ -209,19 +220,20 @@ fun ReaderLayout(
                 }
             }
 
-            AnimatedVisibility(
-                visible = !showMenu && progressBar,
-                enter = slideInVertically { it } + expandVertically(),
-                exit = slideOutVertically { it } + shrinkVertically()
-            ) {
-                ReaderProgressBar(
-                    progress = progress,
-                    progressBarPadding = progressBarPadding,
-                    progressBarAlignment = progressBarAlignment,
-                    progressBarFontSize = progressBarFontSize,
-                    fontColor = fontColor,
-                    sidePadding = sidePadding
-                )
+                AnimatedVisibility(
+                    visible = !showMenu && progressBar,
+                    enter = slideInVertically { it } + expandVertically(),
+                    exit = slideOutVertically { it } + shrinkVertically()
+                ) {
+                    ReaderProgressBar(
+                        progress = progress,
+                        progressBarPadding = progressBarPadding,
+                        progressBarAlignment = progressBarAlignment,
+                        progressBarFontSize = progressBarFontSize,
+                        fontColor = fontColor,
+                        sidePadding = sidePadding
+                    )
+                }
             }
         }
     }

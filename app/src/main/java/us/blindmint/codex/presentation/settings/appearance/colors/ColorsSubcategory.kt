@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
+import us.blindmint.codex.presentation.settings.appearance.colors.components.BackgroundImageOption
 import us.blindmint.codex.presentation.settings.appearance.colors.components.ColorPresetOption
 import us.blindmint.codex.presentation.settings.appearance.colors.components.FastColorPresetChangeOption
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
@@ -39,6 +40,12 @@ fun LazyListScope.ColorsSubcategory(
 
         item {
             FastColorPresetChangeOption()
+        }
+
+        item {
+            BackgroundImageOption(
+                backgroundColor = backgroundColor.invoke()
+            )
         }
     }
 }

@@ -287,6 +287,15 @@
     <string name="color_preset_option">Color preset</string>
     <string name="background_color_option">Background color</string>
     <string name="font_color_option">Font color</string>
+    <string name="background_image_option">Background image</string>
+    <string name="add_background_image">Add background image</string>
+    <string name="remove_background_image">Remove background image</string>
+    <string name="no_background_image">None</string>
+    <string name="background_opacity_option">Image opacity</string>
+    <string name="background_scale_mode_option">Image scaling</string>
+    <string name="scale_mode_cover">Cover</string>
+    <string name="scale_mode_fit">Fit</string>
+    <string name="scale_mode_tile">Tile</string>
     <string name="side_padding_option">Side margins</string>
     <string name="vertical_padding_option">Vertical margins</string>
     <string name="double_click_translation_option">Double click translation</string>
