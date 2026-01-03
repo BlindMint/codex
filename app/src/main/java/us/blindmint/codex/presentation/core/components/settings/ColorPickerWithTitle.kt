@@ -39,6 +39,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.FlowPreview
@@ -120,11 +122,10 @@ fun ColorPickerWithTitle(
                     }
                 },
                 label = { Text(stringResource(id = R.string.hex_color)) },
-                prefix = {
-                    Text(
-                        text = "#",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyLarge
+                visualTransformation = VisualTransformation { text ->
+                    TransformedText(
+                        text = androidx.compose.ui.text.AnnotatedString("#" + text.text),
+                        offsetMapping = androidx.compose.ui.text.input.OffsetMapping.Identity
                     )
                 },
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
