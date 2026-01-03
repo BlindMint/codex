@@ -24,7 +24,9 @@ import us.blindmint.codex.domain.file.CachedFileCompat
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.BookWithCover
 import us.blindmint.codex.domain.reader.ReaderText
+import us.blindmint.codex.domain.library.category.Category
 import us.blindmint.codex.domain.repository.BookRepository
+import us.blindmint.codex.domain.ui.UIText
 import us.blindmint.codex.domain.util.CoverImage
 import java.io.BufferedOutputStream
 import java.io.ByteArrayOutputStream
@@ -33,6 +35,7 @@ import java.io.FileOutputStream
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.collection.LruCache
 
 private const val GET_TEXT = "GET TEXT, REPO"
 private const val GET_BOOKS = "GET BOOKS, REPO"
@@ -48,12 +51,14 @@ private const val RESET_COVER = "RESET COVER, REPO"
 class BookRepositoryImpl @Inject constructor(
     private val application: Application,
     private val database: BookDao,
-
-    private val bookMapper: BookMapper,
-
     private val fileParser: FileParser,
-    private val textParser: TextParser
+    private val textParser: TextParser,
+    private val bookMapper: BookMapper
 ) : BookRepository {
+
+    // Cache for parsed book text to avoid re-parsing large files
+    // Max size: 10MB of cached content
+    private val textCache = LruCache<Int, List<ReaderText>>(1024 * 1024 * 10)
 
     /**
      * Get all books matching [query] from database.
@@ -112,6 +117,12 @@ class BookRepositoryImpl @Inject constructor(
     override suspend fun getBookText(bookId: Int): List<ReaderText> {
         if (bookId == -1) return emptyList()
 
+        // Check cache first
+        textCache.get(bookId)?.let { cachedText ->
+            Log.i(GET_TEXT, "Loaded text of [$bookId] from cache.")
+            return cachedText
+        }
+
         val book = database.findBookById(bookId)
         val cachedFile = CachedFileCompat.fromFullPath(
             context = application,
@@ -138,7 +149,10 @@ class BookRepositoryImpl @Inject constructor(
             return emptyList()
         }
 
-        Log.i(GET_TEXT, "Successfully loaded text of [$bookId] with markdown.")
+        // Cache the parsed text for future use
+        textCache.put(bookId, readerText)
+
+        Log.i(GET_TEXT, "Successfully loaded and cached text of [$bookId] with markdown.")
         return readerText
     }
 

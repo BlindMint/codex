@@ -52,6 +52,8 @@ object AppModule {
         // Additional Migrations
         DatabaseHelper.MIGRATION_7_8.removeBooksDir(app)
 
+        // For now, disable encryption to avoid 16KB page size issues and migration problems
+        // TODO: Implement proper database encryption migration for production
         return Room.databaseBuilder(
             app,
             BookDatabase::class.java,
