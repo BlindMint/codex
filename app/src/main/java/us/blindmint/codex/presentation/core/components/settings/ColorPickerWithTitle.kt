@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -119,6 +120,16 @@ fun ColorPickerWithTitle(
                     }
                 },
                 label = { Text(stringResource(id = R.string.hex_color)) },
+                prefix = {
+                    Text(
+                        text = "#",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    textAlign = TextAlign.Center
+                ),
                 modifier = Modifier.weight(1f),
                 enabled = !isLocked,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
