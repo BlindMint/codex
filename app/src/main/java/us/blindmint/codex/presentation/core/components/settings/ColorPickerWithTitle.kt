@@ -109,10 +109,12 @@ fun ColorPickerWithTitle(
             OutlinedTextField(
                 value = hexValue,
                 onValueChange = { newHex ->
-                    hexValue = newHex.uppercase().take(6)
-                    if (hexValue.length == 6) {
+                    // Remove leading "#" if present and take first 6 hex digits
+                    val cleanedHex = newHex.uppercase().removePrefix("#").take(6)
+                    hexValue = cleanedHex
+                    if (cleanedHex.length == 6) {
                         try {
-                            val colorValue = newHex.toLong(16) or 0xFF000000L // Add alpha = 255
+                            val colorValue = cleanedHex.toLong(16) or 0xFF000000L // Add alpha = 255
                             color = Color(colorValue)
                         } catch (e: Exception) {
                             // Invalid hex, keep current value
