@@ -27,7 +27,9 @@ import us.blindmint.codex.domain.browse.display.toBrowseSortOrder
 import us.blindmint.codex.domain.library.display.LibraryLayout
 import us.blindmint.codex.domain.library.display.toLibraryTitlePosition
 import us.blindmint.codex.domain.library.sort.toLibrarySortOrder
+import us.blindmint.codex.domain.reader.BackgroundImage
 import us.blindmint.codex.domain.reader.CustomFont
+import us.blindmint.codex.domain.reader.toBackgroundScaleMode
 import us.blindmint.codex.domain.reader.toColorEffects
 import us.blindmint.codex.domain.reader.toFontThickness
 import us.blindmint.codex.domain.reader.toHorizontalGesture
@@ -678,6 +680,35 @@ class MainModel @Inject constructor(
                     it.copy(libraryListSize = this)
                 }
             )
+
+            // Background Image Events
+            is MainEvent.OnChangeBackgroundImage -> handleDatastoreUpdate(
+                key = DataStoreConstants.BACKGROUND_IMAGE,
+                value = event.value?.let { BackgroundImage.toString(it) } ?: "",
+                updateState = {
+                    it.copy(backgroundImage = if (this.isEmpty()) null else BackgroundImage.fromString(this))
+                }
+            )
+
+            is MainEvent.OnAddCustomBackgroundImage -> handleAddCustomBackgroundImage(event)
+
+            is MainEvent.OnRemoveCustomBackgroundImage -> handleRemoveCustomBackgroundImage(event)
+
+            is MainEvent.OnChangeBackgroundImageOpacity -> handleDatastoreUpdate(
+                key = DataStoreConstants.BACKGROUND_IMAGE_OPACITY,
+                value = event.value.toDouble(),
+                updateState = {
+                    it.copy(backgroundImageOpacity = this.toFloat())
+                }
+            )
+
+            is MainEvent.OnChangeBackgroundScaleMode -> handleDatastoreUpdate(
+                key = DataStoreConstants.BACKGROUND_SCALE_MODE,
+                value = event.value.name,
+                updateState = {
+                    it.copy(backgroundScaleMode = this.toBackgroundScaleMode())
+                }
+            )
         }
     }
 
@@ -792,6 +823,50 @@ class MainModel @Inject constructor(
             java.io.File(event.value.filePath).delete()
         } catch (e: Exception) {
             // Ignore cleanup errors
+        }
+    }
+
+    private fun handleAddCustomBackgroundImage(event: MainEvent.OnAddCustomBackgroundImage) {
+        val list = _state.value.customBackgroundImages.toMutableList()
+        list.add(event.value)
+        val stringSet = list.map { BackgroundImage.toString(it) }.toSet()
+        handleDatastoreUpdate(
+            key = DataStoreConstants.CUSTOM_BACKGROUND_IMAGES,
+            value = stringSet,
+            updateState = {
+                it.copy(customBackgroundImages = list)
+            }
+        )
+    }
+
+    private fun handleRemoveCustomBackgroundImage(event: MainEvent.OnRemoveCustomBackgroundImage) {
+        val list = _state.value.customBackgroundImages.toMutableList()
+        list.remove(event.value)
+        val stringSet = list.map { BackgroundImage.toString(it) }.toSet()
+        handleDatastoreUpdate(
+            key = DataStoreConstants.CUSTOM_BACKGROUND_IMAGES,
+            value = stringSet,
+            updateState = {
+                it.copy(customBackgroundImages = list)
+            }
+        )
+        // If this was the currently selected background, clear the selection
+        if (_state.value.backgroundImage == event.value) {
+            handleDatastoreUpdate(
+                key = DataStoreConstants.BACKGROUND_IMAGE,
+                value = "",
+                updateState = {
+                    it.copy(backgroundImage = null)
+                }
+            )
+        }
+        // Clean up the image file (only for non-default images)
+        if (!event.value.isDefault) {
+            try {
+                java.io.File(event.value.filePath).delete()
+            } catch (e: Exception) {
+                // Ignore cleanup errors
+            }
         }
     }
 

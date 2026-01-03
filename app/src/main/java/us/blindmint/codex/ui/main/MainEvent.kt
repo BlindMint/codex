@@ -10,6 +10,8 @@ import androidx.compose.runtime.Immutable
 import us.blindmint.codex.domain.dictionary.DictionarySource
 import us.blindmint.codex.domain.library.display.LibraryLayout
 import us.blindmint.codex.domain.library.sort.LibrarySortOrder
+import us.blindmint.codex.domain.reader.BackgroundImage
+import us.blindmint.codex.domain.reader.BackgroundScaleMode
 import us.blindmint.codex.domain.reader.CustomFont
 
 @Immutable
@@ -97,4 +99,11 @@ sealed class MainEvent {
     data class OnChangeLibraryTitlePosition(val value: us.blindmint.codex.domain.library.display.LibraryTitlePosition) : MainEvent()
     data class OnChangeLibraryShowReadButton(val value: Boolean) : MainEvent()
     data class OnChangeLibraryShowProgress(val value: Boolean) : MainEvent()
+
+    // Background Image Events
+    data class OnChangeBackgroundImage(val value: BackgroundImage?) : MainEvent()
+    data class OnAddCustomBackgroundImage(val value: BackgroundImage) : MainEvent()
+    data class OnRemoveCustomBackgroundImage(val value: BackgroundImage) : MainEvent()
+    data class OnChangeBackgroundImageOpacity(val value: Float) : MainEvent()
+    data class OnChangeBackgroundScaleMode(val value: BackgroundScaleMode) : MainEvent()
 }
