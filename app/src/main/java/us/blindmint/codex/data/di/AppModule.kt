@@ -64,6 +64,7 @@ object AppModule {
                 DatabaseHelper.MIGRATION_10_11, // migrates DROPPED category to PLANNING
                 DatabaseHelper.MIGRATION_11_12, // creates BookmarkEntity table
                 DatabaseHelper.MIGRATION_12_13, // adds selectedText, customName, pageNumber to BookmarkEntity
+                DatabaseHelper.MIGRATION_13_14, // adds isLocked to ColorPresetEntity
             )
             .allowMainThreadQueries()
             .build()

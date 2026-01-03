@@ -60,6 +60,7 @@ fun SliderWithTitle(
     title: String,
     horizontalPadding: Dp = SettingsHorizontalPadding,
     verticalPadding: Dp = 8.dp,
+    enabled: Boolean = true,
     onValueChange: (Int) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -78,18 +79,12 @@ fun SliderWithTitle(
     ) {
         Column(Modifier.fillMaxWidth(0.2f)) {
             SettingsSubcategoryTitle(title = title, padding = 0.dp)
-            Spacer(modifier = Modifier.height(4.dp))
-            StyledText(
-                text = placeholder.value,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            )
         }
         Spacer(modifier = Modifier.width(8.dp))
         Slider(
             valueRange = fromValue.toFloat()..toValue.toFloat(),
             value = value.first.toFloat(),
+            enabled = enabled,
             onValueChange = {
                 onValueChange(it.roundToInt())
             },
@@ -152,6 +147,7 @@ fun SliderWithTitle(
     toValue: Int,
     horizontalPadding: Dp = SettingsHorizontalPadding,
     verticalPadding: Dp = 8.dp,
+    enabled: Boolean = true,
     onValueChange: (Float) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -170,18 +166,12 @@ fun SliderWithTitle(
     ) {
         Column(Modifier.fillMaxWidth(0.2f)) {
             SettingsSubcategoryTitle(title = title, padding = 0.dp)
-            Spacer(modifier = Modifier.height(4.dp))
-            StyledText(
-                text = placeholder.value,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            )
         }
         Spacer(modifier = Modifier.width(8.dp))
         Slider(
             valueRange = 0f..1f,
             value = value.first,
+            enabled = enabled,
             onValueChange = {
                 onValueChange(it)
             },

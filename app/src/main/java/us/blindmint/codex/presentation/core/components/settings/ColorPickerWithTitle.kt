@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -57,12 +58,28 @@ fun ColorPickerWithTitle(
     title: String,
     horizontalPadding: Dp = 18.dp,
     verticalPadding: Dp = 8.dp,
+    isLocked: Boolean = false,
     onValueChange: (Color) -> Unit
 ) {
     val initialValue = rememberSaveable(presetId) { value.value.toString() }
     var color by remember(value) { mutableStateOf(value) }
-    var hexValue by remember(color) {
-        mutableStateOf(String.format("%08X", color.value.toLong() and 0xFFFFFFFFL))
+    var hexValue by remember {
+        mutableStateOf(
+            String.format("%06X",
+                ((value.red * 255).toInt() shl 16) or
+                ((value.green * 255).toInt() shl 8) or
+                (value.blue * 255).toInt()
+            )
+        )
+    }
+
+    // Update hexValue when color changes
+    LaunchedEffect(color) {
+        hexValue = String.format("%06X",
+            ((color.red * 255).toInt() shl 16) or
+            ((color.green * 255).toInt() shl 8) or
+            (color.blue * 255).toInt()
+        )
     }
 
     LaunchedEffect(color) {
@@ -78,37 +95,63 @@ fun ColorPickerWithTitle(
             .fillMaxWidth()
             .padding(vertical = verticalPadding, horizontal = horizontalPadding)
     ) {
-        SettingsSubcategoryTitle(
-            title = title,
-            padding = 0.dp
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // HEX Color Input
-        OutlinedTextField(
-            value = hexValue,
-            onValueChange = { newHex ->
-                hexValue = newHex.uppercase().take(8)
-                if (hexValue.length == 8) {
-                    try {
-                        val colorValue = newHex.toLong(16)
-                        color = Color(colorValue)
-                    } catch (e: Exception) {
-                        // Invalid hex, keep current value
+        // HEX Color Input - inline with title
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            OutlinedTextField(
+                value = hexValue,
+                onValueChange = { newHex ->
+                    // Remove leading "#" if present and take first 6 hex digits
+                    val cleanedHex = newHex.uppercase().removePrefix("#").take(6)
+                    hexValue = cleanedHex
+                    if (cleanedHex.length == 6) {
+                        try {
+                            val colorValue = cleanedHex.toLong(16) or 0xFF000000L // Add alpha = 255
+                            color = Color(colorValue)
+                        } catch (e: Exception) {
+                            // Invalid hex, keep current value
+                        }
                     }
-                }
-            },
-            label = { Text(stringResource(id = R.string.hex_color)) },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
-            singleLine = true
-        )
+                },
+                label = { Text(stringResource(id = R.string.hex_color)) },
+                prefix = {
+                    Text(
+                        text = "#",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                suffix = {
+                    Text(
+                        text = "#",
+                        color = Color.Transparent, // Invisible "#" on the right for visual balance
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier.weight(1f),
+                enabled = !isLocked,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
+                singleLine = true
+            )
+        }
         Spacer(modifier = Modifier.height(12.dp))
 
         RevertibleSlider(
             value = color.red to ((color.red * 255).toInt().toString()),
             initialValue = Color(initialValue.toULong()).red,
             title = stringResource(id = R.string.red_color),
+            isLocked = isLocked,
             onValueChange = {
                 color = color.copy(red = it)
             }
@@ -117,6 +160,7 @@ fun ColorPickerWithTitle(
             value = color.green to ((color.green * 255).toInt().toString()),
             initialValue = Color(initialValue.toULong()).green,
             title = stringResource(id = R.string.green_color),
+            isLocked = isLocked,
             onValueChange = {
                 color = color.copy(green = it)
             }
@@ -125,6 +169,7 @@ fun ColorPickerWithTitle(
             value = color.blue to ((color.blue * 255).toInt().toString()),
             initialValue = Color(initialValue.toULong()).blue,
             title = stringResource(id = R.string.blue_color),
+            isLocked = isLocked,
             onValueChange = {
                 color = color.copy(blue = it)
             }
@@ -139,17 +184,11 @@ private fun RevertibleSlider(
     title: String,
     horizontalPadding: Dp = 0.dp,
     verticalPadding: Dp = 8.dp,
+    isLocked: Boolean = false,
     onValueChange: (Float) -> Unit
 ) {
-    var isEditing by remember { mutableStateOf(false) }
     var editValue by remember(value.second) { mutableStateOf(value.second) }
     val focusRequester = remember { FocusRequester() }
-
-    LaunchedEffect(isEditing) {
-        if (isEditing) {
-            focusRequester.requestFocus()
-        }
-    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -164,6 +203,7 @@ private fun RevertibleSlider(
             value = value,
             title = title,
             toValue = 255,
+            enabled = !isLocked,
             onValueChange = {
                 onValueChange(it)
             },
@@ -186,18 +226,13 @@ private fun RevertibleSlider(
             modifier = Modifier
                 .width(60.dp)
                 .focusRequester(focusRequester)
-                .clickable(enabled = !isEditing) {
-                    isEditing = true
+                .clickable(enabled = !isLocked) {
+                    focusRequester.requestFocus()
                 },
-            readOnly = !isEditing,
+            enabled = !isLocked,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
-            textStyle = MaterialTheme.typography.labelSmall,
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledBorderColor = MaterialTheme.colorScheme.outline,
-                disabledTextColor = MaterialTheme.colorScheme.onSurface
-            ),
-            enabled = true
+            textStyle = MaterialTheme.typography.labelSmall
         )
 
         Spacer(modifier = Modifier.width(6.dp))
@@ -207,7 +242,7 @@ private fun RevertibleSlider(
             icon = Icons.Default.History,
             contentDescription = R.string.revert_content_desc,
             disableOnClick = false,
-            enabled = initialValue != value.first,
+            enabled = !isLocked && initialValue != value.first,
             color = if (initialValue == value.first) MaterialTheme.colorScheme.onSurfaceVariant
             else MaterialTheme.colorScheme.onSurface
         ) {

@@ -22,6 +22,7 @@ class ColorPresetMapperImpl @Inject constructor() : ColorPresetMapper {
             backgroundColor = colorPreset.backgroundColor.value.toLong(),
             fontColor = colorPreset.fontColor.value.toLong(),
             isSelected = colorPreset.isSelected,
+            isLocked = colorPreset.isLocked,
             order = order
         )
     }
@@ -32,7 +33,8 @@ class ColorPresetMapperImpl @Inject constructor() : ColorPresetMapper {
             name = colorPresetEntity.name,
             backgroundColor = Color(colorPresetEntity.backgroundColor.toULong()),
             fontColor = Color(colorPresetEntity.fontColor.toULong()),
-            isSelected = colorPresetEntity.isSelected
+            isSelected = colorPresetEntity.isSelected,
+            isLocked = colorPresetEntity.isLocked
         )
     }
 }
