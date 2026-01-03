@@ -64,8 +64,7 @@ fun ColorPickerWithTitle(
     var color by remember(value) { mutableStateOf(value) }
     var hexValue by remember {
         mutableStateOf(
-            String.format("%08X",
-                ((value.alpha * 255).toInt() shl 24) or
+            String.format("%06X",
                 ((value.red * 255).toInt() shl 16) or
                 ((value.green * 255).toInt() shl 8) or
                 (value.blue * 255).toInt()
@@ -75,8 +74,7 @@ fun ColorPickerWithTitle(
 
     // Update hexValue when color changes
     LaunchedEffect(color) {
-        hexValue = String.format("%08X",
-            ((color.alpha * 255).toInt() shl 24) or
+        hexValue = String.format("%06X",
             ((color.red * 255).toInt() shl 16) or
             ((color.green * 255).toInt() shl 8) or
             (color.blue * 255).toInt()
@@ -110,10 +108,10 @@ fun ColorPickerWithTitle(
             OutlinedTextField(
                 value = hexValue,
                 onValueChange = { newHex ->
-                    hexValue = newHex.uppercase().take(8)
-                    if (hexValue.length == 8) {
+                    hexValue = newHex.uppercase().take(6)
+                    if (hexValue.length == 6) {
                         try {
-                            val colorValue = newHex.toLong(16)
+                            val colorValue = newHex.toLong(16) or 0xFF000000L // Add alpha = 255
                             color = Color(colorValue)
                         } catch (e: Exception) {
                             // Invalid hex, keep current value
