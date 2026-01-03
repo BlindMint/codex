@@ -50,6 +50,7 @@ build/
 
 # Release
 app/release/
+.release_backup/
 
 # Schemas (if not needed)
 app/schemas/
