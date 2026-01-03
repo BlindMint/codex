@@ -5,9 +5,9 @@
 
 # Codex
 
-[![GitHub Releases](https://img.shields.io/badge/github-v1.8.0-333333?logo=github&link=https://github.com/BlindMint/codex/releases/latest)](https://github.com/BlindMint/codex/releases/latest)
-[![GitLab Releases](https://img.shields.io/badge/gitlab-v1.8.0-FC6D26?logo=gitlab&link=https://gitlab.com/BlindMint/codex/-/releases)](https://gitlab.com/BlindMint/codex/-/releases)
-[![Codeberg Releases](https://img.shields.io/badge/codeberg-v1.8.0-2185D0?logo=codeberg&link=https://codeberg.org/BlindMint/codex/releases)](https://codeberg.org/BlindMint/codex/releases)  
+[![GitHub Releases](https://img.shields.io/badge/github-v1.9.1-333333?logo=github&link=https://github.com/BlindMint/codex/releases/latest)](https://github.com/BlindMint/codex/releases/latest)
+[![GitLab Releases](https://img.shields.io/badge/gitlab-v1.9.1-FC6D26?logo=gitlab&link=https://gitlab.com/BlindMint/codex/-/releases)](https://gitlab.com/BlindMint/codex/-/releases)
+[![Codeberg Releases](https://img.shields.io/badge/codeberg-v1.9.1-2185D0?logo=codeberg&link=https://codeberg.org/BlindMint/codex/releases)](https://codeberg.org/BlindMint/codex/releases)  
 
 
 ### Material You eBook Reader for Android
@@ -17,11 +17,12 @@ Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) rea
 
 ## Features
 
-- Forge your reading experience with modern Material You design, dynamic themes, and custom color presets
-- Supports multiple eBook formats (PDF, TXT, EPUB, FB2, HTML, HTM, MD)
-- Organize your library with categories and advanced search
+- Forge your reading experience with modern Material You design, dynamic themes, custom color presets, and background images
+- Supports multiple eBook formats (PDF, TXT, EPUB, FB2, HTML, HTM, MD, FODT)
+- Organize your library with categories and advanced search (title, author, description)
 - Customize font (yes, even add your own!), text size, padding, reading speed, and more
-- Progress tracking and bookmarks
+- Progress tracking, bookmarks with custom names, and in-book text search with highlighting
+- Text selection with dictionary lookup and in-app WebView
 - Storage Access Framework integration
 - Built with Jetpack Compose
 
