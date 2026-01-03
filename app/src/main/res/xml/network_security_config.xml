@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <!-- Allow connections to dictionary services -->
+        <domain includeSubdomains="true">onelook.com</domain>
+        <domain includeSubdomains="true">wiktionary.org</domain>
+        <domain includeSubdomains="true">google.com</domain>
+        <domain includeSubdomains="true">merriam-webster.com</domain>
+        <!-- Add more domains as needed for dictionary services -->
+    </domain-config>
+</network-security-config>

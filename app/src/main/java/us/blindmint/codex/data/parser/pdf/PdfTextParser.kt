@@ -41,9 +41,27 @@ class PdfTextParser @Inject constructor(
             val pdfStripper = PDFTextStripper()
             pdfStripper.paragraphStart = "</br>"
 
-            PDDocument.load(cachedFile.openInputStream()).use {
-                oldText = pdfStripper.getText(it)
-                    .replace("\r", "")
+            // Load document and extract text with memory optimization
+            cachedFile.openInputStream()?.use { inputStream ->
+                PDDocument.load(inputStream).use { document ->
+                    // Process in chunks to reduce memory usage for large PDFs
+                    val totalPages = document.numberOfPages
+                    val chunkSize = 50 // Process 50 pages at a time
+                    val textChunks = mutableListOf<String>()
+
+                    for (startPage in 0 until totalPages step chunkSize) {
+                        val endPage = minOf(startPage + chunkSize, totalPages)
+                        pdfStripper.startPage = startPage + 1
+                        pdfStripper.endPage = endPage
+                        textChunks.add(pdfStripper.getText(document))
+                        yield() // Allow coroutine cancellation and UI updates
+                    }
+
+                    oldText = textChunks.joinToString("").replace("\r", "")
+                }
+            } ?: run {
+                Log.e(PDF_TAG, "Failed to open input stream for PDF")
+                return emptyList()
             }
 
             yield()

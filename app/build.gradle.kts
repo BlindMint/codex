@@ -80,11 +80,11 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "21"
     }
     buildFeatures {
         compose = true
@@ -142,8 +142,7 @@ dependencies {
 
     // Dagger - Hilt
     implementation("com.google.dagger:hilt-android:2.55")
-    ksp("com.google.dagger:hilt-android-compiler:2.55")
-    implementation("com.google.dagger:hilt-compiler:2.55")
+    ksp("com.google.dagger:hilt-compiler:2.55")
     ksp("androidx.hilt:hilt-compiler:1.2.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
@@ -153,6 +152,10 @@ dependencies {
 
     // Kotlin Extensions and Coroutines support for Room
     implementation("androidx.room:room-ktx:2.7.1")
+
+    // TODO: Add database encryption when 16KB page size compatible SQLCipher version available
+    // Current SQLCipher versions have 16KB page size alignment issues for Android 15+
+    // implementation("net.zetetic:android-database-sqlcipher:4.5.6")
 
     // Datastore (Settings)
     implementation("androidx.datastore:datastore-preferences:1.1.3")
