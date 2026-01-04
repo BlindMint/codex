@@ -420,6 +420,8 @@ prompt_version_selection() {
         q|Q) log_info "Aborted by user"; exit 0 ;;
         *) log_error "Invalid choice"; exit 1 ;;
     esac
+
+    log_success "Selected version: ${NEW_VERSION} (code: ${NEW_VERSION_CODE})"
 }
 
 confirm_version() {
