@@ -132,6 +132,10 @@ sealed class ReaderEvent {
 
     data object OnHideSearch : ReaderEvent()
 
+    data object OnShowSearchPersistent : ReaderEvent()
+
+    data object OnHideSearchPersistent : ReaderEvent()
+
     data class OnSearchQueryChange(
         val query: String
     ) : ReaderEvent()

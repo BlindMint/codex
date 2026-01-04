@@ -539,6 +539,7 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             currentSearchResultIndex = state.value.currentSearchResultIndex,
             searchHighlightColor = searchHighlightColor,
             isSearchVisible = state.value.showSearch,
+            searchBarPersistent = state.value.searchBarPersistent,
             onSearchQueryChange = screenModel::onEvent,
             onNextSearchResult = screenModel::onEvent,
             onPrevSearchResult = screenModel::onEvent,

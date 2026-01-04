@@ -9,12 +9,17 @@ package us.blindmint.codex.presentation.reader
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsIgnoringVisibility
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
@@ -38,6 +43,7 @@ import us.blindmint.codex.presentation.core.components.common.IconButton
 import us.blindmint.codex.ui.reader.ReaderEvent
 import us.blindmint.codex.ui.theme.readerBarsColor
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ReaderSearchBar(
     searchQuery: String,
@@ -50,21 +56,24 @@ fun ReaderSearchBar(
 ) {
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val density = LocalDensity.current
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }
 
+    val statusBarPadding = WindowInsets.systemBarsIgnoringVisibility.asPaddingValues(density = density).calculateTopPadding()
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.readerBarsColor)
-            .padding(horizontal = 4.dp, vertical = 8.dp),
+            .padding(top = statusBarPadding, start = 4.dp, end = 4.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         IconButton(
-            icon = Icons.AutoMirrored.Rounded.ArrowBack,
+            icon = Icons.Rounded.ArrowUpward,
             contentDescription = R.string.go_back_content_desc,
             disableOnClick = false
         ) {

@@ -7,8 +7,11 @@
 package us.blindmint.codex.presentation.reader
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -105,13 +109,14 @@ fun ReaderScaffold(
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
     showBookmarksDrawer: (ReaderEvent.OnShowBookmarksDrawer) -> Unit,
-    showSearch: (ReaderEvent.OnShowSearch) -> Unit,
+    showSearch: (ReaderEvent.OnShowSearchPersistent) -> Unit,
     hideSearch: (ReaderEvent.OnHideSearch) -> Unit,
     searchQuery: String,
     searchResults: List<SearchResult>,
     currentSearchResultIndex: Int,
     searchHighlightColor: Color,
     isSearchVisible: Boolean,
+    searchBarPersistent: Boolean,
     onSearchQueryChange: (ReaderEvent.OnSearchQueryChange) -> Unit,
     onNextSearchResult: (ReaderEvent.OnNextSearchResult) -> Unit,
     onPrevSearchResult: (ReaderEvent.OnPrevSearchResult) -> Unit,
@@ -124,52 +129,56 @@ fun ReaderScaffold(
             .nestedScroll(nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            AnimatedVisibility(
-                visible = isSearchVisible,
-                enter = slideInVertically { -it },
-                exit = slideOutVertically { -it }
-            ) {
-                ReaderSearchBar(
-                    searchQuery = searchQuery,
-                    searchResultsCount = searchResults.size,
-                    currentResultIndex = currentSearchResultIndex,
-                    onQueryChange = onSearchQueryChange,
-                    onNextResult = onNextSearchResult,
-                    onPrevResult = onPrevSearchResult,
-                    onHideSearch = hideSearch
-                )
-            }
+            Column {
+                AnimatedVisibility(
+                    visible = showMenu,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    ReaderTopBar(
+                        book = book,
+                        currentChapter = currentChapter,
+                        fastColorPresetChange = fastColorPresetChange,
+                        currentChapterProgress = currentChapterProgress,
+                        isLoading = isLoading,
+                        lockMenu = lockMenu,
+                        leave = leave,
+                        selectPreviousPreset = selectPreviousPreset,
+                        selectNextPreset = selectNextPreset,
+                        showSettingsBottomSheet = showSettingsBottomSheet,
+                        showChaptersDrawer = showChaptersDrawer,
+                        showBookmarksDrawer = showBookmarksDrawer,
+                        isSearchVisible = isSearchVisible || (showMenu && searchBarPersistent),
+                        showSearch = showSearch,
+                        hideSearch = hideSearch,
+                        navigateBack = navigateBack,
+                        navigateToBookInfo = navigateToBookInfo
+                    )
+                }
 
-            AnimatedVisibility(
-                visible = showMenu && !isSearchVisible,
-                enter = slideInVertically { -it },
-                exit = slideOutVertically { -it }
-            ) {
-                ReaderTopBar(
-                    book = book,
-                    currentChapter = currentChapter,
-                    fastColorPresetChange = fastColorPresetChange,
-                    currentChapterProgress = currentChapterProgress,
-                    isLoading = isLoading,
-                    lockMenu = lockMenu,
-                    leave = leave,
-                    selectPreviousPreset = selectPreviousPreset,
-                    selectNextPreset = selectNextPreset,
-                    showSettingsBottomSheet = showSettingsBottomSheet,
-                    showChaptersDrawer = showChaptersDrawer,
-                    showBookmarksDrawer = showBookmarksDrawer,
-                    showSearch = showSearch,
-                    navigateBack = navigateBack,
-                    navigateToBookInfo = navigateToBookInfo
-                )
+                AnimatedVisibility(
+                    visible = isSearchVisible || (showMenu && searchBarPersistent),
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    ReaderSearchBar(
+                        searchQuery = searchQuery,
+                        searchResultsCount = searchResults.size,
+                        currentResultIndex = currentSearchResultIndex,
+                        onQueryChange = onSearchQueryChange,
+                        onNextResult = onNextSearchResult,
+                        onPrevResult = onPrevSearchResult,
+                        onHideSearch = hideSearch
+                    )
+                }
             }
         },
         bottomBar = {
             AnimatedVisibility(
                 modifier = Modifier.fillMaxWidth(),
                 visible = showMenu,
-                enter = slideInVertically { it },
-                exit = slideOutVertically { it }
+                enter = fadeIn(),
+                exit = fadeOut()
             ) {
                 ReaderBottomBar(
                     book = book,
