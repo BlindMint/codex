@@ -441,7 +441,7 @@ confirm_version() {
         return
     fi
 
-    if ! prompt_yes_no "Proceed with release?"; then
+    if ! prompt_yes_no "Proceed with release?" "Y"; then
         log_info "Aborted by user"
         exit 0
     fi
@@ -558,7 +558,21 @@ verify_file_changes() {
 
     echo "Changes to be committed:"
     echo ""
-    git diff "${BUILD_GRADLE}" "${README}"
+
+    # Check if diff is very large and warn user
+    local diff_size
+    diff_size=$(git diff "${BUILD_GRADLE}" "${README}" | wc -l)
+
+    if [[ $diff_size -gt 100 ]]; then
+        log_warning "Large diff detected ($diff_size lines). Showing first 50 lines:"
+        git diff "${BUILD_GRADLE}" "${README}" | head -50
+        echo "... (truncated - $diff_size total lines)"
+        echo ""
+        log_info "Full diff will be shown after confirmation"
+    else
+        git diff "${BUILD_GRADLE}" "${README}"
+    fi
+
     echo ""
 
     if [[ "$DRY_RUN" == "true" ]]; then
