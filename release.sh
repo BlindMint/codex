@@ -822,13 +822,19 @@ show_completion_summary() {
     echo "  Pushed to: $(IFS=', '; echo "${REMOTES[*]}")"
     echo ""
 
+    # URL-encode the changelog for use in URLs
+    local encoded_title
+    local encoded_body
+    encoded_title=$(printf "Release v%s" "$NEW_VERSION" | sed 's/ /%20/g')
+    encoded_body=$(echo "$CHANGELOG" | sed 's/ /%20/g; s/\n/%0A/g; s/&/%26/g; s/?/%3F/g')
+
     echo "Next Steps - Create releases on platforms:"
     echo ""
-    echo "1. GitHub:"
-    echo "   https://github.com/BlindMint/codex/releases/new?tag=v${NEW_VERSION}"
+    echo "1. GitHub (pre-populated):"
+    echo "   https://github.com/BlindMint/codex/releases/new?tag=v${NEW_VERSION}&title=${encoded_title}&body=${encoded_body}"
     echo ""
-    echo "2. GitLab:"
-    echo "   https://gitlab.com/BlindMint/codex/-/releases/new?tag_name=v${NEW_VERSION}"
+    echo "2. GitLab (pre-populated):"
+    echo "   https://gitlab.com/BlindMint/codex/-/releases/new?tag_name=v${NEW_VERSION}&title=${encoded_title}&description=${encoded_body}"
     echo ""
     echo "3. Codeberg:"
     echo "   https://codeberg.org/BlindMint/codex/releases/new?tag=v${NEW_VERSION}"
