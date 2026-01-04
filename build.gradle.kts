@@ -6,4 +6,10 @@ plugins {
     id("com.google.dagger.hilt.android") version "2.52" apply false
     id("com.mikepenz.aboutlibraries.plugin") version "11.1.3" apply false
     id("androidx.room") version "2.6.1" apply false
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
+}
+
+ktlint {
+    version.set("1.3.1")
+    enableExperimentalRules.set(true)
 }

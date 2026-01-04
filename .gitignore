@@ -48,6 +48,9 @@ build/
 *.swp
 *.bak
 
+# Ktlint
+ktlint
+
 # Release
 app/release/
 .release_backup/
