@@ -50,14 +50,10 @@ fun ReaderSearchScrollbar(
     val density = LocalDensity.current
 
     // Calculate positioning based on visible bars
-    // Estimate bar heights to avoid overlap
-    val topBarHeight = when {
-        showMenu && isSearchVisible -> 120.dp // Top bar + search bar
-        showMenu -> 64.dp // Just top bar
-        isSearchVisible -> 56.dp // Just search bar
-        else -> 0.dp
-    }
-
+    // Search bar is always visible when scrollbar is visible, so always account for it
+    val searchBarHeight = 72.dp // Height of search bar with normalized padding
+    val topBarHeight = if (showMenu) 64.dp else 0.dp // Top bar when menu is shown
+    val totalTopOffset = topBarHeight + searchBarHeight
     val bottomBarHeight = if (showMenu) 80.dp else 0.dp
 
     // Calculate viewport indicator position and size
@@ -74,7 +70,7 @@ fun ReaderSearchScrollbar(
         modifier = Modifier
             .fillMaxSize()
             .padding(
-                top = topBarHeight + contentPadding.calculateTopPadding(),
+                top = totalTopOffset + contentPadding.calculateTopPadding(),
                 bottom = bottomBarHeight + contentPadding.calculateBottomPadding()
             )
     ) {

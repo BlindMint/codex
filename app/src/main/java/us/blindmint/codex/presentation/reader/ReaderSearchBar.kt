@@ -81,13 +81,11 @@ fun ReaderSearchBar(
             }
     }
 
-    val statusBarPadding = WindowInsets.systemBarsIgnoringVisibility.asPaddingValues(density = density).calculateTopPadding()
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.readerBarsColor)
-            .padding(top = statusBarPadding, start = 4.dp, end = 4.dp, bottom = 8.dp),
+            .padding(horizontal = 4.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
