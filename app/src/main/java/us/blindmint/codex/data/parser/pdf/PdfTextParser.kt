@@ -8,6 +8,7 @@ package us.blindmint.codex.data.parser.pdf
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.ui.text.buildAnnotatedString
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
@@ -41,121 +42,48 @@ class PdfTextParser @Inject constructor(
             val pdfStripper = PDFTextStripper()
             pdfStripper.paragraphStart = "</br>"
 
-            // Load document and extract text with memory optimization
-            cachedFile.openInputStream()?.use { inputStream ->
-                PDDocument.load(inputStream).use { document ->
-                    // Process in chunks to reduce memory usage for large PDFs
-                    val totalPages = document.numberOfPages
-                    val chunkSize = 50 // Process 50 pages at a time
-                    val textChunks = mutableListOf<String>()
-
-                    for (startPage in 0 until totalPages step chunkSize) {
-                        val endPage = minOf(startPage + chunkSize, totalPages)
-                        pdfStripper.startPage = startPage + 1
-                        pdfStripper.endPage = endPage
-                        textChunks.add(pdfStripper.getText(document))
-                        yield() // Allow coroutine cancellation and UI updates
-                    }
-
-                    oldText = textChunks.joinToString("").replace("\r", "")
-                }
-            } ?: run {
-                Log.e(PDF_TAG, "Failed to open input stream for PDF")
-                return emptyList()
+            PDDocument.load(cachedFile.openInputStream()).use {
+                oldText = pdfStripper.getText(it)
+                    .replace("\r", "")
             }
 
             yield()
 
             val readerText = mutableListOf<ReaderText>()
-            val text = oldText.filterIndexed { index, c ->
-                yield()
 
-                if (c == ' ') {
-                    oldText[index - 1] != ' '
-                } else {
-                    true
-                }
-            }
+            // Optimized text processing for PDFs - remove excessive yields and simplify processing
+            // For PDFs, we can be more aggressive about line breaks and skip complex joining logic
+            val text = oldText.replace("\\s+".toRegex(), " ") // Simple space normalization
 
-            yield()
-
-            val unformattedLines = text.split("${pdfStripper.paragraphStart}|\\n".toRegex())
+            // Split into paragraphs and filter empty lines
+            val paragraphs = text.split(pdfStripper.paragraphStart.toRegex())
+                .flatMap { it.split("\n") }
+                .map { it.trim() }
                 .filter { it.isNotBlank() }
 
-            yield()
-
-            val lines = mutableListOf<String>()
-            unformattedLines.forEachIndexed { index, string ->
-                try {
-                    yield()
-
-                    val line = string.trim()
-
-                    if (index == 0) {
-                        lines.add(line)
-                        return@forEachIndexed
-                    }
-
-                    if (line.all { it.isDigit() }) {
-                        return@forEachIndexed
-                    }
-
-                    if (line.first().isLowerCase()) {
-                        val currentLine = lines[lines.lastIndex]
-
-                        if (currentLine.last() == '-') {
-                            if (currentLine[currentLine.lastIndex - 1].isLowerCase()) {
-                                lines[lines.lastIndex] = currentLine.dropLast(1) + line
-                                return@forEachIndexed
-                            }
-                        }
-
-                        lines[lines.lastIndex] += " $line"
-                        return@forEachIndexed
-                    }
-
-                    if (line.first().isUpperCase() || line.first().isDigit()) {
-                        lines.add(line)
-                        return@forEachIndexed
-                    }
-
-                    if (line.first().isLetter()) {
-                        lines[lines.lastIndex] += " $line"
-                        return@forEachIndexed
-                    }
-
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    return@forEachIndexed
-                }
-            }
-
-            yield()
-
             var chapterAdded = false
-            lines.forEach { line ->
-                yield()
-
-                if (line.isNotBlank()) {
-                    when (line) {
-                        "***", "---" -> readerText.add(
-                            ReaderText.Separator
-                        )
-
+            paragraphs.forEach { paragraph ->
+                if (paragraph.isNotBlank()) {
+                    when (paragraph) {
+                        "***", "---" -> readerText.add(ReaderText.Separator)
                         else -> {
-                            if (!chapterAdded && line.clearAllMarkdown().isNotBlank()) {
+                            if (!chapterAdded && paragraph.clearAllMarkdown().isNotBlank()) {
                                 readerText.add(
                                     0, ReaderText.Chapter(
-                                        title = line.clearAllMarkdown(),
+                                        title = paragraph.clearAllMarkdown(),
                                         nested = false
                                     )
                                 )
                                 chapterAdded = true
-                            } else readerText.add(
-                                ReaderText.Text(
-                                    line = markdownParser.parse(line)
+                            } else {
+                                // For PDFs, skip expensive markdown parsing as PDF text rarely contains markdown
+                                // Just use the text as-is for better performance
+                                readerText.add(
+                                    ReaderText.Text(
+                                        line = buildAnnotatedString { append(paragraph) }
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
