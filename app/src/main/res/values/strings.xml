@@ -750,6 +750,8 @@
     <string name="delete_color_preset_content_desc">Delete color preset</string>
     <string name="delete_color_preset_title">Delete Color Preset</string>
     <string name="delete_color_preset_message">Delete %1$s? This cannot be undone.</string>
+    <string name="delete_background_image_title">Delete Background Image</string>
+    <string name="delete_background_image_message">Delete %1$s? This cannot be undone.</string>
     <string name="lock_color_preset_content_desc">Lock color preset</string>
     <string name="unlock_color_preset_content_desc">Unlock color preset</string>
     <string name="create_color_preset_content_desc">Create new color preset</string>
