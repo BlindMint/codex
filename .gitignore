@@ -54,6 +54,7 @@ ktlint
 # Release
 app/release/
 .release_backup/
+logs/
 
 # Schemas (if not needed)
 app/schemas/

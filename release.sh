@@ -14,6 +14,7 @@
 #   ./release.sh --query            # Show current version and exit
 #   ./release.sh --version 2.0.1    # Release specific version
 #   ./release.sh --dry-run          # Preview without making changes
+#   ./release.sh --debug            # Show detailed build output
 #   ./release.sh --major            # Auto-select major version bump
 #   ./release.sh --minor            # Auto-select minor version bump
 #   ./release.sh --patch            # Auto-select patch version bump
@@ -31,6 +32,7 @@ PROJECT_ROOT="${SCRIPT_DIR}"
 BUILD_GRADLE="${PROJECT_ROOT}/app/build.gradle.kts"
 README="${PROJECT_ROOT}/README.md"
 BACKUP_DIR="${PROJECT_ROOT}/.release_backup"
+LOGS_DIR="${PROJECT_ROOT}/logs"
 REMOTES=("github" "gitlab" "codeberg")
 
 # ANSI color codes
@@ -45,6 +47,7 @@ NC='\033[0m'  # No Color
 DRY_RUN=false
 FORCE=false
 QUERY_ONLY=false
+DEBUG=false
 AUTO_BUMP=""
 SPECIFIED_VERSION=""
 CURRENT_VERSION=""
@@ -603,10 +606,21 @@ clean_build() {
         return
     fi
 
+    # Create logs directory
+    mkdir -p "${LOGS_DIR}"
+
     cd "${PROJECT_ROOT}"
-    ./gradlew clean > /dev/null 2>&1 || {
-        rollback "Gradle clean failed"
-    }
+
+    if [[ "$DEBUG" == "true" ]]; then
+        ./gradlew clean || {
+            rollback "Gradle clean failed"
+        }
+    else
+        ./gradlew clean > "${LOGS_DIR}/clean_$(date +%Y%m%d_%H%M%S).log" 2>&1 || {
+            cat "${LOGS_DIR}"/*.log | tail -20
+            rollback "Gradle clean failed"
+        }
+    fi
 
     log_success "Build cleaned"
 }
@@ -621,9 +635,37 @@ build_apk() {
 
     cd "${PROJECT_ROOT}"
 
-    # Build release APK
-    if ! ./gradlew assembleRelease; then
-        rollback "Gradle build failed"
+    # Build release APK with controlled output
+    if [[ "$DEBUG" == "true" ]]; then
+        if ! ./gradlew assembleRelease; then
+            rollback "Gradle build failed"
+        fi
+    else
+        # Show progress with a simple progress indicator
+        echo -n "Building... "
+
+        # Run build in background and monitor for completion
+        local log_file="${LOGS_DIR}/build_$(date +%Y%m%d_%H%M%S).log"
+
+        ./gradlew assembleRelease > "$log_file" 2>&1 &
+        local build_pid=$!
+
+        # Show simple progress dots while building
+        while kill -0 $build_pid 2>/dev/null; do
+            echo -n "."
+            sleep 2
+        done
+
+        # Check if build succeeded
+        if ! wait $build_pid; then
+            echo " FAILED"
+            echo ""
+            echo "Last 20 lines of build log:"
+            tail -20 "$log_file"
+            rollback "Gradle build failed"
+        fi
+
+        echo " DONE"
     fi
 
     log_success "APK build completed"
@@ -890,6 +932,11 @@ parse_args() {
                 AUTO_BUMP="patch"
                 shift
                 ;;
+            --debug|--verbose)
+                DEBUG=true
+                log_info "DEBUG MODE ENABLED - Detailed output will be shown"
+                shift
+                ;;
             -h|--help)
                 echo "Codex Release Automation Script"
                 echo ""
@@ -900,6 +947,7 @@ parse_args() {
                 echo "  -v, --version X.Y.Z  Release specific version (e.g., --version 2.0.1)"
                 echo "  --dry-run            Preview changes without making them"
                 echo "  --force              Skip git status check"
+                echo "  --debug              Show detailed build output and logs"
                 echo "  --major              Auto-select major version bump"
                 echo "  --minor              Auto-select minor version bump"
                 echo "  --patch              Auto-select patch version bump"
@@ -943,41 +991,29 @@ main() {
     # Phase 2: Version selection
     parse_current_version
     prompt_version_selection
-    log_info "Verifying version availability..."
     check_tag_exists
-    log_info "Preparing release summary..."
     confirm_version
 
     # Phase 3: Changelog
-    log_info "Analyzing commit history..."
     get_previous_tag
-    log_info "Generating changelog..."
     generate_changelog
     preview_changelog
 
     # Phase 4: File modifications
-    log_info "Preparing file modifications..."
     create_backups
     update_build_gradle
     update_readme
-    log_info "Reviewing changes..."
     verify_file_changes
 
     # Phase 5: Build
-    log_info "Preparing build environment..."
     clean_build
-    log_info "Building release APK..."
     build_apk
-    log_info "Verifying build artifacts..."
     verify_apk
     generate_checksum
 
     # Phase 6: Git operations
-    log_info "Creating release commit..."
     create_commit
-    log_info "Creating release tag..."
     create_tag
-    log_info "Pushing to remote repositories..."
     push_to_remotes
     verify_remotes
 
