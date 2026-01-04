@@ -934,29 +934,41 @@ main() {
     # Phase 2: Version selection
     parse_current_version
     prompt_version_selection
+    log_info "Verifying version availability..."
     check_tag_exists
+    log_info "Preparing release summary..."
     confirm_version
 
     # Phase 3: Changelog
+    log_info "Analyzing commit history..."
     get_previous_tag
+    log_info "Generating changelog..."
     generate_changelog
     preview_changelog
 
     # Phase 4: File modifications
+    log_info "Preparing file modifications..."
     create_backups
     update_build_gradle
     update_readme
+    log_info "Reviewing changes..."
     verify_file_changes
 
     # Phase 5: Build
+    log_info "Preparing build environment..."
     clean_build
+    log_info "Building release APK..."
     build_apk
+    log_info "Verifying build artifacts..."
     verify_apk
     generate_checksum
 
     # Phase 6: Git operations
+    log_info "Creating release commit..."
     create_commit
+    log_info "Creating release tag..."
     create_tag
+    log_info "Pushing to remote repositories..."
     push_to_remotes
     verify_remotes
 
