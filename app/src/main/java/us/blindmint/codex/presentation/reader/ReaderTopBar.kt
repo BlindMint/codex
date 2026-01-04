@@ -56,7 +56,9 @@ fun ReaderTopBar(
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
     showBookmarksDrawer: (ReaderEvent.OnShowBookmarksDrawer) -> Unit,
-    showSearch: (ReaderEvent.OnShowSearch) -> Unit,
+    isSearchVisible: Boolean,
+    showSearch: (ReaderEvent.OnShowSearchPersistent) -> Unit,
+    hideSearch: (ReaderEvent.OnHideSearch) -> Unit,
     navigateToBookInfo: (changePath: Boolean) -> Unit,
     navigateBack: () -> Unit
 ) {
@@ -137,7 +139,11 @@ fun ReaderTopBar(
                     disableOnClick = false,
                     enabled = !lockMenu
                 ) {
-                    showSearch(ReaderEvent.OnShowSearch)
+                    if (isSearchVisible) {
+                        hideSearch(ReaderEvent.OnHideSearch)
+                    } else {
+                        showSearch(ReaderEvent.OnShowSearchPersistent)
+                    }
                 }
 
                 if (currentChapter != null) {

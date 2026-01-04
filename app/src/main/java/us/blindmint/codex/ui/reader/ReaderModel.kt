@@ -175,6 +175,7 @@ class ReaderModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 showMenu = event.show,
+                                showSearch = event.show && it.searchBarPersistent,
                                 checkpoint = _state.value.listState.run {
                                     if (!event.show || !event.saveCheckpoint) return@run it.checkpoint
 
@@ -675,7 +676,8 @@ class ReaderModel @Inject constructor(
                     _state.update {
                         it.copy(
                             showSearch = true,
-                            showMenu = false
+                            showMenu = true,
+                            searchBarPersistent = true
                         )
                     }
                 }
@@ -684,6 +686,7 @@ class ReaderModel @Inject constructor(
                     _state.update {
                         it.copy(
                             showSearch = false,
+                            searchBarPersistent = false,
                             searchQuery = "",
                             searchResults = emptyList(),
                             currentSearchResultIndex = -1
@@ -755,6 +758,25 @@ class ReaderModel @Inject constructor(
                             }
                             scrollToSearchResult(event.resultIndex)
                         }
+                    }
+                }
+
+                is ReaderEvent.OnShowSearchPersistent -> {
+                    _state.update {
+                        it.copy(
+                            showSearch = true,
+                            searchBarPersistent = true,
+                            showMenu = true
+                        )
+                    }
+                }
+
+                is ReaderEvent.OnHideSearchPersistent -> {
+                    _state.update {
+                        it.copy(
+                            showSearch = false,
+                            searchBarPersistent = false
+                        )
                     }
                 }
             }

@@ -40,6 +40,7 @@ data class ReaderState(
     val drawer: Drawer? = null,
 
     val showSearch: Boolean = false,
+    val searchBarPersistent: Boolean = false,
     val searchQuery: String = "",
     val searchResults: List<SearchResult> = emptyList(),
     val currentSearchResultIndex: Int = -1,
