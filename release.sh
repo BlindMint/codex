@@ -6,6 +6,7 @@
 # - Interactive version selection (major/minor/patch bump)
 # - Updates build.gradle.kts and README.md
 # - Builds signed APK + generates SHA256 checksum
+# - Uploads APK to GitLab Packages (if GITLAB_TOKEN set)
 # - Creates git commit and annotated tag with changelog
 # - Pushes to all remotes (github, gitlab, codeberg)
 #
@@ -19,6 +20,10 @@
 #   ./release.sh --minor            # Auto-select minor version bump
 #   ./release.sh --patch            # Auto-select patch version bump
 #   ./release.sh --force            # Skip git status check
+#
+# Environment Variables:
+#   GITLAB_TOKEN=your_token         # Enable automatic APK upload to GitLab Packages
+#   GITLAB_PROJECT_ID=12345678      # Your GitLab project ID
 # ==============================================================================
 
 set -euo pipefail  # Exit on error, undefined vars, pipe failures
@@ -56,6 +61,7 @@ NEW_VERSION=""
 NEW_VERSION_CODE=""
 PREVIOUS_TAG=""
 CHANGELOG=""
+GITLAB_APK_URL=""
 ROLLBACK_NEEDED=false
 TAG_CREATED=false
 COMMIT_CREATED=false
@@ -714,6 +720,38 @@ generate_checksum() {
     cd "${PROJECT_ROOT}"
 }
 
+upload_to_gitlab_packages() {
+    log_info "Uploading APK to GitLab Packages..."
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log_warning "DRY RUN: Would upload APK to GitLab Packages"
+        return
+    fi
+
+    # Check if GitLab token is available
+    local gitlab_token="${GITLAB_TOKEN:-}"
+    if [[ -z "$gitlab_token" ]]; then
+        log_warning "GITLAB_TOKEN not set, skipping GitLab package upload"
+        log_info "Set GITLAB_TOKEN environment variable to enable automatic uploads"
+        return
+    fi
+
+    local apk_path="${PROJECT_ROOT}/app/build/outputs/apk/release/codex-v${NEW_VERSION}.apk"
+    local package_url="https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_ID:-YOUR_PROJECT_ID}/packages/generic/codex/${NEW_VERSION}/codex-v${NEW_VERSION}.apk"
+
+    if curl --fail --silent --show-error \
+           --header "PRIVATE-TOKEN: $gitlab_token" \
+           --upload-file "$apk_path" \
+           "$package_url"; then
+        log_success "APK uploaded to GitLab Packages"
+        # Store the download URL for use in release notes
+        GITLAB_APK_URL="$package_url"
+    else
+        log_warning "Failed to upload APK to GitLab Packages"
+        log_info "You can manually upload the APK later"
+    fi
+}
+
 # ==============================================================================
 # GIT OPERATIONS
 # ==============================================================================
@@ -849,8 +887,13 @@ show_completion_summary() {
     local apk_path="${PROJECT_ROOT}/app/build/outputs/apk/release/codex-v${NEW_VERSION}.apk"
     local sha_path="${apk_path}.sha256"
 
-    local commit_hash
+    local commit_hash checksum=""
     commit_hash=$(git log -1 --format=%h)
+
+    # Get checksum if available
+    if [[ -f "$sha_path" ]]; then
+        checksum=$(cat "$sha_path" | cut -d' ' -f1)
+    fi
 
     echo ""
     echo "Git Status:"
@@ -866,6 +909,9 @@ show_completion_summary() {
     echo ""
     echo "GitLab:"
     echo "  https://gitlab.com/BlindMint/codex/-/releases/new?tag_name=v${NEW_VERSION}"
+    if [[ -n "${GITLAB_APK_URL:-}" ]]; then
+        echo "  APK Download: ${GITLAB_APK_URL}"
+    fi
     echo ""
     echo "Codeberg:"
     echo "  https://codeberg.org/BlindMint/codex/releases/new?tag=v${NEW_VERSION}"
@@ -880,6 +926,15 @@ show_completion_summary() {
     echo "$CHANGELOG"
     echo ""
 
+    if [[ -n "${GITLAB_APK_URL:-}" ]]; then
+        echo "## Downloads"
+        echo ""
+        echo "**APK:** [codex-v${NEW_VERSION}.apk](${GITLAB_APK_URL})"
+        if [[ -n "$checksum" ]]; then
+            echo "**SHA256:** \`$checksum\`"
+        fi
+        echo ""
+    fi
     echo "Build Artifacts:"
     echo "  APK:    ${apk_path}"
     echo "  SHA256: ${sha_path}"
@@ -960,6 +1015,10 @@ parse_args() {
                 echo "  $0 --patch           # Auto-bump patch version"
                 echo "  $0 --dry-run --minor # Preview minor version bump"
                 echo ""
+                echo "Environment Variables:"
+                echo "  GITLAB_TOKEN=your_token         # Enable automatic APK upload to GitLab"
+                echo "  GITLAB_PROJECT_ID=12345678      # Your GitLab project ID"
+                echo ""
                 exit 0
                 ;;
             *)
@@ -1010,6 +1069,7 @@ main() {
     build_apk
     verify_apk
     generate_checksum
+    upload_to_gitlab_packages
 
     # Phase 6: Git operations
     create_commit
