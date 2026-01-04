@@ -26,6 +26,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.SearchResult
 import kotlin.math.max
@@ -50,10 +53,10 @@ fun ReaderSearchScrollbar(
 
     // Calculate positioning based on visible bars
     // Search bar is always visible when scrollbar is visible, so always account for it
-    val searchBarHeight = 80.dp // Height of search bar with normalized padding
-    val topBarHeight = if (showMenu) 64.dp else 0.dp // Top bar when menu is shown
+    val searchBarHeight = 100.dp // Height of search bar with normalized padding
+    val topBarHeight = if (showMenu) 80.dp else 0.dp // Top bar when menu is shown
     val totalTopOffset = topBarHeight + searchBarHeight
-    val bottomBarHeight = if (showMenu) 100.dp else 0.dp
+    val bottomBarHeight = if (showMenu) 120.dp else 0.dp
 
     // Calculate viewport indicator position and size
     val viewportStartRatio = remember(listState.firstVisibleItemIndex, text.size) {
@@ -68,9 +71,10 @@ fun ReaderSearchScrollbar(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars)
             .padding(
-                top = totalTopOffset,
-                bottom = bottomBarHeight
+                top = totalTopOffset - 24.dp, // Adjust for system bar padding
+                bottom = bottomBarHeight - 24.dp
             )
     ) {
         // Scrollbar background with touch handling - always allows scrolling
