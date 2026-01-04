@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.SearchResult
+import us.blindmint.codex.ui.theme.readerBarsColor
 import kotlin.math.min
 
 @Composable
@@ -95,7 +96,7 @@ fun ReaderSearchScrollbar(
                 .align(Alignment.TopEnd)
                 .width(64.dp) // ~25% of screen width
                 .fillMaxHeight()
-                .background(Color.Black.copy(alpha = searchScrollbarOpacity))
+                .background(MaterialTheme.colorScheme.readerBarsColor.copy(alpha = searchScrollbarOpacity))
                 .onSizeChanged { scrollbarSize = it }
                 .pointerInput(Unit) {
                     detectTapGestures { offset ->

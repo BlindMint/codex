@@ -47,17 +47,18 @@ fun SearchScrollbarOpacityOption() {
     val mainModel = hiltViewModel<MainModel>()
     val state = mainModel.state.collectAsStateWithLifecycle()
 
-    val defaultOpacity = 0.8
-    val initialValue = remember { state.value.searchScrollbarOpacity }
+    // Track the initial value from when this settings screen opened (session default)
+    val sessionInitialValue = remember { state.value.searchScrollbarOpacity }
     var opacity by remember { mutableStateOf(state.value.searchScrollbarOpacity) }
 
-    // Update local state when external state changes
+    // Update local state when external state changes (but not from our own debounced updates)
     LaunchedEffect(state.value.searchScrollbarOpacity) {
         if (opacity != state.value.searchScrollbarOpacity) {
             opacity = state.value.searchScrollbarOpacity
         }
     }
 
+    // Debounce opacity changes before sending to model
     LaunchedEffect(opacity) {
         snapshotFlow { opacity }
             .debounce(50)
@@ -87,21 +88,23 @@ fun SearchScrollbarOpacityOption() {
                 icon = Icons.Default.History,
                 contentDescription = R.string.revert_content_desc,
                 disableOnClick = false,
-                enabled = initialValue != opacity,
-                color = if (initialValue == opacity) MaterialTheme.colorScheme.onSurfaceVariant
+                enabled = sessionInitialValue != opacity,
+                color = if (sessionInitialValue == opacity) MaterialTheme.colorScheme.onSurfaceVariant
                 else MaterialTheme.colorScheme.onSurface
             ) {
-                opacity = initialValue
+                opacity = sessionInitialValue
             }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Use second SliderWithTitle overload with Float range 0-1
+        // toValue parameter is used for display calculation: (value.first * toValue).roundToInt()
         SliderWithTitle(
-            value = (opacity * 100).toFloat() to "%",
+            value = opacity.toFloat() to "%",
             title = stringResource(id = R.string.alpha_opacity),
             toValue = 100,
-            onValueChange = { opacity = it / 100.0 },
+            onValueChange = { opacity = it.toDouble() },
             horizontalPadding = 0.dp,
             verticalPadding = 0.dp
         )

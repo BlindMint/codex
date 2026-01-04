@@ -128,7 +128,8 @@ data class MainState(
     val progressCount: ReaderProgressCount = provideDefaultValue { ReaderProgressCount.PERCENTAGE },
     // Default: Yellow with 50% alpha (#80FFEB3B)
     val searchHighlightColor: Long = provideDefaultValue { 0x80FFEB3B },
-    val searchScrollbarOpacity: Double = provideDefaultValue { 0.8 },
+    // Default: 0.9 to match readerBarsColor (surfaceContainer.copy(0.9f))
+    val searchScrollbarOpacity: Double = provideDefaultValue { 0.9 },
 
     // Background Image Settings
     val backgroundImage: BackgroundImage? = provideDefaultValue { null },
