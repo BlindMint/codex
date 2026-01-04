@@ -60,7 +60,6 @@ fun ReaderSearchBar(
 ) {
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val density = LocalDensity.current
 
     // Local state for debounced input
     var localQuery by remember(searchQuery) { mutableStateOf(searchQuery) }

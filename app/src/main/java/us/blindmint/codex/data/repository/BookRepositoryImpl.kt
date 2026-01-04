@@ -24,9 +24,7 @@ import us.blindmint.codex.domain.file.CachedFileCompat
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.BookWithCover
 import us.blindmint.codex.domain.reader.ReaderText
-import us.blindmint.codex.domain.library.category.Category
 import us.blindmint.codex.domain.repository.BookRepository
-import us.blindmint.codex.domain.ui.UIText
 import us.blindmint.codex.domain.util.CoverImage
 import java.io.BufferedOutputStream
 import java.io.ByteArrayOutputStream
