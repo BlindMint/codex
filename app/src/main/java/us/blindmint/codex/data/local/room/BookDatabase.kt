@@ -7,7 +7,6 @@
 package us.blindmint.codex.data.local.room
 
 import android.app.Application
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.DeleteColumn
 import androidx.room.DeleteTable
