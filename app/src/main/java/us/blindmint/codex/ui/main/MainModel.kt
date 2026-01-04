@@ -541,6 +541,14 @@ class MainModel @Inject constructor(
                 }
             )
 
+            is MainEvent.OnChangeSearchScrollbarOpacity -> handleDatastoreUpdate(
+                key = DataStoreConstants.SEARCH_SCROLLBAR_OPACITY,
+                value = event.value,
+                updateState = {
+                    it.copy(searchScrollbarOpacity = this.toDouble())
+                }
+            )
+
             // Dictionary Events
             is MainEvent.OnChangeDictionarySource -> handleDatastoreUpdate(
                 key = DataStoreConstants.DICTIONARY_SOURCE,

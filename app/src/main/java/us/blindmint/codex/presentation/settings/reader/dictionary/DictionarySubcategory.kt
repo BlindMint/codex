@@ -15,8 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
-import us.blindmint.codex.presentation.settings.reader.dictionary.components.DictionarySourceOption
-import us.blindmint.codex.presentation.settings.reader.dictionary.components.DoubleTapDictionaryOption
 import us.blindmint.codex.presentation.settings.reader.dictionary.components.OpenLookupsInAppOption
 
 fun LazyListScope.DictionarySubcategory(
@@ -31,14 +29,6 @@ fun LazyListScope.DictionarySubcategory(
         showTitle = showTitle,
         showDivider = showDivider,
     ) {
-        item {
-            DictionarySourceOption()
-        }
-
-        item {
-            DoubleTapDictionaryOption()
-        }
-
         item {
             OpenLookupsInAppOption()
         }

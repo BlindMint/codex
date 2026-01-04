@@ -19,6 +19,10 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -26,9 +30,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.reader.Checkpoint
@@ -115,21 +121,32 @@ fun ReaderScaffold(
     searchResults: List<SearchResult>,
     currentSearchResultIndex: Int,
     searchHighlightColor: Color,
+    searchScrollbarOpacity: Double,
     isSearchVisible: Boolean,
     searchBarPersistent: Boolean,
     onSearchQueryChange: (ReaderEvent.OnSearchQueryChange) -> Unit,
     onNextSearchResult: (ReaderEvent.OnNextSearchResult) -> Unit,
     onPrevSearchResult: (ReaderEvent.OnPrevSearchResult) -> Unit,
+    onScrollToSearchResult: (ReaderEvent.OnScrollToSearchResult) -> Unit,
     navigateToBookInfo: (changePath: Boolean) -> Unit,
     navigateBack: () -> Unit
 ) {
+    // State to track actual bar heights
+    var topBarHeight by remember { mutableStateOf(0) }
+    var searchBarHeight by remember { mutableStateOf(0) }
+    var bottomBarHeight by remember { mutableStateOf(0) }
     Scaffold(
         Modifier
             .fillMaxSize()
             .nestedScroll(nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            Column {
+            Column(
+                modifier = Modifier.onSizeChanged { size ->
+                    // This measures the total top bar height (top bar + search bar)
+                    topBarHeight = size.height
+                }
+            ) {
                 AnimatedVisibility(
                     visible = showMenu,
                     enter = fadeIn(),
@@ -175,7 +192,11 @@ fun ReaderScaffold(
         },
         bottomBar = {
             AnimatedVisibility(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onSizeChanged { size ->
+                        bottomBarHeight = size.height
+                    },
                 visible = showMenu,
                 enter = fadeIn(),
                 exit = fadeOut()
@@ -241,6 +262,30 @@ fun ReaderScaffold(
             searchQuery = searchQuery,
             searchHighlightColor = searchHighlightColor
         )
+
+        // Search scrollbar - visible when search bar is active
+        if (isSearchVisible) {
+            ReaderSearchScrollbar(
+                text = text,
+                listState = listState,
+                searchResults = searchResults,
+                currentSearchResultIndex = currentSearchResultIndex,
+                searchScrollbarOpacity = searchScrollbarOpacity.toFloat(),
+                searchHighlightColor = searchHighlightColor,
+                showMenu = showMenu,
+                isSearchVisible = isSearchVisible,
+                topBarHeight = topBarHeight,
+                bottomBarHeight = bottomBarHeight,
+                onScrollToPosition = { position ->
+                    // Scroll to the specific text position
+                    listState.requestScrollToItem(position)
+                    // Note: Chapter updates happen automatically when scrolling
+                },
+                onScrollToSearchResult = { index ->
+                    onScrollToSearchResult(ReaderEvent.OnScrollToSearchResult(index))
+                }
+            )
+        }
 
         ReaderPerceptionExpander(
             perceptionExpander = perceptionExpander,
