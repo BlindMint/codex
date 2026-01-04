@@ -244,8 +244,8 @@ fun ReaderScaffold(
             searchHighlightColor = searchHighlightColor
         )
 
-        // Search scrollbar - only visible when search is active
-        if (isSearchVisible && searchResults.isNotEmpty()) {
+        // Search scrollbar - visible when search bar is active
+        if (isSearchVisible) {
             ReaderSearchScrollbar(
                 text = text,
                 listState = listState,
@@ -254,6 +254,11 @@ fun ReaderScaffold(
                 searchScrollbarOpacity = searchScrollbarOpacity.toFloat(),
                 searchHighlightColor = searchHighlightColor,
                 showMenu = showMenu,
+                onScrollToPosition = { position ->
+                    // Scroll to the specific text position
+                    listState.requestScrollToItem(position)
+                    // Note: Chapter updates happen automatically when scrolling
+                },
                 onScrollToSearchResult = { index ->
                     onScrollToSearchResult(ReaderEvent.OnScrollToSearchResult(index))
                 }

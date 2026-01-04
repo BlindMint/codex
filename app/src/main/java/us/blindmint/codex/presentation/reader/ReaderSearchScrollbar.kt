@@ -40,9 +40,9 @@ fun ReaderSearchScrollbar(
     searchScrollbarOpacity: Float,
     searchHighlightColor: Color,
     showMenu: Boolean,
+    onScrollToPosition: (Int) -> Unit,
     onScrollToSearchResult: (Int) -> Unit
 ) {
-    if (searchResults.isEmpty()) return
 
     var scrollbarSize by remember { mutableStateOf(IntSize.Zero) }
     val density = LocalDensity.current
@@ -60,29 +60,27 @@ fun ReaderSearchScrollbar(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .alpha(searchScrollbarOpacity)
     ) {
-        // Scrollbar background with touch handling
+        // Scrollbar background with touch handling - always allows scrolling
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .width(64.dp) // ~25% of screen width
                 .fillMaxHeight()
-                .alpha(0.1f)
-                .background(Color.Black)
+                .background(Color.Black.copy(alpha = searchScrollbarOpacity))
                 .onSizeChanged { scrollbarSize = it }
-                .pointerInput(searchResults) {
+                .pointerInput(Unit) {
                     detectTapGestures { offset ->
                         val scrollbarHeight = scrollbarSize.height.toFloat()
-                        if (scrollbarHeight > 0) {
+                        if (scrollbarHeight > 0 && text.isNotEmpty()) {
                             val tapY = offset.y
                             val relativePosition = tapY / scrollbarHeight
 
-                            // Find the closest search result to this position
-                            val targetIndex = (relativePosition * searchResults.size).toInt()
-                                .coerceIn(0, searchResults.lastIndex)
+                            // Scroll to position in document based on tap location
+                            val targetIndex = (relativePosition * text.size).toInt()
+                                .coerceIn(0, text.lastIndex)
 
-                            onScrollToSearchResult(targetIndex)
+                            onScrollToPosition(targetIndex)
                         }
                     }
                 }
@@ -100,10 +98,9 @@ fun ReaderSearchScrollbar(
                         if (calculatedHeight < 2.dp) 2.dp else calculatedHeight
                     })
                     .background(
-                        color = Color.White,
+                        color = Color.White.copy(alpha = searchScrollbarOpacity * 0.6f),
                         shape = MaterialTheme.shapes.small
                     )
-                    .alpha(0.4f)
             )
         }
 
@@ -124,7 +121,7 @@ fun ReaderSearchScrollbar(
                     .offset(y = with(density) { (scrollbarSize.height * positionRatio).toDp() })
                     .height(if (isCurrent) 8.dp else 4.dp)
                     .background(
-                        color = searchHighlightColor,
+                        color = searchHighlightColor.copy(alpha = searchScrollbarOpacity),
                         shape = MaterialTheme.shapes.small
                     )
             )
