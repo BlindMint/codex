@@ -50,24 +50,8 @@ fun ReaderSearchScrollbar(
         modifier = Modifier
             .fillMaxSize()
             .alpha(searchScrollbarOpacity)
-            .onSizeChanged { scrollbarSize = it }
-            .pointerInput(searchResults) {
-                detectTapGestures { offset ->
-                    val scrollbarHeight = scrollbarSize.height.toFloat()
-                    if (scrollbarHeight > 0) {
-                        val tapY = offset.y
-                        val relativePosition = tapY / scrollbarHeight
-
-                        // Find the closest search result to this position
-                        val targetIndex = (relativePosition * searchResults.size).toInt()
-                            .coerceIn(0, searchResults.lastIndex)
-
-                        onScrollToSearchResult(targetIndex)
-                    }
-                }
-            }
     ) {
-        // Scrollbar background
+        // Scrollbar background with touch handling
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -75,16 +59,34 @@ fun ReaderSearchScrollbar(
                 .fillMaxHeight()
                 .alpha(0.1f)
                 .background(Color.Black)
+                .onSizeChanged { scrollbarSize = it }
+                .pointerInput(searchResults) {
+                    detectTapGestures { offset ->
+                        val scrollbarHeight = scrollbarSize.height.toFloat()
+                        if (scrollbarHeight > 0) {
+                            val tapY = offset.y
+                            val relativePosition = tapY / scrollbarHeight
+
+                            // Find the closest search result to this position
+                            val targetIndex = (relativePosition * searchResults.size).toInt()
+                                .coerceIn(0, searchResults.lastIndex)
+
+                            onScrollToSearchResult(targetIndex)
+                        }
+                    }
+                }
         )
 
-        // Search result highlights
+        // Search result highlights - distribute evenly based on result index
         searchResults.forEachIndexed { index, result ->
             val isCurrent = index == currentSearchResultIndex
 
-            // Calculate position based on text index
-            val totalItems = text.size.toFloat()
-            val positionRatio = if (totalItems > 0) result.textIndex / totalItems else 0f
+            // Position based on result index in search results (more accurate for scrolling)
+            val positionRatio = if (searchResults.isNotEmpty()) {
+                index.toFloat() / (searchResults.size - 1).toFloat()
+            } else 0f
 
+            // Visual highlight - no touch handling needed since scrollbar background handles it
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)

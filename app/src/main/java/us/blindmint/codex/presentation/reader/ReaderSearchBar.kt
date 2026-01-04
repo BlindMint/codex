@@ -29,7 +29,11 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -38,12 +42,15 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.core.components.common.IconButton
 import us.blindmint.codex.ui.reader.ReaderEvent
 import us.blindmint.codex.ui.theme.readerBarsColor
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, FlowPreview::class)
 @Composable
 fun ReaderSearchBar(
     searchQuery: String,
@@ -58,8 +65,20 @@ fun ReaderSearchBar(
     val keyboardController = LocalSoftwareKeyboardController.current
     val density = LocalDensity.current
 
+    // Local state for debounced input
+    var localQuery by remember(searchQuery) { mutableStateOf(searchQuery) }
+
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
+    }
+
+    // Debounce search query changes
+    LaunchedEffect(localQuery) {
+        snapshotFlow { localQuery }
+            .debounce(300) // 300ms delay after user stops typing
+            .collectLatest { query ->
+                onQueryChange(ReaderEvent.OnSearchQueryChange(query))
+            }
     }
 
     val statusBarPadding = WindowInsets.systemBarsIgnoringVisibility.asPaddingValues(density = density).calculateTopPadding()
@@ -82,8 +101,8 @@ fun ReaderSearchBar(
         }
 
         OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { onQueryChange(ReaderEvent.OnSearchQueryChange(it)) },
+            value = localQuery,
+            onValueChange = { localQuery = it },
             modifier = Modifier
                 .weight(1f)
                 .focusRequester(focusRequester),
@@ -96,14 +115,14 @@ fun ReaderSearchBar(
                 }
             ),
             trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
+                if (localQuery.isNotEmpty()) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = if (searchResultsCount > 0) {
                                 "${currentResultIndex + 1}/$searchResultsCount"
-                            } else if (searchQuery.isNotBlank()) {
+                            } else if (localQuery.isNotBlank()) {
                                 "0/0"
                             } else {
                                 ""
@@ -117,7 +136,7 @@ fun ReaderSearchBar(
                             contentDescription = R.string.clear_search_content_desc,
                             disableOnClick = false
                         ) {
-                            onQueryChange(ReaderEvent.OnSearchQueryChange(""))
+                            localQuery = ""
                         }
                     }
                 }
