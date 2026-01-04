@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.toSize
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.SearchResult
 import kotlin.math.max
+import kotlin.math.min
 
 @Composable
 fun ReaderSearchScrollbar(
@@ -45,6 +46,16 @@ fun ReaderSearchScrollbar(
 
     var scrollbarSize by remember { mutableStateOf(IntSize.Zero) }
     val density = LocalDensity.current
+
+    // Calculate viewport indicator position and size
+    val viewportStartRatio = remember(listState.firstVisibleItemIndex, text.size) {
+        if (text.isEmpty()) 0f else listState.firstVisibleItemIndex.toFloat() / text.size.toFloat()
+    }
+
+    val visibleItems = listState.layoutInfo.visibleItemsInfo.size
+    val viewportHeightRatio = remember(visibleItems, text.size) {
+        if (text.isEmpty()) 0f else min(visibleItems.toFloat() / text.size.toFloat(), 1f)
+    }
 
     Box(
         modifier = Modifier
@@ -76,6 +87,25 @@ fun ReaderSearchScrollbar(
                     }
                 }
         )
+
+        // Viewport indicator - shows current visible area
+        if (viewportHeightRatio > 0f && viewportHeightRatio < 1f) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .width(64.dp)
+                    .offset(y = with(density) { (scrollbarSize.height * viewportStartRatio).toDp() })
+                    .height(with(density) {
+                        val calculatedHeight = (scrollbarSize.height * viewportHeightRatio).toDp()
+                        if (calculatedHeight < 2.dp) 2.dp else calculatedHeight
+                    })
+                    .background(
+                        color = Color.White,
+                        shape = MaterialTheme.shapes.small
+                    )
+                    .alpha(0.4f)
+            )
+        }
 
         // Search result highlights - distribute evenly based on result index
         searchResults.forEachIndexed { index, result ->

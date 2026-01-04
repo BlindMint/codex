@@ -49,8 +49,13 @@ fun SearchScrollbarOpacityOption() {
 
     val defaultOpacity = 0.8
     val initialValue = remember { state.value.searchScrollbarOpacity }
-    var opacity by remember(state.value.searchScrollbarOpacity) {
-        mutableStateOf(state.value.searchScrollbarOpacity)
+    var opacity by remember { mutableStateOf(state.value.searchScrollbarOpacity) }
+
+    // Update local state when external state changes
+    LaunchedEffect(state.value.searchScrollbarOpacity) {
+        if (opacity != state.value.searchScrollbarOpacity) {
+            opacity = state.value.searchScrollbarOpacity
+        }
     }
 
     LaunchedEffect(opacity) {
