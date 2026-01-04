@@ -559,20 +559,25 @@ verify_file_changes() {
     echo "Changes to be committed:"
     echo ""
 
-    # Check if diff is very large and warn user
-    local diff_size
-    diff_size=$(git diff "${BUILD_GRADLE}" "${README}" | wc -l)
-
-    if [[ $diff_size -gt 100 ]]; then
-        log_warning "Large diff detected ($diff_size lines). Showing first 50 lines:"
-        git diff "${BUILD_GRADLE}" "${README}" | head -50
-        echo "... (truncated - $diff_size total lines)"
-        echo ""
-        log_info "Full diff will be shown after confirmation"
+    # Show build.gradle.kts changes (most important)
+    echo "build.gradle.kts:"
+    if git diff --quiet "${BUILD_GRADLE}"; then
+        echo "  (no changes)"
     else
-        git diff "${BUILD_GRADLE}" "${README}"
+        git diff --no-pager "${BUILD_GRADLE}" | sed 's/^/  /'
     fi
+    echo ""
 
+    # Show README.md changes summary (avoid full diff)
+    echo "README.md:"
+    if git diff --quiet "${README}"; then
+        echo "  (no changes)"
+    else
+        local readme_changes
+        readme_changes=$(git diff --stat "${README}" | tail -1)
+        echo "  ${readme_changes}"
+        echo "  (version badges updated)"
+    fi
     echo ""
 
     if [[ "$DRY_RUN" == "true" ]]; then
