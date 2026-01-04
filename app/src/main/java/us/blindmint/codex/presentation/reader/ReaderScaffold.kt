@@ -253,6 +253,7 @@ fun ReaderScaffold(
                 currentSearchResultIndex = currentSearchResultIndex,
                 searchScrollbarOpacity = searchScrollbarOpacity.toFloat(),
                 searchHighlightColor = searchHighlightColor,
+                contentPadding = contentPadding,
                 showMenu = showMenu,
                 onScrollToPosition = { position ->
                     // Scroll to the specific text position

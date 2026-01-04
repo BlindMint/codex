@@ -39,6 +39,7 @@ fun ReaderSearchScrollbar(
     currentSearchResultIndex: Int,
     searchScrollbarOpacity: Float,
     searchHighlightColor: Color,
+    contentPadding: PaddingValues,
     showMenu: Boolean,
     onScrollToPosition: (Int) -> Unit,
     onScrollToSearchResult: (Int) -> Unit
@@ -60,6 +61,10 @@ fun ReaderSearchScrollbar(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .padding(
+                top = contentPadding.calculateTopPadding(),
+                bottom = contentPadding.calculateBottomPadding()
+            )
     ) {
         // Scrollbar background with touch handling - always allows scrolling
         Box(
