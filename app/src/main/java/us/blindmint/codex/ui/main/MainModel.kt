@@ -39,6 +39,7 @@ import us.blindmint.codex.domain.reader.toTextAlignment
 import us.blindmint.codex.domain.ui.toDarkTheme
 import us.blindmint.codex.domain.ui.toPureDark
 import us.blindmint.codex.domain.ui.toThemeContrast
+import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.use_case.data_store.ChangeLanguage
 import us.blindmint.codex.domain.use_case.data_store.GetAllSettings
 import us.blindmint.codex.domain.use_case.data_store.SetDatastore
@@ -56,7 +57,8 @@ class MainModel @Inject constructor(
 
     private val setDatastore: SetDatastore,
     private val changeLanguage: ChangeLanguage,
-    private val getAllSettings: GetAllSettings
+    private val getAllSettings: GetAllSettings,
+    private val bookRepository: BookRepository
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -729,6 +731,11 @@ class MainModel @Inject constructor(
 
             updateStateWithSavedHandle { settings }
             mainModelReady.update { true }
+
+            // Preload recent books text for instant loading
+            launch(Dispatchers.IO) {
+                bookRepository.preloadRecentBooksText()
+            }
         }
 
         val isReady = combine(

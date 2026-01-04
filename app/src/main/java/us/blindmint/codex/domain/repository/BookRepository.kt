@@ -57,4 +57,6 @@ interface BookRepository {
     suspend fun deleteProgressHistory(
         book: Book
     )
+
+    suspend fun preloadRecentBooksText()
 }
