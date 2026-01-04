@@ -132,11 +132,7 @@ fun ModalDrawer(
                 modifier = Modifier
                     .offset {
                         IntOffset(
-                            x = if (side == DrawerSide.LEFT) {
-                                animatedOffset.value.toPx().toInt()
-                            } else {
-                                (-animatedOffset.value).toPx().toInt()
-                            },
+                            x = animatedOffset.value.toPx().toInt(),
                             y = 0
                         )
                     }
