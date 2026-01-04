@@ -56,9 +56,9 @@ class BookRepositoryImpl @Inject constructor(
     private val bookMapper: BookMapper
 ) : BookRepository {
 
-    // Cache for parsed book text to avoid re-parsing large files
-    // Max size: 10MB of cached content
-    private val textCache = LruCache<Int, List<ReaderText>>(1024 * 1024 * 10)
+    // Temporarily disabled LRU cache to test performance impact
+    // private val textCache = LruCache<Int, List<ReaderText>>(1024 * 1024 * 10)
+    private val textCache: LruCache<Int, List<ReaderText>>? = null
 
     /**
      * Get all books matching [query] from database.
@@ -117,8 +117,8 @@ class BookRepositoryImpl @Inject constructor(
     override suspend fun getBookText(bookId: Int): List<ReaderText> {
         if (bookId == -1) return emptyList()
 
-        // Check cache first
-        textCache.get(bookId)?.let { cachedText ->
+        // Check cache first (temporarily disabled)
+        textCache?.get(bookId)?.let { cachedText ->
             Log.i(GET_TEXT, "Loaded text of [$bookId] from cache.")
             return cachedText
         }
@@ -149,8 +149,8 @@ class BookRepositoryImpl @Inject constructor(
             return emptyList()
         }
 
-        // Cache the parsed text for future use
-        textCache.put(bookId, readerText)
+        // Cache the parsed text for future use (temporarily disabled)
+        textCache?.put(bookId, readerText)
 
         Log.i(GET_TEXT, "Successfully loaded and cached text of [$bookId] with markdown.")
         return readerText
