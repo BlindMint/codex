@@ -20,6 +20,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
@@ -41,10 +42,10 @@ fun ReaderSearchScrollbar(
     onScrollToSearchResult: (Int) -> Unit
 ) {
     if (searchResults.isEmpty()) return
-    
+
     var scrollbarSize by remember { mutableStateOf(IntSize.Zero) }
     val density = LocalDensity.current
-    
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -52,16 +53,15 @@ fun ReaderSearchScrollbar(
             .onSizeChanged { scrollbarSize = it }
             .pointerInput(searchResults) {
                 detectTapGestures { offset ->
-                    // Calculate which search result was tapped based on Y position
                     val scrollbarHeight = scrollbarSize.height.toFloat()
                     if (scrollbarHeight > 0) {
                         val tapY = offset.y
                         val relativePosition = tapY / scrollbarHeight
-                        
+
                         // Find the closest search result to this position
                         val targetIndex = (relativePosition * searchResults.size).toInt()
                             .coerceIn(0, searchResults.lastIndex)
-                        
+
                         onScrollToSearchResult(targetIndex)
                     }
                 }
@@ -71,24 +71,24 @@ fun ReaderSearchScrollbar(
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .width(48.dp) // 25% of typical screen width approximation
+                .width(64.dp) // ~25% of screen width
                 .fillMaxHeight()
                 .alpha(0.1f)
                 .background(Color.Black)
         )
-        
+
         // Search result highlights
         searchResults.forEachIndexed { index, result ->
             val isCurrent = index == currentSearchResultIndex
-            
+
             // Calculate position based on text index
             val totalItems = text.size.toFloat()
             val positionRatio = if (totalItems > 0) result.textIndex / totalItems else 0f
-            
+
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .width(48.dp)
+                    .width(64.dp)
                     .offset(y = with(density) { (scrollbarSize.height * positionRatio).toDp() })
                     .height(if (isCurrent) 8.dp else 4.dp)
                     .background(

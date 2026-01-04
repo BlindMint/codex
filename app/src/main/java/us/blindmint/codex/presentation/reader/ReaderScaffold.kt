@@ -115,11 +115,13 @@ fun ReaderScaffold(
     searchResults: List<SearchResult>,
     currentSearchResultIndex: Int,
     searchHighlightColor: Color,
+    searchScrollbarOpacity: Double,
     isSearchVisible: Boolean,
     searchBarPersistent: Boolean,
     onSearchQueryChange: (ReaderEvent.OnSearchQueryChange) -> Unit,
     onNextSearchResult: (ReaderEvent.OnNextSearchResult) -> Unit,
     onPrevSearchResult: (ReaderEvent.OnPrevSearchResult) -> Unit,
+    onScrollToSearchResult: (ReaderEvent.OnScrollToSearchResult) -> Unit,
     navigateToBookInfo: (changePath: Boolean) -> Unit,
     navigateBack: () -> Unit
 ) {
@@ -241,6 +243,22 @@ fun ReaderScaffold(
             searchQuery = searchQuery,
             searchHighlightColor = searchHighlightColor
         )
+
+        // Search scrollbar - only visible when search is active
+        if (isSearchVisible && searchResults.isNotEmpty()) {
+            ReaderSearchScrollbar(
+                text = text,
+                listState = listState,
+                searchResults = searchResults,
+                currentSearchResultIndex = currentSearchResultIndex,
+                searchScrollbarOpacity = searchScrollbarOpacity.toFloat(),
+                searchHighlightColor = searchHighlightColor,
+                showMenu = showMenu,
+                onScrollToSearchResult = { index ->
+                    onScrollToSearchResult(ReaderEvent.OnScrollToSearchResult(index))
+                }
+            )
+        }
 
         ReaderPerceptionExpander(
             perceptionExpander = perceptionExpander,
