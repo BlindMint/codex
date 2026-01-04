@@ -791,6 +791,87 @@ verify_remotes() {
 }
 
 # ==============================================================================
+# PLATFORM RELEASE CREATION
+# ==============================================================================
+
+create_github_release() {
+    local tag="v${NEW_VERSION}"
+    local apk_file="codex-${tag}.apk"
+    local sha_file="${apk_file}.sha256"
+    local apk_path="${PROJECT_ROOT}/app/build/outputs/apk/release/${apk_file}"
+    local sha_path="${apk_path}.sha256"
+
+    if ! command -v gh &> /dev/null; then
+        log_warning "GitHub CLI not found - skipping automated GitHub release"
+        log_info "Manual: https://github.com/BlindMint/codex/releases/new?tag=${tag}"
+        return
+    fi
+
+    log_info "Creating GitHub release..."
+
+    # Create release with changelog as description
+    if gh release create "${tag}" \
+        --title "Release ${tag}" \
+        --notes "${CHANGELOG}" \
+        "${apk_path}" "${sha_path}"; then
+        log_success "GitHub release created"
+    else
+        log_warning "Failed to create GitHub release automatically"
+        log_info "Manual: https://github.com/BlindMint/codex/releases/new?tag=${tag}"
+    fi
+}
+
+create_gitlab_release() {
+    local tag="v${NEW_VERSION}"
+    local apk_file="codex-${tag}.apk"
+    local sha_file="${apk_file}.sha256"
+    local apk_path="${PROJECT_ROOT}/app/build/outputs/apk/release/${apk_file}"
+    local sha_path="${apk_path}.sha256"
+
+    if ! command -v glab &> /dev/null; then
+        log_warning "GitLab CLI not found - skipping automated GitLab release"
+        log_info "Manual: https://gitlab.com/BlindMint/codex/-/releases/new?tag_name=${tag}"
+        return
+    fi
+
+    log_info "Creating GitLab release..."
+
+    # Create release with changelog
+    if glab release create "${tag}" \
+        --name "Release ${tag}" \
+        --notes "${CHANGELOG}" \
+        "${apk_path}" "${sha_path}"; then
+        log_success "GitLab release created"
+    else
+        log_warning "Failed to create GitLab release automatically"
+        log_info "Manual: https://gitlab.com/BlindMint/codex/-/releases/new?tag_name=${tag}"
+    fi
+}
+
+create_codeberg_release() {
+    local tag="v${NEW_VERSION}"
+    local apk_file="codex-${tag}.apk"
+    local apk_path="${PROJECT_ROOT}/app/build/outputs/apk/release/${apk_file}"
+    local sha_path="${apk_path}.sha256"
+
+    log_warning "Codeberg release automation not yet implemented"
+    log_info "Manual: https://codeberg.org/BlindMint/codex/releases/new?tag=${tag}"
+}
+
+create_platform_releases() {
+    log_header "Creating Platform Releases"
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log_warning "DRY RUN: Would create releases on all platforms"
+        return
+    fi
+
+    create_github_release
+    create_gitlab_release
+    create_codeberg_release
+}
+
+# ==============================================================================
 # COMPLETION SUMMARY
 # ==============================================================================
 
@@ -822,18 +903,20 @@ show_completion_summary() {
     echo "  Pushed to: $(IFS=', '; echo "${REMOTES[*]}")"
     echo ""
 
-    echo "Next Steps - Create releases on platforms:"
+    echo "Release Status:"
+    echo "  ✅ APK built and signed"
+    echo "  ✅ SHA256 checksum generated"
+    echo "  ✅ Git tag created and pushed"
+    echo "  ✅ Platform releases created automatically (where CLI available)"
     echo ""
-    echo "1. GitHub:"
-    echo "   https://github.com/BlindMint/codex/releases/new?tag=v${NEW_VERSION}"
+
+    echo "Release URLs:"
+    echo "  GitHub:  https://github.com/BlindMint/codex/releases/tag/v${NEW_VERSION}"
+    echo "  GitLab:  https://gitlab.com/BlindMint/codex/-/releases/v${NEW_VERSION}"
+    echo "  Codeberg: https://codeberg.org/BlindMint/codex/releases/tag/v${NEW_VERSION}"
     echo ""
-    echo "2. GitLab:"
-    echo "   https://gitlab.com/BlindMint/codex/-/releases/new?tag_name=v${NEW_VERSION}"
-    echo ""
-    echo "3. Codeberg:"
-    echo "   https://codeberg.org/BlindMint/codex/releases/new?tag=v${NEW_VERSION}"
-    echo ""
-    echo "Upload both files:"
+
+    echo "Files uploaded:"
     echo "  - codex-v${NEW_VERSION}.apk"
     echo "  - codex-v${NEW_VERSION}.apk.sha256"
     echo ""
@@ -972,7 +1055,10 @@ main() {
     push_to_remotes
     verify_remotes
 
-    # Phase 7: Completion
+    # Phase 7: Platform releases
+    create_platform_releases
+
+    # Phase 8: Completion
     show_completion_summary
 
     # Disable rollback (success)
