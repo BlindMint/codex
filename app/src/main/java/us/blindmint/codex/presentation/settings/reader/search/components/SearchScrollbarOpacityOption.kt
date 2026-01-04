@@ -77,12 +77,18 @@ fun SearchScrollbarOpacityOption() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SettingsSubcategoryTitle(
-                title = stringResource(id = R.string.search_scrollbar_opacity),
-                padding = 0.dp
+            // Use second SliderWithTitle overload with Float range 0-1
+            // toValue parameter is used for display calculation: (value.first * toValue).roundToInt()
+            SliderWithTitle(
+                modifier = Modifier.weight(1f),
+                value = opacity.toFloat() to "%",
+                title = stringResource(id = R.string.alpha_opacity),
+                toValue = 100,
+                onValueChange = { opacity = it.toDouble() },
+                horizontalPadding = 0.dp,
+                verticalPadding = 0.dp
             )
 
-            Spacer(modifier = Modifier.width(10.dp))
             IconButton(
                 modifier = Modifier.size(28.dp),
                 icon = Icons.Default.History,
@@ -95,18 +101,5 @@ fun SearchScrollbarOpacityOption() {
                 opacity = sessionInitialValue
             }
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Use second SliderWithTitle overload with Float range 0-1
-        // toValue parameter is used for display calculation: (value.first * toValue).roundToInt()
-        SliderWithTitle(
-            value = opacity.toFloat() to "%",
-            title = stringResource(id = R.string.alpha_opacity),
-            toValue = 100,
-            onValueChange = { opacity = it.toDouble() },
-            horizontalPadding = 0.dp,
-            verticalPadding = 0.dp
-        )
     }
 }
