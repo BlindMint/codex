@@ -36,10 +36,15 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -77,6 +82,9 @@ fun BackgroundImageOption(
     val mainModel = hiltViewModel<MainModel>()
     val state = mainModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var imageToDelete by remember { mutableStateOf<BackgroundImage?>(null) }
 
     val defaultImages = remember {
         BackgroundImageConstants.getDefaultBackgroundImages(context)
@@ -159,7 +167,10 @@ fun BackgroundImageOption(
                         mainModel.onEvent(MainEvent.OnChangeBackgroundImage(image))
                     },
                     onRemove = if (!image.isDefault) {
-                        { mainModel.onEvent(MainEvent.OnRemoveCustomBackgroundImage(image)) }
+                        {
+                            imageToDelete = image
+                            showDeleteDialog = true
+                        }
                     } else null
                 )
             }
@@ -185,79 +196,121 @@ fun BackgroundImageOption(
             }
         }
 
-        // Only show additional settings if an image is selected
-        if (state.value.backgroundImage != null) {
-            Spacer(modifier = Modifier.height(16.dp))
+        // Delete confirmation dialog
+        if (showDeleteDialog && imageToDelete != null) {
+            AlertDialog(
+                onDismissRequest = {
+                    showDeleteDialog = false
+                    imageToDelete = null
+                },
+                title = {
+                    Text(text = stringResource(id = R.string.delete_background_image_title))
+                },
+                text = {
+                    Text(text = stringResource(
+                        id = R.string.delete_background_image_message,
+                        imageToDelete?.name ?: ""
+                    ))
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            imageToDelete?.let { image ->
+                                mainModel.onEvent(MainEvent.OnRemoveCustomBackgroundImage(image))
+                            }
+                            showDeleteDialog = false
+                            imageToDelete = null
+                        }
+                    ) {
+                        Text(text = stringResource(id = R.string.delete))
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showDeleteDialog = false
+                            imageToDelete = null
+                        }
+                    ) {
+                        Text(text = stringResource(id = R.string.cancel))
+                    }
+                }
+            )
+        }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 18.dp)
-                    .clip(MaterialTheme.shapes.large)
-                    .background(backgroundColor)
-                    .padding(16.dp)
-            ) {
-                // Opacity Slider
-                StyledText(
-                    text = stringResource(id = R.string.background_opacity_option),
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp)
+                .clip(MaterialTheme.shapes.large)
+                .background(backgroundColor)
+                .padding(16.dp)
+        ) {
+            val isEnabled = state.value.backgroundImage != null
+            // Opacity Slider
+            StyledText(
+                text = stringResource(id = R.string.background_opacity_option),
+                style = MaterialTheme.typography.labelLarge.copy(
+                    color = if (isEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            )
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Slider(
-                        value = state.value.backgroundImageOpacity,
-                        onValueChange = {
-                            mainModel.onEvent(MainEvent.OnChangeBackgroundImageOpacity(it))
-                        },
-                        valueRange = 0f..1f,
-                        modifier = Modifier.weight(1f)
-                    )
+                Slider(
+                    value = state.value.backgroundImageOpacity,
+                    onValueChange = {
+                        if (isEnabled) mainModel.onEvent(MainEvent.OnChangeBackgroundImageOpacity(it))
+                    },
+                    valueRange = 0f..1f,
+                    enabled = isEnabled,
+                    modifier = Modifier.weight(1f)
+                )
                     Spacer(modifier = Modifier.width(8.dp))
-                    StyledText(
-                        text = "${(state.value.backgroundImageOpacity * 100).toInt()}%",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Scale Mode
                 StyledText(
-                    text = stringResource(id = R.string.background_scale_mode_option),
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurface
+                    text = "${(state.value.backgroundImageOpacity * 100).toInt()}%",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = if (isEnabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                SingleChoiceSegmentedButtonRow(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    BackgroundScaleMode.entries.forEachIndexed { index, mode ->
-                        SegmentedButton(
-                            selected = state.value.backgroundScaleMode == mode,
-                            onClick = {
-                                mainModel.onEvent(MainEvent.OnChangeBackgroundScaleMode(mode))
+                }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Scale Mode
+            StyledText(
+                text = stringResource(id = R.string.background_scale_mode_option),
+                style = MaterialTheme.typography.labelLarge.copy(
+                    color = if (isEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                BackgroundScaleMode.entries.forEachIndexed { index, mode ->
+                    SegmentedButton(
+                        selected = state.value.backgroundScaleMode == mode,
+                        onClick = {
+                            if (isEnabled) mainModel.onEvent(MainEvent.OnChangeBackgroundScaleMode(mode))
+                        },
+                        enabled = isEnabled,
+                        shape = SegmentedButtonDefaults.itemShape(
+                            index = index,
+                            count = BackgroundScaleMode.entries.size
+                        )
+                    ) {
+                        StyledText(
+                            text = when (mode) {
+                                BackgroundScaleMode.COVER -> stringResource(R.string.scale_mode_cover)
+                                BackgroundScaleMode.FIT -> stringResource(R.string.scale_mode_fit)
+                                BackgroundScaleMode.TILE -> stringResource(R.string.scale_mode_tile)
                             },
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = index,
-                                count = BackgroundScaleMode.entries.size
-                            )
-                        ) {
-                            StyledText(
-                                text = when (mode) {
-                                    BackgroundScaleMode.COVER -> stringResource(R.string.scale_mode_cover)
-                                    BackgroundScaleMode.FIT -> stringResource(R.string.scale_mode_fit)
-                                    BackgroundScaleMode.TILE -> stringResource(R.string.scale_mode_tile)
-                                },
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                        }
+                            style = MaterialTheme.typography.labelMedium
+                        )
                     }
                 }
             }
