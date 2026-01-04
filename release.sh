@@ -807,37 +807,40 @@ show_completion_summary() {
     local apk_path="${PROJECT_ROOT}/app/build/outputs/apk/release/codex-v${NEW_VERSION}.apk"
     local sha_path="${apk_path}.sha256"
 
-    echo ""
-    echo "Build Artifacts:"
-    echo "  APK:    ${apk_path}"
-    echo "  SHA256: ${sha_path}"
-    echo ""
-
     local commit_hash
     commit_hash=$(git log -1 --format=%h)
 
+    echo ""
     echo "Git Status:"
     echo "  Commit: ${commit_hash} \"Release v${NEW_VERSION}\""
     echo "  Tag:    v${NEW_VERSION}"
     echo "  Pushed to: $(IFS=', '; echo "${REMOTES[*]}")"
     echo ""
 
-    # URL-encode the changelog for use in URLs
-    local encoded_title
-    local encoded_body
-    encoded_title=$(printf "Release v%s" "$NEW_VERSION" | sed 's/ /%20/g')
-    encoded_body=$(echo "$CHANGELOG" | sed 's/ /%20/g; s/\n/%0A/g; s/&/%26/g; s/?/%3F/g')
+    echo "New Release Links:"
+    echo ""
+    echo "GitHub:"
+    echo "  https://github.com/BlindMint/codex/releases/new?tag=v${NEW_VERSION}"
+    echo ""
+    echo "GitLab:"
+    echo "  https://gitlab.com/BlindMint/codex/-/releases/new?tag_name=v${NEW_VERSION}"
+    echo ""
+    echo "Codeberg:"
+    echo "  https://codeberg.org/BlindMint/codex/releases/new?tag=v${NEW_VERSION}"
+    echo ""
 
-    echo "Next Steps - Create releases on platforms:"
+    echo "Copy/Paste Release Content:"
     echo ""
-    echo "1. GitHub (pre-populated):"
-    echo "   https://github.com/BlindMint/codex/releases/new?tag=v${NEW_VERSION}&title=${encoded_title}&body=${encoded_body}"
+    echo "# Release v${NEW_VERSION}"
     echo ""
-    echo "2. GitLab (pre-populated):"
-    echo "   https://gitlab.com/BlindMint/codex/-/releases/new?tag_name=v${NEW_VERSION}&title=${encoded_title}&description=${encoded_body}"
+    echo "## Changelog"
     echo ""
-    echo "3. Codeberg:"
-    echo "   https://codeberg.org/BlindMint/codex/releases/new?tag=v${NEW_VERSION}"
+    echo "$CHANGELOG"
+    echo ""
+
+    echo "Build Artifacts:"
+    echo "  APK:    ${apk_path}"
+    echo "  SHA256: ${sha_path}"
     echo ""
     echo "Upload both files:"
     echo "  - codex-v${NEW_VERSION}.apk"
