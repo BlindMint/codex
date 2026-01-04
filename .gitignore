@@ -75,3 +75,6 @@ to-do.md
 
 # Environment variables (contains sensitive tokens)
 .env
+
+# One-time scripts (remove after use)
+upload-gitlab-apk.sh
