@@ -566,7 +566,7 @@ verify_file_changes() {
     if git diff --quiet "${BUILD_GRADLE}"; then
         echo "  (no changes)"
     else
-        git diff --no-pager "${BUILD_GRADLE}" | sed 's/^/  /'
+        git diff "${BUILD_GRADLE}" | sed 's/^/  /'
     fi
     echo ""
 
