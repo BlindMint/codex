@@ -54,9 +54,8 @@ class BookRepositoryImpl @Inject constructor(
     private val bookMapper: BookMapper
 ) : BookRepository {
 
-    // Temporarily disabled LRU cache to test performance impact
-    // private val textCache = LruCache<Int, List<ReaderText>>(1024 * 1024 * 10)
-    private val textCache: LruCache<Int, List<ReaderText>>? = null
+    // LRU cache for recently opened book text (100MB cache size for 3-5 books)
+    private val textCache = LruCache<Int, List<ReaderText>>(1024 * 1024 * 100)
 
     /**
      * Get all books matching [query] from database.
@@ -111,12 +110,13 @@ class BookRepositoryImpl @Inject constructor(
 
     /**
      * Loads text from the book. Already formatted.
+     * Uses LRU cache for recently opened books to enable instant loading.
      */
     override suspend fun getBookText(bookId: Int): List<ReaderText> {
         if (bookId == -1) return emptyList()
 
-        // Check cache first (temporarily disabled)
-        textCache?.get(bookId)?.let { cachedText ->
+        // Check cache first for instant loading
+        textCache.get(bookId)?.let { cachedText ->
             Log.i(GET_TEXT, "Loaded text of [$bookId] from cache.")
             return cachedText
         }
@@ -147,8 +147,8 @@ class BookRepositoryImpl @Inject constructor(
             return emptyList()
         }
 
-        // Cache the parsed text for future use (temporarily disabled)
-        textCache?.put(bookId, readerText)
+        // Cache the parsed text for future use
+        textCache.put(bookId, readerText)
 
         Log.i(GET_TEXT, "Successfully loaded and cached text of [$bookId] with markdown.")
         return readerText
@@ -374,6 +374,12 @@ class BookRepositoryImpl @Inject constructor(
         }
 
         database.deleteBooks(bookEntities)
+
+        // Remove deleted books from cache
+        bookEntities.forEach { book ->
+            textCache.remove(book.id)
+        }
+
         Log.i(DELETE_BOOKS, "Successfully deleted books.")
     }
 
@@ -468,6 +474,31 @@ class BookRepositoryImpl @Inject constructor(
         Log.i("DELETE_HISTORY", "Deleting progress history for: ${book.title}")
         database.deleteBookProgressHistory(book.filePath)
         Log.i("DELETE_HISTORY", "Successfully deleted progress history.")
+    }
+
+    /**
+     * Preload text for recently opened books into cache for instant loading.
+     * Caches up to 3 most recent books to balance performance and memory usage.
+     */
+    override suspend fun preloadRecentBooksText() {
+        try {
+            val recentHistory = database.getRecentHistory(3) // Get 3 most recent books
+            val recentBookIds = recentHistory.map { it.bookId }.distinct()
+
+            Log.i("CACHE_PRELOAD", "Preloading text for ${recentBookIds.size} recent books")
+
+            recentBookIds.forEach { bookId ->
+                // Only preload if not already in cache
+                if (textCache.get(bookId) == null) {
+                    val text = getBookText(bookId)
+                    if (text.isNotEmpty()) {
+                        Log.i("CACHE_PRELOAD", "Preloaded text for book $bookId")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("CACHE_PRELOAD", "Failed to preload recent books", e)
+        }
     }
 
     /**
