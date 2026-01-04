@@ -255,7 +255,6 @@ fun ReaderScaffold(
                 searchHighlightColor = searchHighlightColor,
                 showMenu = showMenu,
                 isSearchVisible = isSearchVisible,
-                contentPadding = contentPadding,
                 onScrollToPosition = { position ->
                     // Scroll to the specific text position
                     listState.requestScrollToItem(position)

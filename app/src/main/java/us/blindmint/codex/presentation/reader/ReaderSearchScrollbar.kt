@@ -41,7 +41,6 @@ fun ReaderSearchScrollbar(
     searchHighlightColor: Color,
     showMenu: Boolean,
     isSearchVisible: Boolean,
-    contentPadding: PaddingValues,
     onScrollToPosition: (Int) -> Unit,
     onScrollToSearchResult: (Int) -> Unit
 ) {
@@ -51,10 +50,10 @@ fun ReaderSearchScrollbar(
 
     // Calculate positioning based on visible bars
     // Search bar is always visible when scrollbar is visible, so always account for it
-    val searchBarHeight = 72.dp // Height of search bar with normalized padding
+    val searchBarHeight = 80.dp // Height of search bar with normalized padding
     val topBarHeight = if (showMenu) 64.dp else 0.dp // Top bar when menu is shown
     val totalTopOffset = topBarHeight + searchBarHeight
-    val bottomBarHeight = if (showMenu) 80.dp else 0.dp
+    val bottomBarHeight = if (showMenu) 100.dp else 0.dp
 
     // Calculate viewport indicator position and size
     val viewportStartRatio = remember(listState.firstVisibleItemIndex, text.size) {
@@ -70,8 +69,8 @@ fun ReaderSearchScrollbar(
         modifier = Modifier
             .fillMaxSize()
             .padding(
-                top = totalTopOffset + contentPadding.calculateTopPadding(),
-                bottom = bottomBarHeight + contentPadding.calculateBottomPadding()
+                top = totalTopOffset,
+                bottom = bottomBarHeight
             )
     ) {
         // Scrollbar background with touch handling - always allows scrolling
