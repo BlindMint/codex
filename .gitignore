@@ -72,3 +72,6 @@ testdata/
 .externalNativeBuild
 .cxx
 to-do.md
+
+# Environment variables (contains sensitive tokens)
+.env

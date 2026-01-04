@@ -21,6 +21,11 @@
 #   ./release.sh --patch            # Auto-select patch version bump
 #   ./release.sh --force            # Skip git status check
 #
+# Setup:
+#   1. Copy .env.example to .env
+#   2. Fill in your GitLab token and project ID
+#   3. Set file permissions: chmod 600 .env
+#
 # Environment Variables:
 #   GITLAB_TOKEN=your_token         # Enable automatic APK upload to GitLab Packages
 #   GITLAB_PROJECT_ID=12345678      # Your GitLab project ID
@@ -1019,6 +1024,8 @@ parse_args() {
                 echo "  GITLAB_TOKEN=your_token         # Enable automatic APK upload to GitLab"
                 echo "  GITLAB_PROJECT_ID=12345678      # Your GitLab project ID"
                 echo ""
+                echo "Or create a .env file (see .env.example for template)"
+                echo ""
                 exit 0
                 ;;
             *)
@@ -1031,6 +1038,14 @@ parse_args() {
 }
 
 main() {
+    # Load environment variables from .env file if it exists
+    if [[ -f ".env" ]]; then
+        set -a  # automatically export all variables
+        source ".env"
+        set +a
+        log_info ".env file loaded"
+    fi
+
     parse_args "$@"
 
     # Handle query mode early
