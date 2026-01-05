@@ -90,7 +90,7 @@ fun ReaderSettingsBottomSheet(
         animationSpec = tween(300)
     )
     val animatedHeight by animateFloatAsState(
-        targetValue = if (pagerState.currentPage == 2) 0.6f else 0.7f,
+        targetValue = 0.7f,
         animationSpec = tween(300)
     )
 
@@ -199,10 +199,6 @@ fun ReaderSettingsBottomSheet(
                             showDivider = false,
                             backgroundColor = { MaterialTheme.colorScheme.surfaceContainer }
                         )
-                        // Add bottom spacing to match height of other tabs
-                        item {
-                            Spacer(modifier = Modifier.height(200.dp))
-                        }
                     }
                 }
             }
