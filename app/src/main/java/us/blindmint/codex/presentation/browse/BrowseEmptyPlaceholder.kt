@@ -23,6 +23,7 @@ fun BoxScope.BrowseEmptyPlaceholder(
     dialogHidden: Boolean,
     isLoading: Boolean,
     isRefreshing: Boolean,
+    pinnedPaths: List<String>,
     navigateToBrowseSettings: () -> Unit
 ) {
     AnimatedVisibility(
@@ -35,7 +36,10 @@ fun BoxScope.BrowseEmptyPlaceholder(
         exit = Transitions.NoExitAnimation
     ) {
         EmptyPlaceholder(
-            message = stringResource(id = R.string.browse_empty),
+            message = stringResource(
+                id = if (pinnedPaths.isNotEmpty()) R.string.browse_empty_scanned
+                else R.string.browse_empty
+            ),
             icon = painterResource(id = R.drawable.empty_browse),
             actionTitle = stringResource(id = R.string.set_up_scanning),
             action = {

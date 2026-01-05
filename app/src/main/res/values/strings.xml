@@ -87,6 +87,9 @@
     <string name="browse_empty">
         Expand the library\'s book collection with your downloads
     </string>
+    <string name="browse_empty_scanned">
+        All books from selected directories have been added. Add another directory/folder?
+    </string>
     <string name="library_empty">
         Read your favorite books and sort them between categories
     </string>

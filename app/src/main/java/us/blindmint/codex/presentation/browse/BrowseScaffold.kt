@@ -146,6 +146,7 @@ fun BrowseScaffold(
                 dialogHidden = dialogHidden,
                 isLoading = isLoading,
                 isRefreshing = isRefreshing,
+                pinnedPaths = pinnedPaths,
                 navigateToBrowseSettings = navigateToBrowseSettings
             )
 
