@@ -53,21 +53,7 @@ fun AboutLayout(
             .padding(top = paddingValues.calculateTopPadding()),
         state = listState
     ) {
-        item {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(
-                        id = if (isSystemInDarkTheme()) R.drawable.codex_splash_dark_icon_transparent
-                        else R.drawable.codex_splash_light_icon_transparent
-                    ),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxWidth(0.5f)
-                )
-            }
-        }
+
 
         item {
             AboutItem(

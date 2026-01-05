@@ -25,7 +25,7 @@
     <string name="import_error">Failed to import settings</string>
     <string name="export_success">Settings exported successfully</string>
     <string name="export_error">Failed to export settings</string>
-    <string name="about_screen">About App</string>
+    <string name="about_screen">About app</string>
     <string name="help_screen">Help</string>
 
     <!-- Dialog Labels -->
