@@ -11,7 +11,7 @@
         <item name="postSplashScreenTheme">@style/Codex</item>
 
         <item name="windowSplashScreenBackground">@color/splash_bg_dark</item>
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/codex_icon_black</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/codex_splash_light_icon_transparent</item>
         <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
         <item name="windowSplashScreenAnimationDuration">0</item>
     </style>
