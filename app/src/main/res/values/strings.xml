@@ -85,10 +85,10 @@
         Search…
     </string>
     <string name="browse_empty">
-        Expand the library\'s book collection with your downloads
+        Add folders to scan for books
     </string>
     <string name="browse_empty_scanned">
-        All books from selected directories have been added. Add another directory/folder?
+        All books from selected folders have been added. Add another folder?
     </string>
     <string name="library_empty">
         Read your favorite books and sort them between categories
