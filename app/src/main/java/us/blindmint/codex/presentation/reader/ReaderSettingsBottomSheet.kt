@@ -199,6 +199,10 @@ fun ReaderSettingsBottomSheet(
                             showDivider = false,
                             backgroundColor = { MaterialTheme.colorScheme.surfaceContainer }
                         )
+                        // Add bottom spacing to match height of other tabs
+                        item {
+                            Spacer(modifier = Modifier.height(200.dp))
+                        }
                     }
                 }
             }
