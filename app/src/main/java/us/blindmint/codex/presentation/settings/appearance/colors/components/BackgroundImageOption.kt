@@ -68,11 +68,14 @@ import us.blindmint.codex.domain.reader.BackgroundImage
 import us.blindmint.codex.domain.reader.BackgroundScaleMode
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.constants.BackgroundImageConstants
+import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.security.MessageDigest
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -85,6 +88,39 @@ fun BackgroundImageOption(
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var imageToDelete by remember { mutableStateOf<BackgroundImage?>(null) }
+
+    // Function to calculate MD5 hash of a file
+    fun calculateFileHash(file: File): String? {
+        return try {
+            val md = MessageDigest.getInstance("MD5")
+            FileInputStream(file).use { fis ->
+                val buffer = ByteArray(8192)
+                var bytesRead: Int
+                while (fis.read(buffer).also { bytesRead = it } != -1) {
+                    md.update(buffer, 0, bytesRead)
+                }
+            }
+            md.digest().joinToString("") { "%02x".format(it) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    // Function to check if an image with the same hash already exists
+    fun isDuplicateImage(file: File): Boolean {
+        val newImageHash = calculateFileHash(file) ?: return false
+        return state.value.customBackgroundImages.any { existingImage ->
+            try {
+                val existingFile = File(existingImage.filePath)
+                if (!existingFile.exists()) return@any false
+                val existingHash = calculateFileHash(existingFile)
+                existingHash == newImageHash
+            } catch (e: Exception) {
+                false
+            }
+        }
+    }
 
     val defaultImages = remember {
         BackgroundImageConstants.getDefaultBackgroundImages(context)
@@ -110,6 +146,16 @@ fun BackgroundImageOption(
                             input.copyTo(output)
                         }
                     }
+
+                    // Check for duplicates before adding
+                    if (isDuplicateImage(imageFile)) {
+                        // Show a toast or some user feedback that the image is already added
+                        "This image has already been added".showToast(context, longToast = false)
+                        // Clean up the file we just saved
+                        imageFile.delete()
+                        return@let
+                    }
+
                     val customImage = BackgroundImage(
                         name = name.substringBeforeLast(".").replace("_", " "),
                         filePath = imageFile.absolutePath,
