@@ -9,9 +9,14 @@ package us.blindmint.codex.presentation.reader
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.BottomSheetDefaults
@@ -20,11 +25,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
 import us.blindmint.codex.presentation.core.components.modal_bottom_sheet.ModalBottomSheet
@@ -56,6 +65,23 @@ fun ReaderSettingsBottomSheet(
     val activity = LocalActivity.current
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(initialPage) { 3 }
+
+    // Track scroll states for each tab
+    val generalScrollState = rememberLazyListState()
+    val readerScrollState = rememberLazyListState()
+    val colorsScrollState = rememberLazyListState()
+
+    // Determine if current tab can scroll up (not at top)
+    val canScrollUp by remember {
+        derivedStateOf {
+            when (pagerState.currentPage) {
+                0 -> generalScrollState.canScrollBackward
+                1 -> readerScrollState.canScrollBackward
+                else -> colorsScrollState.canScrollBackward
+            }
+        }
+    }
+
     DisposableEffect(Unit) { onDispose { initialPage = pagerState.currentPage } }
 
     val animatedScrimColor by animateColorAsState(
@@ -84,11 +110,25 @@ fun ReaderSettingsBottomSheet(
         scrimColor = animatedScrimColor,
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight(animatedHeight),
+            .fillMaxHeight(animatedHeight)
+            .pointerInput(Unit) {
+                detectVerticalDragGestures(
+                    onDragEnd = {
+                        // Only dismiss if we're at the top of content (can't scroll up)
+                        if (!canScrollUp) {
+                            dismissBottomSheet(ReaderEvent.OnDismissBottomSheet)
+                        }
+                    },
+                    onVerticalDrag = { change, dragAmount ->
+                        // Allow natural scrolling behavior
+                        change.consume()
+                    }
+                )
+            },
         onDismissRequest = {
             dismissBottomSheet(ReaderEvent.OnDismissBottomSheet)
         },
-        sheetGesturesEnabled = true
+        sheetGesturesEnabled = false
     ) {
         ReaderSettingsBottomSheetTabRow(
             currentPage = pagerState.currentPage,
@@ -102,7 +142,7 @@ fun ReaderSettingsBottomSheet(
         HorizontalPager(state = pagerState) { page ->
             when (page) {
                 0 -> {
-                    LazyColumnWithScrollbar(Modifier.fillMaxSize()) {
+                    LazyColumnWithScrollbar(Modifier.fillMaxSize(), state = generalScrollState) {
                         ReadingModeSubcategory(
                             titleColor = { MaterialTheme.colorScheme.onSurface }
                         )
@@ -129,7 +169,7 @@ fun ReaderSettingsBottomSheet(
                 }
 
                 1 -> {
-                    LazyColumnWithScrollbar(Modifier.fillMaxSize()) {
+                    LazyColumnWithScrollbar(Modifier.fillMaxSize(), state = readerScrollState) {
                         FontSubcategory(
                             titleColor = { MaterialTheme.colorScheme.onSurface }
                         )
@@ -150,7 +190,10 @@ fun ReaderSettingsBottomSheet(
                 }
 
                 2 -> {
-                    LazyColumnWithScrollbar(Modifier.fillMaxSize()) {
+                    LazyColumnWithScrollbar(Modifier.fillMaxSize(), state = colorsScrollState) {
+                        item {
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
                         ColorsSubcategory(
                             showTitle = false,
                             showDivider = false,
