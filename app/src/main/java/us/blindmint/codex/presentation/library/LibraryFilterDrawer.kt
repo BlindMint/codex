@@ -8,11 +8,23 @@ package us.blindmint.codex.presentation.library
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -20,49 +32,87 @@ import us.blindmint.codex.R
 import us.blindmint.codex.presentation.core.components.modal_drawer.ModalDrawer
 import us.blindmint.codex.presentation.core.components.modal_drawer.ModalDrawerTitleItem
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun LibraryFilterDrawer(
     show: Boolean,
     onDismiss: () -> Unit
 ) {
+    val statuses = listOf("Reading", "Planning", "Already Read", "Favorites")
+    var selectedStatuses by remember { mutableStateOf(setOf<String>()) }
+    var yearRange by remember { mutableStateOf(1900f..2026f) }
+
     ModalDrawer(
         show = show,
         side = us.blindmint.codex.presentation.core.components.modal_drawer.DrawerSide.LEFT,
-        onDismissRequest = onDismiss
+        onDismissRequest = onDismiss,
+        header = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.filter_title)) },
+                actions = {
+                    Button(onClick = {
+                        selectedStatuses = emptySet()
+                        yearRange = 1900f..2026f
+                        // TODO: Clear other filters
+                    }) {
+                        Text("Clear All")
+                    }
+                }
+            )
+        },
+        footer = {
+            Button(onClick = onDismiss) {
+                Text("Apply")
+            }
+        }
     ) {
         item {
             Column(
                 modifier = Modifier
-                    .fillMaxHeight()
+                    .fillMaxWidth()
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                ModalDrawerTitleItem(
-                    title = stringResource(R.string.filter_title)
-                )
-
-                // TODO: Add filter options: Status presets, Tags, Authors, Series, Publication year, Language
-
                 Text("Status Presets", style = MaterialTheme.typography.titleSmall)
-                Text("Reading", modifier = Modifier.padding(start = 16.dp))
-                Text("Planning", modifier = Modifier.padding(start = 16.dp))
-                Text("Already Read", modifier = Modifier.padding(start = 16.dp))
-                Text("Favorites", modifier = Modifier.padding(start = 16.dp))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    statuses.forEach { status ->
+                        FilterChip(
+                            selected = status in selectedStatuses,
+                            onClick = {
+                                selectedStatuses = if (status in selectedStatuses) {
+                                    selectedStatuses - status
+                                } else {
+                                    selectedStatuses + status
+                                }
+                            },
+                            label = { Text(status) }
+                        )
+                    }
+                }
 
                 Text("Tags", style = MaterialTheme.typography.titleSmall)
-                Text("Placeholder for tags", modifier = Modifier.padding(start = 16.dp))
+                Text("No tags available", style = MaterialTheme.typography.bodySmall)
 
                 Text("Authors", style = MaterialTheme.typography.titleSmall)
-                Text("Placeholder for authors", modifier = Modifier.padding(start = 16.dp))
+                Text("No authors available", style = MaterialTheme.typography.bodySmall)
 
                 Text("Series", style = MaterialTheme.typography.titleSmall)
-                Text("Placeholder for series", modifier = Modifier.padding(start = 16.dp))
+                Text("No series available", style = MaterialTheme.typography.bodySmall)
 
                 Text("Publication Year", style = MaterialTheme.typography.titleSmall)
-                Text("Placeholder for year range", modifier = Modifier.padding(start = 16.dp))
+                RangeSlider(
+                    value = yearRange,
+                    onValueChange = { yearRange = it },
+                    valueRange = 1900f..2026f,
+                    steps = 126
+                )
+                Text("${yearRange.start.toInt()} - ${yearRange.endInclusive.toInt()}")
 
                 Text("Language", style = MaterialTheme.typography.titleSmall)
-                Text("Placeholder for languages", modifier = Modifier.padding(start = 16.dp))
+                Text("No languages available", style = MaterialTheme.typography.bodySmall)
             }
         }
     }
