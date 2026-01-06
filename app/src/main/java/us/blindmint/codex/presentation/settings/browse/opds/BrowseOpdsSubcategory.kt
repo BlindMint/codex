@@ -23,12 +23,6 @@ fun LazyListScope.BrowseOpdsSubcategory() {
         )
     }
     item {
-        Button(
-            onClick = { /* TODO: Open add source dialog */ },
-            modifier = Modifier.padding(horizontal = 16.dp)
-        ) {
-            Text("Add OPDS Source")
-        }
+        BrowseOpdsContent()
     }
-    // TODO: Add OPDS source list and management UI
 }
