@@ -199,6 +199,20 @@ class LibraryModel @Inject constructor(
                 }
             }
 
+            is LibraryEvent.OnSelectAllBooks -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val editedList = _state.value.books.map { it.copy(selected = true) }
+
+                    _state.update {
+                        it.copy(
+                            books = editedList,
+                            selectedItemsCount = editedList.size,
+                            hasSelectedItems = editedList.isNotEmpty()
+                        )
+                    }
+                }
+            }
+
             is LibraryEvent.OnShowMoveDialog -> {
                 viewModelScope.launch {
                     _state.update {

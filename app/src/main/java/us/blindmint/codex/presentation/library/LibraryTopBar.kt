@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MoveUp
@@ -67,6 +68,7 @@ fun LibraryTopBar(
     searchQueryChange: (LibraryEvent.OnSearchQueryChange) -> Unit,
     search: (LibraryEvent.OnSearch) -> Unit,
     clearSelectedBooks: (LibraryEvent.OnClearSelectedBooks) -> Unit,
+    selectAllBooks: (LibraryEvent.OnSelectAllBooks) -> Unit,
     showMoveDialog: (LibraryEvent.OnShowMoveDialog) -> Unit,
     showDeleteDialog: (LibraryEvent.OnShowDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
@@ -185,6 +187,14 @@ fun LibraryTopBar(
                     )
                 },
                 contentActions = {
+                    IconButton(
+                        icon = Icons.Default.SelectAll,
+                        contentDescription = R.string.select_all_books_content_desc,
+                        enabled = !isLoading && !isRefreshing,
+                        disableOnClick = false,
+                    ) {
+                        selectAllBooks(LibraryEvent.OnSelectAllBooks)
+                    }
                     IconButton(
                         icon = Icons.Outlined.MoveUp,
                         contentDescription = R.string.move_books_content_desc,

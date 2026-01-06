@@ -36,7 +36,13 @@ Started: Mon Jan 05 2026
 
 ## Commits
 - `36c8f37`: Fix search scrollbar: align indicators to actual positions and adjust height for keyboard
-- `bb21d70`: Optimize book adding: defer cover loading in previews and implement 'title - author' filename parsing  
+- `bb21d70`: Optimize book adding: defer cover loading in previews and implement 'title - author' filename parsing
+- `dda47cc`: Fix covers not loading and missing titles: re-parse with covers on insert, add title fallbacks
+
+## Issues Fixed
+- Covers now load properly by re-parsing with covers enabled during book insertion
+- Titles are guaranteed to have a fallback ("Untitled Book") if parsing fails completely
+- Book info screens should now populate correctly  
 
 ## Next Steps
 - Investigate search scrollbar issue  

@@ -195,6 +195,7 @@ object LibraryScreen : Screen, Parcelable {
             searchQueryChange = screenModel::onEvent,
             search = screenModel::onEvent,
             clearSelectedBooks = screenModel::onEvent,
+            selectAllBooks = screenModel::onEvent,
             showMoveDialog = screenModel::onEvent,
             actionMoveDialog = screenModel::onEvent,
             actionDeleteDialog = screenModel::onEvent,
