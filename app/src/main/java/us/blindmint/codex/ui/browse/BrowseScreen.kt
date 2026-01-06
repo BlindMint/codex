@@ -52,6 +52,25 @@ override fun Content() {
             }
         ) { padding ->
             LazyColumn(Modifier.padding(padding)) {
+                item {
+                    Text(
+                        text = "Local Files",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+                item {
+                    Button(onClick = { navigator.push(BrowseSettingsScreen) }) {
+                        Text("Manage Local Sources")
+                    }
+                }
+                item {
+                    Text(
+                        text = "OPDS Catalogs",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
                 items(sources.value.sources) { source ->
                     Text(source.name, modifier = Modifier.padding(16.dp))
                 }
