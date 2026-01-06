@@ -25,5 +25,6 @@ data class LibraryState(
     val hasFocused: Boolean = false,
 
     val showSortMenu: Boolean = false,
+    val showFilterPanel: Boolean = false,
     val dialog: Dialog? = null
 )

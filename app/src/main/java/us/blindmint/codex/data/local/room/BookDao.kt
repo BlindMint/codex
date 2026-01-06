@@ -50,6 +50,18 @@ interface BookDao {
     @Query("SELECT * FROM bookentity WHERE filePath=:filePath LIMIT 1")
     suspend fun findBookByFilePath(filePath: String): BookEntity?
 
+    @Query("SELECT * FROM bookentity WHERE uuid = :uuid LIMIT 1")
+    suspend fun findBookByUuid(uuid: String): BookEntity?
+
+    @Query("SELECT * FROM bookentity WHERE isbn = :isbn LIMIT 1")
+    suspend fun findBookByIsbn(isbn: String): BookEntity?
+
+    @Query("SELECT * FROM bookentity WHERE source = 'LOCAL'")
+    suspend fun getLocalBooks(): List<BookEntity>
+
+    @Query("SELECT * FROM bookentity WHERE source = 'OPDS'")
+    suspend fun getOpdsBooks(): List<BookEntity>
+
     @Delete
     suspend fun deleteBooks(books: List<BookEntity>)
 

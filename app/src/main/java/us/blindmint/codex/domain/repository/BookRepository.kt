@@ -58,5 +58,10 @@ interface BookRepository {
         book: Book
     )
 
+    suspend fun checkDuplicate(
+        uuid: String? = null,
+        isbn: String? = null
+    ): Boolean
+
     suspend fun preloadRecentBooksText()
 }

@@ -25,7 +25,18 @@ class BookMapperImpl @Inject constructor() : BookMapper {
             author = book.author.getAsString(),
             description = book.description,
             image = book.coverImage?.toString(),
-            category = book.category
+            category = book.category,
+            tags = book.tags,
+            seriesName = book.seriesName,
+            seriesIndex = book.seriesIndex,
+            publicationDate = book.publicationDate,
+            language = book.language,
+            publisher = book.publisher,
+            summary = book.summary,
+            uuid = book.uuid,
+            isbn = book.isbn,
+            source = book.source,
+            remoteUrl = book.remoteUrl
         )
     }
 
@@ -43,6 +54,17 @@ class BookMapperImpl @Inject constructor() : BookMapper {
             filePath = bookEntity.filePath,
             lastOpened = null,
             category = bookEntity.category,
+            tags = bookEntity.tags,
+            seriesName = bookEntity.seriesName,
+            seriesIndex = bookEntity.seriesIndex,
+            publicationDate = bookEntity.publicationDate,
+            language = bookEntity.language,
+            publisher = bookEntity.publisher,
+            summary = bookEntity.summary,
+            uuid = bookEntity.uuid,
+            isbn = bookEntity.isbn,
+            source = bookEntity.source,
+            remoteUrl = bookEntity.remoteUrl,
             coverImage = bookEntity.image?.toUri()
         )
     }

@@ -67,4 +67,8 @@ sealed class LibraryEvent {
     data object OnShowSortMenu : LibraryEvent()
 
     data object OnDismissSortMenu : LibraryEvent()
+
+    data object OnShowFilterPanel : LibraryEvent()
+
+    data object OnDismissFilterPanel : LibraryEvent()
 }

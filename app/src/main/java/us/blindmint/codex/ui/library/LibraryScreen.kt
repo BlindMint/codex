@@ -9,12 +9,6 @@ package us.blindmint.codex.ui.library
 import android.os.Parcelable
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.outlined.Done
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.SentimentVeryDissatisfied
-import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -117,31 +111,10 @@ object LibraryScreen : Screen, Parcelable {
                 listOf(
                     CategoryWithBooks(
                         category = Category.READING,
-                        title = UIText.StringResource(R.string.reading_tab),
-                        books = sortedBooks.filter { it.data.category == Category.READING },
+                        title = UIText.StringValue("Library"),
+                        books = sortedBooks,
                         emptyIcon = skullPainter,
-                        emptyMessage = UIText.StringResource(R.string.library_reading_empty)
-                    ),
-                    CategoryWithBooks(
-                        category = Category.PLANNING,
-                        title = UIText.StringResource(R.string.planning_tab),
-                        books = sortedBooks.filter { it.data.category == Category.PLANNING },
-                        emptyIcon = skullPainter,
-                        emptyMessage = UIText.StringResource(R.string.library_planning_empty)
-                    ),
-                    CategoryWithBooks(
-                        category = Category.ALREADY_READ,
-                        title = UIText.StringResource(R.string.already_read_tab),
-                        books = sortedBooks.filter { it.data.category == Category.ALREADY_READ },
-                        emptyIcon = skullPainter,
-                        emptyMessage = UIText.StringResource(R.string.library_already_read_empty)
-                    ),
-                    CategoryWithBooks(
-                        category = Category.FAVORITES,
-                        title = UIText.StringResource(R.string.favorites_tab),
-                        books = sortedBooks.filter { it.data.category == Category.FAVORITES },
-                        emptyIcon = skullPainter,
-                        emptyMessage = UIText.StringResource(R.string.library_favorites_empty)
+                        emptyMessage = UIText.StringValue("No books found")
                     )
                 )
             }
@@ -161,8 +134,8 @@ object LibraryScreen : Screen, Parcelable {
         )
 
         val pagerState = rememberPagerState(
-            initialPage = initialPage
-        ) { categories.value.count() }
+            initialPage = 0
+        ) { 1 }
         DisposableEffect(Unit) { onDispose { initialPage = pagerState.currentPage } }
 
         LaunchedEffect(Unit) {
@@ -187,7 +160,7 @@ object LibraryScreen : Screen, Parcelable {
             categories = categories.value,
             refreshState = refreshState,
             dialog = state.value.dialog,
-            libraryShowCategoryTabs = mainState.value.libraryShowCategoryTabs,
+            libraryShowCategoryTabs = false,
             libraryShowBookCount = mainState.value.libraryShowBookCount,
             selectBook = screenModel::onEvent,
             searchVisibility = screenModel::onEvent,

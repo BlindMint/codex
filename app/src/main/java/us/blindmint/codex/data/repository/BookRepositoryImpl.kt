@@ -228,6 +228,18 @@ class BookRepositoryImpl @Inject constructor(
         Log.i(INSERT_BOOK, "Successfully inserted book.")
     }
 
+    override suspend fun checkDuplicate(uuid: String?, isbn: String?): Boolean {
+        if (!uuid.isNullOrEmpty()) {
+            val existing = database.findBookByUuid(uuid)
+            if (existing != null) return true
+        }
+        if (!isbn.isNullOrEmpty()) {
+            val existing = database.findBookByIsbn(isbn)
+            if (existing != null) return true
+        }
+        return false
+    }
+
     /**
      * Update book without cover image.
      */

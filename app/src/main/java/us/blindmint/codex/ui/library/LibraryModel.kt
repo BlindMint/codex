@@ -363,6 +363,26 @@ class LibraryModel @Inject constructor(
                 }
             }
         }
+
+        is LibraryEvent.OnShowFilterPanel -> {
+            viewModelScope.launch {
+                _state.update {
+                    it.copy(
+                        showFilterPanel = true
+                    )
+                }
+            }
+        }
+
+        is LibraryEvent.OnDismissFilterPanel -> {
+            viewModelScope.launch {
+                _state.update {
+                    it.copy(
+                        showFilterPanel = false
+                    )
+                }
+            }
+        }
         }
     }
 

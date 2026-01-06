@@ -8,17 +8,31 @@
 
 package us.blindmint.codex.presentation.settings.browse
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.LazyListScope
-import us.blindmint.codex.presentation.settings.browse.display.BrowseDisplaySubcategory
-import us.blindmint.codex.presentation.settings.browse.filter.BrowseFilterSubcategory
 import us.blindmint.codex.presentation.settings.browse.scan.BrowseScanSubcategory
-import us.blindmint.codex.presentation.settings.browse.sort.BrowseSortSubcategory
+import us.blindmint.codex.presentation.settings.browse.opds.BrowseOpdsSubcategory
 
 fun LazyListScope.BrowseSettingsCategory() {
+    item {
+        Text(
+            text = "Local Files",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+    }
     BrowseScanSubcategory()
-    BrowseDisplaySubcategory()
-    BrowseFilterSubcategory()
-    BrowseSortSubcategory(
-        showDivider = false
-    )
+
+    item {
+        Text(
+            text = "OPDS",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+    }
+    BrowseOpdsSubcategory()
 }

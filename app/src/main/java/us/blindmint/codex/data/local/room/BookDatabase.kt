@@ -19,6 +19,8 @@ import us.blindmint.codex.data.local.dto.BookmarkEntity
 import us.blindmint.codex.data.local.dto.BookProgressHistoryEntity
 import us.blindmint.codex.data.local.dto.ColorPresetEntity
 import us.blindmint.codex.data.local.dto.HistoryEntity
+import us.blindmint.codex.data.local.dto.OpdsSourceEntity
+import us.blindmint.codex.data.local.room.TypeConverters
 import java.io.File
 
 @Database(
@@ -28,12 +30,14 @@ import java.io.File
         ColorPresetEntity::class,
         BookProgressHistoryEntity::class,
         BookmarkEntity::class,
+        OpdsSourceEntity::class,
     ],
-    version = 14,
+    version = 15,
     exportSchema = false
 )
 abstract class BookDatabase : RoomDatabase() {
     abstract val dao: BookDao
+    abstract val opdsSourceDao: OpdsSourceDao
 }
 
 @Suppress("ClassName")
