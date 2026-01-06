@@ -118,16 +118,7 @@ fun BookInfoDetailsBottomSheet(
                 )
             }
 
-            item {
-                BookInfoDetailsBottomSheetItem(
-                    label = stringResource(id = R.string.clear_progress_history),
-                    text = "",
-                    editable = true,
-                    onEdit = {
-                        clearProgressHistory(BookInfoEvent.OnClearProgressHistory(context))
-                    }
-                )
-            }
+
         }
     }
 }

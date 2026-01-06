@@ -8,6 +8,7 @@ package us.blindmint.codex.presentation.book_info
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.util.BottomSheet
 import us.blindmint.codex.domain.util.Dialog
@@ -85,16 +86,18 @@ fun BookInfoContent(
     BookInfoScaffold(
         book = book,
         listState = listState,
-        showTitleDialog = showTitleDialog,
-        showAuthorDialog = showAuthorDialog,
-        showDescriptionDialog = showDescriptionDialog,
         showChangeCoverBottomSheet = showChangeCoverBottomSheet,
         showDetailsBottomSheet = showDetailsBottomSheet,
         showEditBottomSheet = showEditBottomSheet,
+        clearProgressHistory = clearProgressHistory,
+        showTitleDialog = showTitleDialog,
+        showAuthorDialog = showAuthorDialog,
+        showDescriptionDialog = showDescriptionDialog,
         showMoveDialog = showMoveDialog,
         showDeleteDialog = showDeleteDialog,
         navigateToReader = navigateToReader,
-        navigateBack = navigateBack
+        navigateBack = navigateBack,
+        context = LocalContext.current
     )
 
     BookInfoBackHandler(

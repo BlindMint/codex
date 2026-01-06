@@ -24,7 +24,7 @@ import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MoveUp
-import androidx.compose.material.icons.outlined.RestoreFromTrash
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -204,20 +204,20 @@ fun LibraryTopBar(
                         showMoveDialog(LibraryEvent.OnShowMoveDialog)
                     }
                     IconButton(
+                        icon = Icons.Default.Refresh,
+                        contentDescription = R.string.clear_progress_history_content_desc,
+                        enabled = !isLoading && !isRefreshing,
+                        disableOnClick = false
+                    ) {
+                        showClearProgressHistoryDialog(LibraryEvent.OnShowClearProgressHistoryDialog)
+                    }
+                    IconButton(
                         icon = Icons.Outlined.Delete,
                         contentDescription = R.string.delete_books_content_desc,
                         enabled = !isLoading && !isRefreshing,
                         disableOnClick = false
                     ) {
                         showDeleteDialog(LibraryEvent.OnShowDeleteDialog)
-                    }
-                    IconButton(
-                        icon = Icons.Outlined.RestoreFromTrash,
-                        contentDescription = R.string.clear_progress_history_content_desc,
-                        enabled = !isLoading && !isRefreshing,
-                        disableOnClick = false
-                    ) {
-                        showClearProgressHistoryDialog(LibraryEvent.OnShowClearProgressHistoryDialog)
                     }
                 }
             ),

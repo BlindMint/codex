@@ -7,14 +7,18 @@
 package us.blindmint.codex.presentation.book_info
 
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.ui.book_info.BookInfoEvent
@@ -26,13 +30,15 @@ fun BookInfoScaffold(
     showChangeCoverBottomSheet: (BookInfoEvent.OnShowChangeCoverBottomSheet) -> Unit,
     showDetailsBottomSheet: (BookInfoEvent.OnShowDetailsBottomSheet) -> Unit,
     showEditBottomSheet: (BookInfoEvent.OnShowEditBottomSheet) -> Unit,
+    clearProgressHistory: (BookInfoEvent.OnClearProgressHistory) -> Unit,
     showTitleDialog: (BookInfoEvent.OnShowTitleDialog) -> Unit,
     showAuthorDialog: (BookInfoEvent.OnShowAuthorDialog) -> Unit,
     showDescriptionDialog: (BookInfoEvent.OnShowDescriptionDialog) -> Unit,
     showMoveDialog: (BookInfoEvent.OnShowMoveDialog) -> Unit,
     showDeleteDialog: (BookInfoEvent.OnShowDeleteDialog) -> Unit,
     navigateToReader: () -> Unit,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    context: android.content.Context
 ) {
     Scaffold(
         Modifier
@@ -46,7 +52,9 @@ fun BookInfoScaffold(
                 listState = listState,
                 showEditBottomSheet = showEditBottomSheet,
                 showDetailsBottomSheet = showDetailsBottomSheet,
-                navigateBack = navigateBack
+                clearProgressHistory = clearProgressHistory,
+                navigateBack = navigateBack,
+                context = context
             )
         }
     ) { paddingValues ->
