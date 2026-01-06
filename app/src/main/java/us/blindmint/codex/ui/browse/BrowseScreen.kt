@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -27,6 +26,8 @@ import us.blindmint.codex.R
 import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.presentation.browse.BrowseTopBar
+import us.blindmint.codex.presentation.settings.browse.scan.BrowseScanSubcategory
+import us.blindmint.codex.presentation.settings.browse.opds.BrowseOpdsContent
 import us.blindmint.codex.ui.settings.BrowseSettingsScreen
 import us.blindmint.codex.ui.settings.opds.OpdsSourcesModel
 
@@ -59,11 +60,7 @@ override fun Content() {
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
-                item {
-                    Button(onClick = { navigator.push(BrowseSettingsScreen) }) {
-                        Text("Manage Local Sources")
-                    }
-                }
+                BrowseScanSubcategory()
                 item {
                     Text(
                         text = "OPDS Catalogs",
@@ -75,9 +72,7 @@ override fun Content() {
                     Text(source.name, modifier = Modifier.padding(16.dp))
                 }
                 item {
-                    Button(onClick = { /* TODO: add source */ }) {
-                        Text("Add OPDS Source")
-                    }
+                    BrowseOpdsContent()
                 }
             }
         }
