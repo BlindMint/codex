@@ -140,6 +140,7 @@
     <string name="ok">OK</string>
     <string name="change_path">Change path</string>
     <string name="add_folder">Add folder</string>
+    <string name="rescan">Rescan</string>
     <string name="set_up_scanning">Set up scanning</string>
 
     <!-- Book -->

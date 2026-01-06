@@ -392,14 +392,15 @@ class BrowseModel @Inject constructor(
                 }
             }
 
-            is BrowseEvent.OnDismissDialog -> {
-                viewModelScope.launch {
+                is BrowseEvent.OnDismissDialog -> {
                     _state.update {
                         it.copy(
                             dialog = null
                         )
                     }
                 }
+
+
             }
         }
     }

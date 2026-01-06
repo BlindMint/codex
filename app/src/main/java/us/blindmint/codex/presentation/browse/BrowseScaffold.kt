@@ -147,7 +147,8 @@ fun BrowseScaffold(
                 isLoading = isLoading,
                 isRefreshing = isRefreshing,
                 pinnedPaths = pinnedPaths,
-                navigateToBrowseSettings = navigateToBrowseSettings
+                navigateToBrowseSettings = navigateToBrowseSettings,
+                onRescan = onRescan
             )
 
             BrowseRefreshIndicator(

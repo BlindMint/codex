@@ -42,6 +42,7 @@ Started: Mon Jan 05 2026
 - `684250f`: Make add books dialog scrollable with fixed OK/Cancel buttons at bottom
 - `b1ef914`: Replace Clear Progress History icons and reposition: Refresh icon in library and book info top bar, remove from file details
 - `87e868d`: Add confirmation dialog for Clear Progress History in book info
+- `6350a97`: Swap OK and Cancel button order in all confirmation dialogs
 
 ## Issues Fixed
 - Covers now load properly by re-parsing with covers enabled during book insertion
@@ -50,7 +51,8 @@ Started: Mon Jan 05 2026
 - Added "Select All" button in library selection mode for easier bulk operations
 - Improved add books dialog UX with scrollable list and always-visible action buttons
 - Replaced similar-looking Clear Progress History and Delete icons with distinct Refresh icon, repositioned buttons for better UX
-- Added confirmation dialog for Clear Progress History to prevent accidental resets  
+- Added confirmation dialog for Clear Progress History to prevent accidental resets
+- Standardized button order to OK first, Cancel second in all confirmation dialogs  
 
 ## Next Steps
 - Investigate search scrollbar issue  
