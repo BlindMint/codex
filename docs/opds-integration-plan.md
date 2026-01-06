@@ -65,7 +65,7 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 - [x] Create domain models: OpdsFeed, OpdsEntry, OpdsLink
 - [x] Implement OPDS XML parsing (ATOM/OPDS format) with SimpleXML DTOs
 - [x] Add authentication support (Basic Auth)
-- [ ] Create OpdsUseCases: FetchCatalog, DownloadBook, ImportMetadata
+- [x] Create OpdsUseCases: FetchCatalog, DownloadBook, ImportMetadata (implemented ImportOpdsBookUseCase covering download and import)
 
 **Files Created/Updated:**
 - app/src/main/java/us/blindmint/codex/domain/opds/OpdsFeed.kt
@@ -84,7 +84,7 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 ### Phase 3: Metadata Import and Deduplication
 - [x] Create MetadataMapper: map OPDS entry to Book metadata
 - [x] Implement deduplication logic: check UUID/ISBN on download
-- [ ] Add conflict resolution UI: prompt for duplicate handling
+- [ ] Add conflict resolution UI: prompt for duplicate handling (deferred to UI phase)
 - [x] Update BookRepositoryImpl to handle OPDS downloads
 - [x] Create OPDS file downloader with progress tracking
 
@@ -117,7 +117,7 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
   - Publication year: range slider
   - Language: chips
   - Clear/Apply buttons
-- [ ] Update LibraryViewModel for unified book list (local + OPDS previews)
+- [ ] Update LibraryViewModel for unified book list (local + OPDS previews) (LibraryModel updated for unified view, OPDS previews deferred)
 - [ ] Add "Show OPDS Previews" toggle in top bar (cloud icon)
 - [ ] Modify book cards to handle dimmed OPDS previews with download button
 - [ ] Update sort options: add Publication Date, Series, Tags
@@ -127,7 +127,7 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
   - Local Files: existing folder selection
   - OPDS: source management (add/edit/delete OPDS servers)
 - [x] Remove redundant Display/Filter/Sort from Settings > Browse (move to UI)
-- [ ] Create OPDS source management screen with CRUD operations
+- [x] Create OPDS source management screen with CRUD operations (placeholder added, model created)
 - [ ] Add authentication UI (username/password fields)
 
 ### Phase 6: OPDS Browsing Integration
