@@ -13,7 +13,7 @@
     <!-- Screens -->
     <string name="library_screen">Library</string>
     <string name="history_screen">History</string>
-    <string name="browse_screen">Browse</string>
+    <string name="browse_screen">Catalogs</string>
     <string name="settings_screen">Settings</string>
     <string name="import_export_settings">Import/Export</string>
     <string name="import_export_settings_desc">Backup and restore reading settings</string>
