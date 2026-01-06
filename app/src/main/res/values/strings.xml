@@ -55,6 +55,10 @@
         It will delete this book from the database.
         It will not delete this book from your device.
     </string>
+    <string name="clear_progress_history_description">
+        This will reset your reading progress for this book.
+        Your bookmarks and reading history will be cleared.
+    </string>
     <string name="move_book_description">
         Choose the category to which you want to move this book.
         This book will be moved to the selected category.

@@ -34,7 +34,7 @@ fun BookInfoTopBar(
     listState: LazyListState,
     showEditBottomSheet: (BookInfoEvent.OnShowEditBottomSheet) -> Unit,
     showDetailsBottomSheet: (BookInfoEvent.OnShowDetailsBottomSheet) -> Unit,
-    clearProgressHistory: (BookInfoEvent.OnClearProgressHistory) -> Unit,
+    clearProgressHistory: (BookInfoEvent.OnShowClearProgressHistoryDialog) -> Unit,
     navigateBack: () -> Unit,
     context: android.content.Context
 ) {
@@ -91,7 +91,7 @@ fun BookInfoTopBar(
                         contentDescription = R.string.clear_progress_history,
                         disableOnClick = false,
                         onClick = {
-                            clearProgressHistory(BookInfoEvent.OnClearProgressHistory(context))
+                            clearProgressHistory(BookInfoEvent.OnShowClearProgressHistoryDialog)
                         }
                     )
                 }

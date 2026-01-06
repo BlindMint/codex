@@ -33,7 +33,6 @@ import java.util.Locale
 fun BookInfoDetailsBottomSheet(
     book: Book,
     showPathDialog: (BookInfoEvent.OnShowPathDialog) -> Unit,
-    clearProgressHistory: (BookInfoEvent.OnClearProgressHistory) -> Unit,
     dismissBottomSheet: (BookInfoEvent.OnDismissBottomSheet) -> Unit
 ) {
     val pattern = remember { SimpleDateFormat("HH:mm dd MMM yyyy", Locale.getDefault()) }

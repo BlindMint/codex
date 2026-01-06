@@ -31,6 +31,7 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
 
     companion object {
         const val DELETE_DIALOG = "delete_dialog"
+        const val CLEAR_PROGRESS_HISTORY_DIALOG = "clear_progress_history_dialog"
         const val MOVE_DIALOG = "move_dialog"
         const val TITLE_DIALOG = "title_dialog"
         const val AUTHOR_DIALOG = "author_dialog"
@@ -88,7 +89,8 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 resetTitle = screenModel::onEvent,
                 resetAuthor = screenModel::onEvent,
                 resetDescription = screenModel::onEvent,
-                clearProgressHistory = screenModel::onEvent,
+                showClearProgressHistoryDialog = screenModel::onEvent,
+                actionClearProgressHistoryDialog = screenModel::onEvent,
                 checkCoverReset = screenModel::onEvent,
                 changeCover = screenModel::onEvent,
                 resetCover = screenModel::onEvent,

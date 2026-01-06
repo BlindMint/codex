@@ -81,7 +81,9 @@ sealed class BookInfoEvent {
         val navigateToLibrary: () -> Unit
     ) : BookInfoEvent()
 
-    data class OnClearProgressHistory(
+    data object OnShowClearProgressHistoryDialog : BookInfoEvent()
+
+    data class OnActionClearProgressHistoryDialog(
         val context: Context
     ) : BookInfoEvent()
 

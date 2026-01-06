@@ -30,7 +30,7 @@ fun BookInfoScaffold(
     showChangeCoverBottomSheet: (BookInfoEvent.OnShowChangeCoverBottomSheet) -> Unit,
     showDetailsBottomSheet: (BookInfoEvent.OnShowDetailsBottomSheet) -> Unit,
     showEditBottomSheet: (BookInfoEvent.OnShowEditBottomSheet) -> Unit,
-    clearProgressHistory: (BookInfoEvent.OnClearProgressHistory) -> Unit,
+    clearProgressHistory: (BookInfoEvent.OnShowClearProgressHistoryDialog) -> Unit,
     showTitleDialog: (BookInfoEvent.OnShowTitleDialog) -> Unit,
     showAuthorDialog: (BookInfoEvent.OnShowAuthorDialog) -> Unit,
     showDescriptionDialog: (BookInfoEvent.OnShowDescriptionDialog) -> Unit,
