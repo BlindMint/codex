@@ -39,10 +39,11 @@ object BrowseScreen : Screen {
 
     val refreshListChannel: Channel<Unit> = Channel(Channel.CONFLATED)
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-override fun Content() {
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    override fun Content() {
         val navigator = LocalNavigator.current
+
         val screenModel = hiltViewModel<OpdsSourcesModel>()
 
         val sources = screenModel.state.collectAsStateWithLifecycle()
@@ -51,6 +52,32 @@ override fun Content() {
             topBar = {
                 TopAppBar(title = { Text(stringResource(R.string.browse_screen)) })
             }
+        ) { padding ->
+            LazyColumn(Modifier.padding(padding)) {
+                item {
+                    Text(
+                        text = "Local Files",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+                BrowseScanSubcategory()
+                item {
+                    Text(
+                        text = "OPDS Catalogs",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+                items(sources.value.sources) { source ->
+                    Text(source.name, modifier = Modifier.padding(16.dp))
+                }
+                item {
+                    BrowseOpdsContent()
+                }
+            }
+        }
+    }
         ) { padding ->
             LazyColumn(Modifier.padding(padding)) {
                 item {
