@@ -83,9 +83,10 @@ Started: Mon Jan 05 2026
 - Added Rescan buttons to browse screen empty state and Settings > Browse for rescanning added folders  
 
 ## Next Steps
-- Investigate search scrollbar issue  
-- Profile book adding performance  
-- Implement filename naming logic  
+- Investigate search scrollbar issue
+- Profile book adding performance
+- Implement filename naming logic
+- Address filename pattern parsing: Filenames in "title - author" format are still sometimes adding with the full filename instead of extracting the title. Investigate and fix the parsing logic.  
 
 ## Notes
 - Use this file to track progress across sessions  
