@@ -109,7 +109,7 @@ object LibraryScreen : Screen, Parcelable {
         val categories = remember(sortedBooks, mainState.value.libraryShowBookCount) {
             derivedStateOf {
                 val title = if (mainState.value.libraryShowBookCount) {
-                    "Library (${sortedBooks.size})"
+                    "Library [${sortedBooks.size}]"
                 } else {
                     "Library"
                 }
