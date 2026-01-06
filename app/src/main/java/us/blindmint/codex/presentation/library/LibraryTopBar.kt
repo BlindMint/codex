@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MoveUp
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -72,7 +73,8 @@ fun LibraryTopBar(
     showMoveDialog: (LibraryEvent.OnShowMoveDialog) -> Unit,
     showDeleteDialog: (LibraryEvent.OnShowDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
-    sortMenuVisibility: (LibraryEvent) -> Unit
+    sortMenuVisibility: (LibraryEvent) -> Unit,
+    showFilterPanel: (LibraryEvent.OnShowFilterPanel) -> Unit
 ) {
     val animatedItemCountBackgroundColor = animateColorAsState(
         if (hasSelectedItems) MaterialTheme.colorScheme.surfaceContainerHighest
@@ -119,6 +121,13 @@ fun LibraryTopBar(
                     }
                 },
                 contentActions = {
+                    IconButton(
+                        icon = Icons.Rounded.Menu,
+                        contentDescription = R.string.filter_content_desc,
+                        disableOnClick = false,
+                    ) {
+                        showFilterPanel(LibraryEvent.OnShowFilterPanel)
+                    }
                     IconButton(
                         icon = Icons.Default.Search,
                         contentDescription = R.string.search_content_desc,

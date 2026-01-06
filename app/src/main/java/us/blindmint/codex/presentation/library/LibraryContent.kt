@@ -50,6 +50,9 @@ fun LibraryContent(
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
     dismissDialog: (LibraryEvent.OnDismissDialog) -> Unit,
     sortMenuVisibility: (LibraryEvent) -> Unit,
+    showFilterPanel: Boolean,
+    showFilterPanelEvent: (LibraryEvent.OnShowFilterPanel) -> Unit,
+    dismissFilterPanel: () -> Unit,
     navigateToBrowse: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
     navigateToReader: (id: Int) -> Unit
@@ -94,6 +97,9 @@ fun LibraryContent(
         showDeleteDialog = showDeleteDialog,
         showClearProgressHistoryDialog = showClearProgressHistoryDialog,
         sortMenuVisibility = sortMenuVisibility,
+        showFilterPanel = showFilterPanel,
+        showFilterPanelEvent = showFilterPanelEvent,
+        dismissFilterPanel = dismissFilterPanel,
         refreshState = refreshState,
         navigateToBrowse = navigateToBrowse,
         navigateToBookInfo = navigateToBookInfo,
@@ -107,6 +113,11 @@ fun LibraryContent(
             }
         )
     }
+
+    LibraryFilterDrawer(
+        show = showFilterPanel,
+        onDismiss = dismissFilterPanel
+    )
 
     LibraryBackHandler(
         hasSelectedItems = hasSelectedItems,

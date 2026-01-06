@@ -181,6 +181,9 @@ object LibraryScreen : Screen, Parcelable {
             showClearProgressHistoryDialog = screenModel::onEvent,
             dismissDialog = screenModel::onEvent,
             sortMenuVisibility = screenModel::onEvent,
+            showFilterPanel = state.value.showFilterPanel,
+            showFilterPanelEvent = screenModel::onEvent,
+            dismissFilterPanel = { screenModel.onEvent(LibraryEvent.OnDismissFilterPanel) },
             navigateToBrowse = {
                 navigator.push(BrowseScreen)
             },

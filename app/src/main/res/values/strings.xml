@@ -379,6 +379,7 @@
     <string name="show_category_tabs_option">Show category tabs</string>
     <string name="always_show_default_tab_option">Always show default tab</string>
     <string name="show_book_count_option">Show book count</string>
+    <string name="filter_title">Filters</string>
     <string name="library_title_position_option">Title position</string>
     <string name="library_title_position_below">Below</string>
     <string name="library_title_position_hidden">Hidden</string>

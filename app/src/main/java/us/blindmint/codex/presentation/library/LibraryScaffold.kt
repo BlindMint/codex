@@ -49,6 +49,9 @@ fun LibraryScaffold(
     showDeleteDialog: (LibraryEvent.OnShowDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
     sortMenuVisibility: (LibraryEvent) -> Unit,
+    showFilterPanel: Boolean,
+    showFilterPanelEvent: (LibraryEvent.OnShowFilterPanel) -> Unit,
+    dismissFilterPanel: () -> Unit,
     navigateToBrowse: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
     navigateToReader: (id: Int) -> Unit,
@@ -82,7 +85,8 @@ fun LibraryScaffold(
                 showMoveDialog = showMoveDialog,
                 showDeleteDialog = showDeleteDialog,
                 showClearProgressHistoryDialog = showClearProgressHistoryDialog,
-                sortMenuVisibility = sortMenuVisibility
+                sortMenuVisibility = sortMenuVisibility,
+                showFilterPanel = showFilterPanelEvent
             )
         }
     ) { paddingValues ->
