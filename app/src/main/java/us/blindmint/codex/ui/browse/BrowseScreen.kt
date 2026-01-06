@@ -26,11 +26,13 @@ import us.blindmint.codex.R
 import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.presentation.browse.BrowseTopBar
-import us.blindmint.codex.presentation.settings.browse.scan.BrowseScanSubcategory
+import us.blindmint.codex.presentation.settings.browse.scan.components.BrowseScanOption
+import us.blindmint.codex.presentation.settings.browse.scan.components.BrowseScanOptionNote
 import us.blindmint.codex.presentation.settings.browse.opds.BrowseOpdsContent
 import us.blindmint.codex.ui.settings.BrowseSettingsScreen
 import us.blindmint.codex.ui.settings.opds.OpdsSourcesModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 object BrowseScreen : Screen {
 
     const val ADD_DIALOG = "add_dialog"
@@ -39,7 +41,6 @@ object BrowseScreen : Screen {
 
     val refreshListChannel: Channel<Unit> = Channel(Channel.CONFLATED)
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current
@@ -61,33 +62,14 @@ object BrowseScreen : Screen {
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
-                BrowseScanSubcategory()
                 item {
                     Text(
-                        text = "OPDS Catalogs",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        text = stringResource(R.string.scan_browse_settings),
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleSmall
                     )
                 }
-                items(sources.value.sources) { source ->
-                    Text(source.name, modifier = Modifier.padding(16.dp))
-                }
-                item {
-                    BrowseOpdsContent()
-                }
-            }
-        }
-    }
-        ) { padding ->
-            LazyColumn(Modifier.padding(padding)) {
-                item {
-                    Text(
-                        text = "Local Files",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
-                }
-                BrowseScanSubcategory()
+
                 item {
                     Text(
                         text = "OPDS Catalogs",
