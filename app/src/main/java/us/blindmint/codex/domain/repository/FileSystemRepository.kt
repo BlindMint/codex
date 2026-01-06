@@ -17,6 +17,7 @@ interface FileSystemRepository {
     ): List<SelectableFile>
 
     suspend fun getBookFromFile(
-        cachedFile: CachedFile
+        cachedFile: CachedFile,
+        loadCover: Boolean = true
     ): NullableBook
 }

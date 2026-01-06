@@ -138,8 +138,8 @@ class FileSystemRepositoryImpl @Inject constructor(
     /**
      * Gets book from given file. If error happened, returns [NullableBook.Null].
      */
-    override suspend fun getBookFromFile(cachedFile: CachedFile): NullableBook {
-        val parsedBook = fileParser.parse(cachedFile)
+    override suspend fun getBookFromFile(cachedFile: CachedFile, loadCover: Boolean): NullableBook {
+        val parsedBook = fileParser.parse(cachedFile, loadCover)
         if (parsedBook == null) {
             Log.e(GET_BOOK_FROM_FILE, "Parsed file(${cachedFile.name}) is null.")
             return Null(

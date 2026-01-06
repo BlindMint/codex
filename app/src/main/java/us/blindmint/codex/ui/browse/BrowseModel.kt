@@ -293,7 +293,7 @@ class BrowseModel @Inject constructor(
                             }
                             .forEach {
                                 yield()
-                                books.add(getBookFromFile.execute(it.data))
+                                 books.add(getBookFromFile.execute(it.data, loadCover = false))
                             }
 
                         yield()

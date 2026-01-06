@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 class EpubFileParser @Inject constructor() : FileParser {
 
-    override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
+    override suspend fun parse(cachedFile: CachedFile, loadCover: Boolean): BookWithCover? {
         return try {
             var book: BookWithCover? = null
 
@@ -43,9 +43,11 @@ class EpubFileParser @Inject constructor() : FileParser {
                         .use { it.readText() }
                     val document = Jsoup.parse(opfContent)
 
+                    val filename = cachedFile.name.substringBeforeLast(".").trim()
+                    val titleFromFilename = filename.split(" - ").takeIf { it.size == 2 }?.first()?.trim()
                     val title = document.select("metadata > dc|title").text().trim().run {
                         ifBlank {
-                            cachedFile.name.substringBeforeLast(".").trim()
+                            titleFromFilename ?: filename
                         }
                     }
 
@@ -94,7 +96,7 @@ class EpubFileParser @Inject constructor() : FileParser {
                             category = Category.entries[0],
                             coverImage = null
                         ),
-                        coverImage = extractCoverImageBitmap(rawFile, coverImage)
+                        coverImage = if (loadCover) extractCoverImageBitmap(rawFile, coverImage) else null
                     )
                 }
             }

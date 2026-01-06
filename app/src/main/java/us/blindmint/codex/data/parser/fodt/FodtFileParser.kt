@@ -23,19 +23,21 @@ import javax.inject.Inject
  */
 class FodtFileParser @Inject constructor() : FileParser {
 
-    override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
+    override suspend fun parse(cachedFile: CachedFile, loadCover: Boolean): BookWithCover? {
         return try {
             val content = cachedFile.openInputStream()?.bufferedReader()?.use { it.readText() }
                 ?: return null
 
             val doc = Jsoup.parse(content, "", Parser.xmlParser())
 
+            val filename = cachedFile.name.substringBeforeLast(".").trim()
+            val titleFromFilename = filename.split(" - ").takeIf { it.size == 2 }?.first()?.trim()
             // Extract title from meta or use filename
             val metaTitle = doc.select("office|meta dc|title, dc\\:title").firstOrNull()?.text()
             val title = if (!metaTitle.isNullOrBlank()) {
                 metaTitle
             } else {
-                cachedFile.name.substringBeforeLast(".").trim()
+                titleFromFilename ?: filename
             }
 
             // Extract author from meta

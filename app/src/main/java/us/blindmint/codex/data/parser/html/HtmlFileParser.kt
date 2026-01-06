@@ -19,15 +19,17 @@ import javax.inject.Inject
 
 class HtmlFileParser @Inject constructor() : FileParser {
 
-    override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
+    override suspend fun parse(cachedFile: CachedFile, loadCover: Boolean): BookWithCover? {
         return try {
             val document = cachedFile.openInputStream()?.use {
                 Jsoup.parse(it, null, "", Parser.htmlParser())
             }
 
+            val filename = cachedFile.name.substringBeforeLast(".").trim()
+            val titleFromFilename = filename.split(" - ").takeIf { it.size == 2 }?.first()?.trim()
             val title = document?.select("head > title")?.text()?.trim().run {
                 if (isNullOrBlank()) {
-                    return@run cachedFile.name.substringBeforeLast(".").trim()
+                    return@run titleFromFilename ?: filename
                 }
                 return@run this
             }

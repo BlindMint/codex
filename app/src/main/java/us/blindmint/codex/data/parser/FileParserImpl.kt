@@ -28,7 +28,7 @@ class FileParserImpl @Inject constructor(
     private val fodtFileParser: FodtFileParser,
 ) : FileParser {
 
-    override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
+    override suspend fun parse(cachedFile: CachedFile, loadCover: Boolean): BookWithCover? {
         if (!cachedFile.canAccess()) {
             Log.e(FILE_PARSER, "File does not exist or no read access is granted.")
             return null
@@ -37,35 +37,35 @@ class FileParserImpl @Inject constructor(
         val fileFormat = ".${cachedFile.name.substringAfterLast(".")}".lowercase().trim()
         return when (fileFormat) {
             ".pdf" -> {
-                pdfFileParser.parse(cachedFile)
+                pdfFileParser.parse(cachedFile, loadCover)
             }
 
             ".epub" -> {
-                epubFileParser.parse(cachedFile)
+                epubFileParser.parse(cachedFile, loadCover)
             }
 
             ".txt" -> {
-                txtFileParser.parse(cachedFile)
+                txtFileParser.parse(cachedFile, loadCover)
             }
 
             ".fb2" -> {
-                fb2FileParser.parse(cachedFile)
+                fb2FileParser.parse(cachedFile, loadCover)
             }
 
             ".html" -> {
-                htmlFileParser.parse(cachedFile)
+                htmlFileParser.parse(cachedFile, loadCover)
             }
 
             ".htm" -> {
-                htmlFileParser.parse(cachedFile)
+                htmlFileParser.parse(cachedFile, loadCover)
             }
 
             ".md" -> {
-                txtFileParser.parse(cachedFile)
+                txtFileParser.parse(cachedFile, loadCover)
             }
 
             ".fodt" -> {
-                fodtFileParser.parse(cachedFile)
+                fodtFileParser.parse(cachedFile, loadCover)
             }
 
             else -> {
