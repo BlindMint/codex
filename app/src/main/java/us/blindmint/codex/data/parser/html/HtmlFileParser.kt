@@ -32,7 +32,7 @@ class HtmlFileParser @Inject constructor() : FileParser {
                     return@run titleFromFilename ?: filename
                 }
                 return@run this
-            }
+            }.ifBlank { "Untitled Book" }
 
             BookWithCover(
                 book = Book(

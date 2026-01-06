@@ -29,7 +29,7 @@ class PdfFileParser @Inject constructor(
 
             val filename = cachedFile.name.substringBeforeLast(".").trim()
             val titleFromFilename = filename.split(" - ").takeIf { it.size == 2 }?.first()?.trim()
-            val title = document.documentInformation.title ?: titleFromFilename ?: filename
+            val title = (document.documentInformation.title ?: titleFromFilename ?: filename).ifBlank { "Untitled Book" }
             val author = document.documentInformation.author.run {
                 if (isNullOrBlank()) UIText.StringResource(R.string.unknown_author)
                 else UIText.StringValue(this)

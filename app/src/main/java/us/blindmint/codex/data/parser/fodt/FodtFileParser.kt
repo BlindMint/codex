@@ -38,7 +38,7 @@ class FodtFileParser @Inject constructor() : FileParser {
                 metaTitle
             } else {
                 titleFromFilename ?: filename
-            }
+            }.ifBlank { "Untitled Book" }
 
             // Extract author from meta
             val metaAuthor = doc.select("office|meta dc|creator, dc\\:creator").firstOrNull()?.text()

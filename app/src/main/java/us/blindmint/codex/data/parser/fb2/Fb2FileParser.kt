@@ -32,7 +32,7 @@ class Fb2FileParser @Inject constructor() : FileParser {
                     return@run titleFromFilename ?: filename
                 }
                 this
-            }
+            }.ifBlank { "Untitled Book" }
 
             val author = document?.selectFirst("author")?.text()?.trim().run {
                 if (isNullOrBlank()) {

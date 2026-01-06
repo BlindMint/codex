@@ -29,10 +29,14 @@ Started: Mon Jan 05 2026
 ## Completed Tasks
 - [x] Create git branch 'fixes-improvements'
 - [x] Create development-tracker.md for tracking changes
-- [x] Investigate search scrollbar alignment and keyboard adjustment
-- [x] Profile and optimize slow book adding performance
-- [x] Implement 'title - author' filename naming check
-- [x] Run lint and typecheck (passed)  
+- [x] Fix search scrollbar alignment and keyboard adjustment (committed)
+- [x] Optimize slow book adding performance (committed)
+- [x] Implement 'title - author' filename naming check (committed)
+- [x] Run lint and typecheck (passed)
+
+## Commits
+- `36c8f37`: Fix search scrollbar: align indicators to actual positions and adjust height for keyboard
+- `bb21d70`: Optimize book adding: defer cover loading in previews and implement 'title - author' filename parsing  
 
 ## Next Steps
 - Investigate search scrollbar issue  

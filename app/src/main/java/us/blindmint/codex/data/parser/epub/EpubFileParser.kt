@@ -49,7 +49,7 @@ class EpubFileParser @Inject constructor() : FileParser {
                         ifBlank {
                             titleFromFilename ?: filename
                         }
-                    }
+                    }.ifBlank { "Untitled Book" }
 
                     val author = document.select("metadata > dc|creator").text().trim().run {
                         if (isBlank()) {
