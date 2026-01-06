@@ -55,6 +55,10 @@
         It will delete this book from the database.
         It will not delete this book from your device.
     </string>
+    <string name="clear_progress_history_description">
+        This will reset your reading progress for this book.
+        Your bookmarks and reading history will be cleared.
+    </string>
     <string name="move_book_description">
         Choose the category to which you want to move this book.
         This book will be moved to the selected category.
@@ -136,6 +140,7 @@
     <string name="ok">OK</string>
     <string name="change_path">Change path</string>
     <string name="add_folder">Add folder</string>
+    <string name="rescan">Rescan</string>
     <string name="set_up_scanning">Set up scanning</string>
 
     <!-- Book -->
@@ -735,6 +740,7 @@
     <string name="clear_selected_items_content_desc">Clear selected items</string>
     <string name="add_files_content_desc">Add files</string>
     <string name="select_all_files_content_desc">Select all files</string>
+    <string name="select_all_books_content_desc">Select all books</string>
     <string name="exit_search_content_desc">Exit search</string>
     <string name="delete_whole_history_content_desc">Delete whole history</string>
     <string name="move_books_content_desc">Move selected books</string>

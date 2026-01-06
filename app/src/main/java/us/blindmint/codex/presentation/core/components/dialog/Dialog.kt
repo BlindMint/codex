@@ -183,23 +183,6 @@ fun Dialog(
                                     if (disableOnClick) {
                                         actionClicked = true
                                     }
-                                    onDismiss()
-                                },
-                                enabled = !actionClicked
-                            ) {
-                                StyledText(
-                                    text = stringResource(id = R.string.cancel),
-                                    style = MaterialTheme.typography.labelLarge.copy(
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                )
-                            }
-
-                            TextButton(
-                                onClick = {
-                                    if (disableOnClick) {
-                                        actionClicked = true
-                                    }
                                     onAction()
                                 },
                                 enabled = actionEnabled == true && !actionClicked
@@ -209,6 +192,23 @@ fun Dialog(
                                     style = MaterialTheme.typography.labelLarge.copy(
                                         color = if (actionEnabled == true) MaterialTheme.colorScheme.primary
                                         else MaterialTheme.colorScheme.primary.copy(0.5f)
+                                    )
+                                )
+                            }
+
+                            TextButton(
+                                onClick = {
+                                    if (disableOnClick) {
+                                        actionClicked = true
+                                    }
+                                    onDismiss()
+                                },
+                                enabled = !actionClicked
+                            ) {
+                                StyledText(
+                                    text = stringResource(id = R.string.cancel),
+                                    style = MaterialTheme.typography.labelLarge.copy(
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 )
                             }

@@ -10,11 +10,13 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
+
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.presentation.core.components.common.IconButton
@@ -32,7 +34,9 @@ fun BookInfoTopBar(
     listState: LazyListState,
     showEditBottomSheet: (BookInfoEvent.OnShowEditBottomSheet) -> Unit,
     showDetailsBottomSheet: (BookInfoEvent.OnShowDetailsBottomSheet) -> Unit,
-    navigateBack: () -> Unit
+    clearProgressHistory: (BookInfoEvent.OnShowClearProgressHistoryDialog) -> Unit,
+    navigateBack: () -> Unit,
+    context: android.content.Context
 ) {
     val firstVisibleItemIndex = remember {
         derivedStateOf {
@@ -80,6 +84,14 @@ fun BookInfoTopBar(
                         disableOnClick = false,
                         onClick = {
                             showDetailsBottomSheet(BookInfoEvent.OnShowDetailsBottomSheet)
+                        }
+                    )
+                    IconButton(
+                        icon = Icons.Default.Refresh,
+                        contentDescription = R.string.clear_progress_history,
+                        disableOnClick = false,
+                        onClick = {
+                            clearProgressHistory(BookInfoEvent.OnShowClearProgressHistoryDialog)
                         }
                     )
                 }

@@ -17,9 +17,10 @@ import javax.inject.Inject
 
 class TxtFileParser @Inject constructor() : FileParser {
 
-    override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
+    override suspend fun parse(cachedFile: CachedFile, loadCover: Boolean): BookWithCover? {
         return try {
-            val title = cachedFile.name.substringBeforeLast(".").trim()
+            val filename = cachedFile.name.substringBeforeLast(".").trim()
+            val title = (filename.split(" - ").takeIf { it.size == 2 }?.first()?.trim() ?: filename).ifBlank { "Untitled Book" }
             val author = UIText.StringResource(R.string.unknown_author)
 
             BookWithCover(

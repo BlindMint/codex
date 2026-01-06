@@ -20,10 +20,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MoveUp
-import androidx.compose.material.icons.outlined.RestoreFromTrash
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -67,6 +68,7 @@ fun LibraryTopBar(
     searchQueryChange: (LibraryEvent.OnSearchQueryChange) -> Unit,
     search: (LibraryEvent.OnSearch) -> Unit,
     clearSelectedBooks: (LibraryEvent.OnClearSelectedBooks) -> Unit,
+    selectAllBooks: (LibraryEvent.OnSelectAllBooks) -> Unit,
     showMoveDialog: (LibraryEvent.OnShowMoveDialog) -> Unit,
     showDeleteDialog: (LibraryEvent.OnShowDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
@@ -186,6 +188,14 @@ fun LibraryTopBar(
                 },
                 contentActions = {
                     IconButton(
+                        icon = Icons.Default.SelectAll,
+                        contentDescription = R.string.select_all_books_content_desc,
+                        enabled = !isLoading && !isRefreshing,
+                        disableOnClick = false,
+                    ) {
+                        selectAllBooks(LibraryEvent.OnSelectAllBooks)
+                    }
+                    IconButton(
                         icon = Icons.Outlined.MoveUp,
                         contentDescription = R.string.move_books_content_desc,
                         enabled = !isLoading && !isRefreshing,
@@ -194,20 +204,20 @@ fun LibraryTopBar(
                         showMoveDialog(LibraryEvent.OnShowMoveDialog)
                     }
                     IconButton(
+                        icon = Icons.Default.Refresh,
+                        contentDescription = R.string.clear_progress_history_content_desc,
+                        enabled = !isLoading && !isRefreshing,
+                        disableOnClick = false
+                    ) {
+                        showClearProgressHistoryDialog(LibraryEvent.OnShowClearProgressHistoryDialog)
+                    }
+                    IconButton(
                         icon = Icons.Outlined.Delete,
                         contentDescription = R.string.delete_books_content_desc,
                         enabled = !isLoading && !isRefreshing,
                         disableOnClick = false
                     ) {
                         showDeleteDialog(LibraryEvent.OnShowDeleteDialog)
-                    }
-                    IconButton(
-                        icon = Icons.Outlined.RestoreFromTrash,
-                        contentDescription = R.string.clear_progress_history_content_desc,
-                        enabled = !isLoading && !isRefreshing,
-                        disableOnClick = false
-                    ) {
-                        showClearProgressHistoryDialog(LibraryEvent.OnShowClearProgressHistoryDialog)
                     }
                 }
             ),

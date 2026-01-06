@@ -33,7 +33,6 @@ import java.util.Locale
 fun BookInfoDetailsBottomSheet(
     book: Book,
     showPathDialog: (BookInfoEvent.OnShowPathDialog) -> Unit,
-    clearProgressHistory: (BookInfoEvent.OnClearProgressHistory) -> Unit,
     dismissBottomSheet: (BookInfoEvent.OnDismissBottomSheet) -> Unit
 ) {
     val pattern = remember { SimpleDateFormat("HH:mm dd MMM yyyy", Locale.getDefault()) }
@@ -118,16 +117,7 @@ fun BookInfoDetailsBottomSheet(
                 )
             }
 
-            item {
-                BookInfoDetailsBottomSheetItem(
-                    label = stringResource(id = R.string.clear_progress_history),
-                    text = "",
-                    editable = true,
-                    onEdit = {
-                        clearProgressHistory(BookInfoEvent.OnClearProgressHistory(context))
-                    }
-                )
-            }
+
         }
     }
 }

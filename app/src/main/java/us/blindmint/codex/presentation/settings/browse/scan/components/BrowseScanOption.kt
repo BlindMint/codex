@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material3.Icon
@@ -186,24 +187,39 @@ private fun BrowseScanAction(
 ) {
     Row(
         modifier = Modifier
-            .padding(horizontal = 18.dp, vertical = 18.dp)
-            .noRippleClickable {
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp, vertical = 18.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            modifier = Modifier.noRippleClickable {
                 requestPersistableUriPermission()
             },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Icon(
-            modifier = Modifier.size(24.dp),
-            imageVector = Icons.Default.Add,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.secondary
-        )
-        StyledText(
-            text = stringResource(id = R.string.add_folder),
-            style = MaterialTheme.typography.labelLarge.copy(
-                color = MaterialTheme.colorScheme.secondary
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                modifier = Modifier.size(24.dp),
+                imageVector = Icons.Default.Add,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.secondary
             )
-        )
+            StyledText(
+                text = stringResource(id = R.string.add_folder),
+                style = MaterialTheme.typography.labelLarge.copy(
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            )
+        }
+
+        IconButton(
+            icon = Icons.Default.Refresh,
+            contentDescription = R.string.rescan,
+            disableOnClick = false,
+            color = MaterialTheme.colorScheme.secondary
+        ) {
+            BrowseScreen.refreshListChannel.trySend(Unit)
+        }
     }
 }

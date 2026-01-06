@@ -398,7 +398,15 @@ class BookInfoModel @Inject constructor(
                     }
                 }
 
-                is BookInfoEvent.OnClearProgressHistory -> {
+                is BookInfoEvent.OnShowClearProgressHistoryDialog -> {
+                    _state.update {
+                        it.copy(
+                            dialog = BookInfoScreen.CLEAR_PROGRESS_HISTORY_DIALOG
+                        )
+                    }
+                }
+
+                is BookInfoEvent.OnActionClearProgressHistoryDialog -> {
                     launch(Dispatchers.IO) {
                         deleteProgressHistory.execute(_state.value.book)
 

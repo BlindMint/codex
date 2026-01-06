@@ -59,6 +59,7 @@ fun BrowseScaffold(
     showAddDialog: (BrowseEvent.OnShowAddDialog) -> Unit,
     changePinnedPaths: (MainEvent.OnChangeBrowsePinnedPaths) -> Unit,
     navigateToBrowseSettings: () -> Unit,
+    onRescan: () -> Unit,
 ) {
     Scaffold(
         modifier = Modifier
@@ -147,7 +148,8 @@ fun BrowseScaffold(
                 isLoading = isLoading,
                 isRefreshing = isRefreshing,
                 pinnedPaths = pinnedPaths,
-                navigateToBrowseSettings = navigateToBrowseSettings
+                navigateToBrowseSettings = navigateToBrowseSettings,
+                onRescan = onRescan
             )
 
             BrowseRefreshIndicator(

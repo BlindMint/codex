@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import us.blindmint.codex.domain.reader.ReaderText
@@ -50,6 +51,7 @@ fun ReaderSearchScrollbar(
     // Get system bar insets for when menu is hidden
     val statusBarInsets = WindowInsets.statusBars
     val navBarInsets = WindowInsets.navigationBars
+    val imeInsets = WindowInsets.ime
 
     // Calculate top offset: topBarHeight already includes status bar padding from TopAppBar
     // when menu is visible, so we don't add status bar insets again to avoid double-counting
@@ -63,15 +65,20 @@ fun ReaderSearchScrollbar(
         }
     }
 
-    // Calculate bottom offset: bottomBarHeight already includes navigationBarsPadding
-    // when menu is visible, so we don't add nav bar insets again to avoid double-counting
+    // Calculate bottom offset: adjust for keyboard when present
     val bottomOffset = with(density) {
-        if (showMenu && bottomBarHeight > 0) {
-            // bottomBarHeight already includes nav bar padding from ReaderBottomBar's navigationBarsPadding()
-            bottomBarHeight.toDp()
+        if (imeInsets.getBottom(density) > 0) {
+            // Keyboard is visible, span scrollbar to top of keyboard
+            imeInsets.getBottom(density).toDp()
         } else {
-            // When menu is hidden, use just the nav bar insets
-            navBarInsets.getBottom(density).toDp()
+            // Normal case: account for bottom bar and nav bar
+            if (showMenu && bottomBarHeight > 0) {
+                // bottomBarHeight already includes nav bar padding from ReaderBottomBar's navigationBarsPadding()
+                bottomBarHeight.toDp()
+            } else {
+                // When menu is hidden, use just the nav bar insets
+                navBarInsets.getBottom(density).toDp()
+            }
         }
     }
 
@@ -133,13 +140,13 @@ fun ReaderSearchScrollbar(
             )
         }
 
-        // Search result highlights - distribute evenly based on result index
+        // Search result highlights - position based on actual text location
         searchResults.forEachIndexed { index, result ->
             val isCurrent = index == currentSearchResultIndex
 
-            // Position based on result index in search results (more accurate for scrolling)
-            val positionRatio = if (searchResults.isNotEmpty()) {
-                index.toFloat() / (searchResults.size - 1).toFloat()
+            // Position based on result's textIndex for accurate alignment
+            val positionRatio = if (text.isNotEmpty()) {
+                result.textIndex.toFloat() / text.size.toFloat()
             } else 0f
 
             // Visual highlight - no touch handling needed since scrollbar background handles it

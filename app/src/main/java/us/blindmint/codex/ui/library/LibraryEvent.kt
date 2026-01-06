@@ -40,6 +40,8 @@ sealed class LibraryEvent {
         val select: Boolean? = null
     ) : LibraryEvent()
 
+    data object OnSelectAllBooks : LibraryEvent()
+
     data object OnShowMoveDialog : LibraryEvent()
 
     data class OnActionMoveDialog(

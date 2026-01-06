@@ -8,6 +8,7 @@ package us.blindmint.codex.presentation.book_info
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.util.BottomSheet
 import us.blindmint.codex.domain.util.Dialog
@@ -34,7 +35,8 @@ fun BookInfoContent(
     resetTitle: (BookInfoEvent.OnResetTitle) -> Unit,
     resetAuthor: (BookInfoEvent.OnResetAuthor) -> Unit,
     resetDescription: (BookInfoEvent.OnResetDescription) -> Unit,
-    clearProgressHistory: (BookInfoEvent.OnClearProgressHistory) -> Unit,
+    showClearProgressHistoryDialog: (BookInfoEvent.OnShowClearProgressHistoryDialog) -> Unit,
+    actionClearProgressHistoryDialog: (BookInfoEvent.OnActionClearProgressHistoryDialog) -> Unit,
     showMoveDialog: (BookInfoEvent.OnShowMoveDialog) -> Unit,
     showDeleteDialog: (BookInfoEvent.OnShowDeleteDialog) -> Unit,
     actionDeleteDialog: (BookInfoEvent.OnActionDeleteDialog) -> Unit,
@@ -57,6 +59,7 @@ fun BookInfoContent(
         actionDescriptionDialog = actionDescriptionDialog,
         actionPathDialog = actionPathDialog,
         actionDeleteDialog = actionDeleteDialog,
+        actionClearProgressHistoryDialog = actionClearProgressHistoryDialog,
         actionMoveDialog = actionMoveDialog,
         dismissDialog = dismissDialog,
         navigateToLibrary = navigateToLibrary,
@@ -73,7 +76,6 @@ fun BookInfoContent(
         resetTitle = resetTitle,
         resetAuthor = resetAuthor,
         resetDescription = resetDescription,
-        clearProgressHistory = clearProgressHistory,
         canResetCover = canResetCover,
         changeCover = changeCover,
         resetCover = resetCover,
@@ -85,16 +87,18 @@ fun BookInfoContent(
     BookInfoScaffold(
         book = book,
         listState = listState,
-        showTitleDialog = showTitleDialog,
-        showAuthorDialog = showAuthorDialog,
-        showDescriptionDialog = showDescriptionDialog,
         showChangeCoverBottomSheet = showChangeCoverBottomSheet,
         showDetailsBottomSheet = showDetailsBottomSheet,
         showEditBottomSheet = showEditBottomSheet,
+        clearProgressHistory = showClearProgressHistoryDialog,
+        showTitleDialog = showTitleDialog,
+        showAuthorDialog = showAuthorDialog,
+        showDescriptionDialog = showDescriptionDialog,
         showMoveDialog = showMoveDialog,
         showDeleteDialog = showDeleteDialog,
         navigateToReader = navigateToReader,
-        navigateBack = navigateBack
+        navigateBack = navigateBack,
+        context = LocalContext.current
     )
 
     BookInfoBackHandler(

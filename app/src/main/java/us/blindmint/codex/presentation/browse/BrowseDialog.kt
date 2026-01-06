@@ -6,12 +6,14 @@
 
 package us.blindmint.codex.presentation.browse
 
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import us.blindmint.codex.domain.library.book.SelectableNullableBook
 import us.blindmint.codex.domain.util.Dialog
 import us.blindmint.codex.ui.browse.BrowseEvent
 import us.blindmint.codex.ui.browse.BrowseScreen
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BrowseDialog(
     dialog: Dialog?,

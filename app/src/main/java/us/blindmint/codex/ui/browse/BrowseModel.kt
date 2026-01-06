@@ -24,6 +24,7 @@ import kotlinx.coroutines.yield
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.browse.display.BrowseSortOrder
 import us.blindmint.codex.domain.browse.file.SelectableFile
+import us.blindmint.codex.domain.library.book.BookWithCover
 import us.blindmint.codex.domain.library.book.NullableBook
 import us.blindmint.codex.domain.library.book.SelectableNullableBook
 import us.blindmint.codex.domain.use_case.book.InsertBook
@@ -293,7 +294,7 @@ class BrowseModel @Inject constructor(
                             }
                             .forEach {
                                 yield()
-                                books.add(getBookFromFile.execute(it.data))
+                                 books.add(getBookFromFile.execute(it.data, loadCover = false))
                             }
 
                         yield()
@@ -326,15 +327,20 @@ class BrowseModel @Inject constructor(
 
             is BrowseEvent.OnActionAddDialog -> {
                 viewModelScope.launch {
-                    val booksToInsert = _state.value.selectedBooksAddDialog.mapNotNull {
-                        if (it.data is NullableBook.NotNull && it.selected) {
-                            return@mapNotNull it.data
-                        }
-                        return@mapNotNull null
-                    }.ifEmpty { return@launch }
+                    val selectedFiles = _state.value.files.filter { it.selected }.map { it.data }
+                    if (selectedFiles.isEmpty()) return@launch
 
-                    for (book in booksToInsert) {
-                        insertBook.execute(book.bookWithCover!!)
+                    // Re-parse with covers enabled for insertion
+                    val booksToInsert = mutableListOf<BookWithCover>()
+                    for (cachedFile in selectedFiles) {
+                        val parsedBook = getBookFromFile.execute(cachedFile, loadCover = true)
+                        if (parsedBook is NullableBook.NotNull && parsedBook.bookWithCover != null) {
+                            booksToInsert.add(parsedBook.bookWithCover)
+                        }
+                    }
+
+                    for (bookWithCover in booksToInsert) {
+                        insertBook.execute(bookWithCover)
                     }
 
                     LibraryScreen.refreshListChannel.trySend(0)

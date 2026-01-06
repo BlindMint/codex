@@ -24,7 +24,6 @@ fun BookInfoBottomSheet(
     resetTitle: (BookInfoEvent.OnResetTitle) -> Unit,
     resetAuthor: (BookInfoEvent.OnResetAuthor) -> Unit,
     resetDescription: (BookInfoEvent.OnResetDescription) -> Unit,
-    clearProgressHistory: (BookInfoEvent.OnClearProgressHistory) -> Unit,
     changeCover: (BookInfoEvent.OnChangeCover) -> Unit,
     resetCover: (BookInfoEvent.OnResetCover) -> Unit,
     deleteCover: (BookInfoEvent.OnDeleteCover) -> Unit,
@@ -48,7 +47,6 @@ fun BookInfoBottomSheet(
             BookInfoDetailsBottomSheet(
                 book = book,
                 showPathDialog = showPathDialog,
-                clearProgressHistory = clearProgressHistory,
                 dismissBottomSheet = dismissBottomSheet
             )
         }

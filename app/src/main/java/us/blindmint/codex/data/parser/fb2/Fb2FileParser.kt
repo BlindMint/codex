@@ -19,18 +19,20 @@ import javax.inject.Inject
 
 class Fb2FileParser @Inject constructor() : FileParser {
 
-    override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
+    override suspend fun parse(cachedFile: CachedFile, loadCover: Boolean): BookWithCover? {
         return try {
             val document = cachedFile.openInputStream()?.use {
                 Jsoup.parse(it, null, "", Parser.xmlParser())
             }
 
+            val filename = cachedFile.name.substringBeforeLast(".").trim()
+            val titleFromFilename = filename.split(" - ").takeIf { it.size == 2 }?.first()?.trim()
             val title = document?.selectFirst("book-title")?.text()?.trim().run {
                 if (isNullOrBlank()) {
-                    return@run cachedFile.name.substringBeforeLast(".").trim()
+                    return@run titleFromFilename ?: filename
                 }
                 this
-            }
+            }.ifBlank { "Untitled Book" }
 
             val author = document?.selectFirst("author")?.text()?.trim().run {
                 if (isNullOrBlank()) {

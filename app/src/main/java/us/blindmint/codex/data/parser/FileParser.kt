@@ -12,5 +12,5 @@ import us.blindmint.codex.domain.library.book.BookWithCover
 
 interface FileParser {
 
-    suspend fun parse(cachedFile: CachedFile): BookWithCover?
+    suspend fun parse(cachedFile: CachedFile, loadCover: Boolean = true): BookWithCover?
 }

@@ -15,7 +15,7 @@ class GetBookFromFile @Inject constructor(
     private val repository: FileSystemRepository
 ) {
 
-    suspend fun execute(cachedFile: CachedFile): NullableBook {
-        return repository.getBookFromFile(cachedFile)
+    suspend fun execute(cachedFile: CachedFile, loadCover: Boolean = true): NullableBook {
+        return repository.getBookFromFile(cachedFile, loadCover)
     }
 }

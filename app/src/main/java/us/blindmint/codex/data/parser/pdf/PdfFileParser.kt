@@ -22,13 +22,14 @@ class PdfFileParser @Inject constructor(
     private val application: Application
 ) : FileParser {
 
-    override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
+    override suspend fun parse(cachedFile: CachedFile, loadCover: Boolean): BookWithCover? {
         return try {
             PDFBoxResourceLoader.init(application)
             val document = PDDocument.load(cachedFile.openInputStream())
 
-            val title = document.documentInformation.title
-                ?: cachedFile.name.substringBeforeLast(".").trim()
+            val filename = cachedFile.name.substringBeforeLast(".").trim()
+            val titleFromFilename = filename.split(" - ").takeIf { it.size == 2 }?.first()?.trim()
+            val title = (document.documentInformation.title ?: titleFromFilename ?: filename).ifBlank { "Untitled Book" }
             val author = document.documentInformation.author.run {
                 if (isNullOrBlank()) UIText.StringResource(R.string.unknown_author)
                 else UIText.StringValue(this)
