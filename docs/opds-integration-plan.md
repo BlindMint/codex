@@ -212,6 +212,15 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 - Phase 6-7: 4-5 weeks (advanced features including tag sync)
 - Phase 8-9: 2-3 weeks (testing/polish)
 
+## Performance Issues Identified
+- Book import process is slow: Populating "Add books?" menu and adding selected books takes excessively long (20+ seconds for small sets), with occasional app freezing.
+- First-time book opening is slow: 20-30 seconds for text parsing, despite caching working for re-opens.
+- Root causes: Likely file parsing, cover image compression, or DB operations. Needs optimization before OPDS integration completion.
+
+## UI Improvements Needed
+- Restore book count as styled badge/button instead of plain text.
+- Add missing toggle for library_show_book_count in settings (currently missing from UI).
+
 ## Notes and Questions
 - Confirm OPDS server compatibility (Calibre-web specific features?)
 - Authentication methods beyond Basic Auth?

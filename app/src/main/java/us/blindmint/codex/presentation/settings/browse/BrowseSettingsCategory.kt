@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.LazyListScope
+import us.blindmint.codex.presentation.settings.browse.library.BrowseLibrarySubcategory
 import us.blindmint.codex.presentation.settings.browse.scan.BrowseScanSubcategory
 import us.blindmint.codex.presentation.settings.browse.opds.BrowseOpdsSubcategory
 
@@ -26,6 +27,15 @@ fun LazyListScope.BrowseSettingsCategory() {
         )
     }
     BrowseScanSubcategory()
+
+    item {
+        Text(
+            text = "Library",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+    }
+    BrowseLibrarySubcategory()
 
     item {
         Text(
