@@ -28,6 +28,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
+import us.blindmint.codex.presentation.core.components.common.StyledText
+import us.blindmint.codex.ui.browse.BrowseScreen
 import us.blindmint.codex.presentation.core.components.placeholder.EmptyPlaceholder
 import us.blindmint.codex.presentation.core.util.LocalActivity
 import us.blindmint.codex.ui.theme.Transitions
@@ -39,7 +41,8 @@ fun BoxScope.BrowseEmptyPlaceholder(
     isLoading: Boolean,
     isRefreshing: Boolean,
     pinnedPaths: List<String>,
-    navigateToBrowseSettings: () -> Unit
+    navigateToBrowseSettings: () -> Unit,
+    onRescan: () -> Unit
 ) {
     val context = LocalContext.current
     val hasPersistedUriPermissions = remember {

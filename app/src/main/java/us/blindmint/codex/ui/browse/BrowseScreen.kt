@@ -171,6 +171,9 @@ object BrowseScreen : Screen, Parcelable {
             navigateToBrowseSettings = {
                 navigator.push(BrowseSettingsScreen)
             },
+            onRescan = {
+                screenModel.onEvent(BrowseEvent.OnRefreshList(loading = false, hideSearch = false))
+            }
         )
     }
 }

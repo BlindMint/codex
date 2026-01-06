@@ -3,6 +3,32 @@
 ## Session Summary
 Started: Mon Jan 05 2026
 
+## Current Session: Compilation Error Fixes for Rescan Feature
+**Status:** Completed - Build now successful
+
+### Issues Resolved:
+1. **BrowseModel.kt** - Indentation & Syntax Errors
+   - Fixed extra indentation on OnDismissDialog case (line 395)
+   - Removed wrongly-indented extra closing braces (lines 402-403)
+   - Added missing `viewModelScope.launch` wrapper in OnDismissDialog event handler
+
+2. **BrowseEmptyPlaceholder.kt** - Missing Imports
+   - Added import for `StyledText` component
+   - Added import for `BrowseScreen`
+
+3. **BrowseDialog.kt** - Experimental API Warning
+   - Added `@OptIn(ExperimentalMaterial3Api::class)` annotation
+
+4. **Function Signature Updates** - Missing Parameters
+   - BrowseScaffold: Added `onRescan: () -> Unit` parameter
+   - BrowseContent: Added `onRescan: () -> Unit` parameter
+   - BrowseEmptyPlaceholder: Added `onRescan: () -> Unit` parameter
+
+5. **BrowseScreen.kt** - Missing Implementation
+   - Implemented `onRescan` callback to trigger `BrowseEvent.OnRefreshList`
+
+**Build Status:** ✅ BUILD SUCCESSFUL
+
 ## Issues and Tasks
 
 ### 1. Search Scrollbar Alignment and Keyboard Adjustment
@@ -43,6 +69,7 @@ Started: Mon Jan 05 2026
 - `b1ef914`: Replace Clear Progress History icons and reposition: Refresh icon in library and book info top bar, remove from file details
 - `87e868d`: Add confirmation dialog for Clear Progress History in book info
 - `6350a97`: Swap OK and Cancel button order in all confirmation dialogs
+- `ca02709`: Add Rescan functionality to browse screen and settings
 
 ## Issues Fixed
 - Covers now load properly by re-parsing with covers enabled during book insertion
@@ -52,7 +79,8 @@ Started: Mon Jan 05 2026
 - Improved add books dialog UX with scrollable list and always-visible action buttons
 - Replaced similar-looking Clear Progress History and Delete icons with distinct Refresh icon, repositioned buttons for better UX
 - Added confirmation dialog for Clear Progress History to prevent accidental resets
-- Standardized button order to OK first, Cancel second in all confirmation dialogs  
+- Standardized button order to OK first, Cancel second in all confirmation dialogs
+- Added Rescan buttons to browse screen empty state and Settings > Browse for rescanning added folders  
 
 ## Next Steps
 - Investigate search scrollbar issue  
