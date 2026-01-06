@@ -15,7 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-fun LazyListScope.BrowseOpdsSubcategory() {
+fun LazyListScope.BrowseOpdsSubcategory(onNavigateToSettings: () -> Unit = {}) {
     item {
         Text(
             text = "OPDS Sources",
@@ -23,6 +23,6 @@ fun LazyListScope.BrowseOpdsSubcategory() {
         )
     }
     item {
-        BrowseOpdsContent()
+        BrowseOpdsContent(onNavigateToSettings)
     }
 }

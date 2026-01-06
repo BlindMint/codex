@@ -6,6 +6,7 @@
 
 package us.blindmint.codex.ui.browse
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,6 +30,7 @@ import us.blindmint.codex.presentation.browse.BrowseTopBar
 import us.blindmint.codex.presentation.settings.browse.scan.components.BrowseScanOption
 import us.blindmint.codex.presentation.settings.browse.scan.components.BrowseScanOptionNote
 import us.blindmint.codex.presentation.settings.browse.opds.BrowseOpdsContent
+import us.blindmint.codex.presentation.settings.browse.opds.BrowseOpdsSubcategory
 import us.blindmint.codex.ui.settings.BrowseSettingsScreen
 import us.blindmint.codex.ui.settings.opds.OpdsSourcesModel
 
@@ -66,7 +68,10 @@ object BrowseScreen : Screen {
                     Text(
                         text = stringResource(R.string.scan_browse_settings),
                         color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.titleSmall
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier
+                            .clickable { navigator.push(BrowseSettingsScreen) }
+                            .padding(16.dp)
                     )
                 }
 
@@ -80,9 +85,7 @@ object BrowseScreen : Screen {
                 items(sources.value.sources) { source ->
                     Text(source.name, modifier = Modifier.padding(16.dp))
                 }
-                item {
-                    BrowseOpdsContent()
-                }
+                BrowseOpdsSubcategory(onNavigateToSettings = { navigator.push(BrowseSettingsScreen) })
             }
         }
     }
