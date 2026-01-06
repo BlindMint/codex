@@ -164,6 +164,12 @@ class BookRepositoryImpl @Inject constructor(
     ) {
         Log.i(INSERT_BOOK, "Inserting ${bookWithCover.book.title}.")
 
+        // Check for duplicate file path
+        if (database.findBookByFilePath(bookWithCover.book.filePath) != null) {
+            Log.i(INSERT_BOOK, "Book already exists, skipping: ${bookWithCover.book.title}")
+            return
+        }
+
         val filesDir = application.filesDir
         val coversDir = File(filesDir, "covers")
 

@@ -6,20 +6,41 @@
 
 package us.blindmint.codex.ui.settings.opds
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.room.Room
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import us.blindmint.codex.data.local.dto.OpdsSourceEntity
-import us.blindmint.codex.data.local.room.OpdsSourceDao
+import us.blindmint.codex.data.local.room.BookDatabase
+import us.blindmint.codex.data.local.room.DatabaseHelper
 import javax.inject.Inject
 
 @HiltViewModel
 class OpdsSourcesModel @Inject constructor(
-    private val opdsSourceDao: OpdsSourceDao
+    private val application: Application
 ) : ViewModel() {
+
+    private val database: BookDatabase by lazy {
+        Room.databaseBuilder(
+            application,
+            BookDatabase::class.java,
+            "book_database"
+        ).addMigrations(
+            DatabaseHelper.MIGRATION_2_3,
+            DatabaseHelper.MIGRATION_4_5,
+            DatabaseHelper.MIGRATION_5_6,
+            DatabaseHelper.MIGRATION_10_11,
+            DatabaseHelper.MIGRATION_11_12,
+            DatabaseHelper.MIGRATION_12_13,
+            DatabaseHelper.MIGRATION_13_14
+        ).build()
+    }
+
+    private val opdsSourceDao = database.opdsSourceDao
 
     private val _state = MutableStateFlow(OpdsSourcesState())
     val state = _state.asStateFlow()

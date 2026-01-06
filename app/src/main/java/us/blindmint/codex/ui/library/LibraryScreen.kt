@@ -106,12 +106,17 @@ object LibraryScreen : Screen, Parcelable {
 
         val skullPainter = painterResource(id = R.drawable.skull_outline)
 
-        val categories = remember(sortedBooks) {
+        val categories = remember(sortedBooks, mainState.value.libraryShowBookCount) {
             derivedStateOf {
+                val title = if (mainState.value.libraryShowBookCount) {
+                    "Library (${sortedBooks.size})"
+                } else {
+                    "Library"
+                }
                 listOf(
                     CategoryWithBooks(
                         category = Category.READING,
-                        title = UIText.StringValue("Library"),
+                        title = UIText.StringValue(title),
                         books = sortedBooks,
                         emptyIcon = skullPainter,
                         emptyMessage = UIText.StringValue("No books found")
