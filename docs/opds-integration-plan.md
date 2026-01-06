@@ -131,12 +131,12 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 - [ ] Add authentication UI (username/password fields)
 
 ### Phase 6: OPDS Browsing Integration
-- [ ] Update BrowseScreen to support OPDS catalogs
+- [x] Update BrowseScreen to support OPDS catalogs (renamed to Catalogs, shows OPDS sources list)
 - [ ] Add hierarchical navigation: Authors > Series > Books
 - [ ] Implement OPDS search via OpenSearch
 - [ ] Add OPDS book previews with metadata display
 - [ ] Create OPDS download workflow: preview -> confirm -> download -> import metadata
-- [ ] Update bottom navigation: Browse -> OPDS Catalogs
+- [x] Update bottom navigation: Browse -> Catalogs
 
 ### Phase 7: Advanced Filtering and Tags
 - [ ] Implement FilterState data class with all filter dimensions
