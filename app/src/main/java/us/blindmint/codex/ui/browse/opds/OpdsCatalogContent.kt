@@ -107,19 +107,17 @@ fun OpdsCatalogContent(
                     }
                 },
                 navigationIcon = {
-                    if (url != null) { // Only show back button if we're not on the root screen
-                        IconButton(onClick = {
-                            if (state.isSelectionMode) {
-                                model.toggleSelectionMode() // Exit selection mode first
-                            } else {
-                                navigateBack() // Then go back
-                            }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Back"
-                            )
+                    IconButton(onClick = {
+                        if (state.isSelectionMode) {
+                            model.toggleSelectionMode() // Exit selection mode first
+                        } else {
+                            navigateBack() // Go back to Catalogs screen
                         }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
                     }
                 },
                 actions = {
