@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import us.blindmint.codex.domain.opds.OpdsEntry
 import us.blindmint.codex.domain.opds.OpdsFeed
+import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.repository.OpdsRepository
 import us.blindmint.codex.domain.use_case.opds.ImportOpdsBookUseCase
 import javax.inject.Inject
@@ -22,7 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class OpdsCatalogModel @Inject constructor(
     private val opdsRepository: OpdsRepository,
-    private val importOpdsBookUseCase: ImportOpdsBookUseCase
+    private val importOpdsBookUseCase: ImportOpdsBookUseCase,
+    private val bookRepository: BookRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(OpdsCatalogState())
@@ -61,6 +63,8 @@ class OpdsCatalogModel @Inject constructor(
                     password = source.password
                 )
                 if (bookWithCover != null) {
+                    // Save the downloaded book to the database
+                    bookRepository.insertBook(bookWithCover)
                     _state.value = _state.value.copy(isDownloading = false)
                     onSuccess()
                 } else {

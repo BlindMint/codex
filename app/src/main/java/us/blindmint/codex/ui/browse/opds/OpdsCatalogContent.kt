@@ -41,6 +41,7 @@ import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import us.blindmint.codex.domain.opds.OpdsEntry
 import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.ui.browse.OpdsCategoryScreen
+import us.blindmint.codex.ui.library.LibraryScreen as LibraryScreenClass
 import us.blindmint.codex.ui.browse.opds.model.OpdsCatalogModel
 import us.blindmint.codex.ui.library.LibraryScreen
 import java.net.URI
@@ -245,5 +246,25 @@ fun OpdsCatalogContent(
                 }
             }
         }
+    }
+
+    // Download dialog
+    if (showDownloadDialog && selectedEntryForDownload != null) {
+        OpdsBookDownloadDialog(
+            entry = selectedEntryForDownload!!,
+            onConfirm = {
+                // Start download process
+                model.downloadBook(selectedEntryForDownload!!, source, {
+                    // On success, navigate to library
+                    navigator.push(LibraryScreenClass, saveInBackStack = false)
+                })
+                showDownloadDialog = false
+                selectedEntryForDownload = null
+            },
+            onDismiss = {
+                showDownloadDialog = false
+                selectedEntryForDownload = null
+            }
+        )
     }
 }

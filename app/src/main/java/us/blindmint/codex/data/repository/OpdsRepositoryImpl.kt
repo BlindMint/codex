@@ -87,7 +87,7 @@ class OpdsRepositoryImpl @Inject constructor() : OpdsRepository {
         return OpdsEntry(
             id = dto.id,
             title = dto.title,
-            author = null, // Temporarily disable author parsing
+            author = dto.author, // Now properly parsed from nested author/name element
             summary = dto.summary,
             published = dto.published,
             language = dto.language,
