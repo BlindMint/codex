@@ -25,14 +25,7 @@ class HtmlFileParser @Inject constructor() : FileParser {
                 Jsoup.parse(it, null, "", Parser.htmlParser())
             }
 
-            val filename = cachedFile.name.substringBeforeLast(".").trim()
-            val titleFromFilename = filename.split(" - ").takeIf { it.size == 2 }?.first()?.trim()
-            val title = document?.select("head > title")?.text()?.trim().run {
-                if (isNullOrBlank()) {
-                    return@run titleFromFilename ?: filename
-                }
-                return@run this
-            }.ifBlank { "Untitled Book" }
+            val title = document?.select("head > title")?.text()?.trim()?.ifBlank { "Untitled Book" } ?: "Untitled Book"
 
             BookWithCover(
                 book = Book(

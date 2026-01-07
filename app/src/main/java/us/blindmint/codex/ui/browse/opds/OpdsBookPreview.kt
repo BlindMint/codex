@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Icon
@@ -41,7 +42,9 @@ import us.blindmint.codex.presentation.core.components.common.StyledText
 fun OpdsBookPreview(
     entry: OpdsEntry,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isSelected: Boolean = false,
+    isSelectionMode: Boolean = false
 ) {
     Column(
         modifier = modifier
@@ -59,7 +62,8 @@ fun OpdsBookPreview(
                 .fillMaxWidth()
                 .clip(MaterialTheme.shapes.medium)
                 .background(
-                    MaterialTheme.colorScheme.surfaceContainerLow,
+                    if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.surfaceContainerLow,
                     MaterialTheme.shapes.medium
                 )
                 .clickable(onClick = onClick)
@@ -86,21 +90,40 @@ fun OpdsBookPreview(
                 )
             }
 
-            // Download icon overlay
-            Icon(
-                imageVector = Icons.Default.Download,
-                contentDescription = "Download book",
-                modifier = Modifier
-                    .size(32.dp)
-                    .align(Alignment.BottomEnd)
-                    .padding(8.dp)
-                    .background(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        MaterialTheme.shapes.small
-                    )
-                    .padding(4.dp),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+            // Selection or download icon overlay
+            if (isSelectionMode) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = if (isSelected) "Selected" else "Not selected",
+                    modifier = Modifier
+                        .size(32.dp)
+                        .align(Alignment.BottomEnd)
+                        .padding(8.dp)
+                        .background(
+                            if (isSelected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+                            MaterialTheme.shapes.small
+                        )
+                        .padding(4.dp),
+                    tint = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                           else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Download,
+                    contentDescription = "Download book",
+                    modifier = Modifier
+                        .size(32.dp)
+                        .align(Alignment.BottomEnd)
+                        .padding(8.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            MaterialTheme.shapes.small
+                        )
+                        .padding(4.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))

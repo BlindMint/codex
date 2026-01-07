@@ -40,22 +40,15 @@ import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.reader.ReaderScreen
 
 @Parcelize
-object LibraryScreen : Screen, Parcelable {
+data class LibraryScreen(val id: Int = 0) : Screen, Parcelable {
 
-    @IgnoredOnParcel
-    const val MOVE_DIALOG = "move_dialog"
-
-    @IgnoredOnParcel
-    const val DELETE_DIALOG = "delete_dialog"
-
-    @IgnoredOnParcel
-    val refreshListChannel: Channel<Long> = Channel(Channel.CONFLATED)
-
-    @IgnoredOnParcel
-    val scrollToPageCompositionChannel: Channel<Int> = Channel(Channel.CONFLATED)
-
-    @IgnoredOnParcel
-    private var initialPage = 0
+    companion object {
+        const val MOVE_DIALOG = "move_dialog"
+        const val DELETE_DIALOG = "delete_dialog"
+        val refreshListChannel: Channel<Long> = Channel(Channel.CONFLATED)
+        val scrollToPageCompositionChannel: Channel<Int> = Channel(Channel.CONFLATED)
+        private var initialPage = 0
+    }
 
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
@@ -185,7 +178,7 @@ object LibraryScreen : Screen, Parcelable {
             showFilterPanelEvent = screenModel::onEvent,
             dismissFilterPanel = { screenModel.onEvent(LibraryEvent.OnDismissFilterPanel) },
             navigateToBrowse = {
-                navigator.push(BrowseScreen)
+                navigator.push(BrowseScreen())
             },
             navigateToReader = {
                 HistoryScreen.insertHistoryChannel.trySend(it)

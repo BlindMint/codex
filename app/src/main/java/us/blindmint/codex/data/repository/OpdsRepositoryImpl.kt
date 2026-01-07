@@ -6,6 +6,8 @@
 
 package us.blindmint.codex.data.repository
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -38,6 +40,10 @@ class OpdsRepositoryImpl @Inject constructor() : OpdsRepository {
         return mapToDomain(dto)
     }
 
+    override suspend fun loadMore(url: String, username: String?, password: String?): OpdsFeed {
+        return fetchFeed(url, username, password)
+    }
+
     override suspend fun search(url: String, query: String, username: String?, password: String?): OpdsFeed {
         val client = createOkHttpClient(username, password)
         val retrofitWithAuth = retrofit.newBuilder().client(client).build()
@@ -46,14 +52,60 @@ class OpdsRepositoryImpl @Inject constructor() : OpdsRepository {
         return mapToDomain(dto)
     }
 
-    override suspend fun downloadBook(url: String, username: String?, password: String?): ByteArray {
-        val client = createOkHttpClient(username, password)
-        val request = okhttp3.Request.Builder().url(url).build()
-        val response = client.newCall(request).execute()
-        if (!response.isSuccessful) {
-            throw Exception("Download failed: ${response.code}")
+    override suspend fun downloadBook(url: String, username: String?, password: String?, onProgress: ((Float) -> Unit)?): Pair<ByteArray, String?> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val client = createOkHttpClient(username, password)
+                val request = okhttp3.Request.Builder().url(url).build()
+                val response = client.newCall(request).execute()
+                if (!response.isSuccessful) {
+                    throw Exception("Download failed: HTTP ${response.code} ${response.message}")
+                }
+
+                val body = response.body ?: throw Exception("Empty response body")
+                val contentLength = body.contentLength()
+                val buffer = okio.Buffer()
+
+                var bytesRead = 0L
+                val source = body.source()
+
+                while (true) {
+                    val read = source.read(buffer, 8192)
+                    if (read == -1L) break
+                    bytesRead += read
+
+                    if (contentLength > 0 && onProgress != null) {
+                        val progress = bytesRead.toFloat() / contentLength.toFloat()
+                        onProgress(progress)
+                    }
+                }
+
+                val result = buffer.readByteArray()
+
+                // Extract filename from content-disposition header
+                val contentDisposition = response.header("content-disposition")
+                val filename = extractFilenameFromContentDisposition(contentDisposition)
+
+                Pair(result, filename)
+            } catch (e: Exception) {
+                when (e) {
+                    is java.net.UnknownHostException -> throw Exception("Unknown host: ${e.message}")
+                    is java.net.SocketTimeoutException -> throw Exception("Connection timeout")
+                    is javax.net.ssl.SSLException -> throw Exception("SSL error: ${e.message}")
+                    is java.io.IOException -> throw Exception("Network error: ${e.message ?: "I/O error"}")
+                    else -> throw Exception("Download failed: ${e.message ?: "Unknown error"}")
+                }
+            }
         }
-        return response.body?.bytes() ?: throw Exception("Empty response")
+    }
+
+    private fun extractFilenameFromContentDisposition(contentDisposition: String?): String? {
+        if (contentDisposition.isNullOrBlank()) return null
+
+        // Look for filename= or filename*= patterns
+        val filenameRegex = Regex("filename[^;=\n]*=((['\"]).*?\\2|[^;\\n]*)")
+        val match = filenameRegex.find(contentDisposition)
+        return match?.groupValues?.get(1)?.trim()?.removeSurrounding("\"", "\"")?.removeSurrounding("'", "'")
     }
 
     private fun createOkHttpClient(username: String? = null, password: String? = null): OkHttpClient {

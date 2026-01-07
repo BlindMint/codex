@@ -12,7 +12,9 @@ interface OpdsRepository {
 
     suspend fun fetchFeed(url: String, username: String? = null, password: String? = null): OpdsFeed
 
+    suspend fun loadMore(url: String, username: String? = null, password: String? = null): OpdsFeed
+
     suspend fun search(url: String, query: String, username: String? = null, password: String? = null): OpdsFeed
 
-    suspend fun downloadBook(url: String, username: String? = null, password: String? = null): ByteArray
+    suspend fun downloadBook(url: String, username: String? = null, password: String? = null, onProgress: ((Float) -> Unit)? = null): Pair<ByteArray, String?>
 }

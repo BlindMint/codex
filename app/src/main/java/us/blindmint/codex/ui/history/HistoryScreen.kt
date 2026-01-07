@@ -30,16 +30,13 @@ import us.blindmint.codex.ui.library.LibraryScreen
 import us.blindmint.codex.ui.reader.ReaderScreen
 
 @Parcelize
-object HistoryScreen : Screen, Parcelable {
+data class HistoryScreen(val id: Int = 0) : Screen, Parcelable {
 
-    @IgnoredOnParcel
-    const val DELETE_WHOLE_HISTORY_DIALOG = "delete_whole_history_dialog"
-
-    @IgnoredOnParcel
-    val refreshListChannel: Channel<Long> = Channel(Channel.CONFLATED)
-
-    @IgnoredOnParcel
-    val insertHistoryChannel: Channel<Int> = Channel(Channel.CONFLATED)
+    companion object {
+        const val DELETE_WHOLE_HISTORY_DIALOG = "delete_whole_history_dialog"
+        val refreshListChannel: Channel<Long> = Channel(Channel.CONFLATED)
+        val insertHistoryChannel: Channel<Int> = Channel(Channel.CONFLATED)
+    }
 
     @IgnoredOnParcel
     private var initialIndex = 0
@@ -101,7 +98,7 @@ object HistoryScreen : Screen, Parcelable {
             actionDeleteWholeHistoryDialog = screenModel::onEvent,
             dismissDialog = screenModel::onEvent,
             navigateToLibrary = {
-                navigator.push(LibraryScreen, saveInBackStack = false)
+                navigator.push(LibraryScreen(), saveInBackStack = false)
             },
             navigateToBookInfo = {
                 navigator.push(BookInfoScreen(bookId = it))

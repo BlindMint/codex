@@ -40,7 +40,7 @@ fun NavigatorBottomSheet() {
                     primary = false,
                     position = Position.TOP
                 ) {
-                    navigator.push(AboutScreen)
+                    navigator.push(AboutScreen())
                     navigatorBottomSheetChannel.trySend(false)
                 }
             }
@@ -66,7 +66,7 @@ fun NavigatorBottomSheet() {
                     primary = true,
                     position = Position.SOLO
                 ) {
-                    navigator.push(SettingsScreen)
+                    navigator.push(SettingsScreen())
                     navigatorBottomSheetChannel.trySend(false)
                 }
             }

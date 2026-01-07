@@ -123,28 +123,28 @@ class MainActivity : AppCompatActivity() {
 
             val tabs = immutableListOf(
                 NavigatorItem(
-                    screen = LibraryScreen,
+                    screen = LibraryScreen(),
                     title = R.string.library_screen,
                     tooltip = R.string.library_content_desc,
                     selectedIcon = R.drawable.library_screen_filled,
                     unselectedIcon = R.drawable.library_screen_outlined
                 ),
                 NavigatorItem(
-                    screen = HistoryScreen,
+                    screen = HistoryScreen(),
                     title = R.string.history_screen,
                     tooltip = R.string.history_content_desc,
                     selectedIcon = R.drawable.history_screen_filled,
                     unselectedIcon = R.drawable.history_screen_outlined
                 ),
                 NavigatorItem(
-                    screen = BrowseScreen,
+                    screen = BrowseScreen(),
                     title = R.string.browse_screen,
                     tooltip = R.string.browse_content_desc,
                     selectedIcon = R.drawable.browse_screen_filled,
                     unselectedIcon = R.drawable.browse_screen_outlined
                 ),
                 NavigatorItem(
-                    screen = SettingsScreen,
+                    screen = SettingsScreen(),
                     title = R.string.settings_screen,
                     tooltip = R.string.settings_screen,
                     selectedIcon = R.drawable.settings_screen_filled,
@@ -244,8 +244,8 @@ class MainActivity : AppCompatActivity() {
                     themeContrast = state.value.themeContrast
                 ) {
                     Navigator(
-                        initialScreen = if (state.value.showStartScreen) StartScreen
-                        else LibraryScreen,
+                        initialScreen = if (state.value.showStartScreen) StartScreen()
+                        else LibraryScreen(),
                         transitionSpec = { lastEvent ->
                             when (lastEvent) {
                                 StackEvent.Default -> {
@@ -261,11 +261,11 @@ class MainActivity : AppCompatActivity() {
                         },
                         contentKey = {
                             when (it) {
-                                LibraryScreen, HistoryScreen, BrowseScreen, SettingsScreen -> "tabs"
+                                is LibraryScreen, is HistoryScreen, is BrowseScreen, is SettingsScreen -> "tabs"
                                 else -> it
                             }
                         },
-                        backHandlerEnabled = { it != StartScreen }
+                        backHandlerEnabled = { it !is StartScreen }
                     ) { screen ->
                         // Handle file import navigation
                         val navigator = LocalNavigator.current
@@ -284,7 +284,7 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         when (screen) {
-                            LibraryScreen, HistoryScreen, BrowseScreen, SettingsScreen -> {
+                            is LibraryScreen, is HistoryScreen, is BrowseScreen, is SettingsScreen -> {
                                 NavigatorTabs(
                                     currentTab = screen,
                                     transitionSpec = {

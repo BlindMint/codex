@@ -21,7 +21,7 @@ import us.blindmint.codex.ui.library.LibrarySettingsScreen
 import us.blindmint.codex.ui.settings.ImportExportSettingsScreen
 
 @Parcelize
-object SettingsScreen : Screen, Parcelable {
+data class SettingsScreen(val id: Int = 0) : Screen, Parcelable {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -33,22 +33,22 @@ object SettingsScreen : Screen, Parcelable {
             listState = listState,
             scrollBehavior = scrollBehavior,
             navigateToAppearanceSettings = {
-                navigator.push(AppearanceSettingsScreen)
+                navigator.push(AppearanceSettingsScreen())
             },
             navigateToReaderSettings = {
-                navigator.push(ReaderSettingsScreen)
+                navigator.push(ReaderSettingsScreen())
             },
             navigateToLibrarySettings = {
-                navigator.push(LibrarySettingsScreen)
+                navigator.push(LibrarySettingsScreen())
             },
             navigateToBrowseSettings = {
-                navigator.push(BrowseSettingsScreen)
+                navigator.push(BrowseSettingsScreen())
             },
             navigateToImportExportSettings = {
-                navigator.push(ImportExportSettingsScreen)
+                navigator.push(ImportExportSettingsScreen())
             },
             navigateToAbout = {
-                navigator.push(AboutScreen)
+                navigator.push(AboutScreen())
             },
             navigateToHelp = {
                 navigator.push(HelpScreen(fromStart = false))

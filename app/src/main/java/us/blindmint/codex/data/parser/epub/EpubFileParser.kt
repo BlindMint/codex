@@ -43,13 +43,7 @@ class EpubFileParser @Inject constructor() : FileParser {
                         .use { it.readText() }
                     val document = Jsoup.parse(opfContent)
 
-                    val filename = cachedFile.name.substringBeforeLast(".").trim()
-                    val titleFromFilename = filename.split(" - ").takeIf { it.size == 2 }?.first()?.trim()
-                    val title = document.select("metadata > dc|title").text().trim().run {
-                        ifBlank {
-                            titleFromFilename ?: filename
-                        }
-                    }.ifBlank { "Untitled Book" }
+                    val title = document.select("metadata > dc|title").text().trim().ifBlank { "Untitled Book" }
 
                     val author = document.select("metadata > dc|creator").text().trim().run {
                         if (isBlank()) {

@@ -27,13 +27,9 @@ import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.ui.license_info.LicenseInfoScreen
 
 @Parcelize
-object LicensesScreen : Screen, Parcelable {
+data class LicensesScreen(val id: Int = 0) : Screen, Parcelable {
 
-    @IgnoredOnParcel
-    private var initialIndex = 0
 
-    @IgnoredOnParcel
-    private var initialOffset = 0
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -41,12 +37,7 @@ object LicensesScreen : Screen, Parcelable {
         val navigator = LocalNavigator.current
         val context = LocalContext.current
 
-        val (scrollBehavior, listState) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior(
-            listState = rememberLazyListState(
-                initialFirstVisibleItemIndex = initialIndex,
-                initialFirstVisibleItemScrollOffset = initialOffset
-            )
-        )
+        val (scrollBehavior, listState) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior()
         val licenses = remember {
             derivedStateOf {
                 Libs.Builder().withJson(context, R.raw.aboutlibraries).build()
@@ -54,12 +45,7 @@ object LicensesScreen : Screen, Parcelable {
             }
         }
 
-        DisposableEffect(Unit) {
-            onDispose {
-                initialIndex = listState.firstVisibleItemIndex
-                initialOffset = listState.firstVisibleItemScrollOffset
-            }
-        }
+
 
         LicensesContent(
             licenses = licenses.value,

@@ -52,7 +52,6 @@ class Navigator @AssistedInject constructor(
         popping: Boolean = false,
         saveInBackStack: Boolean = true
     ) {
-        if (lastItem.value::class == targetScreen::class) return
         if (!saveInBackStack) items.removeLast()
 
         changeStackEvent(
@@ -60,6 +59,7 @@ class Navigator @AssistedInject constructor(
             else StackEvent.Default
         )
 
+        // If pushing a screen of the same type, replace the current one
         if (lastItem.value::class == targetScreen::class) items.removeLast()
         items.add(targetScreen)
     }

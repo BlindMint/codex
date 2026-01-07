@@ -1,0 +1,150 @@
+2026-01-07 14:25:20.982 23374-23380 int.codex.debug         us.blindmint.codex.debug             W  userfaultfd: MOVE ioctl seems unsupported: Try again
+2026-01-07 14:25:21.036 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: Feed loaded from network, entries: 60
+2026-01-07 14:25:21.036 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: Failed to cache feed: Serializer for class 'OpdsFeed' is not found.
+2026-01-07 14:25:21.036 23374-23374 System.out              us.blindmint.codex.debug             I  Please ensure that class is marked as '@Serializable' and that the serialization compiler plugin is applied.
+2026-01-07 14:25:21.037 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: State updated with feed
+2026-01-07 14:25:22.846 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds/books/letter/00, title: All
+2026-01-07 14:25:22.846 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/books/letter/00, title: All
+2026-01-07 14:25:22.846 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: Current state - isLoading: false, error: null, feedEntries: 60
+2026-01-07 14:25:22.846 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/books/letter/00, title: All
+2026-01-07 14:25:22.846 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: Current state - isLoading: false, error: null, feedEntries: 60
+2026-01-07 14:25:22.846 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds/books/letter/00, forceRefresh: false
+2026-01-07 14:25:22.846 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: Feed already loaded for this URL, skipping
+2026-01-07 14:25:22.857 23374-23374 WindowOnBackDispatcher  us.blindmint.codex.debug             D  setTopOnBackInvokedCallback (unwrapped): android.app.Dialog$$ExternalSyntheticLambda2@bb88a90
+2026-01-07 14:25:22.857 23374-23374 WindowOnBackDispatcher  us.blindmint.codex.debug             D  setTopOnBackInvokedCallback (unwrapped): androidx.activity.OnBackPressedDispatcher$Api34Impl$createOnBackAnimationCallback$1@32b0f89
+2026-01-07 14:25:22.857   779-2043  CoreBackPreview         system_server                        D  Window{6774967 u0 us.blindmint.codex.debug/us.blindmint.codex.ui.main.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@f9b82b9, mPriority=-1, mIsAnimationCallback=false, mOverrideBehavior=0}
+2026-01-07 14:25:22.857   779-2043  CoreBackPreview         system_server                        D  Window{6774967 u0 us.blindmint.codex.debug/us.blindmint.codex.ui.main.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@b2136fe, mPriority=0, mIsAnimationCallback=true, mOverrideBehavior=0}
+2026-01-07 14:25:22.913   779-925   ImeTracker              system_server                        I  us.blindmint.codex.debug:6a9fe4a: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
+2026-01-07 14:25:22.914 23374-23374 InsetsController        us.blindmint.codex.debug             D  hide(ime())
+2026-01-07 14:25:22.914 23374-23374 ImeTracker              us.blindmint.codex.debug             I  us.blindmint.codex.debug:6a9fe4a: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+2026-01-07 14:25:22.914  6864-6864  GoogleInpu...hodService com...gle.android.inputmethod.latin  I  GoogleInputMethodService.onStartInput():1318 onStartInput(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
+2026-01-07 14:25:23.793 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: ImportOpdsBookUseCase - acquisitionLink.href: /opds/download/3432/epub/
+2026-01-07 14:25:23.793 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: ImportOpdsBookUseCase - sourceUrl: https://calibre.datashard.dev/opds/books/letter/00
+2026-01-07 14:25:23.793 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: ImportOpdsBookUseCase - resolvedUrl: https://calibre.datashard.dev/opds/download/3432/epub/
+2026-01-07 14:25:23.793 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: OpdsRepositoryImpl.downloadBook - url: https://calibre.datashard.dev/opds/download/3432/epub/
+2026-01-07 14:25:23.794 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: OpdsRepositoryImpl.downloadBook - making request
+2026-01-07 14:25:23.794 23374-23374 okhttp.OkHttpClient     us.blindmint.codex.debug             I  --> GET https://calibre.datashard.dev/opds/download/3432/epub/
+2026-01-07 14:25:23.794 23374-23374 okhttp.OkHttpClient     us.blindmint.codex.debug             I  --> END GET
+2026-01-07 14:25:23.794 23374-23374 okhttp.OkHttpClient     us.blindmint.codex.debug             I  <-- HTTP FAILED: android.os.NetworkOnMainThreadException
+2026-01-07 14:25:23.794 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: OpdsRepositoryImpl.downloadBook - exception: NetworkOnMainThreadException: null
+2026-01-07 14:25:23.794 23374-23374 System.err              us.blindmint.codex.debug             W  android.os.NetworkOnMainThreadException
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.os.StrictMode$AndroidBlockGuardPolicy.onNetwork(StrictMode.java:1775)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:115)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at java.net.Inet6AddressImpl.lookupAllHostAddr(Inet6AddressImpl.java:103)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at java.net.InetAddress.getAllByName(InetAddress.java:1152)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.Dns$Companion$DnsSystem.lookup(Dns.kt:49)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.connection.RouteSelector.resetNextInetSocketAddress(RouteSelector.kt:169)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.connection.RouteSelector.nextProxy(RouteSelector.kt:131)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.connection.RouteSelector.next(RouteSelector.kt:73)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.connection.ExchangeFinder.findConnection(ExchangeFinder.kt:205)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.connection.ExchangeFinder.findHealthyConnection(ExchangeFinder.kt:106)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.connection.ExchangeFinder.find(ExchangeFinder.kt:74)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.connection.RealCall.initExchange$okhttp(RealCall.kt:255)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.connection.ConnectInterceptor.intercept(ConnectInterceptor.kt:32)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:109)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.cache.CacheInterceptor.intercept(CacheInterceptor.kt:95)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:109)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.http.BridgeInterceptor.intercept(BridgeInterceptor.kt:83)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:109)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.http.RetryAndFollowUpInterceptor.intercept(RetryAndFollowUpInterceptor.kt:76)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:109)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at us.blindmint.codex.data.repository.OpdsRepositoryImpl$createOkHttpClient$$inlined$-addInterceptor$1.intercept(OkHttpClient.kt:1083)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:109)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.logging.HttpLoggingInterceptor.intercept(HttpLoggingInterceptor.kt:221)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.http.RealInterceptorChain.proceed(RealInterceptorChain.kt:109)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.connection.RealCall.getResponseWithInterceptorChain$okhttp(RealCall.kt:201)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at okhttp3.internal.connection.RealCall.execute(RealCall.kt:154)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at us.blindmint.codex.data.repository.OpdsRepositoryImpl.downloadBook(OpdsRepositoryImpl.kt:55)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at us.blindmint.codex.domain.use_case.opds.ImportOpdsBookUseCase.invoke(ImportOpdsBookUseCase.kt:58)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at us.blindmint.codex.ui.browse.opds.model.OpdsCatalogModel$downloadBook$1.invokeSuspend(OpdsCatalogModel.kt:96)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.internal.DispatchedContinuationKt.resumeCancellableWith(DispatchedContinuation.kt:363)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.intrinsics.CancellableKt.startCoroutineCancellable(Cancellable.kt:26)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.intrinsics.CancellableKt.startCoroutineCancellable$default(Cancellable.kt:21)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.CoroutineStart.invoke(CoroutineStart.kt:88)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.AbstractCoroutine.start(AbstractCoroutine.kt:123)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.BuildersKt__Builders_commonKt.launch(Builders.common.kt:52)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.BuildersKt.launch(Unknown Source:1)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.BuildersKt__Builders_commonKt.launch$default(Builders.common.kt:43)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.BuildersKt.launch$default(Unknown Source:1)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at us.blindmint.codex.ui.browse.opds.model.OpdsCatalogModel.downloadBook(OpdsCatalogModel.kt:94)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at us.blindmint.codex.ui.browse.opds.OpdsCatalogContentKt.OpdsCatalogContent$lambda$15$lambda$14(OpdsCatalogContent.kt:382)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at us.blindmint.codex.ui.browse.opds.OpdsCatalogContentKt.$r8$lambda$jOgzgXKOyYIB-gOgKz1VPT62xls(Unknown Source:0)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at us.blindmint.codex.ui.browse.opds.OpdsCatalogContentKt$$ExternalSyntheticLambda1.invoke(D8$$SyntheticClass:0)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.foundation.ClickableNode$clickPointerInput$3.invoke-k-4lQ0M(Clickable.kt:699)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.foundation.ClickableNode$clickPointerInput$3.invoke(Clickable.kt:693)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.foundation.gestures.TapGestureDetectorKt$detectTapAndPress$2$1.invokeSuspend(TapGestureDetector.kt:266)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.DispatchedTaskKt.resume(DispatchedTask.kt:175)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.DispatchedTaskKt.dispatch(DispatchedTask.kt:164)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.CancellableContinuationImpl.dispatchResume(CancellableContinuationImpl.kt:466)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl(CancellableContinuationImpl.kt:500)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$default(CancellableContinuationImpl.kt:489)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at kotlinx.coroutines.CancellableContinuationImpl.resumeWith(CancellableContinuationImpl.kt:364)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNodeImpl$PointerEventHandlerCoroutine.offerPointerEvent(SuspendingPointerInputFilter.kt:830)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNodeImpl.dispatchPointerEvent(SuspendingPointerInputFilter.kt:698)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNodeImpl.onPointerEvent-H0pRuoY(SuspendingPointerInputFilter.kt:724)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.foundation.AbstractClickableNode.onPointerEvent-H0pRuoY(Clickable.kt:1159)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:391)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:377)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.ui.input.pointer.NodeParent.dispatchMainEventPass(HitPathTracker.kt:230)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.ui.input.pointer.HitPathTracker.dispatchChanges(HitPathTracker.kt:154)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.ui.input.pointer.PointerInputEventProcessor.process-BIzXfog(PointerInputEventProcessor.kt:117)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.ui.platform.AndroidComposeView.sendMotionEvent-8iAsVTc(AndroidComposeView.android.kt:2351)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.ui.platform.AndroidComposeView.handleMotionEvent-8iAsVTc(AndroidComposeView.android.kt:2301)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at androidx.compose.ui.platform.AndroidComposeView.dispatchTouchEvent(AndroidComposeView.android.kt:2172)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3143)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2826)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3143)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2826)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3143)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2826)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3143)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2826)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at com.android.internal.policy.DecorView.superDispatchTouchEvent(DecorView.java:503)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at com.android.internal.policy.PhoneWindow.superDispatchTouchEvent(PhoneWindow.java:2017)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.app.Dialog.dispatchTouchEvent(Dialog.java:937)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at com.android.internal.policy.DecorView.dispatchTouchEvent(DecorView.java:441)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.View.dispatchPointerEvent(View.java:17110)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl$ViewPostImeInputStage.processPointerEvent(ViewRootImpl.java:8349)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl$ViewPostImeInputStage.onProcess(ViewRootImpl.java:8103)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl$InputStage.deliver(ViewRootImpl.java:7480)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl$InputStage.onDeliverToNext(ViewRootImpl.java:7537)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl$InputStage.forward(ViewRootImpl.java:7503)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl$AsyncInputStage.forward(ViewRootImpl.java:7674)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl$InputStage.apply(ViewRootImpl.java:7511)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl$AsyncInputStage.apply(ViewRootImpl.java:7731)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl$InputStage.deliver(ViewRootImpl.java:7484)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl$InputStage.onDeliverToNext(ViewRootImpl.java:7537)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl$InputStage.forward(ViewRootImpl.java:7503)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl$InputStage.apply(ViewRootImpl.java:7511)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl$InputStage.deliver(ViewRootImpl.java:7484)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl.deliverInputEvent(ViewRootImpl.java:10697)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl.doProcessInputEvents(ViewRootImpl.java:10648)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl.enqueueInputEvent(ViewRootImpl.java:10616)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl.processRawInputEvent(ViewRootImpl.java:11039)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.ViewRootImpl$WindowInputEventReceiver.onInputEvent(ViewRootImpl.java:10825)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.view.InputEventReceiver.dispatchInputEvent(InputEventReceiver.java:277)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.os.MessageQueue.nativePollOnce(Native Method)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.os.MessageQueue.nextLegacy(MessageQueue.java:983)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.os.MessageQueue.next(MessageQueue.java:1092)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.os.Looper.loopOnce(Looper.java:197)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.os.Looper.loop(Looper.java:367)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at android.app.ActivityThread.main(ActivityThread.java:9282)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at java.lang.reflect.Method.invoke(Native Method)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:566)
+2026-01-07 14:25:23.797 23374-23374 System.err              us.blindmint.codex.debug             W  	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:929)
+2026-01-07 14:25:23.800 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds/books/letter/00, title: All
+2026-01-07 14:25:23.800 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/books/letter/00, title: All
+2026-01-07 14:25:23.800 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: Current state - isLoading: false, error: Download failed: Download failed: Unknown error, feedEntries: 60
+2026-01-07 14:25:23.801 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/books/letter/00, title: All
+2026-01-07 14:25:23.801 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: Current state - isLoading: false, error: Download failed: Download failed: Unknown error, feedEntries: 60
+2026-01-07 14:25:23.801 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds/books/letter/00, forceRefresh: false
+2026-01-07 14:25:23.801 23374-23374 System.out              us.blindmint.codex.debug             I  DEBUG: Feed already loaded for this URL, skipping
+2026-01-07 14:25:23.802 23374-23374 WindowOnBackDispatcher  us.blindmint.codex.debug             D  setTopOnBackInvokedCallback (unwrapped): null
+2026-01-07 14:25:23.803   779-1179  CoreBackPreview         system_server                        D  Window{6774967 u0 us.blindmint.codex.debug/us.blindmint.codex.ui.main.MainActivity}: Setting back callback null
+2026-01-07 14:25:23.806 23374-23390 HWUI                    us.blindmint.codex.debug             D  endAllActiveAnimators on 0x7ff59fa422c0 (UnprojectedRipple) with handle 0x7ff5bfa4dc30
+2026-01-07 14:25:23.830   779-925   ImeTracker              system_server                        I  us.blindmint.codex.debug:63ae9389: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
+2026-01-07 14:25:23.830 23374-23374 InsetsController        us.blindmint.codex.debug             D  hide(ime())
+2026-01-07 14:25:23.830 23374-23374 ImeTracker              us.blindmint.codex.debug             I  us.blindmint.codex.debug:63ae9389: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+2026-01-07 14:25:23.831  6864-6864  GoogleInpu...hodService com...gle.android.inputmethod.latin  I  GoogleInputMethodService.onStartInput():1318 onStartInput(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)

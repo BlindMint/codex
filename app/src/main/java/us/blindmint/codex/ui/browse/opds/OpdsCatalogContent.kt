@@ -16,19 +16,31 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,8 +53,9 @@ import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import us.blindmint.codex.domain.opds.OpdsEntry
 import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.ui.browse.OpdsCategoryScreen
-import us.blindmint.codex.ui.library.LibraryScreen as LibraryScreenClass
+import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.ui.browse.opds.model.OpdsCatalogModel
+import us.blindmint.codex.ui.browse.opds.OpdsCatalogContent
 import us.blindmint.codex.ui.library.LibraryScreen
 import java.net.URI
 
@@ -64,32 +77,120 @@ fun OpdsCatalogContent(
     )
     val state by model.state.collectAsStateWithLifecycle()
 
-    println("DEBUG: OpdsCatalogContent rendered with url: ${url ?: source.url}, title: $title")
-    println("DEBUG: Current state - isLoading: ${state.isLoading}, error: ${state.error}, feedEntries: ${state.feed?.entries?.size ?: 0}")
-
     var selectedEntryForDownload by remember { mutableStateOf<OpdsEntry?>(null) }
     var showDownloadDialog by remember { mutableStateOf(false) }
+    var isSearchMode by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
 
-    println("DEBUG: OpdsCatalogContent rendered with url: ${url ?: source.url}, title: $title")
-    println("DEBUG: Current state - isLoading: ${state.isLoading}, error: ${state.error}, feedEntries: ${state.feed?.entries?.size ?: 0}")
-
-    try {
+    LaunchedEffect(url) {
         model.loadFeed(source, url ?: source.url)
-    } catch (e: Exception) {
-        println("DEBUG: Exception in OpdsCatalogContent: ${e.message}")
-        e.printStackTrace()
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(title ?: source.name) },
+                title = {
+                    if (isSearchMode) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = {
+                                searchQuery = it
+                                if (it.isNotBlank()) {
+                                    model.search(it, source)
+                                } else {
+                                    model.loadFeed(source, url ?: source.url)
+                                }
+                            },
+                            placeholder = { Text("Search books...") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else if (state.isSelectionMode) {
+                        Text("${state.selectedBooks.size} selected")
+                    } else {
+                        Text(title ?: source.name)
+                    }
+                },
+                actions = {
+                    if (state.isSelectionMode) {
+                        IconButton(onClick = { model.selectAllBooks() }) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "Select all"
+                            )
+                        }
+                        IconButton(onClick = { model.clearSelection() }) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Clear selection"
+                            )
+                        }
+                        IconButton(
+                            onClick = {
+                                model.downloadSelectedBooks(source) {
+                                     navigator.push(LibraryScreen(), saveInBackStack = false)
+                                }
+                            },
+                            enabled = state.selectedBooks.isNotEmpty()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Download,
+                                contentDescription = "Download selected"
+                            )
+                        }
+                        IconButton(onClick = { model.toggleSelectionMode() }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Exit selection mode"
+                            )
+                        }
+                    } else {
+                        IconButton(onClick = {
+                            isSearchMode = !isSearchMode
+                            if (!isSearchMode) {
+                                searchQuery = ""
+                                model.loadFeed(source, url ?: source.url)
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = if (isSearchMode) "Exit search" else "Search"
+                            )
+                        }
+                        IconButton(onClick = { model.toggleSelectionMode() }) {
+                            Icon(
+                                imageVector = Icons.Default.CheckBox,
+                                contentDescription = "Enter selection mode"
+                            )
+                        }
+                    }
+                },
                 scrollBehavior = scrollBehavior
             )
         }
     ) { padding ->
-        if (state.isLoading || state.isDownloading) {
+        if (state.isLoading) {
             CircularProgressIndicator(modifier = Modifier.padding(padding).fillMaxSize().wrapContentSize(Alignment.Center))
+        } else if (state.isDownloading) {
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .padding(32.dp)
+                    .fillMaxSize()
+                    .wrapContentSize(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                LinearProgressIndicator(
+                    progress = { state.downloadProgress },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                )
+                Text(
+                    text = "Downloading book... ${(state.downloadProgress * 100).toInt()}%",
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
         } else if (state.error != null) {
             Column(
                 modifier = Modifier
@@ -116,7 +217,23 @@ fun OpdsCatalogContent(
             ) {
                 // Separate categories and books
                 val categories = state.feed?.entries?.filter { entry ->
-                    entry.links.any { it.type?.startsWith("application/atom+xml") == true }
+                    // Category if it has subsection links OR specific OPDS navigation links
+                    // Exclude navigation breadcrumbs that go back to parent URLs
+                    entry.links.any { link ->
+                        link.rel == "subsection" ||
+                        link.rel == "http://opds-spec.org/subsection" ||
+                        (link.type?.startsWith("application/atom+xml") == true)
+                    } && !entry.links.any { it.rel == "http://opds-spec.org/acquisition" } &&
+                    // Exclude entries that link back to the current or parent URLs (navigation breadcrumbs)
+                    entry.links.none { link ->
+                        val resolvedUrl = runCatching {
+                            java.net.URI(source.url).resolve(link.href).toString()
+                        }.getOrNull()
+                        resolvedUrl != null && (
+                            resolvedUrl == state.feedUrl || // Same as current URL
+                            state.feedUrl?.startsWith(resolvedUrl) == true // Current URL is under this link (breadcrumb)
+                        )
+                    }
                 } ?: emptyList()
 
                 val books = state.feed?.entries?.filter { entry ->
@@ -139,30 +256,45 @@ fun OpdsCatalogContent(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp, vertical = 4.dp),
-                                onClick = {
-                                    println("DEBUG: Category clicked: ${entry.title}")
-                                    println("DEBUG: Entry has ${entry.links.size} links")
-                                    entry.links.forEachIndexed { index, link ->
-                                        println("DEBUG: Link $index: href=${link.href}, type=${link.type}, rel=${link.rel}")
-                                    }
-
-                                    val link = entry.links.firstOrNull { it.type?.startsWith("application/atom+xml") == true }
-                                        if (link != null) {
-                                            println("DEBUG: Found atom link: ${link.href}")
-                                            // Navigate to sub-feed
-                                            val fullUrl = URI(source.url).resolve(link.href).toString()
-                                            println("DEBUG: Resolved URL: $fullUrl")
-                                            println("DEBUG: About to navigate to OpdsCatalogScreen with title: ${entry.title}")
-                                            try {
-                                                navigator.push(OpdsCategoryScreen(source, fullUrl, entry.title))
-                                                println("DEBUG: Navigation call completed successfully")
-                                            } catch (e: Exception) {
-                                                println("DEBUG: Navigation failed with exception: ${e.message}")
-                                                e.printStackTrace()
-                                            }
-                                        } else {
-                                            println("DEBUG: No atom+xml link found")
-                                        }
+                                 onClick = {
+                                     val link = entry.links.firstOrNull { link ->
+                                         link.type?.startsWith("application/atom+xml") == true ||
+                                         link.rel == "subsection" ||
+                                         link.rel == "http://opds-spec.org/subsection" ||
+                                         (link.rel != "http://opds-spec.org/acquisition" && link.rel != "http://opds-spec.org/image/thumbnail" && !link.rel.isNullOrBlank())
+                                     }
+                                      if (link != null) {
+                                          println("DEBUG: Found atom link: ${link.href}")
+                                          // Navigate to sub-feed - double-encode dots to prevent HTTP client normalization
+                                          val encodedHref = link.href.replace(".", "%252E")
+                                          val fullUrl = if (encodedHref.startsWith("http")) {
+                                              // Already a full URL
+                                              encodedHref
+                                          } else if (encodedHref.startsWith("/")) {
+                                              // Absolute path - construct manually
+                                              val baseUri = URI(source.url)
+                                              val port = if (baseUri.port != -1 && baseUri.port != 80 && baseUri.port != 443) ":${baseUri.port}" else ""
+                                              "${baseUri.scheme}://${baseUri.host}${port}${encodedHref}"
+                                          } else {
+                                              // Relative path - construct manually
+                                              val baseUri = URI(source.url)
+                                              val port = if (baseUri.port != -1 && baseUri.port != 80 && baseUri.port != 443) ":${baseUri.port}" else ""
+                                              val basePath = baseUri.path.removeSuffix("/")
+                                              val relativePath = if (encodedHref.startsWith("/")) encodedHref else "/${encodedHref}"
+                                              "${baseUri.scheme}://${baseUri.host}${port}${basePath}${relativePath}"
+                                          }
+                                          println("DEBUG: Resolved URL: $fullUrl")
+                                          println("DEBUG: About to navigate to OpdsCatalogScreen with title: ${entry.title}")
+                                          try {
+                                              navigator.push(OpdsCategoryScreen(source, fullUrl, entry.title))
+                                              println("DEBUG: Navigation call completed successfully")
+                                          } catch (e: Exception) {
+                                              println("DEBUG: Navigation failed with exception: ${e.message}")
+                                              e.printStackTrace()
+                                          }
+                                      } else {
+                                          println("DEBUG: No atom+xml link found")
+                                      }
                                 }
                             ) {
                                 Row(
@@ -184,12 +316,14 @@ fun OpdsCatalogContent(
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                                 }
+                             }
+                         }
+
+
+                     }
+                 }
+     }
 
                 // Books section
                 if (books.isNotEmpty()) {
@@ -201,23 +335,8 @@ fun OpdsCatalogContent(
                         )
                     }
 
-                    // Limit books displayed to prevent performance issues with large feeds
-                    val maxBooksToShow = 50
-                    val displayedBooks = books.take(maxBooksToShow)
-
-                    if (books.size > maxBooksToShow) {
-                        item {
-                            androidx.compose.material3.Text(
-                                text = "Showing first $maxBooksToShow of ${books.size} books. Large catalogs may be limited for performance.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(16.dp)
-                            )
-                        }
-                    }
-
                     // Group books into rows for grid-like display
-                    val bookRows = displayedBooks.chunked(3) // 3 books per row
+                    val bookRows = books.chunked(3) // 3 books per row
                     bookRows.forEach { row ->
                         item {
                             androidx.compose.foundation.layout.Row(
@@ -226,16 +345,22 @@ fun OpdsCatalogContent(
                                     .padding(horizontal = 8.dp),
                                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
                             ) {
-                                row.forEach { entry ->
-                                    OpdsBookPreview(
-                                        entry = entry,
-                                        onClick = {
-                                            selectedEntryForDownload = entry
-                                            showDownloadDialog = true
-                                        },
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
+                                 row.forEach { entry ->
+                                     OpdsBookPreview(
+                                         entry = entry,
+                                         onClick = {
+                                             if (state.isSelectionMode) {
+                                                 model.toggleBookSelection(entry.id)
+                                             } else {
+                                                 selectedEntryForDownload = entry
+                                                 showDownloadDialog = true
+                                             }
+                                         },
+                                         modifier = Modifier.weight(1f),
+                                         isSelected = state.selectedBooks.contains(entry.id),
+                                         isSelectionMode = state.isSelectionMode
+                                     )
+                                 }
                                 // Fill remaining space if row is not full
                                 repeat(3 - row.size) {
                                     androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
@@ -256,7 +381,7 @@ fun OpdsCatalogContent(
                 // Start download process
                 model.downloadBook(selectedEntryForDownload!!, source, {
                     // On success, navigate to library
-                    navigator.push(LibraryScreenClass, saveInBackStack = false)
+                    navigator.push(LibraryScreen(), saveInBackStack = false)
                 })
                 showDownloadDialog = false
                 selectedEntryForDownload = null

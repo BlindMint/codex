@@ -14,6 +14,7 @@ import com.anggrayudi.storage.file.DocumentFileCompat
 import com.anggrayudi.storage.file.getAbsolutePath
 import java.io.BufferedOutputStream
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.util.UUID
@@ -51,11 +52,20 @@ class CachedFile(
 
     fun canAccess(): Boolean {
         return try {
-            context.contentResolver.query(uri, null, null, null, null)?.let {
-                it.close()
-                return true
+            when {
+                // For file:// URIs, check if the file exists and is readable
+                uri.scheme == "file" -> {
+                    val file = java.io.File(uri.path!!)
+                    file.exists() && file.canRead()
+                }
+                // For content:// URIs, use ContentResolver
+                else -> {
+                    context.contentResolver.query(uri, null, null, null, null)?.let {
+                        it.close()
+                        true
+                    } ?: false
+                }
             }
-            throw Exception("Could not access URI: $uri")
         } catch (e: Exception) {
             false
         }
@@ -63,8 +73,22 @@ class CachedFile(
 
     fun openInputStream(): InputStream? {
         return try {
-            context.contentResolver.openInputStream(uri)
-                ?: throw Exception("Failed to open InputStream for URI: $uri")
+            when {
+                // Handle file:// URIs directly
+            uri.scheme == "file" -> {
+                val file = java.io.File(uri.path!!)
+                if (file.exists() && file.canRead()) {
+                    java.io.FileInputStream(file)
+                } else {
+                    throw Exception("File does not exist or no read access is granted.")
+                }
+            }
+                // Handle content:// URIs through ContentResolver
+                else -> {
+                    context.contentResolver.openInputStream(uri)
+                        ?: throw Exception("Failed to open InputStream for URI: $uri")
+                }
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             null

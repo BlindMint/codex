@@ -29,7 +29,6 @@ abstract class BaseOpdsCatalogScreen(
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        println("DEBUG: BaseOpdsCatalogScreen.Content() called with url=$url, title=$title")
         val navigator = LocalNavigator.current
         val (scrollBehavior, listState) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior()
 
@@ -45,15 +44,11 @@ abstract class BaseOpdsCatalogScreen(
 }
 
 @Parcelize
-data class OpdsRootScreen(override val source: OpdsSourceEntity) : BaseOpdsCatalogScreen(source, null, null), Parcelable {
-    init {
-        println("DEBUG: OpdsRootScreen created")
-    }
-}
+data class OpdsRootScreen(override val source: OpdsSourceEntity) : BaseOpdsCatalogScreen(source, null, null), Parcelable
 
 @Parcelize
-data class OpdsCategoryScreen(override val source: OpdsSourceEntity, override val url: String, override val title: String) : BaseOpdsCatalogScreen(source, url, title), Parcelable {
-    init {
-        println("DEBUG: OpdsCategoryScreen created with url: $url, title: $title")
-    }
-}
+data class OpdsCategoryScreen(
+    override val source: OpdsSourceEntity,
+    override val url: String,
+    override val title: String
+) : BaseOpdsCatalogScreen(source, url, title), Parcelable

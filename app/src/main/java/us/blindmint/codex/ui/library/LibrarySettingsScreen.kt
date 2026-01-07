@@ -19,7 +19,7 @@ import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.presentation.settings.library.LibrarySettingsContent
 
 @Parcelize
-object LibrarySettingsScreen : Screen, Parcelable {
+data class LibrarySettingsScreen(val id: Int = 0) : Screen, Parcelable {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable

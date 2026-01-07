@@ -17,7 +17,7 @@ import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.presentation.settings.import_export.ImportExportSettingsContent
 
 @Parcelize
-object ImportExportSettingsScreen : Screen, Parcelable {
+data class ImportExportSettingsScreen(val id: Int = 0) : Screen, Parcelable {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable

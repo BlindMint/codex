@@ -20,7 +20,7 @@ import us.blindmint.codex.ui.credits.CreditsScreen
 import us.blindmint.codex.ui.licenses.LicensesScreen
 
 @Parcelize
-object AboutScreen : Screen, Parcelable {
+data class AboutScreen(val id: Int = 0) : Screen, Parcelable {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -35,10 +35,10 @@ object AboutScreen : Screen, Parcelable {
             listState = listState,
             navigateToBrowserPage = screenModel::onEvent,
             navigateToLicenses = {
-                navigator.push(LicensesScreen)
+                navigator.push(LicensesScreen())
             },
             navigateToCredits = {
-                navigator.push(CreditsScreen)
+                navigator.push(CreditsScreen())
             },
             navigateBack = {
                 navigator.pop()

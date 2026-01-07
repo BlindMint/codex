@@ -112,7 +112,7 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 },
                 navigateToLibrary = {
                     navigator.push(
-                        LibraryScreen,
+                        LibraryScreen(),
                         popping = true,
                         saveInBackStack = false
                     )

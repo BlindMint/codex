@@ -16,7 +16,8 @@ import us.blindmint.codex.presentation.core.components.top_bar.collapsibleTopApp
 import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.presentation.settings.browse.BrowseSettingsContent
 
-object BrowseSettingsScreen : Screen {
+@Parcelize
+data class BrowseSettingsScreen(val id: Int = 0) : Screen, Parcelable {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable

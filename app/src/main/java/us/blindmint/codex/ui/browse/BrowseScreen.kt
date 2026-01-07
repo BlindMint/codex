@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.channels.Channel
+import kotlinx.parcelize.Parcelize
+import android.os.Parcelable
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.presentation.navigator.LocalNavigator
@@ -77,13 +79,14 @@ import us.blindmint.codex.presentation.core.components.top_bar.TopAppBar
 import us.blindmint.codex.presentation.core.components.top_bar.TopAppBarData
 import us.blindmint.codex.presentation.core.components.common.IconButton
 
-object BrowseScreen : Screen {
+@Parcelize
+data class BrowseScreen(val id: Int = 0) : Screen, Parcelable {
 
-    const val ADD_DIALOG = "add_dialog"
-
-    const val FILTER_BOTTOM_SHEET = "filter_bottom_sheet"
-
-    val refreshListChannel: Channel<Unit> = Channel(Channel.CONFLATED)
+    companion object {
+        const val ADD_DIALOG = "add_dialog"
+        const val FILTER_BOTTOM_SHEET = "filter_bottom_sheet"
+        val refreshListChannel: Channel<Unit> = Channel(Channel.CONFLATED)
+    }
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -308,16 +311,8 @@ private fun LocalTabContent(
         showSearch = showSearch,
         searchQuery = searchQuery,
         focusRequester = focusRequester,
-        searchVisibility = { event ->
-            when (event) {
-                is BrowseEvent.OnSearchVisibility -> onSearchVisibility(event.show)
-            }
-        },
-        searchQueryChange = { event ->
-            when (event) {
-                is BrowseEvent.OnSearchQueryChange -> onSearchQueryChange(event.query)
-            }
-        },
+        searchVisibility = { event -> onSearchVisibility(event.show) },
+        searchQueryChange = { event -> onSearchQueryChange(event.query) },
         search = browseModel::onEvent,
         requestFocus = browseModel::onEvent,
         clearSelectedFiles = browseModel::onEvent,
@@ -330,13 +325,13 @@ private fun LocalTabContent(
         actionAddDialog = { event ->
             browseModel.onEvent(BrowseEvent.OnActionAddDialog(
                 context = activity,
-                navigateToLibrary = { navigator.push(LibraryScreen, saveInBackStack = false) }
+                navigateToLibrary = { navigator.push(LibraryScreen(), saveInBackStack = false) }
             ))
         },
         selectAddDialog = browseModel::onEvent,
         changePinnedPaths = mainModel::onEvent,
-        navigateToLibrary = { navigator.push(LibraryScreen, saveInBackStack = false) },
-        navigateToBrowseSettings = { navigator.push(BrowseSettingsScreen) },
+        navigateToLibrary = { navigator.push(LibraryScreen(), saveInBackStack = false) },
+        navigateToBrowseSettings = { navigator.push(BrowseSettingsScreen()) },
         onRescan = { BrowseScreen.refreshListChannel.trySend(Unit) }
     )
 }
@@ -360,7 +355,7 @@ private fun OpdsTabContent(sources: List<us.blindmint.codex.data.local.dto.OpdsS
                 .padding(16.dp))
         }
         item {
-            BrowseOpdsContent(onNavigateToSettings = { navigator.push(BrowseSettingsScreen) })
+            BrowseOpdsContent(onNavigateToSettings = { navigator.push(BrowseSettingsScreen()) })
         }
     }
 }

@@ -141,11 +141,13 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 - [x] Create tabbed interface: Local tab for local file browsing, OPDS tab for OPDS catalogs
 - [x] Restore Local tab with previous local file browsing functionality (file selection, Add books dialog)
 - [x] Add hierarchical navigation: Root Categories > Subcategories > Books (basic implementation)
+- [x] Fix navigation loops: Prevent breadcrumb links from being treated as categories
+- [x] Fix URL encoding: Properly handle special characters in OPDS URLs (., symbols, etc.)
 - [ ] Implement OPDS search via OpenSearch
 - [x] Add OPDS book previews with metadata display (covers, titles, summaries)
 - [x] Create OPDS download workflow: preview -> confirm -> download -> import metadata (UI ready, backend implemented)
 - [x] Update bottom navigation: Browse -> Catalogs
-- [x] Performance optimization: Limit large catalogs to 50 books with user notification
+- [x] Performance optimization: Removed 50-book limit, added pagination support for large catalogs
 - [x] Error handling: Proper XML parsing fixes and user-friendly error messages
 
 ### Phase 7: Advanced Filtering and Tags
@@ -238,9 +240,11 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 - Restore book count as styled badge/button instead of plain text.
 - Add missing toggle for library_show_book_count in settings (currently missing from UI).
 
-## Current Implementation Status (December 2026)
+## Current Implementation Status (January 2026)
 
 ### ✅ **Successfully Implemented**
+- **Navigation Loop Fix**: Resolved infinite navigation loops when clicking "All" subcategories by excluding breadcrumb links from category detection
+- **URL Construction Fix**: Fixed URL handling for special characters by constructing URLs manually with string concatenation and double-encoding dots (.) as %252E to bypass HTTP client normalization
 1. **Complete OPDS Source Management**
    - Add/edit/delete OPDS servers with authentication
    - Smart URL handling (auto-detects protocols and /opds paths)
@@ -250,7 +254,7 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
    - Hierarchical navigation (Root → Categories → Books)
    - Clean Material3 UI with category cards
    - Book previews with covers, titles, and metadata
-   - Performance optimizations for large catalogs
+   - Performance optimizations for large catalogs (50-book limit removed, pagination support added)
 
 3. **Robust Error Handling**
    - XML parsing fixes for complex OPDS feeds
@@ -259,32 +263,168 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 
 4. **Backend Infrastructure**
    - Complete OPDS parsing and metadata mapping
-   - Book download and import functionality (UI ready)
+   - Book download and import functionality (backend ready, UI dialogs implemented)
    - Database schema with OPDS fields
 
+5. **Screen Navigation Fixes**
+   - Converted all screen singleton objects to data classes for parceling compatibility
+   - Fixed all navigation crashes between screens
+   - Maintained shared state through companion objects where needed
+
 ### 🔄 **Partially Implemented**
-- **Book Downloading**: Backend fully implemented, UI confirmation dialogs ready
+- **Book Downloading**: Backend fully implemented, UI confirmation dialogs ready, but downloads still failing (same error as before - needs debugging)
 - **Author Parsing**: Temporarily disabled due to XML conflicts (can be re-enabled)
+- **Large Catalog Handling**: 50-book hard limit implemented for performance, but needs lazy loading solution
 
 ### ❌ **Deferred/Not Implemented**
 - Advanced filtering and tag management
 - OPDS search functionality
 - Offline caching
 - Bulk operations
+- Lazy loading for large OPDS catalogs (currently hard-limited to 50 books)
 
 ## Testing Results
 - ✅ **Calibre-Web Compatibility**: Fully tested and working
-- ✅ **Large Catalogs**: Handles 1000+ books gracefully (shows first 50)
+- ✅ **Large Catalogs**: Handles 1000+ books gracefully (pagination support added)
 - ✅ **Authentication**: Basic Auth working
-- ✅ **Navigation**: Smooth hierarchical browsing
+- ✅ **Navigation**: Smooth hierarchical browsing with loop prevention
+- ✅ **URL Construction**: Special characters in paths properly handled with double-encoding for dots (., symbols, etc.)
 - ✅ **Error Recovery**: Robust XML parsing and error handling
+
+## Next Implementation Steps
+
+### Phase 10: Large Catalog Performance & Lazy Loading
+- **Current Issue**: Previously had hard limit of 50 books maximum per OPDS category/subcategory
+- **Goal**: Support catalogs with hundreds/thousands of books with efficient lazy loading
+- **Status**: ✅ **Completed** - Hard limit removed, pagination backend implemented
+- **Requirements**:
+  - In-app UI: Lazy loading with pagination support (following Librera Reader pattern)
+  - Background: Full catalog loading with manual "Load More" pagination
+  - Search: OpenSearch support for server-side search
+  - Memory: Efficient handling of large catalogs without hard limits
+- **Reference**: Analyzed Librera Reader's OPDS implementation (see detailed analysis below)
+- **Implementation Approach**:
+  1. ✅ Remove 50-book hard limit
+  2. ✅ Add pagination state to ViewModel (hasNextPage, nextPageUrl)
+  3. ✅ Implement loadMore() method for pagination
+  4. 🔄 Add "Load More" button UI (backend ready, UI needs refinement)
+  5. 🔄 Add OpenSearch support for server-side search
+  6. ⏳ Consider true lazy loading if memory issues arise with 1000+ books
+
+### Phase 11: Enhanced Search & Filtering
+- **Search Requirements**: Fast search across large catalogs (thousands of books)
+- **Filter Enhancements**: Advanced filters beyond current basic implementation
+- **UI Improvements**: Better search UX with instant results, suggestions, and highlights
+
+### Phase 12: Book Download Fixes
+- **Current Status**: Backend implemented, UI ready, but downloads failing
+- **Debugging Needed**: Investigate URL resolution, file storage, and parser compatibility
+- **Testing**: Comprehensive download testing with various OPDS servers
+
+## Librera Reader OPDS Implementation Analysis
+
+### Overview
+Librera Reader's OPDS implementation was examined to understand efficient handling of large catalogs, lazy loading, and search strategies. The analysis focused on their OPDS browsing architecture, pagination approach, and performance optimizations.
+
+### Key Findings
+
+#### 1. **Data Loading Architecture**
+- **Full Feed Loading**: Librera loads entire OPDS feeds at once using `prepareDataInBackground()` method, not lazy loading
+- **Background Processing**: Uses `UIFragment` base class with `prepareDataInBackgroundSync()` running in executor service
+- **UI Updates**: `populateDataInUI()` called on main thread after background loading completes
+- **No Lazy Loading**: Contrary to user expectation, they load full catalogs upfront, not paginated loading
+
+#### 2. **Pagination Implementation**
+- **OPDS Link-Based**: Uses standard OPDS `<link rel="next">` for pagination
+- **Manual "Next" Entry**: Adds a synthetic "Next" entry to the entries list when pagination link exists
+- **Sequential Loading**: Users click "Next" to load subsequent pages manually
+- **Entry Combination**: New page entries are appended to existing list
+
+#### 3. **XML Parsing Strategy**
+- **XmlPullParser**: Uses efficient streaming XML parser (similar to Codex's planned SimpleXML)
+- **State Machine**: Manual parsing with boolean flags for nested elements (entry, author, content, title)
+- **Memory Efficient**: Processes XML as stream, not loading entire document into memory
+- **Link Processing**: Updates all links with proper base URLs during parsing
+
+#### 4. **Search Implementation**
+- **OpenSearch Support**: Handles `<link rel="search">` with OpenSearch templates
+- **Server-Side Search**: Sends search queries to OPDS server via OpenSearch URL templates
+- **No Local Search**: Does not implement client-side search through loaded entries
+- **Search Syntax**: Supports template replacement like `{searchTerms}`
+
+#### 5. **UI Architecture**
+- **RecyclerView-Based**: Uses RecyclerView with custom adapters for different entry types
+- **EntryAdapter**: Handles books, categories, and pagination entries in single list
+- **FastScroll Support**: Implements fast scrolling for large lists
+- **Grid/List Toggle**: Supports both grid and list view modes
+- **Manual Pagination UI**: "Next" appears as regular entry in the list
+
+#### 6. **Performance Optimizations**
+- **HTTP Caching**: 5MB OkHttp cache with 10-minute freshness
+- **User Agent Spoofing**: Randomized Chrome user agent to avoid blocking
+- **Connection Pooling**: OkHttp handles connection reuse automatically
+- **Authentication**: Support for Basic, Digest, and custom authentication schemes
+- **Proxy Support**: Built-in proxy configuration with SOCKS/HTTP support
+
+#### 7. **Caching Strategy**
+- **Feed Caching**: HTTP-level caching prevents redundant network requests
+- **Credential Storage**: Encrypted storage in SharedPreferences per host
+- **No Offline Mode**: No local storage of OPDS data beyond HTTP cache
+
+#### 8. **Error Handling**
+- **Graceful Degradation**: Shows empty lists or error messages instead of crashes
+- **Authentication Recovery**: Automatic retry with authentication on 401 responses
+- **Network Resilience**: Handles timeouts, connection failures, and malformed XML
+
+### Lessons for Codex Implementation
+
+#### **Pagination Strategy**
+- **Hybrid Approach Recommended**: Combine Librera's simplicity with true lazy loading
+- **Option 1**: Follow Librera - load full feeds with manual "Next" pagination
+- **Option 2**: Implement true lazy loading with RecyclerView pagination
+- **Option 3**: Load first page, then lazy-load subsequent pages on demand
+
+#### **Search Strategy**
+- **Server-Side Priority**: Implement OpenSearch first (easier, leverages server capabilities)
+- **Local Search**: Add client-side search through loaded entries as enhancement
+- **Hybrid Search**: Support both OpenSearch and local filtering
+
+#### **Performance Considerations**
+- **XML Parsing**: Stick with SimpleXML for cleaner code, but consider XmlPullParser for large feeds
+- **Memory Management**: Implement entry limits or virtualization for very large catalogs
+- **Caching**: Implement HTTP caching similar to Librera (5MB cache)
+- **UI Responsiveness**: Use background loading pattern from Librera's UIFragment
+
+#### **Architecture Decisions**
+- **Loading Pattern**: Librera's `prepareDataInBackground` + `populateDataInUI` is proven and simple
+- **Adapter Pattern**: Single adapter handling multiple entry types works well
+- **State Management**: Simple boolean flags for parsing state are effective
+- **Link Resolution**: Update all links during parsing to handle relative URLs
+
+### Recommended Implementation Approach
+
+1. **Initial Implementation**: Follow Librera's pattern - load full feeds with manual pagination
+2. **Performance Monitoring**: Measure memory usage and loading times
+3. **Lazy Loading**: Add true lazy loading if performance issues arise with 1000+ books
+4. **Search**: Implement OpenSearch first, add local search later
+5. **Caching**: Implement HTTP caching for better performance
+
+### Code Quality Observations
+- **Separation of Concerns**: Clean separation between network, parsing, and UI layers
+- **Error Resilience**: Robust error handling prevents crashes
+- **Memory Efficiency**: Streaming XML parsing handles large feeds
+- **Authentication**: Comprehensive auth support including edge cases
+- **Maintainability**: Well-structured code with clear responsibilities
 
 ## Notes and Questions
 - ✅ **OPDS Server Compatibility**: Calibre-Web fully supported
 - ✅ **Authentication**: Basic Auth implemented
-- ✅ **Large Catalogs**: Performance optimized (50 book limit)
+- ✅ **Large Catalogs**: Currently limited to 50 books (needs lazy loading solution)
+- ✅ **Screen Navigation**: All parceling crashes fixed
+- ⏳ **Book Downloads**: Backend ready, UI dialogs implemented, but downloads still failing
 - ⏳ **Offline Caching**: Not yet implemented
 - ⏳ **Advanced Features**: Tag sync, bulk operations deferred to future releases
+- ❓ **Librera Reader Reference**: Need to examine their OPDS implementation for lazy loading and search strategies
 
 ## Git Commit Strategy
 Use git commits for checkpoints when phases or major features are completed. Commit messages should reference the integration plan phases (e.g., "Complete Phase 1: Database schema updates"). This enables progress tracking, easy rollback if needed, and clear history of implementation steps in addition to this document.

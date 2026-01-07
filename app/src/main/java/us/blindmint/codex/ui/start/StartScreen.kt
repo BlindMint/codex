@@ -27,25 +27,16 @@ import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
 
 @Parcelize
-object StartScreen : Screen, Parcelable {
+data class StartScreen(val id: Int = 0) : Screen, Parcelable {
 
-    @IgnoredOnParcel
-    const val SETTINGS = "settings"
-
-    @IgnoredOnParcel
-    const val GENERAL_SETTINGS = "general_settings"
-
-    @IgnoredOnParcel
-    const val APPEARANCE_SETTINGS = "appearance_settings"
-
-    @IgnoredOnParcel
-    const val SCAN_SETTINGS = "scan_settings"
-
-    @IgnoredOnParcel
-    const val DONE = "done"
-
-    @IgnoredOnParcel
-    const val FINAL_DONE = "final_done"
+    companion object {
+        const val SETTINGS = "settings"
+        const val GENERAL_SETTINGS = "general_settings"
+        const val APPEARANCE_SETTINGS = "appearance_settings"
+        const val SCAN_SETTINGS = "scan_settings"
+        const val DONE = "done"
+        const val FINAL_DONE = "final_done"
+    }
 
     @SuppressLint("InlinedApi")
     @Composable
@@ -81,7 +72,7 @@ object StartScreen : Screen, Parcelable {
             },
             navigateToBrowse = {
                 navigator.push(
-                    BrowseScreen,
+                    BrowseScreen(),
                     saveInBackStack = false
                 )
                 BrowseScreen.refreshListChannel.trySend(Unit)

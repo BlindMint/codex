@@ -30,15 +30,9 @@ class FodtFileParser @Inject constructor() : FileParser {
 
             val doc = Jsoup.parse(content, "", Parser.xmlParser())
 
-            val filename = cachedFile.name.substringBeforeLast(".").trim()
-            val titleFromFilename = filename.split(" - ").takeIf { it.size == 2 }?.first()?.trim()
-            // Extract title from meta or use filename
+            // Extract title from meta
             val metaTitle = doc.select("office|meta dc|title, dc\\:title").firstOrNull()?.text()
-            val title = if (!metaTitle.isNullOrBlank()) {
-                metaTitle
-            } else {
-                titleFromFilename ?: filename
-            }.ifBlank { "Untitled Book" }
+            val title = metaTitle?.ifBlank { "Untitled Book" } ?: "Untitled Book"
 
             // Extract author from meta
             val metaAuthor = doc.select("office|meta dc|creator, dc\\:creator").firstOrNull()?.text()

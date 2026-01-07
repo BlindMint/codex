@@ -38,11 +38,11 @@ data class HelpScreen(val fromStart: Boolean) : Screen, Parcelable {
             listState = listState,
             changeShowStartScreen = mainModel::onEvent,
             navigateToBrowse = {
-                navigator.push(BrowseScreen, saveInBackStack = false)
+                navigator.push(BrowseScreen(), saveInBackStack = false)
             },
             navigateToStart = {
                 mainModel.onEvent(MainEvent.OnChangeShowStartScreen(true))
-                navigator.push(StartScreen, saveInBackStack = false)
+                navigator.push(StartScreen(), saveInBackStack = false)
             },
             navigateBack = {
                 navigator.pop()

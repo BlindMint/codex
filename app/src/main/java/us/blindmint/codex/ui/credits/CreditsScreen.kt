@@ -19,7 +19,7 @@ import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.ui.about.AboutModel
 
 @Parcelize
-object CreditsScreen : Screen, Parcelable {
+data class CreditsScreen(val id: Int = 0) : Screen, Parcelable {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
