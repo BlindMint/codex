@@ -17,11 +17,13 @@ import kotlinx.coroutines.launch
 import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import us.blindmint.codex.data.local.room.BookDatabase
 import us.blindmint.codex.data.local.room.DatabaseHelper
+import us.blindmint.codex.domain.repository.OpdsRepository
 import javax.inject.Inject
 
 @HiltViewModel
 class OpdsSourcesModel @Inject constructor(
-    private val application: Application
+    private val application: Application,
+    private val opdsRepository: OpdsRepository
 ) : ViewModel() {
 
     private val database: BookDatabase by lazy {
@@ -81,5 +83,10 @@ class OpdsSourcesModel @Inject constructor(
             opdsSourceDao.deleteOpdsSourceById(id)
             loadOpdsSources()
         }
+    }
+
+    suspend fun testConnection(url: String, username: String?, password: String?) {
+        // This will throw if fails
+        opdsRepository.fetchFeed(url, username, password)
     }
 }

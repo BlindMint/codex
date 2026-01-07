@@ -6,14 +6,17 @@
 
 package us.blindmint.codex.data.local.dto
 
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.parcelize.Parcelize
 
 @Entity
+@Parcelize
 data class OpdsSourceEntity(
     @PrimaryKey(true) val id: Int = 0,
     val name: String,
     val url: String,
     val username: String? = null,
     val password: String? = null
-)
+) : Parcelable

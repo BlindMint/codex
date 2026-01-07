@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.LazyListScope
 import us.blindmint.codex.presentation.settings.browse.scan.BrowseScanSubcategory
 import us.blindmint.codex.presentation.settings.browse.opds.BrowseOpdsSubcategory
+import us.blindmint.codex.presentation.settings.browse.opds.download.BrowseOpdsDownloadSubcategory
 
 fun LazyListScope.BrowseSettingsCategory() {
     item {
@@ -35,4 +36,5 @@ fun LazyListScope.BrowseSettingsCategory() {
         )
     }
     BrowseOpdsSubcategory()
+    BrowseOpdsDownloadSubcategory()
 }

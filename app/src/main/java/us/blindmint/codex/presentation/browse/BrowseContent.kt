@@ -112,7 +112,8 @@ fun BrowseContent(
         showAddDialog = showAddDialog,
         changePinnedPaths = changePinnedPaths,
         navigateToBrowseSettings = navigateToBrowseSettings,
-        onRescan = onRescan
+        onRescan = onRescan,
+        showTopBar = false
     )
 
     BrowseBackHandler(

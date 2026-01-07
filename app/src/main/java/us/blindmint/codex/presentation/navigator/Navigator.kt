@@ -13,7 +13,9 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -43,6 +45,7 @@ fun Navigator(
     modifier: Modifier = Modifier,
     initialScreen: Screen,
     transitionSpec: AnimatedContentTransitionScope<Screen>.(lastEvent: StackEvent) -> ContentTransform,
+    navigationBar: @Composable () -> Unit = {},
     contentKey: (Screen) -> Any? = { it },
     backHandlerEnabled: (Screen) -> Boolean = { true },
     content: @Composable (currentScreen: Screen) -> Unit
@@ -56,17 +59,22 @@ fun Navigator(
     )
 
     CompositionLocalProvider(LocalNavigator provides navigator) {
-        AnimatedContent(
-            modifier = modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface),
-            targetState = currentScreen.value,
-            transitionSpec = {
-                transitionSpec(this, lastEvent.value)
-            },
-            contentKey = contentKey,
-            content = { content(it) }
-        )
+        Scaffold(
+            bottomBar = navigationBar
+        ) { padding ->
+            AnimatedContent(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(padding),
+                targetState = currentScreen.value,
+                transitionSpec = {
+                    transitionSpec(this, lastEvent.value)
+                },
+                contentKey = contentKey,
+                content = { content(it) }
+            )
+        }
     }
 
     BackHandler(enabled = backHandlerEnabled.invoke(currentScreen.value)) {

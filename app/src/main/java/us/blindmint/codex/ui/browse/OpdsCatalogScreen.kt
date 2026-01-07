@@ -4,19 +4,22 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 
-package us.blindmint.codex.ui.settings
+package us.blindmint.codex.ui.browse
 
 import android.os.Parcelable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.parcelize.Parcelize
+import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.presentation.core.components.top_bar.collapsibleTopAppBarScrollBehavior
 import us.blindmint.codex.presentation.navigator.LocalNavigator
-import us.blindmint.codex.presentation.settings.browse.BrowseSettingsContent
+import us.blindmint.codex.ui.browse.opds.OpdsCatalogContent
 
-object BrowseSettingsScreen : Screen {
+@Parcelize
+data class OpdsCatalogScreen(val source: OpdsSourceEntity, val url: String? = null, val title: String? = null) : Screen, Parcelable {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -24,12 +27,13 @@ object BrowseSettingsScreen : Screen {
         val navigator = LocalNavigator.current
         val (scrollBehavior, listState) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior()
 
-        BrowseSettingsContent(
+        OpdsCatalogContent(
+            source = source,
+            url = url,
+            title = title,
             listState = listState,
             scrollBehavior = scrollBehavior,
-            navigateBack = {
-                navigator.pop()
-            }
+            navigateBack = { navigator.pop() }
         )
     }
 }

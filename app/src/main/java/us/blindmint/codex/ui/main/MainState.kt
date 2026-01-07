@@ -153,6 +153,9 @@ data class MainState(
     val browseIncludedFilterItems: List<String> = provideDefaultValue { emptyList() },
     val browsePinnedPaths: List<String> = provideDefaultValue { emptyList() },
 
+    // OPDS Settings
+    val opdsDownloadUri: String? = provideDefaultValue { null },
+
     // Library Settings
     val libraryLayout: LibraryLayout = provideDefaultValue { LibraryLayout.GRID },
     val libraryAutoGridSize: Boolean = provideDefaultValue { true },
@@ -408,6 +411,10 @@ data class MainState(
                     browsePinnedPaths = provideValue(
                         BROWSE_PINNED_PATHS, convert = { toList() }
                     ) { browsePinnedPaths },
+
+                    opdsDownloadUri = provideValue(
+                        OPDS_DOWNLOAD_URI
+                    ) { opdsDownloadUri },
 
                     fontThickness = provideValue(
                         FONT_THICKNESS, convert = { toFontThickness() }

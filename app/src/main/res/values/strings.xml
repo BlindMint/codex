@@ -27,6 +27,8 @@
     <string name="export_error">Failed to export settings</string>
     <string name="about_screen">About app</string>
     <string name="help_screen">Help</string>
+    <string name="local">Local</string>
+    <string name="opds">OPDS</string>
 
     <!-- Dialog Labels -->
     <string name="add_books">Add books?</string>

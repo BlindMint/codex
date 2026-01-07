@@ -31,9 +31,14 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 ### Preserved Elements
 - Material 3 design language
 - Reading experience (themes, fonts, progress tracking)
-- Local file support as secondary feature
+- Local file support as primary feature with enhanced UI
 - Clean architecture principles
-- Navigation structure (Library, History, Browse, Settings)
+- Navigation structure (Library, History, Catalogs, Settings)
+
+### UI Reorganization
+- Catalogs screen now uses tabbed interface with "Local" and "OPDS" tabs
+- Local tab: Restored previous local file browsing functionality with file selection and "Add books?" dialog
+- OPDS tab: Contains OPDS catalog browsing and management functionality
 
 ## Detailed Implementation Checklist
 
@@ -131,7 +136,9 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 - [ ] Add authentication UI (username/password fields)
 
 ### Phase 6: OPDS Browsing Integration
-- [x] Update BrowseScreen to support OPDS catalogs (renamed to Catalogs, shows OPDS sources list)
+- [x] Update BrowseScreen to support OPDS catalogs (renamed to Catalogs, shows tabbed interface with Local and OPDS tabs)
+- [x] Create tabbed interface: Local tab for local file browsing, OPDS tab for OPDS catalogs
+- [x] Restore Local tab with previous local file browsing functionality (file selection, Add books dialog)
 - [ ] Add hierarchical navigation: Authors > Series > Books
 - [ ] Implement OPDS search via OpenSearch
 - [ ] Add OPDS book previews with metadata display

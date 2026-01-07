@@ -108,4 +108,7 @@ object DataStoreConstants {
 
     // Settings
     val AUTO_COLOR_PRESET_SELECTED = booleanPreferencesKey("auto_color_preset_selected")
+
+    // OPDS settings
+    val OPDS_DOWNLOAD_URI = stringPreferencesKey("opds_download_uri")
 }

@@ -60,33 +60,38 @@ fun BrowseScaffold(
     changePinnedPaths: (MainEvent.OnChangeBrowsePinnedPaths) -> Unit,
     navigateToBrowseSettings: () -> Unit,
     onRescan: () -> Unit,
+    showTopBar: Boolean = true,
 ) {
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .pullRefresh(refreshState),
         containerColor = MaterialTheme.colorScheme.surface,
-        topBar = {
-            BrowseTopBar(
-                files = files,
-                layout = layout,
-                includedFilterItems = includedFilterItems,
-                canScrollBackList = canScrollBackList,
-                canScrollBackGrid = canScrollBackGrid,
-                hasSelectedItems = hasSelectedItems,
-                selectedItemsCount = selectedItemsCount,
-                showSearch = showSearch,
-                searchQuery = searchQuery,
-                focusRequester = focusRequester,
-                searchVisibility = searchVisibility,
-                searchQueryChange = searchQueryChange,
-                search = search,
-                requestFocus = requestFocus,
-                clearSelectedFiles = clearSelectedFiles,
-                selectFiles = selectFiles,
-                showFilterBottomSheet = showFilterBottomSheet,
-                showAddDialog = showAddDialog
-            )
+        topBar = if (showTopBar) {
+            {
+                BrowseTopBar(
+                    files = files,
+                    layout = layout,
+                    includedFilterItems = includedFilterItems,
+                    canScrollBackList = canScrollBackList,
+                    canScrollBackGrid = canScrollBackGrid,
+                    hasSelectedItems = hasSelectedItems,
+                    selectedItemsCount = selectedItemsCount,
+                    showSearch = showSearch,
+                    searchQuery = searchQuery,
+                    focusRequester = focusRequester,
+                    searchVisibility = searchVisibility,
+                    searchQueryChange = searchQueryChange,
+                    search = search,
+                    requestFocus = requestFocus,
+                    clearSelectedFiles = clearSelectedFiles,
+                    selectFiles = selectFiles,
+                    showFilterBottomSheet = showFilterBottomSheet,
+                    showAddDialog = showAddDialog
+                )
+            }
+        } else {
+            {}
         }
     ) { padding ->
         Box(

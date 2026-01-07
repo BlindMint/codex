@@ -37,11 +37,11 @@ data class OpdsEntryDto(
     var rights: String? = null,
 
     @field:ElementList(name = "identifier", inline = true, required = false)
-    var identifiers: List<String> = emptyList(),
+    var identifiers: MutableList<String> = mutableListOf(),
 
     @field:ElementList(name = "category", inline = true, required = false)
-    var categories: List<OpdsCategoryDto> = emptyList(),
+    var categories: MutableList<OpdsCategoryDto> = mutableListOf(),
 
     @field:ElementList(name = "link", inline = true, required = false)
-    var links: List<OpdsLinkDto> = emptyList()
+    var links: MutableList<OpdsLinkDto> = mutableListOf()
 )

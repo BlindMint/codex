@@ -16,8 +16,8 @@ data class OpdsFeedDto(
     var title: String = "",
 
     @field:ElementList(name = "entry", inline = true, required = false)
-    var entries: List<OpdsEntryDto> = emptyList(),
+    var entries: MutableList<OpdsEntryDto> = mutableListOf(),
 
     @field:ElementList(name = "link", inline = true, required = false)
-    var links: List<OpdsLinkDto> = emptyList()
+    var links: MutableList<OpdsLinkDto> = mutableListOf()
 )
