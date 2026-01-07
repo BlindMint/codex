@@ -16,10 +16,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Search
@@ -95,11 +94,7 @@ fun OpdsCatalogContent(
                             value = searchQuery,
                             onValueChange = {
                                 searchQuery = it
-                                if (it.isNotBlank()) {
-                                    model.search(it, source)
-                                } else {
-                                    model.loadFeed(source, url ?: source.url)
-                                }
+                                // Local filtering will be applied in the UI
                             },
                             placeholder = { Text("Search books...") },
                             singleLine = true,
@@ -111,15 +106,28 @@ fun OpdsCatalogContent(
                         Text(title ?: source.name)
                     }
                 },
-                actions = {
-                    if (state.isSelectionMode) {
-                        IconButton(onClick = { model.selectAllBooks() }) {
+                navigationIcon = {
+                    if (url != null) { // Only show back button if we're not on the root screen
+                        IconButton(onClick = {
+                            if (state.isSelectionMode) {
+                                model.toggleSelectionMode() // Exit selection mode first
+                            } else {
+                                navigateBack() // Then go back
+                            }
+                        }) {
                             Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Select all"
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Back"
                             )
                         }
-                        IconButton(onClick = { model.clearSelection() }) {
+                    }
+                },
+                actions = {
+                    if (state.isSelectionMode) {
+                        IconButton(
+                            onClick = { model.clearSelection() },
+                            enabled = state.selectedBooks.isNotEmpty()
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Clear,
                                 contentDescription = "Clear selection"
@@ -135,13 +143,11 @@ fun OpdsCatalogContent(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Download,
-                                contentDescription = "Download selected"
-                            )
-                        }
-                        IconButton(onClick = { model.toggleSelectionMode() }) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Exit selection mode"
+                                contentDescription = "Download selected",
+                                tint = if (state.selectedBooks.isNotEmpty())
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     } else {
@@ -149,18 +155,12 @@ fun OpdsCatalogContent(
                             isSearchMode = !isSearchMode
                             if (!isSearchMode) {
                                 searchQuery = ""
-                                model.loadFeed(source, url ?: source.url)
+                                // Local search filter will be cleared
                             }
                         }) {
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = if (isSearchMode) "Exit search" else "Search"
-                            )
-                        }
-                        IconButton(onClick = { model.toggleSelectionMode() }) {
-                            Icon(
-                                imageVector = Icons.Default.CheckBox,
-                                contentDescription = "Enter selection mode"
                             )
                         }
                     }
@@ -216,7 +216,7 @@ fun OpdsCatalogContent(
                 state = listState
             ) {
                 // Separate categories and books
-                val categories = state.feed?.entries?.filter { entry ->
+                val allCategories = state.feed?.entries?.filter { entry ->
                     // Category if it has subsection links OR specific OPDS navigation links
                     // Exclude navigation breadcrumbs that go back to parent URLs
                     entry.links.any { link ->
@@ -231,14 +231,34 @@ fun OpdsCatalogContent(
                         }.getOrNull()
                         resolvedUrl != null && (
                             resolvedUrl == state.feedUrl || // Same as current URL
-                            state.feedUrl?.startsWith(resolvedUrl) == true // Current URL is under this link (breadcrumb)
+                            state.feedUrl?.startsWith(resolvedUrl) == true // Current URL under this link
                         )
                     }
                 } ?: emptyList()
 
-                val books = state.feed?.entries?.filter { entry ->
+                // Apply local search filter to categories
+                val categories = if (isSearchMode && searchQuery.isNotBlank()) {
+                    allCategories.filter { entry ->
+                        entry.title?.contains(searchQuery, ignoreCase = true) == true
+                    }
+                } else {
+                    allCategories
+                }
+
+                val allBooks = state.feed?.entries?.filter { entry ->
                     entry.links.any { it.rel == "http://opds-spec.org/acquisition" }
                 } ?: emptyList()
+
+                // Apply local search filter
+                val books = if (isSearchMode && searchQuery.isNotBlank()) {
+                    allBooks.filter { entry ->
+                        entry.title?.contains(searchQuery, ignoreCase = true) == true ||
+                        entry.author?.contains(searchQuery, ignoreCase = true) == true ||
+                        entry.summary?.contains(searchQuery, ignoreCase = true) == true
+                    }
+                } else {
+                    allBooks
+                }
 
                 // Categories section
                 if (categories.isNotEmpty()) {
@@ -346,20 +366,26 @@ fun OpdsCatalogContent(
                                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
                             ) {
                                  row.forEach { entry ->
-                                     OpdsBookPreview(
-                                         entry = entry,
-                                         onClick = {
-                                             if (state.isSelectionMode) {
-                                                 model.toggleBookSelection(entry.id)
-                                             } else {
-                                                 selectedEntryForDownload = entry
-                                                 showDownloadDialog = true
-                                             }
-                                         },
-                                         modifier = Modifier.weight(1f),
-                                         isSelected = state.selectedBooks.contains(entry.id),
-                                         isSelectionMode = state.isSelectionMode
-                                     )
+                                      OpdsBookPreview(
+                                          entry = entry,
+                                          onClick = {
+                                              if (state.isSelectionMode) {
+                                                  model.toggleBookSelection(entry.id)
+                                              } else {
+                                                  selectedEntryForDownload = entry
+                                                  showDownloadDialog = true
+                                              }
+                                          },
+                                          onLongClick = {
+                                              if (!state.isSelectionMode) {
+                                                  model.toggleSelectionMode()
+                                                  model.toggleBookSelection(entry.id)
+                                              }
+                                          },
+                                          modifier = Modifier.weight(1f),
+                                          isSelected = state.selectedBooks.contains(entry.id),
+                                          isSelectionMode = state.isSelectionMode
+                                      )
                                  }
                                 // Fill remaining space if row is not full
                                 repeat(3 - row.size) {
