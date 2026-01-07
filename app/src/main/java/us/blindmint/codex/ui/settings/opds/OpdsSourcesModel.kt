@@ -85,8 +85,52 @@ class OpdsSourcesModel @Inject constructor(
         }
     }
 
-    suspend fun testConnection(url: String, username: String?, password: String?) {
-        // This will throw if fails
+    suspend fun testConnection(url: String, username: String?, password: String?): String {
+        // Try different URL variations to find a working one
+        val urlVariations = generateUrlVariations(url)
+
+        for (testUrl in urlVariations) {
+            try {
+                opdsRepository.fetchFeed(testUrl, username, password)
+                return testUrl // Return the working URL
+            } catch (e: Exception) {
+                // Try next variation
+                continue
+            }
+        }
+
+        // If none worked, throw with the original URL
         opdsRepository.fetchFeed(url, username, password)
+        return url
+    }
+
+    private fun generateUrlVariations(originalUrl: String): List<String> {
+        val variations = mutableListOf<String>()
+
+        // Clean the URL
+        var cleanUrl = originalUrl.trim()
+
+        // Remove trailing slashes
+        cleanUrl = cleanUrl.trimEnd('/')
+
+        // Check if it has a protocol
+        val hasProtocol = cleanUrl.startsWith("http://") || cleanUrl.startsWith("https://")
+
+        if (hasProtocol) {
+            // Has protocol, try original and with /opds
+            variations.add(cleanUrl)
+            if (!cleanUrl.endsWith("/opds")) {
+                variations.add("$cleanUrl/opds")
+            }
+        } else {
+            // No protocol, try both http and https, with and without /opds
+            // Prioritize https
+            variations.add("https://$cleanUrl")
+            variations.add("https://$cleanUrl/opds")
+            variations.add("http://$cleanUrl")
+            variations.add("http://$cleanUrl/opds")
+        }
+
+        return variations.distinct() // Remove duplicates in case original already had /opds
     }
 }

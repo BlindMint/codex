@@ -1,0 +1,404 @@
+hiddenapi: Accessing hidden method Ljava/lang/invoke/MethodHandles$Lookup;-><init>(Ljava/lang/Class;I)V (runtime_flags=0, domain=core-platform, api=unsupported) from Lretrofit2/Platform; (domain=app, TargetSdkVersion=35) using reflection: allowed
+No permission grants found for us.blindmint.codex.debug
+Installing profile for us.blindmint.codex.debug
+userfaultfd: MOVE ioctl seems unsupported: Try again
+DEBUG: OpdsCatalogScreen created with url: null, title: null
+DEBUG: OpdsCatalogScreen.Content() called with url=null, title=null
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds, title: null
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 0
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 0
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds
+DEBUG: Starting to load feed from: https://calibre.datashard.dev/opds
+DEBUG: Calling opdsRepository.fetchFeed...
+--> GET https://calibre.datashard.dev/opds
+--> END GET
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds, title: null
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: true, error: null, feedEntries: 0
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: true, error: null, feedEntries: 0
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds
+DEBUG: Starting to load feed from: https://calibre.datashard.dev/opds
+DEBUG: Calling opdsRepository.fetchFeed...
+--> GET https://calibre.datashard.dev/opds
+--> END GET
+<-- 200 https://calibre.datashard.dev/opds (354ms)
+date: Wed, 07 Jan 2026 20:10:48 GMT
+content-type: application/atom+xml; charset=utf-8
+content-length: 4954
+content-security-policy: default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; img-src 'self' data:; object-src 'none';
+retry-after: 0
+strict-transport-security: max-age=31536000
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-ratelimit-limit: 3
+x-ratelimit-remaining: 3
+x-ratelimit-reset: 1767816649
+x-xss-protection: 1; mode=block
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server-timing: cfCacheStatus;desc="DYNAMIC"
+server-timing: cfEdge;dur=12,cfOrigin;dur=232
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=94Ke%2FglanxxDRzvO3nVZATGxM72pjTjOw2V%2FPVtCz7ZUKHM4tPOlhlCQmtN0Ollu52XP%2BjITGJL7O5uurXrBaN1XhJs8Bmahu%2FW1n0YsNZBvXMYgOw%3D%3D"}]}
+server: cloudflare
+cf-ray: 9ba619c16ef66c8e-SEA
+alt-svc: h3=":443"; ma=86400
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <icon>/static/favicon.ico</icon>
+  <id>urn:uuid:2853dacf-ed79-42f5-8e8a-a7bb3d1ae6a2</id>
+  <updated>2026-01-07T13:10:48+00:00</updated>
+  <link rel="self" href="/opds" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="start" title="Start" href="/opds"
+        type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="search"
+      href="/opds/osd"
+      type="application/opensearchdescription+xml"/>
+  <link type="application/atom+xml" rel="search" title="Search" href="/opds/search/{searchTerms}" />
+  <title>Calibre-Web</title>
+  <author>
+    <name>Calibre-Web</name>
+    <uri>https://github.com/janeczku/calibre-web</uri>
+  </author>
+  <entry>
+    <title>Alphabetical Books</title>
+    <link href="/opds/books" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/books</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books sorted alphabetically</content>
+  </entry>
+  
+  <entry>
+    <title>Hot Books</title>
+    <link href="/opds/hot" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/hot</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Downloads.</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Top Rated Books</title>
+    <link href="/opds/rated" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/rated</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Rating.</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Recently added Books</title>
+    <link href="/opds/new" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/new</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">The latest Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Random Books</title>
+    <link href="/opds/discover" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/discover</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Show Random Books</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Read Books</title>
+    <link href="/opds/readbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/readbooks</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Read Books</content>
+  </entry>
+  <entry>
+    <title>Unread Books</title>
+    <link href="/opds/unreadbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/unreadbooks</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Unread Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Authors</title>
+    <link href="/opds/author" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/author</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books ordered by Author</content>
+  </entry>
+  
+  
+   <entry>
+    <title>Publishers</title>
+    <link href="/opds/publisher" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/publisher</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books ordered by publisher</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Categories</title>
+    <link href="/opds/category" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/category</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books ordered by category</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Series</title>
+    <link href="/opds/series" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/series</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books ordered by series</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Languages</title>
+    <link href="/opds/language/" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/language/</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books ordered by Languages</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Ratings</title>
+    <link href="/opds/ratings" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/ratings</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books ordered by Rating</content>
+  </entry>
+  
+  
+  <entry>
+    <title>File formats</title>
+    <link href="/opds/formats" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/formats</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books ordered by file formats</content>
+  </entry>
+ 
+   
+  <entry>
+    <title>Shelves</title>
+    <link  href="/opds/shelfindex" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/shelfindex</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books organized in shelves</content>
+  </entry>
+  
+</feed>
+<-- END HTTP (4954-byte body)
+DEBUG: Feed loaded successfully, entries: 15
+DEBUG: State updated with feed
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds, title: null
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 15
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 15
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds
+DEBUG: Feed already loaded for this URL, skipping
+<-- 200 https://calibre.datashard.dev/opds (398ms)
+date: Wed, 07 Jan 2026 20:10:48 GMT
+content-type: application/atom+xml; charset=utf-8
+content-length: 4954
+content-security-policy: default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; img-src 'self' data:; object-src 'none';
+retry-after: 0
+strict-transport-security: max-age=31536000
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-ratelimit-limit: 3
+x-ratelimit-remaining: 3
+x-ratelimit-reset: 1767816649
+x-xss-protection: 1; mode=block
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server-timing: cfCacheStatus;desc="DYNAMIC"
+server-timing: cfEdge;dur=13,cfOrigin;dur=306
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=AY4SWiEWemy0wYZ5any0r8Hq%2BFVaYFM%2FN4nGYd5%2BHvSm0EJBAwt3Z60OhQQ5NEMJVeYJ0sV1576FjiHbXGkGhOM96dGLYhUjyIHxDO%2BD4oygQPE%3D"}]}
+server: cloudflare
+cf-ray: 9ba619c16ac78173-SEA
+alt-svc: h3=":443"; ma=86400
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <icon>/static/favicon.ico</icon>
+  <id>urn:uuid:2853dacf-ed79-42f5-8e8a-a7bb3d1ae6a2</id>
+  <updated>2026-01-07T13:10:48+00:00</updated>
+  <link rel="self" href="/opds" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="start" title="Start" href="/opds"
+        type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="search"
+      href="/opds/osd"
+      type="application/opensearchdescription+xml"/>
+  <link type="application/atom+xml" rel="search" title="Search" href="/opds/search/{searchTerms}" />
+  <title>Calibre-Web</title>
+  <author>
+    <name>Calibre-Web</name>
+    <uri>https://github.com/janeczku/calibre-web</uri>
+  </author>
+  <entry>
+    <title>Alphabetical Books</title>
+    <link href="/opds/books" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/books</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books sorted alphabetically</content>
+  </entry>
+  
+  <entry>
+    <title>Hot Books</title>
+    <link href="/opds/hot" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/hot</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Downloads.</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Top Rated Books</title>
+    <link href="/opds/rated" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/rated</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Rating.</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Recently added Books</title>
+    <link href="/opds/new" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/new</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">The latest Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Random Books</title>
+    <link href="/opds/discover" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/discover</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Show Random Books</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Read Books</title>
+    <link href="/opds/readbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/readbooks</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Read Books</content>
+  </entry>
+  <entry>
+    <title>Unread Books</title>
+    <link href="/opds/unreadbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/unreadbooks</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Unread Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Authors</title>
+    <link href="/opds/author" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/author</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books ordered by Author</content>
+  </entry>
+  
+  
+   <entry>
+    <title>Publishers</title>
+    <link href="/opds/publisher" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/publisher</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books ordered by publisher</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Categories</title>
+    <link href="/opds/category" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/category</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books ordered by category</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Series</title>
+    <link href="/opds/series" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/series</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books ordered by series</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Languages</title>
+    <link href="/opds/language/" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/language/</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books ordered by Languages</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Ratings</title>
+    <link href="/opds/ratings" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/ratings</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books ordered by Rating</content>
+  </entry>
+  
+  
+  <entry>
+    <title>File formats</title>
+    <link href="/opds/formats" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/formats</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books ordered by file formats</content>
+  </entry>
+ 
+   
+  <entry>
+    <title>Shelves</title>
+    <link  href="/opds/shelfindex" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/shelfindex</id>
+    <updated>2026-01-07T13:10:48+00:00</updated>
+    <content type="text">Books organized in shelves</content>
+  </entry>
+  
+</feed>
+<-- END HTTP (4954-byte body)
+DEBUG: Feed loaded successfully, entries: 15
+DEBUG: State updated with feed
+DEBUG: Category clicked: Alphabetical Books
+DEBUG: Entry has 1 links
+DEBUG: Link 0: href=/opds/books, type=application/atom+xml;profile=opds-catalog, rel=null
+DEBUG: Found atom link: /opds/books
+DEBUG: Resolved URL: https://calibre.datashard.dev/opds/books
+DEBUG: About to navigate to OpdsCatalogScreen with title: Alphabetical Books
+DEBUG: OpdsCatalogScreen created with url: https://calibre.datashard.dev/opds/books, title: Alphabetical Books
+DEBUG: Navigation call completed successfully
+DEBUG: Category clicked: Hot Books
+DEBUG: Entry has 1 links
+DEBUG: Link 0: href=/opds/hot, type=application/atom+xml;profile=opds-catalog, rel=null
+DEBUG: Found atom link: /opds/hot
+DEBUG: Resolved URL: https://calibre.datashard.dev/opds/hot
+DEBUG: About to navigate to OpdsCatalogScreen with title: Hot Books
+DEBUG: OpdsCatalogScreen created with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Navigation call completed successfully
+DEBUG: Category clicked: Top Rated Books
+DEBUG: Entry has 1 links
+DEBUG: Link 0: href=/opds/rated, type=application/atom+xml;profile=opds-catalog, rel=null
+DEBUG: Found atom link: /opds/rated
+DEBUG: Resolved URL: https://calibre.datashard.dev/opds/rated
+DEBUG: About to navigate to OpdsCatalogScreen with title: Top Rated Books
+DEBUG: OpdsCatalogScreen created with url: https://calibre.datashard.dev/opds/rated, title: Top Rated Books
+DEBUG: Navigation call completed successfully
+

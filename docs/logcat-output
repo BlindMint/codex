@@ -1,0 +1,862 @@
+No permission grants found for us.blindmint.codex.debug
+Installing profile for us.blindmint.codex.debug
+Getting files from device, query: "".
+No permission grants found for us.blindmint.codex.debug
+Successfully got all matching files.
+hiddenapi: Accessing hidden method Ljava/lang/invoke/MethodHandles$Lookup;-><init>(Ljava/lang/Class;I)V (runtime_flags=0, domain=core-platform, api=unsupported) from Lretrofit2/Platform; (domain=app, TargetSdkVersion=35) using reflection: allowed
+No permission grants found for us.blindmint.codex.debug
+Cleared Reference was only reachable from finalizer (only reported once)
+userfaultfd: MOVE ioctl seems unsupported: Connection timed out
+No permission grants found for us.blindmint.codex.debug
+setTopOnBackInvokedCallback (unwrapped): android.app.Dialog$$ExternalSyntheticLambda2@7d339b
+setTopOnBackInvokedCallback (unwrapped): androidx.activity.OnBackPressedDispatcher$Api34Impl$createOnBackAnimationCallback$1@fea6338
+Window{7ecee57 u0 us.blindmint.codex.debug/us.blindmint.codex.ui.main.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@4568029, mPriority=-1, mIsAnimationCallback=false, mOverrideBehavior=0}
+Window{7ecee57 u0 us.blindmint.codex.debug/us.blindmint.codex.ui.main.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@c973fae, mPriority=0, mIsAnimationCallback=true, mOverrideBehavior=0}
+us.blindmint.codex.debug:42497f0f: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
+hide(ime())
+us.blindmint.codex.debug:42497f0f: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+GoogleInputMethodService.onStartInput():1318 onStartInput(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
+interaction: PackageSetting{5f8ddc1 us.blindmint.codex.debug/10273} -> PackageSetting{64924e3 com.google.android.inputmethod.latin/10158} BLOCKED
+show(ime())
+us.blindmint.codex.debug:642b854e: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT_BY_INSETS_API fromUser false
+Setting requestedVisibleTypes to 511 (was 503)
+GoogleInputMethodService.onStartInput():1318 onStartInput(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=0, initialSelEnd=0, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[mParcelledData.dataSize=404], hintText=null, hintLocales=[]}}, false)
+GoogleInputMethodService.onStartInput():1318 onStartInput(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=0, initialSelEnd=0, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[mParcelledData.dataSize=404], hintText=null, hintLocales=[]}}, true)
+GoogleInputMethodService.onStartInputView():1411 onStartInputView(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=0, initialSelEnd=0, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[{android.support.text.emoji.emojiCompat_metadataVersion=11, androidx.core.view.inputmethod.EditorInfoCompat.STYLUS_HANDWRITING_ENABLED=true, android.support.text.emoji.emojiCompat_replaceAll=false}], hintText=null, hintLocales=[]}}, false)
+Flattened final assist data: 1160 bytes, containing 2 windows, 7 views
+Notified activity assist data for activity: Token{98624d ActivityRecord{51363191 u0 us.blindmint.codex.debug/us.blindmint.codex.ui.main.MainActivity t263}} without a session Id
+us.blindmint.codex.debug:53bfe8cc: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+show(ime())
+us.blindmint.codex.debug:53bfe8cc: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+requestCursorUpdates on inactive InputConnection
+AbstractIme.onActivate():96 LatinIme.onActivate() : EditorInfo = EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=0, initialSelEnd=0, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[{android.support.text.emoji.emojiCompat_metadataVersion=11, androidx.core.view.inputmethod.EditorInfoCompat.STYLUS_HANDWRITING_ENABLED=true, android.support.text.emoji.emojiCompat_replaceAll=false}], hintText=null, hintLocales=[]}, IncognitoMode = false, DeviceLocked = false
+Register OnBackInvokedCallback with priority=-1 at app window (packageName=us.blindmint.codex.debug)
+Autofill popup isn't shown because autofill is not available.
+
+Did you set up autofill?
+1. Go to Settings > System > Languages&input > Advanced > Autofill Service
+2. Pick a service
+
+Did you add an account?
+1. Go to Settings > System > Languages&input > Advanced
+2. Click on the settings icon next to the Autofill Service
+3. Add your account
+setTopOnBackInvokedCallback (unwrapped): android.view.ImeBackAnimationController@e2711b
+Window{7ecee57 u0 us.blindmint.codex.debug/us.blindmint.codex.ui.main.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@ea5b7d4, mPriority=0, mIsAnimationCallback=true, mOverrideBehavior=0}
+Initializing without READ_DEVICE_CONFIG permission. enabled=false, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=us.blindmint.codex.debug
+us.blindmint.codex.debug:642b854e: onShown
+interaction: PackageSetting{5f8ddc1 us.blindmint.codex.debug/10273} -> PackageSetting{64924e3 com.google.android.inputmethod.latin/10158} BLOCKED
+Flattened final assist data: 1168 bytes, containing 2 windows, 7 views
+Notified activity assist data for activity: Token{98624d ActivityRecord{51363191 u0 us.blindmint.codex.debug/us.blindmint.codex.ui.main.MainActivity t263}} without a session Id
+show(ime())
+us.blindmint.codex.debug:3ea64d4f: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT_BY_INSETS_API fromUser false
+us.blindmint.codex.debug:3ea64d4f: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+us.blindmint.codex.debug:c69d5a9f: onRequestShow at ORIGIN_SERVER reason ATTACH_NEW_INPUT fromUser false
+us.blindmint.codex.debug:c69d5a9f: onCancelled at PHASE_SERVER_ALREADY_VISIBLE
+GoogleInputMethodService.onStartInput():1318 onStartInput(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=0, initialSelEnd=0, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[mParcelledData.dataSize=404], hintText=null, hintLocales=[]}}, true)
+GoogleInputMethodService.onStartInputView():1411 onStartInputView(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=0, initialSelEnd=0, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[{android.support.text.emoji.emojiCompat_metadataVersion=11, androidx.core.view.inputmethod.EditorInfoCompat.STYLUS_HANDWRITING_ENABLED=true, android.support.text.emoji.emojiCompat_replaceAll=false}], hintText=null, hintLocales=[]}}, true)
+Autofill popup isn't shown because autofill is not available.
+
+Did you set up autofill?
+1. Go to Settings > System > Languages&input > Advanced > Autofill Service
+2. Pick a service
+
+Did you add an account?
+1. Go to Settings > System > Languages&input > Advanced
+2. Click on the settings icon next to the Autofill Service
+3. Add your account
+us.blindmint.codex.debug:edfdb65d: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+show(ime())
+us.blindmint.codex.debug:edfdb65d: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+AbstractIme.onActivate():96 LatinIme.onActivate() : EditorInfo = EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=0, initialSelEnd=0, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[{android.support.text.emoji.emojiCompat_metadataVersion=11, androidx.core.view.inputmethod.EditorInfoCompat.STYLUS_HANDWRITING_ENABLED=true, android.support.text.emoji.emojiCompat_replaceAll=false}], hintText=null, hintLocales=[]}, IncognitoMode = false, DeviceLocked = false
+interaction: PackageSetting{5f8ddc1 us.blindmint.codex.debug/10273} -> PackageSetting{64924e3 com.google.android.inputmethod.latin/10158} BLOCKED
+Flattened final assist data: 1188 bytes, containing 2 windows, 7 views
+Notified activity assist data for activity: Token{98624d ActivityRecord{51363191 u0 us.blindmint.codex.debug/us.blindmint.codex.ui.main.MainActivity t263}} without a session Id
+show(ime())
+us.blindmint.codex.debug:af516632: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT_BY_INSETS_API fromUser false
+us.blindmint.codex.debug:af516632: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+us.blindmint.codex.debug:3db42b26: onRequestShow at ORIGIN_SERVER reason ATTACH_NEW_INPUT fromUser false
+us.blindmint.codex.debug:3db42b26: onCancelled at PHASE_SERVER_ALREADY_VISIBLE
+GoogleInputMethodService.onStartInput():1318 onStartInput(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=0, initialSelEnd=0, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[mParcelledData.dataSize=404], hintText=null, hintLocales=[]}}, true)
+GoogleInputMethodService.onStartInputView():1411 onStartInputView(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=0, initialSelEnd=0, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[{android.support.text.emoji.emojiCompat_metadataVersion=11, androidx.core.view.inputmethod.EditorInfoCompat.STYLUS_HANDWRITING_ENABLED=true, android.support.text.emoji.emojiCompat_replaceAll=false}], hintText=null, hintLocales=[]}}, true)
+Autofill popup isn't shown because autofill is not available.
+
+Did you set up autofill?
+1. Go to Settings > System > Languages&input > Advanced > Autofill Service
+2. Pick a service
+
+Did you add an account?
+1. Go to Settings > System > Languages&input > Advanced
+2. Click on the settings icon next to the Autofill Service
+3. Add your account
+us.blindmint.codex.debug:977da603: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+show(ime())
+us.blindmint.codex.debug:977da603: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+AbstractIme.onActivate():96 LatinIme.onActivate() : EditorInfo = EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=0, initialSelEnd=0, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[{android.support.text.emoji.emojiCompat_metadataVersion=11, androidx.core.view.inputmethod.EditorInfoCompat.STYLUS_HANDWRITING_ENABLED=true, android.support.text.emoji.emojiCompat_replaceAll=false}], hintText=null, hintLocales=[]}, IncognitoMode = false, DeviceLocked = false
+interaction: PackageSetting{5f8ddc1 us.blindmint.codex.debug/10273} -> PackageSetting{64924e3 com.google.android.inputmethod.latin/10158} BLOCKED
+Flattened final assist data: 1192 bytes, containing 2 windows, 7 views
+Notified activity assist data for activity: Token{98624d ActivityRecord{51363191 u0 us.blindmint.codex.debug/us.blindmint.codex.ui.main.MainActivity t263}} without a session Id
+show(ime())
+us.blindmint.codex.debug:d92f97a1: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT_BY_INSETS_API fromUser false
+us.blindmint.codex.debug:d92f97a1: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+us.blindmint.codex.debug:2b93209b: onRequestShow at ORIGIN_SERVER reason ATTACH_NEW_INPUT fromUser false
+us.blindmint.codex.debug:2b93209b: onCancelled at PHASE_SERVER_ALREADY_VISIBLE
+GoogleInputMethodService.onStartInput():1318 onStartInput(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=0, initialSelEnd=0, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[mParcelledData.dataSize=404], hintText=null, hintLocales=[]}}, true)
+GoogleInputMethodService.onStartInputView():1411 onStartInputView(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=0, initialSelEnd=0, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[{android.support.text.emoji.emojiCompat_metadataVersion=11, androidx.core.view.inputmethod.EditorInfoCompat.STYLUS_HANDWRITING_ENABLED=true, android.support.text.emoji.emojiCompat_replaceAll=false}], hintText=null, hintLocales=[]}}, true)
+Autofill popup isn't shown because autofill is not available.
+
+Did you set up autofill?
+1. Go to Settings > System > Languages&input > Advanced > Autofill Service
+2. Pick a service
+
+Did you add an account?
+1. Go to Settings > System > Languages&input > Advanced
+2. Click on the settings icon next to the Autofill Service
+3. Add your account
+us.blindmint.codex.debug:b4204b01: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+show(ime())
+us.blindmint.codex.debug:b4204b01: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+AbstractIme.onActivate():96 LatinIme.onActivate() : EditorInfo = EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=0, initialSelEnd=0, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[{android.support.text.emoji.emojiCompat_metadataVersion=11, androidx.core.view.inputmethod.EditorInfoCompat.STYLUS_HANDWRITING_ENABLED=true, android.support.text.emoji.emojiCompat_replaceAll=false}], hintText=null, hintLocales=[]}, IncognitoMode = false, DeviceLocked = false
+us.blindmint.codex.debug:6069d6ef: onRequestShow at ORIGIN_SERVER reason ATTACH_NEW_INPUT fromUser false
+us.blindmint.codex.debug:6069d6ef: onCancelled at PHASE_SERVER_ALREADY_VISIBLE
+GoogleInputMethodService.onStartInput():1318 onStartInput(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=16, initialSelEnd=16, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[mParcelledData.dataSize=404], hintText=null, hintLocales=[]}}, true)
+GoogleInputMethodService.onStartInputView():1411 onStartInputView(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=16, initialSelEnd=16, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[{android.support.text.emoji.emojiCompat_metadataVersion=11, androidx.core.view.inputmethod.EditorInfoCompat.STYLUS_HANDWRITING_ENABLED=true, android.support.text.emoji.emojiCompat_replaceAll=false}], hintText=null, hintLocales=[]}}, true)
+AbstractIme.onActivate():96 LatinIme.onActivate() : EditorInfo = EditorInfo{packageName=us.blindmint.codex.debug, inputType=28001, inputTypeString=Normal[MultiLine|AutoCorrect], enableLearning=true, autoCorrection=true, autoComplete=true, imeOptions=42000000, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=16, initialSelEnd=16, initialCapsMode=0, label=null, fieldId=-1, fieldName=null, extras=Bundle[{android.support.text.emoji.emojiCompat_metadataVersion=11, androidx.core.view.inputmethod.EditorInfoCompat.STYLUS_HANDWRITING_ENABLED=true, android.support.text.emoji.emojiCompat_replaceAll=false}], hintText=null, hintLocales=[]}, IncognitoMode = false, DeviceLocked = false
+--> GET https://calibre.datashard.dev/
+--> END GET
+<-- 200 https://calibre.datashard.dev/login?next=%2F (493ms)
+date: Wed, 07 Jan 2026 20:05:38 GMT
+content-type: text/html; charset=utf-8
+content-security-policy: default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; img-src 'self' data:; object-src 'none';
+set-cookie: session=eyJjc3JmX3Rva2VuIjoiMmZjZDMxMGUzY2IzZTQzOGI4YmFiYmZkOTc4ZTNlZWE2NzljNGM5ZSJ9.aV68kg.cyaz1Dc89ksEtgEMQ7TZrgps-c0; HttpOnly; Path=/; SameSite=Strict
+strict-transport-security: max-age=31536000
+vary: Cookie
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-xss-protection: 1; mode=block
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server-timing: cfCacheStatus;desc="DYNAMIC"
+server-timing: cfEdge;dur=5,cfOrigin;dur=93
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=uQWObrKS2DTkXUmfZtvM32KFkOGpcYqcCUg8DHdZQKu9HOwRZQIfCjfNXz3Yvk3H4n7qo2F%2FywCbPhDRhMoPT6F9pIT%2B3NpXwjeJC%2BNWqcxCRjE%3D"}]}
+server: cloudflare
+cf-ray: 9ba612316c0a091b-SEA
+alt-svc: h3=":443"; ma=86400
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Calibre-Web | Login</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <!-- Bootstrap -->
+    <link rel="apple-touch-icon" sizes="140x140" href="/static/favicon.ico">
+    <link rel="shortcut icon" href="/static/favicon.ico">
+    <link href="/static/css/libs/bootstrap.min.css" rel="stylesheet" media="screen">
+    
+    <link href="/static/css/style.css" rel="stylesheet" media="screen">
+    <link href="/static/css/upload.css" rel="stylesheet" media="screen">
+    
+       <link href="/static/css/caliBlur.css" rel="stylesheet" media="screen">
+       <link href="/static/css/caliBlur_override.css" rel="stylesheet" media="screen">
+    
+  </head>
+  <body class="login  blur" data-text="Home" data-textback="Back">
+    <!-- Static navbar -->
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle Navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Calibre-Web</a>
+        </div>
+        
+            <div class="home-btn"><a class="home-btn-tooltip" href="/" data-toggle="tooltip" title="" data-placement="bottom" data-original-title="Home"></a></div>
+            <div class="plexBack"><a href="/"></a></div>
+        
+        
+        <div class="navbar-collapse collapse">
+          
+          <ul class="nav navbar-nav navbar-right" id="main-nav">
+            
+            
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+    
+    
+    
+      <div id="loader" hidden="true">
+        <center>
+          <h3>Uploading...</h3>
+          <span>Please do not refresh the page</span>.
+        </center>
+      </div>
+    
+    <div class="container-fluid">
+      <div class="row-fluid">
+        
+        <div class="col-sm-10">
+          
+<div class="well col-sm-6 col-sm-offset-2">
+  <h2 style="margin-top: 0">Login</h2>
+  <form method="POST" role="form">
+    <input type="hidden" name="next" value="/">
+    <input type="hidden" name="csrf_token" value="IjJmY2QzMTBlM2NiM2U0MzhiOGJhYmJmZDk3OGUzZWVhNjc5YzRjOWUi.aV68kg.1fzgqXDouAImt7KDKUDRcvsqKJs">
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" class="form-control" id="username" name="username" autocapitalize="off" placeholder="Username" value="">
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" class="form-control" id="password" name="password" placeholder="Password" value="">
+    </div>
+    <div class="checkbox">
+      <label>
+        <input type="checkbox" name="remember_me" checked> Remember Me
+      </label>
+    </div>
+    <button type="submit" name="submit" class="btn btn-default">Login</button>
+    
+    
+      
+      
+    
+    
+    
+  </form>
+</div>
+  
+
+          
+      </div>
+    </div>
+  </div>
+    <div class="modal fade" id="bookDetailsModal" tabindex="-1" role="dialog" aria-labelledby="bookDetailsModalLabel">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="bookDetailsModalLabel">Book Details</h4>
+          </div>
+          <div class="modal-body">...</div>
+          <div class="modal-footer">
+            <button type="button" id="details_close" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="/static/js/libs/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="/static/js/libs/bootstrap.min.js"></script>
+    <script src="/static/js/libs/underscore-umd-min.js"></script>
+    <script src="/static/js/libs/intention.min.js"></script>
+    <script src="/static/js/libs/context.min.js"></script>
+    <script src="/static/js/libs/plugins.js"></script>
+    <script src="/static/js/libs/jquery.form.min.js"></script>
+    <script src="/static/js/uploadprogress.js"> </script>
+    <script src="/static/js/main.js"></script>
+    
+      <script src="/static/js/libs/jquery.visible.min.js"></script>
+      <script src="/static/js/libs/compromise.min.js"></script>
+      <script src="/static/js/libs/readmore.min.js"></script>
+      <script src="/static/js/caliBlur.js"></script>
+    
+    
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"be03694377ef46969056d1e0aa4e9a3e","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+<-- END HTTP (5563-byte body)
+--> GET https://calibre.datashard.dev/opds
+--> END GET
+<-- 200 https://calibre.datashard.dev/opds (292ms)
+date: Wed, 07 Jan 2026 20:05:38 GMT
+content-type: application/atom+xml; charset=utf-8
+content-length: 4954
+content-security-policy: default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; img-src 'self' data:; object-src 'none';
+retry-after: 0
+strict-transport-security: max-age=31536000
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-ratelimit-limit: 3
+x-ratelimit-remaining: 3
+x-ratelimit-reset: 1767816339
+x-xss-protection: 1; mode=block
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server-timing: cfCacheStatus;desc="DYNAMIC"
+server-timing: cfEdge;dur=8,cfOrigin;dur=232
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Lp4vpujIdhaSOy21brp51jEsZ2RRsXgrOCPeqqcUxnHuxNA8vH2UhLSobiFYLfjeV2WSqA4JdRgmu3%2Fg3UM4zAMeglU%2Fh327pcVMBhM0PQ6LrmDdFg%3D%3D"}]}
+server: cloudflare
+cf-ray: 9ba6123279b9db8c-SEA
+alt-svc: h3=":443"; ma=86400
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <icon>/static/favicon.ico</icon>
+  <id>urn:uuid:2853dacf-ed79-42f5-8e8a-a7bb3d1ae6a2</id>
+  <updated>2026-01-07T13:05:38+00:00</updated>
+  <link rel="self" href="/opds" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="start" title="Start" href="/opds"
+        type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="search"
+      href="/opds/osd"
+      type="application/opensearchdescription+xml"/>
+  <link type="application/atom+xml" rel="search" title="Search" href="/opds/search/{searchTerms}" />
+  <title>Calibre-Web</title>
+  <author>
+    <name>Calibre-Web</name>
+    <uri>https://github.com/janeczku/calibre-web</uri>
+  </author>
+  <entry>
+    <title>Alphabetical Books</title>
+    <link href="/opds/books" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/books</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">Books sorted alphabetically</content>
+  </entry>
+  
+  <entry>
+    <title>Hot Books</title>
+    <link href="/opds/hot" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/hot</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Downloads.</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Top Rated Books</title>
+    <link href="/opds/rated" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/rated</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Rating.</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Recently added Books</title>
+    <link href="/opds/new" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/new</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">The latest Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Random Books</title>
+    <link href="/opds/discover" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/discover</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">Show Random Books</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Read Books</title>
+    <link href="/opds/readbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/readbooks</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">Read Books</content>
+  </entry>
+  <entry>
+    <title>Unread Books</title>
+    <link href="/opds/unreadbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/unreadbooks</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">Unread Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Authors</title>
+    <link href="/opds/author" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/author</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">Books ordered by Author</content>
+  </entry>
+  
+  
+   <entry>
+    <title>Publishers</title>
+    <link href="/opds/publisher" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/publisher</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">Books ordered by publisher</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Categories</title>
+    <link href="/opds/category" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/category</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">Books ordered by category</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Series</title>
+    <link href="/opds/series" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/series</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">Books ordered by series</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Languages</title>
+    <link href="/opds/language/" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/language/</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">Books ordered by Languages</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Ratings</title>
+    <link href="/opds/ratings" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/ratings</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">Books ordered by Rating</content>
+  </entry>
+  
+  
+  <entry>
+    <title>File formats</title>
+    <link href="/opds/formats" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/formats</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">Books ordered by file formats</content>
+  </entry>
+ 
+   
+  <entry>
+    <title>Shelves</title>
+    <link  href="/opds/shelfindex" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/shelfindex</id>
+    <updated>2026-01-07T13:05:38+00:00</updated>
+    <content type="text">Books organized in shelves</content>
+  </entry>
+  
+</feed>
+<-- END HTTP (4954-byte body)
+setTopOnBackInvokedCallback (unwrapped): androidx.activity.OnBackPressedDispatcher$Api34Impl$createOnBackAnimationCallback$1@fea6338
+setTopOnBackInvokedCallback (unwrapped): null
+Window{7ecee57 u0 us.blindmint.codex.debug/us.blindmint.codex.ui.main.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@3c52cd0, mPriority=0, mIsAnimationCallback=true, mOverrideBehavior=0}
+Window{7ecee57 u0 us.blindmint.codex.debug/us.blindmint.codex.ui.main.MainActivity}: Setting back callback null
+us.blindmint.codex.debug:ff96070e: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+us.blindmint.codex.debug:ff96070e: onFailed at PHASE_CLIENT_VIEW_SERVED
+us.blindmint.codex.debug:8a2ee2cb: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
+hide(ime())
+us.blindmint.codex.debug:8a2ee2cb: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+Unregister OnBackInvokedCallback at app window (packageName=us.blindmint.codex.debug)
+GoogleInputMethodService.onStartInput():1318 onStartInput(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
+GoogleInputMethodService.onStartInputView():1411 onStartInputView(EditorInfo{EditorInfo{packageName=us.blindmint.codex.debug, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
+requestCursorUpdates on inactive InputConnection
+Ime callback not found. Ignoring unregisterReceivedCallback. callbackId: 124700989 remaining callbacks: 0
+AbstractIme.onActivate():96 PasswordIme.onActivate() : EditorInfo = EditorInfo{packageName=us.blindmint.codex.debug, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}, IncognitoMode = false, DeviceLocked = false
+Register OnBackInvokedCallback with priority=-1 at app window (packageName=us.blindmint.codex.debug)
+setTopOnBackInvokedCallback (unwrapped): android.view.ImeBackAnimationController@c7afd89
+Window{3490c73 u0 us.blindmint.codex.debug/us.blindmint.codex.ui.main.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@b9a7332, mPriority=0, mIsAnimationCallback=true, mOverrideBehavior=0}
+Unregister OnBackInvokedCallback at app window (packageName=us.blindmint.codex.debug)
+setTopOnBackInvokedCallback (unwrapped): androidx.activity.OnBackPressedDispatcher$Api34Impl$createOnBackAnimationCallback$1@e61e6c7
+Window{3490c73 u0 us.blindmint.codex.debug/us.blindmint.codex.ui.main.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@a887883, mPriority=0, mIsAnimationCallback=true, mOverrideBehavior=0}
+No permission grants found for us.blindmint.codex.debug
+Toast already killed. pkg=us.blindmint.codex.debug token=android.os.BinderProxy@7488873
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 0
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds
+DEBUG: Starting to load feed from: https://calibre.datashard.dev/opds
+DEBUG: Calling opdsRepository.fetchFeed...
+--> GET https://calibre.datashard.dev/opds
+--> END GET
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: true, error: null, feedEntries: 0
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds
+DEBUG: Starting to load feed from: https://calibre.datashard.dev/opds
+DEBUG: Calling opdsRepository.fetchFeed...
+--> GET https://calibre.datashard.dev/opds
+--> END GET
+<-- 200 https://calibre.datashard.dev/opds (373ms)
+date: Wed, 07 Jan 2026 20:05:46 GMT
+content-type: application/atom+xml; charset=utf-8
+content-length: 4954
+content-security-policy: default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; img-src 'self' data:; object-src 'none';
+retry-after: 0
+strict-transport-security: max-age=31536000
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-ratelimit-limit: 3
+x-ratelimit-remaining: 3
+x-ratelimit-reset: 1767816347
+x-xss-protection: 1; mode=block
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server-timing: cfCacheStatus;desc="DYNAMIC"
+server-timing: cfEdge;dur=10,cfOrigin;dur=309
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=AHymDe3ZxLzRrOUl1hO9gtG36P8856tKUzMYFG%2FTTqoLhMmVGRWl61FAbh6Ee30dPi7RoFZQncSmFqy6C2bfphVlVsKHxTr2Xeja%2BMOu2XzQjydyEQ%3D%3D"}]}
+server: cloudflare
+cf-ray: 9ba612658ede7699-SEA
+alt-svc: h3=":443"; ma=86400
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <icon>/static/favicon.ico</icon>
+  <id>urn:uuid:2853dacf-ed79-42f5-8e8a-a7bb3d1ae6a2</id>
+  <updated>2026-01-07T13:05:46+00:00</updated>
+  <link rel="self" href="/opds" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="start" title="Start" href="/opds"
+        type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="search"
+      href="/opds/osd"
+      type="application/opensearchdescription+xml"/>
+  <link type="application/atom+xml" rel="search" title="Search" href="/opds/search/{searchTerms}" />
+  <title>Calibre-Web</title>
+  <author>
+    <name>Calibre-Web</name>
+    <uri>https://github.com/janeczku/calibre-web</uri>
+  </author>
+  <entry>
+    <title>Alphabetical Books</title>
+    <link href="/opds/books" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/books</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books sorted alphabetically</content>
+  </entry>
+  
+  <entry>
+    <title>Hot Books</title>
+    <link href="/opds/hot" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/hot</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Downloads.</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Top Rated Books</title>
+    <link href="/opds/rated" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/rated</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Rating.</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Recently added Books</title>
+    <link href="/opds/new" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/new</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">The latest Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Random Books</title>
+    <link href="/opds/discover" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/discover</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Show Random Books</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Read Books</title>
+    <link href="/opds/readbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/readbooks</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Read Books</content>
+  </entry>
+  <entry>
+    <title>Unread Books</title>
+    <link href="/opds/unreadbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/unreadbooks</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Unread Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Authors</title>
+    <link href="/opds/author" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/author</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books ordered by Author</content>
+  </entry>
+  
+  
+   <entry>
+    <title>Publishers</title>
+    <link href="/opds/publisher" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/publisher</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books ordered by publisher</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Categories</title>
+    <link href="/opds/category" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/category</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books ordered by category</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Series</title>
+    <link href="/opds/series" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/series</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books ordered by series</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Languages</title>
+    <link href="/opds/language/" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/language/</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books ordered by Languages</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Ratings</title>
+    <link href="/opds/ratings" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/ratings</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books ordered by Rating</content>
+  </entry>
+  
+  
+  <entry>
+    <title>File formats</title>
+    <link href="/opds/formats" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/formats</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books ordered by file formats</content>
+  </entry>
+ 
+   
+  <entry>
+    <title>Shelves</title>
+    <link  href="/opds/shelfindex" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/shelfindex</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books organized in shelves</content>
+  </entry>
+  
+</feed>
+<-- END HTTP (4954-byte body)
+DEBUG: Feed loaded successfully, entries: 15
+DEBUG: State updated with feed
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 15
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds
+DEBUG: Feed already loaded for this URL, skipping
+<-- 200 https://calibre.datashard.dev/opds (431ms)
+date: Wed, 07 Jan 2026 20:05:46 GMT
+content-type: application/atom+xml; charset=utf-8
+content-length: 4954
+content-security-policy: default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; img-src 'self' data:; object-src 'none';
+retry-after: 0
+strict-transport-security: max-age=31536000
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-ratelimit-limit: 3
+x-ratelimit-remaining: 3
+x-ratelimit-reset: 1767816347
+x-xss-protection: 1; mode=block
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server-timing: cfCacheStatus;desc="DYNAMIC"
+server-timing: cfEdge;dur=9,cfOrigin;dur=369
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=pMEe2E7oq2BlNkmAEGy9TmMm9U4C3od5S%2FBsy0yKf3nrDKCO9yKzDMEq7W6h58W4zlOf9B3yu%2FNd%2BnpnP67btgdlMk5toJMTtIIxMcRwoVDD3XyeeA%3D%3D"}]}
+server: cloudflare
+cf-ray: 9ba612659a84b99f-SEA
+alt-svc: h3=":443"; ma=86400
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <icon>/static/favicon.ico</icon>
+  <id>urn:uuid:2853dacf-ed79-42f5-8e8a-a7bb3d1ae6a2</id>
+  <updated>2026-01-07T13:05:46+00:00</updated>
+  <link rel="self" href="/opds" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="start" title="Start" href="/opds"
+        type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="search"
+      href="/opds/osd"
+      type="application/opensearchdescription+xml"/>
+  <link type="application/atom+xml" rel="search" title="Search" href="/opds/search/{searchTerms}" />
+  <title>Calibre-Web</title>
+  <author>
+    <name>Calibre-Web</name>
+    <uri>https://github.com/janeczku/calibre-web</uri>
+  </author>
+  <entry>
+    <title>Alphabetical Books</title>
+    <link href="/opds/books" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/books</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books sorted alphabetically</content>
+  </entry>
+  
+  <entry>
+    <title>Hot Books</title>
+    <link href="/opds/hot" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/hot</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Downloads.</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Top Rated Books</title>
+    <link href="/opds/rated" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/rated</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Rating.</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Recently added Books</title>
+    <link href="/opds/new" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/new</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">The latest Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Random Books</title>
+    <link href="/opds/discover" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/discover</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Show Random Books</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Read Books</title>
+    <link href="/opds/readbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/readbooks</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Read Books</content>
+  </entry>
+  <entry>
+    <title>Unread Books</title>
+    <link href="/opds/unreadbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/unreadbooks</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Unread Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Authors</title>
+    <link href="/opds/author" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/author</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books ordered by Author</content>
+  </entry>
+  
+  
+   <entry>
+    <title>Publishers</title>
+    <link href="/opds/publisher" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/publisher</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books ordered by publisher</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Categories</title>
+    <link href="/opds/category" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/category</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books ordered by category</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Series</title>
+    <link href="/opds/series" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/series</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books ordered by series</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Languages</title>
+    <link href="/opds/language/" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/language/</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books ordered by Languages</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Ratings</title>
+    <link href="/opds/ratings" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/ratings</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books ordered by Rating</content>
+  </entry>
+  
+  
+  <entry>
+    <title>File formats</title>
+    <link href="/opds/formats" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/formats</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books ordered by file formats</content>
+  </entry>
+ 
+   
+  <entry>
+    <title>Shelves</title>
+    <link  href="/opds/shelfindex" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/shelfindex</id>
+    <updated>2026-01-07T13:05:46+00:00</updated>
+    <content type="text">Books organized in shelves</content>
+  </entry>
+  
+</feed>
+<-- END HTTP (4954-byte body)
+DEBUG: Feed loaded successfully, entries: 15
+DEBUG: State updated with feed
+DEBUG: Category clicked: Alphabetical Books
+DEBUG: Entry has 1 links
+DEBUG: Link 0: href=/opds/books, type=application/atom+xml;profile=opds-catalog, rel=null
+DEBUG: Found atom link: /opds/books
+DEBUG: Resolved URL: https://calibre.datashard.dev/opds/books
+DEBUG: About to navigate to OpdsCatalogScreen with title: Alphabetical Books
+DEBUG: Navigation call completed successfully
+DEBUG: Category clicked: Hot Books
+DEBUG: Entry has 1 links
+DEBUG: Link 0: href=/opds/hot, type=application/atom+xml;profile=opds-catalog, rel=null
+DEBUG: Found atom link: /opds/hot
+DEBUG: Resolved URL: https://calibre.datashard.dev/opds/hot
+DEBUG: About to navigate to OpdsCatalogScreen with title: Hot Books
+DEBUG: Navigation call completed successfully
+DEBUG: Category clicked: Top Rated Books
+DEBUG: Entry has 1 links
+DEBUG: Link 0: href=/opds/rated, type=application/atom+xml;profile=opds-catalog, rel=null
+DEBUG: Found atom link: /opds/rated
+DEBUG: Resolved URL: https://calibre.datashard.dev/opds/rated
+DEBUG: About to navigate to OpdsCatalogScreen with title: Top Rated Books
+DEBUG: Navigation call completed successfully
+

@@ -241,6 +241,12 @@
     <string name="dictionary_converting">Converting dictionary…</string>
     <string name="dictionary_conversion_failed">Conversion failed. Please try again.</string>
 
+    <!-- OPDS Strings -->
+    <string name="download_book">Download Book</string>
+    <string name="confirm_download_book">Do you want to download "%1$s" by %2$s?</string>
+    <string name="unknown_title">Unknown Title</string>
+    <string name="download">Download</string>
+
     <string name="reading_speed_reader_settings">Reading speed</string>
     <string name="reading_mode_reader_settings">Reading mode</string>
     <string name="system_reader_settings">System</string>

@@ -12,6 +12,7 @@ import us.blindmint.codex.domain.opds.OpdsFeed
 @Immutable
 data class OpdsCatalogState(
     val isLoading: Boolean = false,
+    val isDownloading: Boolean = false,
     val feed: OpdsFeed? = null,
     val error: String? = null,
     val feedUrl: String? = null

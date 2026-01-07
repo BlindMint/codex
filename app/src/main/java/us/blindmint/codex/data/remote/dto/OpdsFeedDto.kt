@@ -15,6 +15,9 @@ data class OpdsFeedDto(
     @field:Element(name = "title")
     var title: String = "",
 
+    @field:Element(name = "author", required = false)
+    var author: OpdsAuthorDto? = null,
+
     @field:ElementList(name = "entry", inline = true, required = false)
     var entries: MutableList<OpdsEntryDto> = mutableListOf(),
 

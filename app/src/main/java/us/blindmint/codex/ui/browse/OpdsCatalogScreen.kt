@@ -7,6 +7,7 @@
 package us.blindmint.codex.ui.browse
 
 import android.os.Parcelable
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -18,12 +19,17 @@ import us.blindmint.codex.presentation.core.components.top_bar.collapsibleTopApp
 import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.ui.browse.opds.OpdsCatalogContent
 
-@Parcelize
-data class OpdsCatalogScreen(val source: OpdsSourceEntity, val url: String? = null, val title: String? = null) : Screen, Parcelable {
+// Base class for OPDS catalog screens
+abstract class BaseOpdsCatalogScreen(
+    open val source: OpdsSourceEntity,
+    open val url: String? = null,
+    open val title: String? = null
+) : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
+        println("DEBUG: BaseOpdsCatalogScreen.Content() called with url=$url, title=$title")
         val navigator = LocalNavigator.current
         val (scrollBehavior, listState) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior()
 
@@ -35,5 +41,19 @@ data class OpdsCatalogScreen(val source: OpdsSourceEntity, val url: String? = nu
             scrollBehavior = scrollBehavior,
             navigateBack = { navigator.pop() }
         )
+    }
+}
+
+@Parcelize
+data class OpdsRootScreen(override val source: OpdsSourceEntity) : BaseOpdsCatalogScreen(source, null, null), Parcelable {
+    init {
+        println("DEBUG: OpdsRootScreen created")
+    }
+}
+
+@Parcelize
+data class OpdsCategoryScreen(override val source: OpdsSourceEntity, override val url: String, override val title: String) : BaseOpdsCatalogScreen(source, url, title), Parcelable {
+    init {
+        println("DEBUG: OpdsCategoryScreen created with url: $url, title: $title")
     }
 }

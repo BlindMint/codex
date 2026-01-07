@@ -99,13 +99,15 @@ fun BrowseOpdsManagementContent() {
                     onClick = {
                         scope.launch {
                             try {
-                                var testUrl = url.trimEnd('/')
-                                if (!testUrl.endsWith("/opds")) {
-                                    testUrl += "/opds"
+                                val workingUrl = opdsModel.testConnection(url, username.takeIf { it.isNotBlank() }, password.takeIf { it.isNotBlank() })
+                                opdsModel.addOpdsSource(name, workingUrl, username.takeIf { it.isNotBlank() }, password.takeIf { it.isNotBlank() })
+
+                                val successMessage = if (workingUrl != url) {
+                                    "Source added successfully (URL: $workingUrl)"
+                                } else {
+                                    "Source added successfully"
                                 }
-                                opdsModel.testConnection(testUrl, username.takeIf { it.isNotBlank() }, password.takeIf { it.isNotBlank() })
-                                opdsModel.addOpdsSource(name, testUrl, username.takeIf { it.isNotBlank() }, password.takeIf { it.isNotBlank() })
-                                Toast.makeText(context, "Source added successfully", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
                                 showDialog = false
                                 name = ""
                                 url = ""

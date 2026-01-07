@@ -1,0 +1,1394 @@
+Installing profile for us.blindmint.codex.debug
+hiddenapi: Accessing hidden method Ljava/lang/invoke/MethodHandles$Lookup;-><init>(Ljava/lang/Class;I)V (runtime_flags=0, domain=core-platform, api=unsupported) from Lretrofit2/Platform; (domain=app, TargetSdkVersion=35) using reflection: allowed
+No permission grants found for us.blindmint.codex.debug
+userfaultfd: MOVE ioctl seems unsupported: Connection timed out
+DEBUG: OpdsRootScreen created
+DEBUG: BaseOpdsCatalogScreen.Content() called with url=null, title=null
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds, title: null
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 0
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 0
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds
+DEBUG: Starting to load feed from: https://calibre.datashard.dev/opds
+DEBUG: Calling opdsRepository.fetchFeed...
+--> GET https://calibre.datashard.dev/opds
+--> END GET
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds, title: null
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: true, error: null, feedEntries: 0
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: true, error: null, feedEntries: 0
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds
+DEBUG: Starting to load feed from: https://calibre.datashard.dev/opds
+DEBUG: Calling opdsRepository.fetchFeed...
+--> GET https://calibre.datashard.dev/opds
+--> END GET
+<-- 200 https://calibre.datashard.dev/opds (239ms)
+date: Wed, 07 Jan 2026 20:13:13 GMT
+content-type: application/atom+xml; charset=utf-8
+content-length: 4954
+content-security-policy: default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; img-src 'self' data:; object-src 'none';
+retry-after: 0
+strict-transport-security: max-age=31536000
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-ratelimit-limit: 3
+x-ratelimit-remaining: 3
+x-ratelimit-reset: 1767816794
+x-xss-protection: 1; mode=block
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server-timing: cfCacheStatus;desc="DYNAMIC"
+server-timing: cfEdge;dur=9,cfOrigin;dur=173
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=nidzgkbWMNHEdeFByVcItnfvzDVY2bqQAeuSZm6r32bxtfef2DocVZXRHyVQTlIgrV8YwhYE2QI%2FFXUWJh6gCUJWdlJF96phS8ZrIkI5nQqfldqLaw%3D%3D"}]}
+server: cloudflare
+cf-ray: 9ba61d4e0d62fd8a-SEA
+alt-svc: h3=":443"; ma=86400
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <icon>/static/favicon.ico</icon>
+  <id>urn:uuid:2853dacf-ed79-42f5-8e8a-a7bb3d1ae6a2</id>
+  <updated>2026-01-07T13:13:13+00:00</updated>
+  <link rel="self" href="/opds" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="start" title="Start" href="/opds"
+        type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="search"
+      href="/opds/osd"
+      type="application/opensearchdescription+xml"/>
+  <link type="application/atom+xml" rel="search" title="Search" href="/opds/search/{searchTerms}" />
+  <title>Calibre-Web</title>
+  <author>
+    <name>Calibre-Web</name>
+    <uri>https://github.com/janeczku/calibre-web</uri>
+  </author>
+  <entry>
+    <title>Alphabetical Books</title>
+    <link href="/opds/books" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/books</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books sorted alphabetically</content>
+  </entry>
+  
+  <entry>
+    <title>Hot Books</title>
+    <link href="/opds/hot" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/hot</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Downloads.</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Top Rated Books</title>
+    <link href="/opds/rated" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/rated</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Rating.</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Recently added Books</title>
+    <link href="/opds/new" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/new</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">The latest Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Random Books</title>
+    <link href="/opds/discover" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/discover</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Show Random Books</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Read Books</title>
+    <link href="/opds/readbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/readbooks</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Read Books</content>
+  </entry>
+  <entry>
+    <title>Unread Books</title>
+    <link href="/opds/unreadbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/unreadbooks</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Unread Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Authors</title>
+    <link href="/opds/author" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/author</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books ordered by Author</content>
+  </entry>
+  
+  
+   <entry>
+    <title>Publishers</title>
+    <link href="/opds/publisher" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/publisher</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books ordered by publisher</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Categories</title>
+    <link href="/opds/category" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/category</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books ordered by category</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Series</title>
+    <link href="/opds/series" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/series</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books ordered by series</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Languages</title>
+    <link href="/opds/language/" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/language/</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books ordered by Languages</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Ratings</title>
+    <link href="/opds/ratings" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/ratings</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books ordered by Rating</content>
+  </entry>
+  
+  
+  <entry>
+    <title>File formats</title>
+    <link href="/opds/formats" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/formats</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books ordered by file formats</content>
+  </entry>
+ 
+   
+  <entry>
+    <title>Shelves</title>
+    <link  href="/opds/shelfindex" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/shelfindex</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books organized in shelves</content>
+  </entry>
+  
+</feed>
+<-- END HTTP (4954-byte body)
+DEBUG: Feed loaded successfully, entries: 15
+DEBUG: State updated with feed
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds, title: null
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 15
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 15
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds
+DEBUG: Feed already loaded for this URL, skipping
+<-- 200 https://calibre.datashard.dev/opds (350ms)
+date: Wed, 07 Jan 2026 20:13:13 GMT
+content-type: application/atom+xml; charset=utf-8
+content-length: 4954
+content-security-policy: default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; img-src 'self' data:; object-src 'none';
+retry-after: 0
+strict-transport-security: max-age=31536000
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-ratelimit-limit: 3
+x-ratelimit-remaining: 3
+x-ratelimit-reset: 1767816794
+x-xss-protection: 1; mode=block
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server-timing: cfCacheStatus;desc="DYNAMIC"
+server-timing: cfEdge;dur=11,cfOrigin;dur=254
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Wk%2BLWaDRM%2F0KT2BRpeHd4DEiYvdqs4n2rDQfpGhgC%2FsDX4rFba8xLqmGqlOfMoETlKK8mPmRxgFvY6uq9YWPxp0nUO%2BImL3wxHeEs9O56%2FI%2BKxe6GA%3D%3D"}]}
+server: cloudflare
+cf-ray: 9ba61d4e0cd3fbe6-SEA
+alt-svc: h3=":443"; ma=86400
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <icon>/static/favicon.ico</icon>
+  <id>urn:uuid:2853dacf-ed79-42f5-8e8a-a7bb3d1ae6a2</id>
+  <updated>2026-01-07T13:13:13+00:00</updated>
+  <link rel="self" href="/opds" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="start" title="Start" href="/opds"
+        type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="search"
+      href="/opds/osd"
+      type="application/opensearchdescription+xml"/>
+  <link type="application/atom+xml" rel="search" title="Search" href="/opds/search/{searchTerms}" />
+  <title>Calibre-Web</title>
+  <author>
+    <name>Calibre-Web</name>
+    <uri>https://github.com/janeczku/calibre-web</uri>
+  </author>
+  <entry>
+    <title>Alphabetical Books</title>
+    <link href="/opds/books" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/books</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books sorted alphabetically</content>
+  </entry>
+  
+  <entry>
+    <title>Hot Books</title>
+    <link href="/opds/hot" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/hot</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Downloads.</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Top Rated Books</title>
+    <link href="/opds/rated" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/rated</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Rating.</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Recently added Books</title>
+    <link href="/opds/new" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/new</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">The latest Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Random Books</title>
+    <link href="/opds/discover" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/discover</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Show Random Books</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Read Books</title>
+    <link href="/opds/readbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/readbooks</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Read Books</content>
+  </entry>
+  <entry>
+    <title>Unread Books</title>
+    <link href="/opds/unreadbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/unreadbooks</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Unread Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Authors</title>
+    <link href="/opds/author" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/author</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books ordered by Author</content>
+  </entry>
+  
+  
+   <entry>
+    <title>Publishers</title>
+    <link href="/opds/publisher" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/publisher</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books ordered by publisher</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Categories</title>
+    <link href="/opds/category" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/category</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books ordered by category</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Series</title>
+    <link href="/opds/series" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/series</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books ordered by series</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Languages</title>
+    <link href="/opds/language/" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/language/</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books ordered by Languages</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Ratings</title>
+    <link href="/opds/ratings" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/ratings</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books ordered by Rating</content>
+  </entry>
+  
+  
+  <entry>
+    <title>File formats</title>
+    <link href="/opds/formats" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/formats</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books ordered by file formats</content>
+  </entry>
+ 
+   
+  <entry>
+    <title>Shelves</title>
+    <link  href="/opds/shelfindex" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/shelfindex</id>
+    <updated>2026-01-07T13:13:13+00:00</updated>
+    <content type="text">Books organized in shelves</content>
+  </entry>
+  
+</feed>
+<-- END HTTP (4954-byte body)
+DEBUG: Feed loaded successfully, entries: 15
+DEBUG: State updated with feed
+DEBUG: Category clicked: Hot Books
+DEBUG: Entry has 1 links
+DEBUG: Link 0: href=/opds/hot, type=application/atom+xml;profile=opds-catalog, rel=null
+DEBUG: Found atom link: /opds/hot
+DEBUG: Resolved URL: https://calibre.datashard.dev/opds/hot
+DEBUG: About to navigate to OpdsCatalogScreen with title: Hot Books
+DEBUG: OpdsCategoryScreen created with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Navigation call completed successfully
+DEBUG: BaseOpdsCatalogScreen.Content() called with url=https://calibre.datashard.dev/opds/hot, title=Hot Books
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 15
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 15
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds/hot
+DEBUG: Starting to load feed from: https://calibre.datashard.dev/opds/hot
+DEBUG: Calling opdsRepository.fetchFeed...
+--> GET https://calibre.datashard.dev/opds/hot
+--> END GET
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds, title: null
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: true, error: null, feedEntries: 15
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: true, error: null, feedEntries: 15
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds
+DEBUG: Starting to load feed from: https://calibre.datashard.dev/opds
+DEBUG: Calling opdsRepository.fetchFeed...
+--> GET https://calibre.datashard.dev/opds
+--> END GET
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Current state - isLoading: true, error: null, feedEntries: 15
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Current state - isLoading: true, error: null, feedEntries: 15
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds/hot
+DEBUG: Starting to load feed from: https://calibre.datashard.dev/opds/hot
+DEBUG: Calling opdsRepository.fetchFeed...
+--> GET https://calibre.datashard.dev/opds/hot
+--> END GET
+<-- 200 https://calibre.datashard.dev/opds/hot (311ms)
+date: Wed, 07 Jan 2026 20:13:15 GMT
+content-type: application/atom+xml; charset=utf-8
+content-length: 12262
+content-security-policy: default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; img-src 'self' data:; object-src 'none';
+retry-after: 0
+strict-transport-security: max-age=31536000
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-ratelimit-limit: 3
+x-ratelimit-remaining: 3
+x-ratelimit-reset: 1767816796
+x-xss-protection: 1; mode=block
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server-timing: cfCacheStatus;desc="DYNAMIC"
+server-timing: cfEdge;dur=13,cfOrigin;dur=240
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=z4WCUvuE6Q365bzrTbgwjoHknXGAGYFVBmN9iYus9Zwg9CJr9bEEMFBfdl6uXYstkdOAxqMkI3P1nl5c1dvuJ8rKhXAUxXOgyExoVLiQoOHFx%2Fs%3D"}]}
+server: cloudflare
+cf-ray: 9ba61d592ebd6de2-SEA
+alt-svc: h3=":443"; ma=86400
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/terms/" xmlns:dcterms="http://purl.org/dc/terms/">
+  <icon>/static/favicon.ico</icon>
+  <id>urn:uuid:2853dacf-ed79-42f5-8e8a-a7bb3d1ae6a2</id>
+  <updated>2026-01-07T13:13:15+00:00</updated>
+  <link rel="self"
+        href="/opds/hot?"
+        type="application/atom+xml;profile=opds-catalog;type=feed;kind=navigation"/>
+  <link rel="start"
+        href="/opds"
+        type="application/atom+xml;profile=opds-catalog;type=feed;kind=navigation"/>
+  <link rel="up"
+        href="/opds"
+        type="application/atom+xml;profile=opds-catalog;type=feed;kind=navigation"/>
+
+
+
+    <link rel="search"
+      href="/opds/osd"
+      type="application/opensearchdescription+xml"/>
+  <link type="application/atom+xml" rel="search" title="Search" href="/opds/search/{searchTerms}" />
+  <title>Calibre-Web</title>
+  <author>
+    <name>Calibre-Web</name>
+    <uri>https://github.com/janeczku/calibre-web</uri>
+  </author>
+
+  
+  
+  <entry>
+    <title>Count Zero</title>
+    <id>urn:uuid:0dfcd8de-61f9-49f9-b6f7-8765c260d016</id>
+    <updated>2024-11-05T20:42:25+00:00</updated>
+    
+      <author>
+        <name>William Gibson</name>
+      </author>
+    
+    
+      <publisher>
+        <name>ePubLibre</name>
+      </publisher>
+    
+    <published>1986-01-01T07:00:00+00:00</published>
+    
+      <dcterms:language>eng</dcterms:language>
+    
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Fiction - Science Fiction"
+              label="Fiction - Science Fiction"/>
+    
+    <summary>A corporate mercenary wakes in a reconstructed body, a beautiful woman by his side. Then Hosaka Corporation reactivates him, for a mission more dangerous than the one he’s recovering from: to get a defecting chief of R&amp;D—and the biochip he’s perfected—out intact. But this proves to be of supreme interest to certain other parties—some of whom aren’t remotely human…</summary>
+    
+    <link type="image/jpeg" href="/opds/cover/15487" rel="http://opds-spec.org/image"/>
+    <link type="image/jpeg" href="/opds/cover/15487" rel="http://opds-spec.org/image/thumbnail"/>
+    
+    
+    <link rel="http://opds-spec.org/acquisition" href="/opds/download/15487/epub/"
+          length="1878585" mtime="2024-11-05T20:42:25+00:00" type="application/epub+zip"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Neuromancer</title>
+    <id>urn:uuid:5056183e-ab20-4cd9-ad39-2596a2a2f6f0</id>
+    <updated>2024-11-05T20:42:23+00:00</updated>
+    
+      <author>
+        <name>William Gibson</name>
+      </author>
+    
+    
+      <publisher>
+        <name>ePubLibre</name>
+      </publisher>
+    
+    <published>1984-04-23T07:00:00+00:00</published>
+    
+      <dcterms:language>eng</dcterms:language>
+    
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Fiction - Science Fiction"
+              label="Fiction - Science Fiction"/>
+    
+    <summary>The Matrix: a consensual hallucination experienced daily by billions of users. A world within the world… Case was the hottest computer cowboy cruising the information superhighway—jacking his consciousness into cyberspace, soaring through tactile lattices of data and logic, rustling encoded secrets for anyone with the money to buy his skills. Then he double-crossed the wrong people, who caught up with him in a big way—and burned the talent out of his brain, micron by micron. Banished from cyberspace, trapped in the meat of his physical body, Case courted death in the high-tech underworld. Until a shadowy conspiracy offered him a second chance—and a cure—for a price…</summary>
+    
+    <link type="image/jpeg" href="/opds/cover/15484" rel="http://opds-spec.org/image"/>
+    <link type="image/jpeg" href="/opds/cover/15484" rel="http://opds-spec.org/image/thumbnail"/>
+    
+    
+    <link rel="http://opds-spec.org/acquisition" href="/opds/download/15484/epub/"
+          length="2873505" mtime="2024-11-05T20:42:23+00:00" type="application/epub+zip"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Mona Lisa Overdrive</title>
+    <id>urn:uuid:e5e62e91-780c-4897-9ae2-ad8e2a950cef</id>
+    <updated>2024-11-05T20:42:21+00:00</updated>
+    
+      <author>
+        <name>William Gibson</name>
+      </author>
+    
+    
+      <publisher>
+        <name>ePubLibre</name>
+      </publisher>
+    
+    <published>1988-01-01T07:00:00+00:00</published>
+    
+      <dcterms:language>eng</dcterms:language>
+    
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Fiction - Science Fiction"
+              label="Fiction - Science Fiction"/>
+    
+    <summary>Enter Gibson’s unique world - lyric and mechanical, erotic and violent, sobering and exciting - where multinational corporations and high tech outlaws vie for power, traveling into the computer-generated universe known as cyberspace. Into this world comes Mona, a young girl with a murky past and an uncertain future whose life is on a collision course with internationally famous Sense/Net star Angie Mitchell. Since childhood, Angie has been able to tap into cyberspace without a computer. Now, from inside cyberspace, a kidnapping plot is masterminded by a phantom entity who has plans for Mona, Angie, and all humanity, plans that cannot be controlled… or even known. And behind the intrigue lurks the shadowy Yakuza, the powerful Japanese underworld, whose leaders ruthlessly manipulate people and events to suit their own purposes… or so they think.</summary>
+    
+    <link type="image/jpeg" href="/opds/cover/15482" rel="http://opds-spec.org/image"/>
+    <link type="image/jpeg" href="/opds/cover/15482" rel="http://opds-spec.org/image/thumbnail"/>
+    
+    
+    <link rel="http://opds-spec.org/acquisition" href="/opds/download/15482/epub/"
+          length="1990968" mtime="2024-11-05T20:42:21+00:00" type="application/epub+zip"/>
+    
+  </entry>
+  
+  <entry>
+    <title>The Law</title>
+    <id>urn:uuid:ff9dcf8b-1c79-431b-933f-6e9ac3591cd6</id>
+    <updated>2024-09-30T01:55:31+00:00</updated>
+    
+      <author>
+        <name>Frédéric Bastiat</name>
+      </author>
+    
+    
+      <publisher>
+        <name>On Demand Publishing, LLC-Create Space</name>
+      </publisher>
+    
+    <published>2007-12-15T20:59:08+00:00</published>
+    
+      <dcterms:language>eng</dcterms:language>
+    
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="General"
+              label="General"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="History &amp; Theory"
+              label="History &amp; Theory"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Jurisprudence"
+              label="Jurisprudence"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Law"
+              label="Law"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Libertarianism"
+              label="Libertarianism"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Literary Collections"
+              label="Literary Collections"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Political Economy"
+              label="Political Economy"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Political Freedom"
+              label="Political Freedom"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Political Ideologies"
+              label="Political Ideologies"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Political Science"
+              label="Political Science"/>
+    
+    <summary>How is it that the law enforcer itself does not have to keep the law? How is it that the law permits the state to lawfully engage in actions which, if undertaken by individuals, would land them in jail? These are among the most intriguing issues in political and economic philosophy. More specifically, the problem of law that itself violates law is an insurmountable conundrum of all statist philosophies. The problem has never been discussed so profoundly and passionately as in this essay by Frederic Bastiat from 1850. The essay might have been written today. It applies in ever way to our own time, which is precisely why so many people credit this one essay for showing them the light of liberty. Bastiat&#39;s essay here is timeless because applies whenever and wherever the state assumes unto itself different rules and different laws from that by which it expects other people to live. And so we have this legendary essay, written in a white heat against the leaders of 19th century France, the reading of which has shocked millions out of their toleration of despotism. This new edition from the Mises Institute revives a glorious translation that has been out of print for a hundred years, one that circulated in Britain in the generation that followed Bastiat&#39;s death. This newly available translation provides new insight into Bastiat&#39;s argument. It is a more sophisticated, more substantial, and more precise rendering than any in print. The question that Bastiat deals with: how to tell when a law is unjust or when the law maker has become a source of law breaking? When the law becomes a means of plunder it has lost its character of genuine law. When the law enforcer is permitted to do with others&#39; lives and property what would be illegal if the citizens did them, the law becomes perverted. Bastiat doesn&#39;t avoid the difficult issues, such as why should we think that a democratic mandate can convert injustice to justice. He deals directly with the issue of the expanse of legislation: It is not true that the mission of the law is to regulate our consciences, our ideas, our will, our education, our sentiments, our sentiments, our exchanges, our gifts, our enjoyments. Its mission is to prevent the rights of one from interfering with those of another, in any one of these things. Law, because it has force for its necessary sanction, can only have the domain of force, which is justice. More from Bastiat&#39;s The Law: Socialism, like the old policy from which it emanates, confounds Government and society. And so, every time we object to a thing being done by Government, it concludes that we object to its being done at all. We disapprove of education by the State - then we are against education altogether. We object to a State religion - then we would have no religion at all. We object to an equality which is brought about by the State then we are against equality, etc., etc. They might as well accuse us of wishing men not to eat, because we object to the cultivation of corn by the State. How is it that the strange idea of making the law produce what it does not contain - prosperity, in a positive sense, wealth, science, religion - should ever have gained ground in the political world? The modern politicians, particularly those of the Socialist school, found their different theories upon one common hypothesis; and surely a more strange, a more presumptuous notion, could never have entered a human brain. They divide mankind into two parts. Men in general, except one, form the first; the politician himself forms the second, which is by far the most important. Whether you buy one or one hundred, you can look forward to one of the most penetrating and powerful essays written in the history of political economy.</summary>
+    
+    <link type="image/jpeg" href="/opds/cover/1767" rel="http://opds-spec.org/image"/>
+    <link type="image/jpeg" href="/opds/cover/1767" rel="http://opds-spec.org/image/thumbnail"/>
+    
+    
+    <link rel="http://opds-spec.org/acquisition" href="/opds/download/1767/epub/"
+          length="529120" mtime="2024-09-30T01:55:31+00:00" type="application/epub+zip"/>
+    
+  </entry>
+  
+  
+  
+  
+</feed>
+<-- END HTTP (12262-byte body)
+DEBUG: Feed loaded successfully, entries: 4
+DEBUG: State updated with feed
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds, title: null
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 4
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 4
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds
+DEBUG: Starting to load feed from: https://calibre.datashard.dev/opds
+DEBUG: Calling opdsRepository.fetchFeed...
+--> GET https://calibre.datashard.dev/opds
+--> END GET
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 4
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 4
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds/hot
+DEBUG: Starting to load feed from: https://calibre.datashard.dev/opds/hot
+DEBUG: Calling opdsRepository.fetchFeed...
+--> GET https://calibre.datashard.dev/opds/hot
+--> END GET
+<-- 200 https://calibre.datashard.dev/opds (301ms)
+date: Wed, 07 Jan 2026 20:13:15 GMT
+content-type: application/atom+xml; charset=utf-8
+content-length: 4954
+content-security-policy: default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; img-src 'self' data:; object-src 'none';
+retry-after: 0
+strict-transport-security: max-age=31536000
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-ratelimit-limit: 3
+x-ratelimit-remaining: 3
+x-ratelimit-reset: 1767816796
+x-xss-protection: 1; mode=block
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server-timing: cfCacheStatus;desc="DYNAMIC"
+server-timing: cfEdge;dur=12,cfOrigin;dur=233
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=%2FHoj0lnkaC9ZAhToghSA8gLyUhjBHO6zgRAhsd9Q6F4jJc0fonyyKyx24iL%2FBA8%2FOyijfpNKFzFAhfgkHA2fA4PNvR2WVn0qsldvebziWxkg1TtIAQ%3D%3D"}]}
+server: cloudflare
+cf-ray: 9ba61d59bf9ba366-SEA
+alt-svc: h3=":443"; ma=86400
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <icon>/static/favicon.ico</icon>
+  <id>urn:uuid:2853dacf-ed79-42f5-8e8a-a7bb3d1ae6a2</id>
+  <updated>2026-01-07T13:13:15+00:00</updated>
+  <link rel="self" href="/opds" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="start" title="Start" href="/opds"
+        type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="search"
+      href="/opds/osd"
+      type="application/opensearchdescription+xml"/>
+  <link type="application/atom+xml" rel="search" title="Search" href="/opds/search/{searchTerms}" />
+  <title>Calibre-Web</title>
+  <author>
+    <name>Calibre-Web</name>
+    <uri>https://github.com/janeczku/calibre-web</uri>
+  </author>
+  <entry>
+    <title>Alphabetical Books</title>
+    <link href="/opds/books" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/books</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books sorted alphabetically</content>
+  </entry>
+  
+  <entry>
+    <title>Hot Books</title>
+    <link href="/opds/hot" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/hot</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Downloads.</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Top Rated Books</title>
+    <link href="/opds/rated" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/rated</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Rating.</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Recently added Books</title>
+    <link href="/opds/new" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/new</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">The latest Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Random Books</title>
+    <link href="/opds/discover" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/discover</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Show Random Books</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Read Books</title>
+    <link href="/opds/readbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/readbooks</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Read Books</content>
+  </entry>
+  <entry>
+    <title>Unread Books</title>
+    <link href="/opds/unreadbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/unreadbooks</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Unread Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Authors</title>
+    <link href="/opds/author" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/author</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books ordered by Author</content>
+  </entry>
+  
+  
+   <entry>
+    <title>Publishers</title>
+    <link href="/opds/publisher" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/publisher</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books ordered by publisher</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Categories</title>
+    <link href="/opds/category" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/category</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books ordered by category</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Series</title>
+    <link href="/opds/series" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/series</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books ordered by series</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Languages</title>
+    <link href="/opds/language/" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/language/</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books ordered by Languages</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Ratings</title>
+    <link href="/opds/ratings" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/ratings</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books ordered by Rating</content>
+  </entry>
+  
+  
+  <entry>
+    <title>File formats</title>
+    <link href="/opds/formats" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/formats</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books ordered by file formats</content>
+  </entry>
+ 
+   
+  <entry>
+    <title>Shelves</title>
+    <link  href="/opds/shelfindex" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/shelfindex</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books organized in shelves</content>
+  </entry>
+  
+</feed>
+<-- END HTTP (4954-byte body)
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds, title: null
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: true, error: null, feedEntries: 4
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds, title: null
+DEBUG: Current state - isLoading: true, error: null, feedEntries: 4
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds
+DEBUG: Starting to load feed from: https://calibre.datashard.dev/opds
+DEBUG: Calling opdsRepository.fetchFeed...
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+--> GET https://calibre.datashard.dev/opds
+--> END GET
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Current state - isLoading: true, error: null, feedEntries: 4
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Current state - isLoading: true, error: null, feedEntries: 4
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds/hot
+DEBUG: Starting to load feed from: https://calibre.datashard.dev/opds/hot
+DEBUG: Calling opdsRepository.fetchFeed...
+--> GET https://calibre.datashard.dev/opds/hot
+--> END GET
+DEBUG: Feed loaded successfully, entries: 15
+DEBUG: State updated with feed
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 15
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 15
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds/hot
+DEBUG: Feed already loaded for this URL, skipping
+<-- 200 https://calibre.datashard.dev/opds/hot (379ms)
+date: Wed, 07 Jan 2026 20:13:15 GMT
+content-type: application/atom+xml; charset=utf-8
+content-length: 12262
+content-security-policy: default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; img-src 'self' data:; object-src 'none';
+retry-after: 0
+strict-transport-security: max-age=31536000
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-ratelimit-limit: 3
+x-ratelimit-remaining: 3
+x-ratelimit-reset: 1767816796
+x-xss-protection: 1; mode=block
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server-timing: cfCacheStatus;desc="DYNAMIC"
+server-timing: cfEdge;dur=13,cfOrigin;dur=313
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=4XxUQzh9ol9y8TYbZUP7kS5h8FNH96SfQ4EvvsKjLq4Ch6pyOt2EJQROrm97J6aPpPSt9T7zTHg6HbVxizJuQHaja7sCncbwZMSXNTh%2BQ1eqjTY%3D"}]}
+server: cloudflare
+cf-ray: 9ba61d59be87297d-SEA
+alt-svc: h3=":443"; ma=86400
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/terms/" xmlns:dcterms="http://purl.org/dc/terms/">
+  <icon>/static/favicon.ico</icon>
+  <id>urn:uuid:2853dacf-ed79-42f5-8e8a-a7bb3d1ae6a2</id>
+  <updated>2026-01-07T13:13:15+00:00</updated>
+  <link rel="self"
+        href="/opds/hot?"
+        type="application/atom+xml;profile=opds-catalog;type=feed;kind=navigation"/>
+  <link rel="start"
+        href="/opds"
+        type="application/atom+xml;profile=opds-catalog;type=feed;kind=navigation"/>
+  <link rel="up"
+        href="/opds"
+        type="application/atom+xml;profile=opds-catalog;type=feed;kind=navigation"/>
+
+
+
+    <link rel="search"
+      href="/opds/osd"
+      type="application/opensearchdescription+xml"/>
+  <link type="application/atom+xml" rel="search" title="Search" href="/opds/search/{searchTerms}" />
+  <title>Calibre-Web</title>
+  <author>
+    <name>Calibre-Web</name>
+    <uri>https://github.com/janeczku/calibre-web</uri>
+  </author>
+
+  
+  
+  <entry>
+    <title>Count Zero</title>
+    <id>urn:uuid:0dfcd8de-61f9-49f9-b6f7-8765c260d016</id>
+    <updated>2024-11-05T20:42:25+00:00</updated>
+    
+      <author>
+        <name>William Gibson</name>
+      </author>
+    
+    
+      <publisher>
+        <name>ePubLibre</name>
+      </publisher>
+    
+    <published>1986-01-01T07:00:00+00:00</published>
+    
+      <dcterms:language>eng</dcterms:language>
+    
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Fiction - Science Fiction"
+              label="Fiction - Science Fiction"/>
+    
+    <summary>A corporate mercenary wakes in a reconstructed body, a beautiful woman by his side. Then Hosaka Corporation reactivates him, for a mission more dangerous than the one he’s recovering from: to get a defecting chief of R&amp;D—and the biochip he’s perfected—out intact. But this proves to be of supreme interest to certain other parties—some of whom aren’t remotely human…</summary>
+    
+    <link type="image/jpeg" href="/opds/cover/15487" rel="http://opds-spec.org/image"/>
+    <link type="image/jpeg" href="/opds/cover/15487" rel="http://opds-spec.org/image/thumbnail"/>
+    
+    
+    <link rel="http://opds-spec.org/acquisition" href="/opds/download/15487/epub/"
+          length="1878585" mtime="2024-11-05T20:42:25+00:00" type="application/epub+zip"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Neuromancer</title>
+    <id>urn:uuid:5056183e-ab20-4cd9-ad39-2596a2a2f6f0</id>
+    <updated>2024-11-05T20:42:23+00:00</updated>
+    
+      <author>
+        <name>William Gibson</name>
+      </author>
+    
+    
+      <publisher>
+        <name>ePubLibre</name>
+      </publisher>
+    
+    <published>1984-04-23T07:00:00+00:00</published>
+    
+      <dcterms:language>eng</dcterms:language>
+    
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Fiction - Science Fiction"
+              label="Fiction - Science Fiction"/>
+    
+    <summary>The Matrix: a consensual hallucination experienced daily by billions of users. A world within the world… Case was the hottest computer cowboy cruising the information superhighway—jacking his consciousness into cyberspace, soaring through tactile lattices of data and logic, rustling encoded secrets for anyone with the money to buy his skills. Then he double-crossed the wrong people, who caught up with him in a big way—and burned the talent out of his brain, micron by micron. Banished from cyberspace, trapped in the meat of his physical body, Case courted death in the high-tech underworld. Until a shadowy conspiracy offered him a second chance—and a cure—for a price…</summary>
+    
+    <link type="image/jpeg" href="/opds/cover/15484" rel="http://opds-spec.org/image"/>
+    <link type="image/jpeg" href="/opds/cover/15484" rel="http://opds-spec.org/image/thumbnail"/>
+    
+    
+    <link rel="http://opds-spec.org/acquisition" href="/opds/download/15484/epub/"
+          length="2873505" mtime="2024-11-05T20:42:23+00:00" type="application/epub+zip"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Mona Lisa Overdrive</title>
+    <id>urn:uuid:e5e62e91-780c-4897-9ae2-ad8e2a950cef</id>
+    <updated>2024-11-05T20:42:21+00:00</updated>
+    
+      <author>
+        <name>William Gibson</name>
+      </author>
+    
+    
+      <publisher>
+        <name>ePubLibre</name>
+      </publisher>
+    
+    <published>1988-01-01T07:00:00+00:00</published>
+    
+      <dcterms:language>eng</dcterms:language>
+    
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Fiction - Science Fiction"
+              label="Fiction - Science Fiction"/>
+    
+    <summary>Enter Gibson’s unique world - lyric and mechanical, erotic and violent, sobering and exciting - where multinational corporations and high tech outlaws vie for power, traveling into the computer-generated universe known as cyberspace. Into this world comes Mona, a young girl with a murky past and an uncertain future whose life is on a collision course with internationally famous Sense/Net star Angie Mitchell. Since childhood, Angie has been able to tap into cyberspace without a computer. Now, from inside cyberspace, a kidnapping plot is masterminded by a phantom entity who has plans for Mona, Angie, and all humanity, plans that cannot be controlled… or even known. And behind the intrigue lurks the shadowy Yakuza, the powerful Japanese underworld, whose leaders ruthlessly manipulate people and events to suit their own purposes… or so they think.</summary>
+    
+    <link type="image/jpeg" href="/opds/cover/15482" rel="http://opds-spec.org/image"/>
+    <link type="image/jpeg" href="/opds/cover/15482" rel="http://opds-spec.org/image/thumbnail"/>
+    
+    
+    <link rel="http://opds-spec.org/acquisition" href="/opds/download/15482/epub/"
+          length="1990968" mtime="2024-11-05T20:42:21+00:00" type="application/epub+zip"/>
+    
+  </entry>
+  
+  <entry>
+    <title>The Law</title>
+    <id>urn:uuid:ff9dcf8b-1c79-431b-933f-6e9ac3591cd6</id>
+    <updated>2024-09-30T01:55:31+00:00</updated>
+    
+      <author>
+        <name>Frédéric Bastiat</name>
+      </author>
+    
+    
+      <publisher>
+        <name>On Demand Publishing, LLC-Create Space</name>
+      </publisher>
+    
+    <published>2007-12-15T20:59:08+00:00</published>
+    
+      <dcterms:language>eng</dcterms:language>
+    
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="General"
+              label="General"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="History &amp; Theory"
+              label="History &amp; Theory"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Jurisprudence"
+              label="Jurisprudence"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Law"
+              label="Law"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Libertarianism"
+              label="Libertarianism"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Literary Collections"
+              label="Literary Collections"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Political Economy"
+              label="Political Economy"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Political Freedom"
+              label="Political Freedom"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Political Ideologies"
+              label="Political Ideologies"/>
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Political Science"
+              label="Political Science"/>
+    
+    <summary>How is it that the law enforcer itself does not have to keep the law? How is it that the law permits the state to lawfully engage in actions which, if undertaken by individuals, would land them in jail? These are among the most intriguing issues in political and economic philosophy. More specifically, the problem of law that itself violates law is an insurmountable conundrum of all statist philosophies. The problem has never been discussed so profoundly and passionately as in this essay by Frederic Bastiat from 1850. The essay might have been written today. It applies in ever way to our own time, which is precisely why so many people credit this one essay for showing them the light of liberty. Bastiat&#39;s essay here is timeless because applies whenever and wherever the state assumes unto itself different rules and different laws from that by which it expects other people to live. And so we have this legendary essay, written in a white heat against the leaders of 19th century France, the reading of which has shocked millions out of their toleration of despotism. This new edition from the Mises Institute revives a glorious translation that has been out of print for a hundred years, one that circulated in Britain in the generation that followed Bastiat&#39;s death. This newly available translation provides new insight into Bastiat&#39;s argument. It is a more sophisticated, more substantial, and more precise rendering than any in print. The question that Bastiat deals with: how to tell when a law is unjust or when the law maker has become a source of law breaking? When the law becomes a means of plunder it has lost its character of genuine law. When the law enforcer is permitted to do with others&#39; lives and property what would be illegal if the citizens did them, the law becomes perverted. Bastiat doesn&#39;t avoid the difficult issues, such as why should we think that a democratic mandate can convert injustice to justice. He deals directly with the issue of the expanse of legislation: It is not true that the mission of the law is to regulate our consciences, our ideas, our will, our education, our sentiments, our sentiments, our exchanges, our gifts, our enjoyments. Its mission is to prevent the rights of one from interfering with those of another, in any one of these things. Law, because it has force for its necessary sanction, can only have the domain of force, which is justice. More from Bastiat&#39;s The Law: Socialism, like the old policy from which it emanates, confounds Government and society. And so, every time we object to a thing being done by Government, it concludes that we object to its being done at all. We disapprove of education by the State - then we are against education altogether. We object to a State religion - then we would have no religion at all. We object to an equality which is brought about by the State then we are against equality, etc., etc. They might as well accuse us of wishing men not to eat, because we object to the cultivation of corn by the State. How is it that the strange idea of making the law produce what it does not contain - prosperity, in a positive sense, wealth, science, religion - should ever have gained ground in the political world? The modern politicians, particularly those of the Socialist school, found their different theories upon one common hypothesis; and surely a more strange, a more presumptuous notion, could never have entered a human brain. They divide mankind into two parts. Men in general, except one, form the first; the politician himself forms the second, which is by far the most important. Whether you buy one or one hundred, you can look forward to one of the most penetrating and powerful essays written in the history of political economy.</summary>
+    
+    <link type="image/jpeg" href="/opds/cover/1767" rel="http://opds-spec.org/image"/>
+    <link type="image/jpeg" href="/opds/cover/1767" rel="http://opds-spec.org/image/thumbnail"/>
+    
+    
+    <link rel="http://opds-spec.org/acquisition" href="/opds/download/1767/epub/"
+          length="529120" mtime="2024-09-30T01:55:31+00:00" type="application/epub+zip"/>
+    
+  </entry>
+  
+  
+  
+  
+</feed>
+<-- END HTTP (12262-byte body)
+DEBUG: Feed loaded successfully, entries: 4
+DEBUG: State updated with feed
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 4
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 4
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds/hot
+DEBUG: Feed already loaded for this URL, skipping
+<-- 200 https://calibre.datashard.dev/opds (220ms)
+date: Wed, 07 Jan 2026 20:13:15 GMT
+content-type: application/atom+xml; charset=utf-8
+content-length: 4954
+content-security-policy: default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; img-src 'self' data:; object-src 'none';
+retry-after: 0
+strict-transport-security: max-age=31536000
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-ratelimit-limit: 3
+x-ratelimit-remaining: 3
+x-ratelimit-reset: 1767816796
+x-xss-protection: 1; mode=block
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server-timing: cfCacheStatus;desc="DYNAMIC"
+server-timing: cfEdge;dur=8,cfOrigin;dur=157
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=6CCmlq%2FpnJ9P%2B7mrKBw3elT1HFP0Y1YT%2FF3mOev5qMiAM2%2FYEagImsezFDNabaG6hCvnxERpe4zUkG1JsBTc7coO49Ac74AiC77r0vD6tWBEhdoaYA%3D%3D"}]}
+server: cloudflare
+cf-ray: 9ba61d5b5b4edf17-SEA
+alt-svc: h3=":443"; ma=86400
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <icon>/static/favicon.ico</icon>
+  <id>urn:uuid:2853dacf-ed79-42f5-8e8a-a7bb3d1ae6a2</id>
+  <updated>2026-01-07T13:13:15+00:00</updated>
+  <link rel="self" href="/opds" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="start" title="Start" href="/opds"
+        type="application/atom+xml;profile=opds-catalog;kind=navigation"/>
+  <link rel="search"
+      href="/opds/osd"
+      type="application/opensearchdescription+xml"/>
+  <link type="application/atom+xml" rel="search" title="Search" href="/opds/search/{searchTerms}" />
+  <title>Calibre-Web</title>
+  <author>
+    <name>Calibre-Web</name>
+    <uri>https://github.com/janeczku/calibre-web</uri>
+  </author>
+  <entry>
+    <title>Alphabetical Books</title>
+    <link href="/opds/books" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/books</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books sorted alphabetically</content>
+  </entry>
+  
+  <entry>
+    <title>Hot Books</title>
+    <link href="/opds/hot" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/hot</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Downloads.</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Top Rated Books</title>
+    <link href="/opds/rated" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/rated</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Popular publications from this catalog based on Rating.</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Recently added Books</title>
+    <link href="/opds/new" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/new</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">The latest Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Random Books</title>
+    <link href="/opds/discover" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/discover</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Show Random Books</content>
+  </entry>
+    
+  
+  <entry>
+    <title>Read Books</title>
+    <link href="/opds/readbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/readbooks</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Read Books</content>
+  </entry>
+  <entry>
+    <title>Unread Books</title>
+    <link href="/opds/unreadbooks" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/unreadbooks</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Unread Books</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Authors</title>
+    <link href="/opds/author" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/author</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books ordered by Author</content>
+  </entry>
+  
+  
+   <entry>
+    <title>Publishers</title>
+    <link href="/opds/publisher" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/publisher</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books ordered by publisher</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Categories</title>
+    <link href="/opds/category" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/category</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books ordered by category</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Series</title>
+    <link href="/opds/series" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/series</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books ordered by series</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Languages</title>
+    <link href="/opds/language/" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/language/</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books ordered by Languages</content>
+  </entry>
+  
+  
+  <entry>
+    <title>Ratings</title>
+    <link href="/opds/ratings" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/ratings</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books ordered by Rating</content>
+  </entry>
+  
+  
+  <entry>
+    <title>File formats</title>
+    <link href="/opds/formats" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/formats</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books ordered by file formats</content>
+  </entry>
+ 
+   
+  <entry>
+    <title>Shelves</title>
+    <link  href="/opds/shelfindex" type="application/atom+xml;profile=opds-catalog"/>
+    <id>/opds/shelfindex</id>
+    <updated>2026-01-07T13:13:15+00:00</updated>
+    <content type="text">Books organized in shelves</content>
+  </entry>
+  
+</feed>
+<-- END HTTP (4954-byte body)
+DEBUG: Feed loaded successfully, entries: 15
+DEBUG: State updated with feed
+DEBUG: OpdsCatalogContent START - url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 15
+DEBUG: OpdsCatalogContent rendered with url: https://calibre.datashard.dev/opds/hot, title: Hot Books
+DEBUG: Current state - isLoading: false, error: null, feedEntries: 15
+DEBUG: OpdsCatalogModel.loadFeed called with URL: https://calibre.datashard.dev/opds/hot
+DEBUG: Feed already loaded for this URL, skipping
+<-- 200 https://calibre.datashard.dev/opds/hot (313ms)
+date: Wed, 07 Jan 2026 20:13:15 GMT
+content-type: application/atom+xml; charset=utf-8
+content-length: 12262
+content-security-policy: default-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; img-src 'self' data:; object-src 'none';
+retry-after: 0
+strict-transport-security: max-age=31536000
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-ratelimit-limit: 3
+x-ratelimit-remaining: 3
+x-ratelimit-reset: 1767816796
+x-xss-protection: 1; mode=block
+cf-cache-status: DYNAMIC
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server-timing: cfCacheStatus;desc="DYNAMIC"
+server-timing: cfEdge;dur=11,cfOrigin;dur=248
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=aKjkvncUEas5hhDG%2FHNdRe1cDnhFp0E7aq1IjjDELq7hwfvsuIf1FyI5l58zvHw0SsbdMFIBFb27p5%2BN5tGocWFQkxN1oCKDV4rPqdxf26ouWJ8Dbg%3D%3D"}]}
+server: cloudflare
+cf-ray: 9ba61d5b5f98ba0e-SEA
+alt-svc: h3=":443"; ma=86400
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/terms/" xmlns:dcterms="http://purl.org/dc/terms/">
+  <icon>/static/favicon.ico</icon>
+  <id>urn:uuid:2853dacf-ed79-42f5-8e8a-a7bb3d1ae6a2</id>
+  <updated>2026-01-07T13:13:15+00:00</updated>
+  <link rel="self"
+        href="/opds/hot?"
+        type="application/atom+xml;profile=opds-catalog;type=feed;kind=navigation"/>
+  <link rel="start"
+        href="/opds"
+        type="application/atom+xml;profile=opds-catalog;type=feed;kind=navigation"/>
+  <link rel="up"
+        href="/opds"
+        type="application/atom+xml;profile=opds-catalog;type=feed;kind=navigation"/>
+
+
+
+    <link rel="search"
+      href="/opds/osd"
+      type="application/opensearchdescription+xml"/>
+  <link type="application/atom+xml" rel="search" title="Search" href="/opds/search/{searchTerms}" />
+  <title>Calibre-Web</title>
+  <author>
+    <name>Calibre-Web</name>
+    <uri>https://github.com/janeczku/calibre-web</uri>
+  </author>
+
+  
+  
+  <entry>
+    <title>Count Zero</title>
+    <id>urn:uuid:0dfcd8de-61f9-49f9-b6f7-8765c260d016</id>
+    <updated>2024-11-05T20:42:25+00:00</updated>
+    
+      <author>
+        <name>William Gibson</name>
+      </author>
+    
+    
+      <publisher>
+        <name>ePubLibre</name>
+      </publisher>
+    
+    <published>1986-01-01T07:00:00+00:00</published>
+    
+      <dcterms:language>eng</dcterms:language>
+    
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Fiction - Science Fiction"
+              label="Fiction - Science Fiction"/>
+    
+    <summary>A corporate mercenary wakes in a reconstructed body, a beautiful woman by his side. Then Hosaka Corporation reactivates him, for a mission more dangerous than the one he’s recovering from: to get a defecting chief of R&amp;D—and the biochip he’s perfected—out intact. But this proves to be of supreme interest to certain other parties—some of whom aren’t remotely human…</summary>
+    
+    <link type="image/jpeg" href="/opds/cover/15487" rel="http://opds-spec.org/image"/>
+    <link type="image/jpeg" href="/opds/cover/15487" rel="http://opds-spec.org/image/thumbnail"/>
+    
+    
+    <link rel="http://opds-spec.org/acquisition" href="/opds/download/15487/epub/"
+          length="1878585" mtime="2024-11-05T20:42:25+00:00" type="application/epub+zip"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Neuromancer</title>
+    <id>urn:uuid:5056183e-ab20-4cd9-ad39-2596a2a2f6f0</id>
+    <updated>2024-11-05T20:42:23+00:00</updated>
+    
+      <author>
+        <name>William Gibson</name>
+      </author>
+    
+    
+      <publisher>
+        <name>ePubLibre</name>
+      </publisher>
+    
+    <published>1984-04-23T07:00:00+00:00</published>
+    
+      <dcterms:language>eng</dcterms:language>
+    
+    
+    <category scheme="http://www.bisg.org/standards/bisac_subject/index.html"
+              term="Fiction - Science Fiction"
+              label="Fiction - Science Fiction"/>
+    
+    <summary>The Matrix: a consensual hallucination experienced daily by billions of users. A world within the world… Case was the hottest computer cowboy cruising the information superhighway—jacking his consciousness into cyberspace, soaring through tactile lattices of data and logic, rustling encoded secrets for anyone with the money to buy his skills. Then he double-crossed the wrong people, who caught up with him in a big way—and burned the talent out of his brain, micron by micron. Banished from cyberspace, trapped in the meat of his physical body, Case courted death in the high-tech underworld. Until a shadowy conspiracy offered him a second chance—and a cure—for a price…</summary>
+    
+    <link type="image/jpeg" href="/opds/cover/15484" rel="http://opds-spec.org/image"/>
+    <link type="image/jpeg" href="/opds/cover/15484" rel="http://opds-spec.

@@ -48,7 +48,7 @@ import us.blindmint.codex.presentation.settings.browse.scan.components.BrowseSca
 import us.blindmint.codex.presentation.settings.browse.opds.BrowseOpdsContent
 import us.blindmint.codex.ui.settings.BrowseSettingsScreen
 import us.blindmint.codex.ui.settings.opds.OpdsSourcesModel
-import us.blindmint.codex.ui.browse.OpdsCatalogScreen
+import us.blindmint.codex.ui.browse.OpdsRootScreen
 import us.blindmint.codex.presentation.browse.BrowseContent
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.main.MainEvent
@@ -356,7 +356,7 @@ private fun OpdsTabContent(sources: List<us.blindmint.codex.data.local.dto.OpdsS
         items(sources) { source ->
             Text(
                 source.name, modifier = Modifier
-                .clickable { navigator.push(OpdsCatalogScreen(source)) }
+                .clickable { navigator.push(OpdsRootScreen(source)) }
                 .padding(16.dp))
         }
         item {

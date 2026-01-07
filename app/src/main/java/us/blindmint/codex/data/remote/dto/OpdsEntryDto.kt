@@ -9,6 +9,7 @@ package us.blindmint.codex.data.remote.dto
 import org.simpleframework.xml.Element
 import org.simpleframework.xml.ElementList
 import org.simpleframework.xml.Root
+import us.blindmint.codex.data.remote.dto.OpdsAuthorDto
 
 @Root(name = "entry", strict = false)
 data class OpdsEntryDto(
@@ -18,8 +19,9 @@ data class OpdsEntryDto(
     @field:Element(name = "title")
     var title: String = "",
 
-    @field:Element(name = "author", required = false)
-    var author: String? = null,
+    // Temporarily remove author parsing to avoid conflicts
+    // @field:Element(name = "author", required = false)
+    // var author: OpdsAuthorDto? = null,
 
     @field:Element(name = "summary", required = false)
     var summary: String? = null,
