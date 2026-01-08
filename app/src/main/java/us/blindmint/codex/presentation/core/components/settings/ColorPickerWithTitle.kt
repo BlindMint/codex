@@ -7,22 +7,20 @@
 package us.blindmint.codex.presentation.core.components.settings
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,8 +43,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import us.blindmint.codex.R
-import us.blindmint.codex.presentation.core.components.common.IconButton
-import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 
 @OptIn(FlowPreview::class)
@@ -139,7 +135,7 @@ fun ColorPickerWithTitle(
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     textAlign = TextAlign.Center
                 ),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.widthIn(max = 140.dp), // Constrain width for better proportions
                 enabled = !isLocked,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
                 singleLine = true
@@ -147,8 +143,8 @@ fun ColorPickerWithTitle(
         }
         Spacer(modifier = Modifier.height(12.dp))
 
-        RevertibleSlider(
-            value = color.red to ((color.red * 255).toInt().toString()),
+        ColorSliderWithControls(
+            value = color.red,
             initialValue = Color(initialValue.toULong()).red,
             title = stringResource(id = R.string.red_color),
             isLocked = isLocked,
@@ -156,8 +152,8 @@ fun ColorPickerWithTitle(
                 color = color.copy(red = it)
             }
         )
-        RevertibleSlider(
-            value = color.green to ((color.green * 255).toInt().toString()),
+        ColorSliderWithControls(
+            value = color.green,
             initialValue = Color(initialValue.toULong()).green,
             title = stringResource(id = R.string.green_color),
             isLocked = isLocked,
@@ -165,8 +161,8 @@ fun ColorPickerWithTitle(
                 color = color.copy(green = it)
             }
         )
-        RevertibleSlider(
-            value = color.blue to ((color.blue * 255).toInt().toString()),
+        ColorSliderWithControls(
+            value = color.blue,
             initialValue = Color(initialValue.toULong()).blue,
             title = stringResource(id = R.string.blue_color),
             isLocked = isLocked,
@@ -178,8 +174,8 @@ fun ColorPickerWithTitle(
 }
 
 @Composable
-private fun RevertibleSlider(
-    value: Pair<Float, String>,
+private fun ColorSliderWithControls(
+    value: Float,
     initialValue: Float,
     title: String,
     horizontalPadding: Dp = 0.dp,
@@ -187,67 +183,66 @@ private fun RevertibleSlider(
     isLocked: Boolean = false,
     onValueChange: (Float) -> Unit
 ) {
-    var editValue by remember(value.second) { mutableStateOf(value.second) }
+    var editValue by remember { mutableStateOf(((value * 255).toInt()).toString()) }
     val focusRequester = remember { FocusRequester() }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+    // Update editValue when value changes
+    LaunchedEffect(value) {
+        editValue = ((value * 255).toInt()).toString()
+    }
+
+    Column(
         modifier = Modifier.padding(
             horizontal = horizontalPadding,
             vertical = verticalPadding
         )
     ) {
-        SliderWithTitle(
-            modifier = Modifier.weight(1f),
-            value = value,
-            title = title,
-            toValue = 255,
-            enabled = !isLocked,
-            onValueChange = {
-                onValueChange(it)
-            },
-            horizontalPadding = 0.dp,
-            verticalPadding = 0.dp
-        )
+        SettingsSubcategoryTitle(title = title, padding = 0.dp)
+        Spacer(modifier = Modifier.height(8.dp))
 
-        Spacer(modifier = Modifier.width(10.dp))
-
-        // Editable RGB value field
-        OutlinedTextField(
-            value = editValue,
-            onValueChange = { newValue ->
-                editValue = newValue.take(3) // Max 3 digits (0-255)
-                val intValue = newValue.toIntOrNull()
-                if (intValue != null && intValue in 0..255) {
-                    onValueChange(intValue / 255f)
-                }
-            },
-            modifier = Modifier
-                .width(60.dp)
-                .focusRequester(focusRequester)
-                .clickable(enabled = !isLocked) {
-                    focusRequester.requestFocus()
-                },
-            enabled = !isLocked,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true,
-            textStyle = MaterialTheme.typography.labelSmall
-        )
-
-        Spacer(modifier = Modifier.width(6.dp))
-
-        IconButton(
-            modifier = Modifier.size(28.dp),
-            icon = Icons.Default.History,
-            contentDescription = R.string.revert_content_desc,
-            disableOnClick = false,
-            enabled = !isLocked && initialValue != value.first,
-            color = if (initialValue == value.first) MaterialTheme.colorScheme.onSurfaceVariant
-            else MaterialTheme.colorScheme.onSurface
+        // Row with slider and input field aligned together
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            onValueChange(initialValue)
-            editValue = ((initialValue * 255).toInt()).toString()
+            Slider(
+                modifier = Modifier.weight(1f),
+                valueRange = 0f..1f,
+                value = value,
+                enabled = !isLocked,
+                onValueChange = onValueChange,
+                colors = SliderDefaults.colors(
+                    activeTrackColor = MaterialTheme.colorScheme.secondary,
+                    thumbColor = MaterialTheme.colorScheme.secondary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
+                    activeTickColor = MaterialTheme.colorScheme.onSecondary,
+                    inactiveTickColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Editable RGB value field aligned with slider
+            OutlinedTextField(
+                value = editValue,
+                onValueChange = { newValue ->
+                    editValue = newValue.take(3) // Max 3 digits (0-255)
+                    val intValue = newValue.toIntOrNull()
+                    if (intValue != null && intValue in 0..255) {
+                        onValueChange(intValue / 255f)
+                    }
+                },
+                modifier = Modifier
+                    .width(80.dp)
+                    .focusRequester(focusRequester)
+                    .clickable(enabled = !isLocked) {
+                        focusRequester.requestFocus()
+                    },
+                enabled = !isLocked,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }

@@ -23,7 +23,6 @@ fun HighlightedReadingOption() {
     SwitchWithTitle(
         selected = state.value.highlightedReading,
         title = stringResource(id = R.string.highlighted_reading_option),
-        description = stringResource(id = R.string.highlighted_reading_option_desc),
         onClick = {
             mainModel.onEvent(
                 MainEvent.OnChangeHighlightedReading(

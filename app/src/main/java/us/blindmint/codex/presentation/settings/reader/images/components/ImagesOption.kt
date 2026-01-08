@@ -24,7 +24,6 @@ fun ImagesOption() {
                 SwitchWithTitle(
                     selected = value,
                     title = stringResource(id = R.string.images_option),
-                    description = stringResource(id = R.string.images_option_desc),
                     onClick = { onChange(!value) }
                 )
             }

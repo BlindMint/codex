@@ -23,7 +23,6 @@ fun PerceptionExpanderOption() {
     SwitchWithTitle(
         selected = state.value.perceptionExpander,
         title = stringResource(id = R.string.perception_expander_option),
-        description = stringResource(id = R.string.perception_expander_option_desc),
         onClick = {
             mainModel.onEvent(
                 MainEvent.OnChangePerceptionExpander(
