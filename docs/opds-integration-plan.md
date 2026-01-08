@@ -240,6 +240,63 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 - Restore book count as styled badge/button instead of plain text.
 - Add missing toggle for library_show_book_count in settings (currently missing from UI).
 
+## Phase 13: Material 3 UI Consistency Polish
+
+### Status: ✅ **Completed**
+
+#### Reader Settings - Visual Hierarchy Improvements
+- [x] Added vertical dividers to expandable toggle settings (visual indicator for menu expansion)
+- [x] Removed descriptions from expandable toggles to display divider consistently:
+  - Progress Bar toggle
+  - Highlighted Reading toggle
+  - Perception Expander toggle
+  - Images toggle
+- [x] Color Picker layout improvements:
+  - Relocated RGB input fields to align with sliders (same row, not below)
+  - Removed duplicate per-color reset buttons (kept theme-wide reset only)
+  - Simplified input field alignment for cleaner interface
+
+#### OPDS Settings & Browsing - Full Material 3 Alignment
+- [x] **Settings > Browse OPDS**:
+  - Replaced plain Text title with `SettingsSubcategoryTitle` for consistency
+  - Redesigned OPDS source list using Material 3 `ListItem` components
+  - Added edit/delete icon buttons for each source
+  - Implemented edit dialog for updating existing sources
+  - Implemented delete confirmation dialog
+  - Fixed dialog field padding to 8dp (Material 3 standard spacing)
+  - Toast notifications for user feedback
+
+- [x] **Catalogs > OPDS Tab**:
+  - Replaced plain Text source list with Material 3 `Card` components
+  - Each card shows source name (title) and URL (supporting text)
+  - Proper Material 3 elevation and spacing (16dp horizontal, 8dp vertical)
+  - Applied `SettingsSubcategoryTitle` for section header consistency
+
+- [x] **OPDS Catalog Browsing**:
+  - Replaced manual 3-column grid with adaptive `FlowRow` layout
+  - Responsive grid adjusts columns based on screen width
+  - Books now properly wrap and scale on phones, tablets, and large screens
+  - Consistent 8dp spacing between items
+  - Better handling of varying screen sizes
+
+**Files Modified:**
+- `presentation/settings/browse/opds/BrowseOpdsSubcategory.kt`
+- `presentation/settings/browse/opds/BrowseOpdsManagementContent.kt`
+- `ui/browse/BrowseScreen.kt` (OpdsTabContent function)
+- `ui/browse/opds/OpdsCatalogContent.kt`
+- `presentation/core/components/settings/ColorPickerWithTitle.kt`
+- `presentation/settings/reader/progress/components/ProgressBarOption.kt`
+- `presentation/settings/reader/reading_speed/components/HighlightedReadingOption.kt`
+- `presentation/settings/reader/reading_speed/components/PerceptionExpanderOption.kt`
+- `presentation/settings/reader/images/components/ImagesOption.kt`
+
+**Key Improvements:**
+- Consistent use of Material 3 components across all menus
+- Full CRUD functionality for OPDS sources (was missing edit/delete)
+- Responsive layouts adapt to all screen sizes
+- Visual divider indicator clearly shows expandable toggles
+- Unified design language throughout app
+
 ## Current Implementation Status (January 2026)
 
 ### ✅ **Successfully Implemented**
@@ -290,6 +347,9 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 - ✅ **Navigation**: Smooth hierarchical browsing with loop prevention
 - ✅ **URL Construction**: Special characters in paths properly handled with double-encoding for dots (., symbols, etc.)
 - ✅ **Error Recovery**: Robust XML parsing and error handling
+- ✅ **Material 3 Alignment**: All settings, OPDS menus, and reader settings now fully aligned with Material 3 guidelines
+- ✅ **OPDS Source Management**: Full CRUD operations (create, read, update, delete) with proper UI
+- ✅ **Responsive Design**: OPDS book grid and UI elements adapt to all screen sizes (phones, tablets)
 
 ## Next Implementation Steps
 
@@ -421,10 +481,16 @@ Librera Reader's OPDS implementation was examined to understand efficient handli
 - ✅ **Authentication**: Basic Auth implemented
 - ✅ **Large Catalogs**: Currently limited to 50 books (needs lazy loading solution)
 - ✅ **Screen Navigation**: All parceling crashes fixed
+- ✅ **Material 3 Alignment**: All menus, OPDS screens, and settings now consistent with M3 guidelines
+- ✅ **OPDS Source Management**: Full edit/delete functionality implemented
 - ⏳ **Book Downloads**: Backend ready, UI dialogs implemented, but downloads still failing
 - ⏳ **Offline Caching**: Not yet implemented
 - ⏳ **Advanced Features**: Tag sync, bulk operations deferred to future releases
 - ❓ **Librera Reader Reference**: Need to examine their OPDS implementation for lazy loading and search strategies
+
+## Project Documentation Notes
+- **material-3-ui-alignment-evaluation.md**: Side project documenting Material 3 compliance analysis for Reader and Appearance settings. Contains detailed evaluation of component layouts, spacing, and alignment recommendations. See this file for reference on Material 3 guidelines applied during Phase 13 Polish.
+- **material-3-menu-updates.md**: Supporting analysis document for Material 3 menu improvements with specific recommendations for each menu section.
 
 ## Git Commit Strategy
 Use git commits for checkpoints when phases or major features are completed. Commit messages should reference the integration plan phases (e.g., "Complete Phase 1: Database schema updates"). This enables progress tracking, easy rollback if needed, and clear history of implementation steps in addition to this document.
