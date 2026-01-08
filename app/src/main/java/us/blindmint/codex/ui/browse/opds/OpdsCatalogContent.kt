@@ -8,11 +8,14 @@ package us.blindmint.codex.ui.browse.opds
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
@@ -353,41 +356,40 @@ fun OpdsCatalogContent(
                         )
                     }
 
-                    // Group books into rows for grid-like display
-                    val bookRows = books.chunked(3) // 3 books per row
-                    bookRows.forEach { row ->
-                        item {
-                            androidx.compose.foundation.layout.Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp),
-                                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
-                            ) {
-                                 row.forEach { entry ->
-                                      OpdsBookPreview(
-                                          entry = entry,
-                                          onClick = {
-                                              if (state.isSelectionMode) {
-                                                  model.toggleBookSelection(entry.id)
-                                              } else {
-                                                  selectedEntryForDownload = entry
-                                                  showDownloadDialog = true
-                                              }
-                                          },
-                                          onLongClick = {
-                                              if (!state.isSelectionMode) {
-                                                  model.toggleSelectionMode()
-                                                  model.toggleBookSelection(entry.id)
-                                              }
-                                          },
-                                          modifier = Modifier.weight(1f),
-                                          isSelected = state.selectedBooks.contains(entry.id),
-                                          isSelectionMode = state.isSelectionMode
-                                      )
-                                 }
-                                // Fill remaining space if row is not full
-                                repeat(3 - row.size) {
-                                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
+                    // Adaptive grid using FlowRow for responsive layout
+                    item {
+                        FlowRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            books.forEach { entry ->
+                                Box(
+                                    modifier = Modifier
+                                        .widthIn(min = 110.dp, max = 150.dp)
+                                        .weight(1f)
+                                ) {
+                                    OpdsBookPreview(
+                                        entry = entry,
+                                        onClick = {
+                                            if (state.isSelectionMode) {
+                                                model.toggleBookSelection(entry.id)
+                                            } else {
+                                                selectedEntryForDownload = entry
+                                                showDownloadDialog = true
+                                            }
+                                        },
+                                        onLongClick = {
+                                            if (!state.isSelectionMode) {
+                                                model.toggleSelectionMode()
+                                                model.toggleBookSelection(entry.id)
+                                            }
+                                        },
+                                        isSelected = state.selectedBooks.contains(entry.id),
+                                        isSelectionMode = state.isSelectionMode
+                                    )
                                 }
                             }
                         }

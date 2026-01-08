@@ -21,10 +21,7 @@ import us.blindmint.codex.ui.settings.opds.OpdsSourcesModel
 
 fun LazyListScope.BrowseOpdsSubcategory(onNavigateToSettings: () -> Unit = {}) {
     item {
-        Text(
-            text = "OPDS Sources",
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        )
+        us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle(title = "OPDS Sources")
     }
     item {
         BrowseOpdsManagementContent()

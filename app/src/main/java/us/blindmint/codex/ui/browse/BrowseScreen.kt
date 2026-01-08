@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -342,17 +343,35 @@ private fun OpdsTabContent(sources: List<us.blindmint.codex.data.local.dto.OpdsS
 
     LazyColumn {
         item {
-            Text(
-                text = "OPDS Catalogs",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
+            us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle(title = "OPDS Catalogs")
         }
         items(sources) { source ->
-            Text(
-                source.name, modifier = Modifier
-                .clickable { navigator.push(OpdsRootScreen(source)) }
-                .padding(16.dp))
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                onClick = { navigator.push(OpdsRootScreen(source)) }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = source.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Text(
+                        text = source.url,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp)
+                    )
+                }
+            }
         }
         item {
             BrowseOpdsContent(onNavigateToSettings = { navigator.push(BrowseSettingsScreen()) })
