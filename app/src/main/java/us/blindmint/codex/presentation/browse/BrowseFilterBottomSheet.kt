@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -87,7 +88,7 @@ private fun BrowseFilterDialogContent(
         LazyColumn(
             Modifier
                 .fillMaxWidth()
-                .height(500.dp),
+                .fillMaxHeight(0.7f),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Display section - grouped in a card

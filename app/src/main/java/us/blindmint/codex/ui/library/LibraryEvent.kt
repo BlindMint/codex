@@ -71,4 +71,8 @@ sealed class LibraryEvent {
     data object OnShowFilterPanel : LibraryEvent()
 
     data object OnDismissFilterPanel : LibraryEvent()
+
+    data class OnUpdateFilterState(val filterState: FilterState) : LibraryEvent()
+
+    data object OnClearFilters : LibraryEvent()
 }

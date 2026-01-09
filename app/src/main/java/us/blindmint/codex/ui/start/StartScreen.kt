@@ -34,6 +34,7 @@ data class StartScreen(val id: Int = 0) : Screen, Parcelable {
         const val GENERAL_SETTINGS = "general_settings"
         const val APPEARANCE_SETTINGS = "appearance_settings"
         const val SCAN_SETTINGS = "scan_settings"
+        const val OPDS_SETTINGS = "opds_settings"
         const val DONE = "done"
         const val FINAL_DONE = "final_done"
     }
@@ -55,7 +56,7 @@ data class StartScreen(val id: Int = 0) : Screen, Parcelable {
             currentPage = currentPage.intValue,
             stackEvent = stackEvent.value,
             navigateForward = {
-                if (currentPage.intValue >= 3) {
+                if (currentPage.intValue >= 4) {
                     return@StartContent
                 }
 

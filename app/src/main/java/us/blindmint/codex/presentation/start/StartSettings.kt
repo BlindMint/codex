@@ -23,18 +23,19 @@ fun StartSettings(
         StartContentTransition(
             targetValue = when (currentPage) {
                 1 -> StartScreen.APPEARANCE_SETTINGS
-                else -> StartScreen.SCAN_SETTINGS
+                2 -> StartScreen.SCAN_SETTINGS
+                else -> StartScreen.OPDS_SETTINGS
             },
             stackEvent = stackEvent
         ) { page ->
             StartSettingsLayout {
                 when (page) {
                     StartScreen.APPEARANCE_SETTINGS -> {
-                        StartSettingsLayoutAppearance()
-                    }
+                    StartSettingsLayoutAppearance()
 
-                    StartScreen.SCAN_SETTINGS -> {
-                        StartSettingsLayoutScan()
+                    StartSettingsLayoutScan()
+
+                    StartSettingsLayoutOpds()
                     }
                 }
             }

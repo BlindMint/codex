@@ -44,12 +44,33 @@ class OpdsRepositoryImpl @Inject constructor() : OpdsRepository {
         return fetchFeed(url, username, password)
     }
 
-    override suspend fun search(url: String, query: String, username: String?, password: String?): OpdsFeed {
-        val client = createOkHttpClient(username, password)
-        val retrofitWithAuth = retrofit.newBuilder().client(client).build()
-        val service = retrofitWithAuth.create(OpdsApiService::class.java)
-        val dto = service.searchFeed(url, query)
-        return mapToDomain(dto)
+    override suspend fun search(feed: OpdsFeed, query: String, username: String?, password: String?): OpdsFeed {
+        // Find OpenSearch link
+        val openSearchLink = feed.links.firstOrNull { link ->
+            link.rel == "search" || link.rel == "opensearchdescription"
+        }
+
+        if (openSearchLink != null) {
+            // Use OpenSearch URL template
+            val searchUrl = openSearchLink.href.replace("{searchTerms}", query)
+            val client = createOkHttpClient(username, password)
+            val retrofitWithAuth = retrofit.newBuilder().client(client).build()
+            val service = retrofitWithAuth.create(OpdsApiService::class.java)
+            val dto = service.getFeed(searchUrl)
+            return mapToDomain(dto)
+        } else {
+            // Fallback to basic search if no OpenSearch link
+            val baseUrl = feed.links.firstOrNull { it.rel == "self" }?.href ?: feed.links.firstOrNull()?.href
+            if (baseUrl != null) {
+                val client = createOkHttpClient(username, password)
+                val retrofitWithAuth = retrofit.newBuilder().client(client).build()
+                val service = retrofitWithAuth.create(OpdsApiService::class.java)
+                val dto = service.searchFeed(baseUrl, query)
+                return mapToDomain(dto)
+            } else {
+                throw Exception("No search URL available")
+            }
+        }
     }
 
     override suspend fun downloadBook(url: String, username: String?, password: String?, onProgress: ((Float) -> Unit)?): Pair<ByteArray, String?> {
@@ -139,7 +160,7 @@ class OpdsRepositoryImpl @Inject constructor() : OpdsRepository {
         return OpdsEntry(
             id = dto.id,
             title = dto.title,
-            author = dto.author, // Now properly parsed from nested author/name element
+            author = dto.author?.name, // Extract name from OpdsAuthorDto
             summary = dto.summary,
             published = dto.published,
             language = dto.language,

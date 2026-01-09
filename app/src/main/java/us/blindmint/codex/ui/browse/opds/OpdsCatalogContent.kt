@@ -31,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 
@@ -359,6 +360,35 @@ fun OpdsCatalogContent(
                                     )
                                 }
                             }
+                        }
+                    }
+                }
+
+                // Load More button
+                if (state.hasNextPage && !state.isLoadingMore) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            OutlinedButton(
+                                onClick = { model.loadMore(source) },
+                                modifier = Modifier.fillMaxWidth(0.8f)
+                            ) {
+                                Text("Load More")
+                            }
+                        }
+                    }
+                }
+
+                // Loading indicator for pagination
+                if (state.isLoadingMore) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
                         }
                     }
                 }

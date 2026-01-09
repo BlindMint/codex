@@ -113,11 +113,17 @@ class OpdsCatalogModel @Inject constructor(
             return
         }
 
+        val currentFeed = state.value.feed
+        if (currentFeed == null) {
+            _state.value = _state.value.copy(error = "No feed loaded to search in")
+            return
+        }
+
         _state.value = _state.value.copy(isLoading = true, error = null)
         viewModelScope.launch {
             try {
                 println("DEBUG: Calling opdsRepository.search...")
-                val searchFeed = opdsRepository.search(source.url, query, source.username, source.password)
+                val searchFeed = opdsRepository.search(currentFeed, query, source.username, source.password)
                 println("DEBUG: Search completed, entries: ${searchFeed.entries.size}")
                 _state.value = _state.value.copy(isLoading = false, feed = searchFeed)
                 println("DEBUG: Search state updated")

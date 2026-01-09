@@ -24,6 +24,8 @@ import javax.inject.Inject
 import android.net.Uri
 import android.provider.DocumentsContract
 import androidx.documentfile.provider.DocumentFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class ImportOpdsBookUseCase @Inject constructor(
     private val application: Application,
@@ -61,10 +63,10 @@ class ImportOpdsBookUseCase @Inject constructor(
         username: String? = null,
         password: String? = null,
         onProgress: ((Float) -> Unit)? = null
-    ): BookWithCover? {
+    ): BookWithCover? = withContext(Dispatchers.IO) {
         // Find acquisition link
         val acquisitionLink = opdsEntry.links.firstOrNull { it.rel == "http://opds-spec.org/acquisition" }
-            ?: return null
+            ?: return@withContext null
 
         // Resolve relative URL against source URL
         val resolvedUrl = try {
@@ -96,7 +98,7 @@ class ImportOpdsBookUseCase @Inject constructor(
             )
         )
 
-        val parsedBook = fileParser.parse(cachedFile) ?: return null
+        val parsedBook = fileParser.parse(cachedFile) ?: return@withContext null
 
         // Move to permanent location
         val downloadUriString = dataStore.getNullableData(DataStoreConstants.OPDS_DOWNLOAD_URI)
@@ -131,7 +133,7 @@ class ImportOpdsBookUseCase @Inject constructor(
         // Apply OPDS metadata
         val bookWithMetadata = opdsMetadataMapper.applyOpdsMetadataToBook(bookWithPath, opdsEntry)
 
-        return BookWithCover(
+        BookWithCover(
             book = bookWithMetadata,
             coverImage = parsedBook.coverImage
         )

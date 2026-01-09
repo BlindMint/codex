@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -100,7 +101,7 @@ private fun LibrarySortMenuContent(
         LazyColumn(
             Modifier
                 .fillMaxWidth()
-                .height(500.dp),
+                .fillMaxHeight(0.7f),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Sort section - grouped in a card

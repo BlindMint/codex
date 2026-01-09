@@ -32,7 +32,7 @@ fun StartContent(
         StartContentTransition(
             modifier = Modifier,
             targetValue = when {
-                currentPage in 1..2 -> StartScreen.SETTINGS
+                currentPage in 1..3 -> StartScreen.SETTINGS
                 else -> StartScreen.FINAL_DONE
             },
             stackEvent = stackEvent

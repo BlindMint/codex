@@ -20,9 +20,8 @@ data class OpdsEntryDto(
     @field:Element(name = "title")
     var title: String = "",
 
-    @field:Path("author")
-    @field:Element(name = "name", required = false)
-    var author: String? = null,
+    @field:Element(name = "author", required = false)
+    var author: OpdsAuthorDto? = null,
 
     @field:Element(name = "summary", required = false)
     var summary: String? = null,

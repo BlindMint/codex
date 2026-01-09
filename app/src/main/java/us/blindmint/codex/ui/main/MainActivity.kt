@@ -52,14 +52,26 @@ import us.blindmint.codex.presentation.main.MainActivityKeyboardManager
 import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.presentation.navigator.Navigator
 import us.blindmint.codex.presentation.navigator.NavigatorTabs
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.ui.Modifier
 import us.blindmint.codex.ui.browse.BrowseModel
 import us.blindmint.codex.ui.browse.BrowseScreen
+import us.blindmint.codex.ui.browse.OpdsCategoryScreen
+import us.blindmint.codex.ui.browse.OpdsRootScreen
 import us.blindmint.codex.ui.history.HistoryModel
 import us.blindmint.codex.ui.history.HistoryScreen
 import us.blindmint.codex.ui.library.LibraryModel
 import us.blindmint.codex.ui.library.LibraryScreen
 import us.blindmint.codex.ui.settings.SettingsModel
 import us.blindmint.codex.ui.settings.SettingsScreen
+import us.blindmint.codex.ui.settings.AppearanceSettingsScreen
+import us.blindmint.codex.ui.settings.BrowseSettingsScreen
+import us.blindmint.codex.ui.settings.ImportExportSettingsScreen
+import us.blindmint.codex.ui.settings.ReaderSettingsScreen
+import us.blindmint.codex.ui.library.LibrarySettingsScreen
 import us.blindmint.codex.ui.start.StartScreen
 import us.blindmint.codex.ui.theme.CodexTheme
 import us.blindmint.codex.ui.theme.Transitions
@@ -261,7 +273,10 @@ class MainActivity : AppCompatActivity() {
                         },
                         contentKey = {
                             when (it) {
-                                is LibraryScreen, is HistoryScreen, is BrowseScreen, is SettingsScreen -> "tabs"
+                                is LibraryScreen, is HistoryScreen, is BrowseScreen, is SettingsScreen,
+                                is OpdsRootScreen, is OpdsCategoryScreen,
+                                is AppearanceSettingsScreen, is ReaderSettingsScreen, is LibrarySettingsScreen,
+                                is BrowseSettingsScreen, is ImportExportSettingsScreen -> "tabs"
                                 else -> it
                             }
                         },
@@ -283,24 +298,36 @@ class MainActivity : AppCompatActivity() {
                             navigator.push(ReaderScreen(bookId))
                         }
 
-                        when (screen) {
-                            is LibraryScreen, is HistoryScreen, is BrowseScreen, is SettingsScreen -> {
-                                NavigatorTabs(
-                                    currentTab = screen,
-                                    transitionSpec = {
-                                        Transitions.FadeTransitionIn
-                                            .togetherWith(Transitions.FadeTransitionOut)
-                                    },
-                                    navigationBar = { NavigationBar(tabs = tabs) },
-                                    navigationRail = { NavigationRail(tabs = tabs) }
-                                ) { tab ->
-                                    tab.Content()
-                                }
+                        // Check if screen should show navigation bar
+                        val shouldShowNavigation = when (screen) {
+                            is ReaderScreen -> false // Hide navigation when reading
+                            else -> true // Show navigation for all other screens
+                        }
+
+                        if (shouldShowNavigation) {
+                            // Determine which tab should be active based on current screen
+                            val activeTab = when (screen) {
+                                is LibraryScreen, is LibrarySettingsScreen -> LibraryScreen()
+                                is HistoryScreen -> HistoryScreen()
+                                is BrowseScreen, is OpdsRootScreen, is OpdsCategoryScreen, is BrowseSettingsScreen -> BrowseScreen()
+                                is SettingsScreen, is AppearanceSettingsScreen, is ReaderSettingsScreen, is ImportExportSettingsScreen -> SettingsScreen()
+                                else -> LibraryScreen() // Default fallback
                             }
 
-                            else -> {
-                                screen.Content()
+                            // Use a custom layout that shows navigation bar with current screen content
+                            androidx.compose.material3.Scaffold(
+                                bottomBar = { NavigationBar(tabs = tabs) }
+                            ) { paddingValues ->
+                                androidx.compose.foundation.layout.Box(
+                                    modifier = androidx.compose.ui.Modifier
+                                        .fillMaxSize()
+                                        .padding(bottom = paddingValues.calculateBottomPadding())
+                                ) {
+                                    screen.Content()
+                                }
                             }
+                        } else {
+                            screen.Content()
                         }
                     }
                 }

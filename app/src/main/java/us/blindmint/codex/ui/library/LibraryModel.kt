@@ -384,13 +384,27 @@ class LibraryModel @Inject constructor(
             }
         }
 
-        is LibraryEvent.OnDismissFilterPanel -> {
+        is LibraryEvent.OnUpdateFilterState -> {
             viewModelScope.launch {
                 _state.update {
                     it.copy(
-                        showFilterPanel = false
+                        filterState = event.filterState
                     )
                 }
+                // Re-apply filters
+                getBooksFromDatabase()
+            }
+        }
+
+        is LibraryEvent.OnClearFilters -> {
+            viewModelScope.launch {
+                _state.update {
+                    it.copy(
+                        filterState = FilterState()
+                    )
+                }
+                // Re-apply filters
+                getBooksFromDatabase()
             }
         }
         }
@@ -399,14 +413,16 @@ class LibraryModel @Inject constructor(
     private suspend fun getBooksFromDatabase(
         query: String = if (_state.value.showSearch) _state.value.searchQuery else ""
     ) {
-        val books = getBooks
+        val allBooks = getBooks
             .execute(query)
+
+        val filteredBooks = applyFilters(allBooks, _state.value.filterState)
             .sortedWith(compareByDescending<Book> { it.lastOpened }.thenBy { it.title })
             .map { book -> SelectableBook(book, false) }
 
         _state.update {
             it.copy(
-                books = books,
+                books = filteredBooks,
                 hasSelectedItems = false,
                 isLoading = false
             )
@@ -427,6 +443,52 @@ class LibraryModel @Inject constructor(
             books.sortedWith(comparator.reversed())
         } else {
             books.sortedWith(comparator)
+        }
+    }
+
+    private fun applyFilters(books: List<Book>, filterState: FilterState): List<Book> {
+        return books.filter { book ->
+            // Status filters (Reading, Planning, Already Read, Favorites)
+            val statusMatch = filterState.selectedStatuses.isEmpty() ||
+                    filterState.selectedStatuses.any { status ->
+                        when (status) {
+                            "Reading" -> book.progress > 0.0f && book.progress < 1.0f
+                            "Planning" -> book.progress == 0.0f
+                            "Already Read" -> book.progress >= 1.0f
+                            "Favorites" -> book.category.name == "FAVORITES"
+                            else -> false
+                        }
+                    }
+
+            // Tags filter
+            val tagsMatch = filterState.selectedTags.isEmpty() ||
+                    book.tags.any { tag -> filterState.selectedTags.contains(tag) }
+
+            // Authors filter
+            val authorsMatch = filterState.selectedAuthors.isEmpty() ||
+                    book.author?.getAsString()?.let { authorName -> filterState.selectedAuthors.contains(authorName) } == true
+
+            // Series filter
+            val seriesMatch = filterState.selectedSeries.isEmpty() ||
+                    book.seriesName?.let { series -> filterState.selectedSeries.contains(series) } == true
+
+            // Publication year filter
+            val yearMatch = book.publicationDate == null ||
+                    run {
+                        val publicationYear = (book.publicationDate!! / 1000 / 60 / 60 / 24 / 365 + 1970).toInt()
+                        publicationYear in filterState.publicationYearRange
+                    }
+
+            // Language filter
+            val languageMatch = filterState.selectedLanguages.isEmpty() ||
+                    book.language?.let { lang -> filterState.selectedLanguages.contains(lang) } == true
+
+            // Apply AND/OR logic
+            if (filterState.useAndLogic) {
+                statusMatch && tagsMatch && authorsMatch && seriesMatch && yearMatch && languageMatch
+            } else {
+                statusMatch || tagsMatch || authorsMatch || seriesMatch || yearMatch || languageMatch
+            }
         }
     }
 
