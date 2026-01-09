@@ -18,7 +18,11 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.automirrored.filled.Sort
@@ -136,7 +140,7 @@ fun LibraryTopBar(
                         searchVisibility(LibraryEvent.OnSearchVisibility(true))
                     }
                     IconButton(
-                        icon = Icons.AutoMirrored.Default.Sort,
+                        icon = Icons.Default.FilterList,
                         contentDescription = R.string.sort_content_desc,
                         disableOnClick = false,
                     ) {

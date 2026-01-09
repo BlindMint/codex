@@ -80,7 +80,8 @@ import java.security.MessageDigest
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BackgroundImageOption(
-    backgroundColor: Color = MaterialTheme.colorScheme.surfaceContainerLow
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
+    showControls: Boolean = true
 ) {
     val mainModel = hiltViewModel<MainModel>()
     val state = mainModel.state.collectAsStateWithLifecycle()
@@ -289,10 +290,7 @@ fun BackgroundImageOption(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 18.dp)
-                .clip(MaterialTheme.shapes.large)
-                .background(backgroundColor)
-                .padding(16.dp)
+                .padding(horizontal = 0.dp)
         ) {
             val isEnabled = state.value.backgroundImage != null
             // Opacity Slider
@@ -357,9 +355,9 @@ fun BackgroundImageOption(
                             },
                             style = MaterialTheme.typography.labelMedium
                         )
-                    }
-                }
             }
+        }
+    }
         }
     }
 }

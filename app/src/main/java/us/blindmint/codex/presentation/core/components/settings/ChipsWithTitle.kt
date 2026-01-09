@@ -2,6 +2,9 @@
  * Codex — free and open-source Material You eBook reader.
  * Copyright (C) 2024-2025 BlindMint
  * SPDX-License-Identifier: GPL-3.0-only
+ *
+ * ChipsWithTitle.kt - Material 3 filter chip component with title
+ * Used for selection controls in settings, particularly for font selection
  */
 
 package us.blindmint.codex.presentation.core.components.settings
@@ -13,6 +16,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+
 import androidx.compose.material3.FilterChip
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -26,6 +31,7 @@ import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTi
 /**
  * Chips with title. Use list of [ButtonItem]s to display chips.
  */
+
 @Composable
 fun ChipsWithTitle(
     modifier: Modifier = Modifier,
@@ -38,6 +44,7 @@ fun ChipsWithTitle(
     Column(
         modifier
             .fillMaxWidth()
+            .widthIn(max = 600.dp)
             .padding(horizontal = horizontalPadding, vertical = verticalPadding)
     ) {
         SettingsSubcategoryTitle(title = title, padding = 0.dp)
@@ -46,6 +53,7 @@ fun ChipsWithTitle(
         FlowRow(
             horizontalArrangement = Arrangement.Center,
             verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth(),
             content = {
                 chips.forEach { item ->
                     FilterChip(

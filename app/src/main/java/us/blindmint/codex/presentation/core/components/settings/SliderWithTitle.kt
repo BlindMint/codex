@@ -2,6 +2,9 @@
  * Codex — free and open-source Material You eBook reader.
  * Copyright (C) 2024-2025 BlindMint
  * SPDX-License-Identifier: GPL-3.0-only
+ *
+ * SliderWithTitle.kt - Material 3 slider component with title and optional value display
+ * Used throughout settings screens for numeric value controls
  */
 
 package us.blindmint.codex.presentation.core.components.settings
@@ -14,8 +17,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+
 import androidx.compose.material3.Label
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
@@ -55,6 +60,7 @@ fun SliderWithTitle(
     value: Pair<Int, String>,
     valuePlaceholder: String = "",
     showPlaceholder: Boolean = false,
+    showValueLabel: Boolean = true,
     fromValue: Int,
     toValue: Int,
     title: String,
@@ -71,55 +77,68 @@ fun SliderWithTitle(
         }
     }
 
-    Row(
+    Column(
         modifier
             .fillMaxWidth()
-            .padding(horizontal = horizontalPadding, vertical = verticalPadding),
-        verticalAlignment = Alignment.CenterVertically
+            .widthIn(max = 600.dp)
+            .padding(horizontal = horizontalPadding, vertical = verticalPadding)
     ) {
-        Column(Modifier.fillMaxWidth(0.2f)) {
-            SettingsSubcategoryTitle(title = title, padding = 0.dp)
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Slider(
-            valueRange = fromValue.toFloat()..toValue.toFloat(),
-            value = value.first.toFloat(),
-            enabled = enabled,
-            onValueChange = {
-                onValueChange(it.roundToInt())
-            },
-            interactionSource = interactionSource,
-            thumb = {
-                Label(
-                    label = {
-                        PlainTooltip(
-                            modifier = Modifier.clip(CircleShape)
-                        ) {
-                            StyledText(
-                                text = placeholder.value,
-                                modifier = Modifier.padding(
-                                    vertical = 6.dp,
-                                    horizontal = 4.dp
+        SettingsSubcategoryTitle(title = title, padding = 0.dp)
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Slider(
+                modifier = Modifier.weight(1f),
+                valueRange = fromValue.toFloat()..toValue.toFloat(),
+                value = value.first.toFloat(),
+                enabled = enabled,
+                onValueChange = {
+                    onValueChange(it.roundToInt())
+                },
+                interactionSource = interactionSource,
+                thumb = {
+                    Label(
+                        label = {
+                            PlainTooltip(
+                                modifier = Modifier.clip(CircleShape)
+                            ) {
+                                StyledText(
+                                    text = placeholder.value,
+                                    modifier = Modifier.padding(
+                                        vertical = 6.dp,
+                                        horizontal = 4.dp
+                                    )
                                 )
-                            )
-                        }
-                    },
-                    interactionSource = interactionSource
-                ) {
-                    SliderDefaults.Thumb(
+                            }
+                        },
                         interactionSource = interactionSource
-                    )
-                }
-            },
-            steps = toValue - fromValue - 1,
-            colors = SliderDefaults.colors(
-                activeTrackColor = MaterialTheme.colorScheme.secondary,
-                thumbColor = MaterialTheme.colorScheme.secondary,
-                inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
-                activeTickColor = MaterialTheme.colorScheme.onSecondary,
-                inactiveTickColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ) {
+                        SliderDefaults.Thumb(
+                            interactionSource = interactionSource
+                        )
+                    }
+                },
+                steps = toValue - fromValue - 1,
+                colors = SliderDefaults.colors(
+                    activeTrackColor = MaterialTheme.colorScheme.secondary,
+                    thumbColor = MaterialTheme.colorScheme.secondary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
+                    activeTickColor = MaterialTheme.colorScheme.onSecondary,
+                    inactiveTickColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             )
-        )
+
+            if (showValueLabel) {
+                Spacer(modifier = Modifier.width(12.dp))
+                StyledText(
+                    text = placeholder.value,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+            }
+        }
     }
 }
 
@@ -143,6 +162,7 @@ fun SliderWithTitle(
     value: Pair<Float, String>,
     valuePlaceholder: String = "",
     showPlaceholder: Boolean = false,
+    showValueLabel: Boolean = true,
     title: String,
     toValue: Int,
     horizontalPadding: Dp = SettingsHorizontalPadding,
@@ -158,53 +178,66 @@ fun SliderWithTitle(
         }
     }
 
-    Row(
+    Column(
         modifier
             .fillMaxWidth()
-            .padding(horizontal = horizontalPadding, vertical = verticalPadding),
-        verticalAlignment = Alignment.CenterVertically
+            .widthIn(max = 600.dp)
+            .padding(horizontal = horizontalPadding, vertical = verticalPadding)
     ) {
-        Column(Modifier.fillMaxWidth(0.2f)) {
-            SettingsSubcategoryTitle(title = title, padding = 0.dp)
-        }
-        Spacer(modifier = Modifier.width(8.dp))
-        Slider(
-            valueRange = 0f..1f,
-            value = value.first,
-            enabled = enabled,
-            onValueChange = {
-                onValueChange(it)
-            },
-            interactionSource = interactionSource,
-            thumb = {
-                Label(
-                    label = {
-                        PlainTooltip(
-                            modifier = Modifier.clip(CircleShape)
-                        ) {
-                            StyledText(
-                                text = placeholder.value,
-                                modifier = Modifier.padding(
-                                    vertical = 6.dp,
-                                    horizontal = 4.dp
+        SettingsSubcategoryTitle(title = title, padding = 0.dp)
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Slider(
+                modifier = Modifier.weight(1f),
+                valueRange = 0f..1f,
+                value = value.first,
+                enabled = enabled,
+                onValueChange = {
+                    onValueChange(it)
+                },
+                interactionSource = interactionSource,
+                thumb = {
+                    Label(
+                        label = {
+                            PlainTooltip(
+                                modifier = Modifier.clip(CircleShape)
+                            ) {
+                                StyledText(
+                                    text = placeholder.value,
+                                    modifier = Modifier.padding(
+                                        vertical = 6.dp,
+                                        horizontal = 4.dp
+                                    )
                                 )
-                            )
-                        }
-                    },
-                    interactionSource = interactionSource
-                ) {
-                    SliderDefaults.Thumb(
+                            }
+                        },
                         interactionSource = interactionSource
-                    )
-                }
-            },
-            colors = SliderDefaults.colors(
-                activeTrackColor = MaterialTheme.colorScheme.secondary,
-                thumbColor = MaterialTheme.colorScheme.secondary,
-                inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
-                activeTickColor = MaterialTheme.colorScheme.onSecondary,
-                inactiveTickColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ) {
+                        SliderDefaults.Thumb(
+                            interactionSource = interactionSource
+                        )
+                    }
+                },
+                colors = SliderDefaults.colors(
+                    activeTrackColor = MaterialTheme.colorScheme.secondary,
+                    thumbColor = MaterialTheme.colorScheme.secondary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
+                    activeTickColor = MaterialTheme.colorScheme.onSecondary,
+                    inactiveTickColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             )
-        )
+
+            if (showValueLabel) {
+                Spacer(modifier = Modifier.width(12.dp))
+                StyledText(
+                    text = placeholder.value,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+            }
+        }
     }
 }

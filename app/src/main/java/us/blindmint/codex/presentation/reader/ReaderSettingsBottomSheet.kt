@@ -2,6 +2,9 @@
  * Codex — free and open-source Material You eBook reader.
  * Copyright (C) 2024-2025 BlindMint
  * SPDX-License-Identifier: GPL-3.0-only
+ *
+ * ReaderSettingsBottomSheet.kt - Reader customization settings in bottom sheet
+ * Organized in tabs: General, Reader, and Colors for comprehensive reading experience control
  */
 
 package us.blindmint.codex.presentation.reader
@@ -9,17 +12,23 @@ package us.blindmint.codex.presentation.reader
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -38,7 +47,6 @@ import kotlinx.coroutines.launch
 import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
 import us.blindmint.codex.presentation.core.components.modal_bottom_sheet.ModalBottomSheet
 import us.blindmint.codex.presentation.core.util.LocalActivity
-import us.blindmint.codex.presentation.settings.appearance.colors.ColorsSubcategory
 import us.blindmint.codex.presentation.settings.reader.chapters.ChaptersSubcategory
 import us.blindmint.codex.presentation.settings.reader.font.FontSubcategory
 import us.blindmint.codex.presentation.settings.reader.images.ImagesSubcategory
@@ -51,6 +59,7 @@ import us.blindmint.codex.presentation.settings.reader.dictionary.DictionarySubc
 import us.blindmint.codex.presentation.settings.reader.search.SearchSubcategory
 import us.blindmint.codex.presentation.settings.reader.system.SystemSubcategory
 import us.blindmint.codex.presentation.settings.reader.text.TextSubcategory
+import us.blindmint.codex.presentation.settings.reader.colors.SimpleColorPresetSelector
 import us.blindmint.codex.ui.reader.ReaderEvent
 
 private var initialPage = 0
@@ -142,63 +151,301 @@ fun ReaderSettingsBottomSheet(
         HorizontalPager(state = pagerState) { page ->
             when (page) {
                 0 -> {
-                    LazyColumnWithScrollbar(Modifier.fillMaxSize(), state = generalScrollState) {
-                        ReadingModeSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        PaddingSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        SystemSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        ReadingSpeedSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        SearchSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        DictionarySubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        MiscSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface },
-                            showDivider = false
-                        )
+                    LazyColumnWithScrollbar(
+                        Modifier.fillMaxSize(),
+                        state = generalScrollState,
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Reading Mode section
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    us.blindmint.codex.presentation.settings.reader.reading_mode.components.HorizontalGestureOption()
+                                    us.blindmint.codex.presentation.settings.reader.reading_mode.components.HorizontalGestureScrollOption()
+                                    us.blindmint.codex.presentation.settings.reader.reading_mode.components.HorizontalGestureSensitivityOption()
+                                    us.blindmint.codex.presentation.settings.reader.reading_mode.components.HorizontalGesturePullAnimOption()
+                                    us.blindmint.codex.presentation.settings.reader.reading_mode.components.HorizontalGestureAlphaAnimOption()
+                                }
+                            }
+                        }
+
+                        // Padding section
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    us.blindmint.codex.presentation.settings.reader.padding.components.SidePaddingOption()
+                                    us.blindmint.codex.presentation.settings.reader.padding.components.VerticalPaddingOption()
+                                    us.blindmint.codex.presentation.settings.reader.padding.components.CutoutPaddingOption()
+                                    us.blindmint.codex.presentation.settings.reader.padding.components.BottomBarPaddingOption()
+                                }
+                            }
+                        }
+
+                        // System section
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    us.blindmint.codex.presentation.settings.reader.system.components.CustomScreenBrightnessOption()
+                                    us.blindmint.codex.presentation.settings.reader.system.components.ScreenBrightnessOption()
+                                    us.blindmint.codex.presentation.settings.reader.system.components.ScreenOrientationOption()
+                                }
+                            }
+                        }
+
+                        // Reading Speed section
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    us.blindmint.codex.presentation.settings.reader.reading_speed.components.HighlightedReadingOption()
+                                    us.blindmint.codex.presentation.settings.reader.reading_speed.components.HighlightedReadingThicknessOption()
+                                    us.blindmint.codex.presentation.settings.reader.reading_speed.components.PerceptionExpanderOption()
+                                    us.blindmint.codex.presentation.settings.reader.reading_speed.components.PerceptionExpanderPaddingOption()
+                                    us.blindmint.codex.presentation.settings.reader.reading_speed.components.PerceptionExpanderThicknessOption()
+                                }
+                            }
+                        }
+
+                        // Search section
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    us.blindmint.codex.presentation.settings.reader.search.components.SearchHighlightColorOption()
+                                    us.blindmint.codex.presentation.settings.reader.search.components.SearchScrollbarOpacityOption()
+                                }
+                            }
+                        }
+
+                        // Dictionary section
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    us.blindmint.codex.presentation.settings.reader.dictionary.components.OpenLookupsInAppOption()
+                                    us.blindmint.codex.presentation.settings.reader.dictionary.components.DoubleTapDictionaryOption()
+                                    us.blindmint.codex.presentation.settings.reader.dictionary.components.DictionarySourceOption()
+                                }
+                            }
+                        }
+
+                        // Misc section
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    us.blindmint.codex.presentation.settings.reader.misc.components.FullscreenOption()
+                                    us.blindmint.codex.presentation.settings.reader.misc.components.KeepScreenOnOption()
+                                    us.blindmint.codex.presentation.settings.reader.misc.components.HideBarsOnFastScrollOption()
+                                }
+                            }
+                        }
                     }
                 }
 
                 1 -> {
-                    LazyColumnWithScrollbar(Modifier.fillMaxSize(), state = readerScrollState) {
-                        FontSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        TextSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        ImagesSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        ChaptersSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        ProgressSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface },
-                            showDivider = false
-                        )
+                    LazyColumnWithScrollbar(
+                        Modifier.fillMaxSize(),
+                        state = readerScrollState,
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Font section
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    us.blindmint.codex.presentation.settings.reader.font.components.FontFamilyOption()
+                                    us.blindmint.codex.presentation.settings.reader.font.components.CustomFontsOption()
+                                    us.blindmint.codex.presentation.settings.reader.font.components.FontThicknessOption()
+                                    us.blindmint.codex.presentation.settings.reader.font.components.FontStyleOption()
+                                    us.blindmint.codex.presentation.settings.reader.font.components.FontSizeOption()
+                                    us.blindmint.codex.presentation.settings.reader.font.components.LetterSpacingOption()
+                                }
+                            }
+                        }
+
+                        // Text section
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    us.blindmint.codex.presentation.settings.reader.text.components.TextAlignmentOption()
+                                    us.blindmint.codex.presentation.settings.reader.text.components.LineHeightOption()
+                                    us.blindmint.codex.presentation.settings.reader.text.components.ParagraphHeightOption()
+                                    us.blindmint.codex.presentation.settings.reader.text.components.ParagraphIndentationOption()
+                                }
+                            }
+                        }
+
+                        // Images section
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    us.blindmint.codex.presentation.settings.reader.images.components.ImagesOption()
+                                    us.blindmint.codex.presentation.settings.reader.images.components.ImagesAlignmentOption()
+                                }
+                            }
+                        }
+
+                        // Chapters section
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    us.blindmint.codex.presentation.settings.reader.chapters.components.ChapterTitleAlignmentOption()
+                                }
+                            }
+                        }
+
+                        // Progress section
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    us.blindmint.codex.presentation.settings.reader.progress.components.ProgressBarOption()
+                                    us.blindmint.codex.presentation.settings.reader.progress.components.ProgressCountOption()
+                                    us.blindmint.codex.presentation.settings.reader.progress.components.ProgressBarAlignmentOption()
+                                    us.blindmint.codex.presentation.settings.reader.progress.components.ProgressBarFontSizeOption()
+                                    us.blindmint.codex.presentation.settings.reader.progress.components.ProgressBarPaddingOption()
+                                }
+                            }
+                        }
                     }
                 }
 
                 2 -> {
-                    LazyColumnWithScrollbar(Modifier.fillMaxSize(), state = colorsScrollState) {
+                    LazyColumnWithScrollbar(
+                        Modifier.fillMaxSize(),
+                        state = colorsScrollState,
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Colors section - full functionality without nested grouping
                         item {
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                )
+                            ) {
+                                // Color Preset section (without nested background container)
+                                us.blindmint.codex.presentation.settings.appearance.colors.components.ColorPresetOption(
+                                    backgroundColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                    showNestedBackground = false
+                                )
+                            }
                         }
-                        ColorsSubcategory(
-                            showTitle = false,
-                            showDivider = false,
-                            backgroundColor = { MaterialTheme.colorScheme.surfaceContainer }
-                        )
+
+                        // Background section
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    // Background Image (without nested controls)
+                                    us.blindmint.codex.presentation.settings.appearance.colors.components.BackgroundImageOption(
+                                        backgroundColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                        showControls = false
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

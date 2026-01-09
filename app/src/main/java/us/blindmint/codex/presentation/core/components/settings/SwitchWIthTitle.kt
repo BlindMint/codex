@@ -2,6 +2,9 @@
  * Codex — free and open-source Material You eBook reader.
  * Copyright (C) 2024-2025 BlindMint
  * SPDX-License-Identifier: GPL-3.0-only
+ *
+ * SwitchWithTitle.kt - Material 3 switch component with title and optional description
+ * Used for boolean toggle controls throughout the app settings
  */
 
 package us.blindmint.codex.presentation.core.components.settings
@@ -14,6 +17,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -35,6 +40,7 @@ import us.blindmint.codex.presentation.core.components.common.StyledText
  * @param verticalPadding Vertical padding.
  * @param onClick Triggers when user clicks anywhere on this composable.
  */
+
 @Composable
 fun SwitchWithTitle(
     modifier: Modifier = Modifier,
@@ -48,6 +54,7 @@ fun SwitchWithTitle(
 ) {
     Row(
         modifier = modifier
+            .widthIn(max = 600.dp)
             .clickable(enabled = enabled) { onClick() }
             .padding(horizontal = horizontalPadding, vertical = verticalPadding),
         verticalAlignment = Alignment.CenterVertically

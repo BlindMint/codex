@@ -17,6 +17,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -27,6 +35,11 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.res.stringResource
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -35,6 +48,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -45,40 +60,23 @@ import android.os.Parcelable
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.presentation.navigator.LocalNavigator
-import us.blindmint.codex.presentation.browse.BrowseTopBar
 import us.blindmint.codex.presentation.settings.browse.scan.components.BrowseScanOption
 import us.blindmint.codex.presentation.settings.browse.scan.components.BrowseScanOptionNote
 import us.blindmint.codex.presentation.settings.browse.opds.BrowseOpdsContent
-import us.blindmint.codex.ui.settings.BrowseSettingsScreen
-import us.blindmint.codex.ui.settings.opds.OpdsSourcesModel
-import us.blindmint.codex.ui.browse.OpdsRootScreen
-import us.blindmint.codex.presentation.browse.BrowseContent
-import us.blindmint.codex.ui.main.MainModel
-import us.blindmint.codex.ui.main.MainEvent
-import us.blindmint.codex.presentation.core.util.LocalActivity
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.runtime.remember
-import us.blindmint.codex.domain.browse.display.BrowseLayout
-import us.blindmint.codex.ui.browse.BrowseModel
-import us.blindmint.codex.ui.library.LibraryScreen
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.layout.onGloballyPositioned
 import us.blindmint.codex.presentation.core.components.common.SearchTextField
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.components.top_bar.TopAppBar
 import us.blindmint.codex.presentation.core.components.top_bar.TopAppBarData
 import us.blindmint.codex.presentation.core.components.common.IconButton
+import us.blindmint.codex.presentation.core.util.LocalActivity
+import us.blindmint.codex.ui.settings.opds.OpdsSourcesModel
+import us.blindmint.codex.ui.browse.BrowseModel
+import us.blindmint.codex.ui.main.MainModel
+import us.blindmint.codex.ui.browse.BrowseEvent
+import us.blindmint.codex.ui.main.MainEvent
+import us.blindmint.codex.ui.library.LibraryScreen
+import us.blindmint.codex.ui.settings.BrowseSettingsScreen
+import us.blindmint.codex.presentation.browse.BrowseContent
 
 @Parcelize
 data class BrowseScreen(val id: Int = 0) : Screen, Parcelable {
@@ -93,13 +91,18 @@ data class BrowseScreen(val id: Int = 0) : Screen, Parcelable {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current
+        val activity = LocalActivity.current
 
         val screenModel = hiltViewModel<OpdsSourcesModel>()
+        val browseModel = hiltViewModel<BrowseModel>()
 
         val sources = screenModel.state.collectAsStateWithLifecycle()
+        val browseState = browseModel.state.collectAsStateWithLifecycle()
 
         var selectedTabIndex by remember { mutableIntStateOf(0) }
         val tabs = listOf(stringResource(R.string.local), stringResource(R.string.opds))
+
+        val topBarFocusRequester = remember { androidx.compose.ui.focus.FocusRequester() }
 
         // Tab-specific state for search and filter
         var localTabShowSearch by remember { mutableStateOf(false) }
@@ -112,42 +115,41 @@ data class BrowseScreen(val id: Int = 0) : Screen, Parcelable {
         val currentTabShowSearch = if (selectedTabIndex == 0) localTabShowSearch else opdsTabShowSearch
         val currentTabSearchQuery = if (selectedTabIndex == 0) localTabSearchQuery else opdsTabSearchQuery
 
-        val focusRequester = remember { androidx.compose.ui.focus.FocusRequester() }
+
 
         Scaffold(
+            modifier = Modifier.fillMaxSize(),
             topBar = {
                 TopAppBar(
                     scrollBehavior = null,
                     isTopBarScrolled = false,
-                    shownTopBar = if (currentTabShowSearch) 1 else 0,
+                    shownTopBar = when {
+                    selectedTabIndex == 0 && browseState.value.hasSelectedItems -> 2
+                    selectedTabIndex == 0 && localTabShowSearch -> 1
+                    else -> 0
+                },
                     topBars = listOf(
                         TopAppBarData(
                             contentID = 0,
                             contentNavigationIcon = {},
                             contentTitle = {
-                                StyledText(stringResource(id = R.string.browse_screen))
+                                Text(stringResource(R.string.browse_screen))
                             },
                             contentActions = {
-                                IconButton(
-                                    icon = Icons.Default.Search,
-                                    contentDescription = R.string.search_content_desc,
-                                    disableOnClick = true
-                                ) {
-                                    if (selectedTabIndex == 0) {
+                                // Search icon for Local tab only (OPDS has its own search in sub-screens)
+                                if (selectedTabIndex == 0) {
+                                    IconButton(onClick = {
                                         localTabShowSearch = true
-                                    } else {
-                                        opdsTabShowSearch = true
+                                    }) {
+                                        Icon(Icons.Default.Search, "Search")
                                     }
                                 }
-                                IconButton(
-                                    icon = Icons.Default.FilterList,
-                                    contentDescription = R.string.filter_content_desc,
-                                    disableOnClick = false
-                                ) {
-                                    if (selectedTabIndex == 0) {
+                                // Filter icon for Local tab
+                                if (selectedTabIndex == 0) {
+                                    IconButton(onClick = {
                                         localTabShowFilter = true
-                                    } else {
-                                        // TODO: Show OPDS filter options
+                                    }) {
+                                        Icon(Icons.Default.FilterList, "Filter")
                                     }
                                 }
                             }
@@ -155,49 +157,54 @@ data class BrowseScreen(val id: Int = 0) : Screen, Parcelable {
                         TopAppBarData(
                             contentID = 1,
                             contentNavigationIcon = {
-                                IconButton(
-                                    icon = Icons.AutoMirrored.Default.ArrowBack,
-                                    contentDescription = R.string.exit_search_content_desc,
-                                    disableOnClick = true
-                                ) {
-                                    if (selectedTabIndex == 0) {
-                                        localTabShowSearch = false
-                                        localTabSearchQuery = ""
-                                    } else {
-                                        opdsTabShowSearch = false
-                                        opdsTabSearchQuery = ""
-                                    }
+                                IconButton(onClick = {
+                                    localTabShowSearch = false
+                                    localTabSearchQuery = ""
+                                }) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Exit search")
                                 }
                             },
                             contentTitle = {
                                 SearchTextField(
-                                    modifier = Modifier
-                                        .focusRequester(focusRequester)
-                                        .onGloballyPositioned {
-                                            // Request focus when the search field appears
-                                            if (currentTabShowSearch) {
-                                                focusRequester.requestFocus()
-                                            }
-                                        },
-                                    initialQuery = currentTabSearchQuery,
+                                    modifier = Modifier,
+                                    initialQuery = localTabSearchQuery,
                                     onQueryChange = { query ->
-                                        if (selectedTabIndex == 0) {
-                                            localTabSearchQuery = query
-                                        } else {
-                                            opdsTabSearchQuery = query
-                                        }
+                                        localTabSearchQuery = query
                                     },
                                     onSearch = {
-                                        // Perform search
-                                        if (selectedTabIndex == 0) {
-                                            // Trigger local search
-                                        } else {
-                                            // TODO: Trigger OPDS search
-                                        }
+                                        // Search is handled by LocalTabContent
                                     }
                                 )
                             },
                             contentActions = {}
+                        ),
+                        TopAppBarData(
+                            contentID = 2,
+                            contentNavigationIcon = {
+                                IconButton(onClick = {
+                                    browseModel.onEvent(BrowseEvent.OnClearSelectedFiles)
+                                }) {
+                                    Icon(Icons.Default.Clear, "Clear selection")
+                                }
+                            },
+                            contentTitle = {
+                                Text("${browseState.value.selectedItemsCount} selected")
+                            },
+                            contentActions = {
+                                IconButton(onClick = {
+                                    browseModel.onEvent(BrowseEvent.OnSelectFiles(
+                                        includedFileFormats = emptyList(),
+                                        files = browseState.value.files
+                                    ))
+                                }) {
+                                    Icon(Icons.Default.SelectAll, "Select all")
+                                }
+                                IconButton(onClick = {
+                                    browseModel.onEvent(BrowseEvent.OnShowAddDialog)
+                                }) {
+                                    Icon(Icons.Default.CheckCircle, "Add selected")
+                                }
+                            }
                         )
                     )
                 )
@@ -225,7 +232,7 @@ data class BrowseScreen(val id: Int = 0) : Screen, Parcelable {
                 }
 
                 when (selectedTabIndex) {
-                    0 -> LocalTabContent(
+                    0 ->                     LocalTabContent(
                         showSearch = localTabShowSearch,
                         searchQuery = localTabSearchQuery,
                         onSearchVisibility = { show ->
@@ -236,8 +243,7 @@ data class BrowseScreen(val id: Int = 0) : Screen, Parcelable {
                             localTabSearchQuery = query
                         },
                         showFilter = localTabShowFilter,
-                        onFilterShown = { localTabShowFilter = false },
-                        focusRequester = focusRequester
+                        onFilterShown = { localTabShowFilter = false }
                     )
                     1 -> OpdsTabContent(sources.value.sources)
                 }
@@ -254,8 +260,7 @@ private fun LocalTabContent(
     onSearchVisibility: (Boolean) -> Unit,
     onSearchQueryChange: (String) -> Unit,
     showFilter: Boolean = false,
-    onFilterShown: () -> Unit = {},
-    focusRequester: androidx.compose.ui.focus.FocusRequester
+    onFilterShown: () -> Unit = {}
 ) {
     val navigator = LocalNavigator.current
     val activity = LocalActivity.current
@@ -264,6 +269,19 @@ private fun LocalTabContent(
 
     val browseState by browseModel.state.collectAsStateWithLifecycle()
     val mainState by mainModel.state.collectAsStateWithLifecycle()
+
+    // Filter files based on included filter items
+    val filteredFiles = remember(browseState.files, mainState.browseIncludedFilterItems) {
+        if (mainState.browseIncludedFilterItems.isEmpty()) {
+            browseState.files
+        } else {
+            browseState.files.filter { file ->
+                mainState.browseIncludedFilterItems.any { extension ->
+                    file.data.path.endsWith(extension, ignoreCase = true)
+                }
+            }
+        }
+    }
 
     // Sync local search state with browse model
     if (showSearch != browseState.showSearch) {
@@ -288,7 +306,7 @@ private fun LocalTabContent(
     val gridState = rememberLazyGridState()
 
     BrowseContent(
-        files = browseState.files,
+        files = filteredFiles,
         selectedBooksAddDialog = browseState.selectedBooksAddDialog,
         refreshState = refreshState,
         loadingAddDialog = browseState.loadingAddDialog,
@@ -308,28 +326,28 @@ private fun LocalTabContent(
         isRefreshing = browseState.isRefreshing,
         isLoading = browseState.isLoading,
         dialogHidden = browseState.dialog == null,
-        filesEmpty = browseState.files.isEmpty(),
+        filesEmpty = filteredFiles.isEmpty(),
         showSearch = showSearch,
         searchQuery = searchQuery,
         focusRequester = focusRequester,
         searchVisibility = { event -> onSearchVisibility(event.show) },
         searchQueryChange = { event -> onSearchQueryChange(event.query) },
-        search = browseModel::onEvent,
-        requestFocus = browseModel::onEvent,
-        clearSelectedFiles = browseModel::onEvent,
-        selectFiles = browseModel::onEvent,
-        selectFile = browseModel::onEvent,
-        dismissBottomSheet = browseModel::onEvent,
-        showFilterBottomSheet = browseModel::onEvent,
-        showAddDialog = browseModel::onEvent,
-        dismissAddDialog = browseModel::onEvent,
+        search = { browseModel.onEvent(it) },
+        requestFocus = { browseModel.onEvent(it) },
+        clearSelectedFiles = { browseModel.onEvent(it) },
+        selectFiles = { browseModel.onEvent(it) },
+        selectFile = { browseModel.onEvent(it) },
+        dismissBottomSheet = { browseModel.onEvent(it) },
+        showFilterBottomSheet = { browseModel.onEvent(it) },
+        showAddDialog = { browseModel.onEvent(it) },
+        dismissAddDialog = { browseModel.onEvent(it) },
         actionAddDialog = { event ->
             browseModel.onEvent(BrowseEvent.OnActionAddDialog(
                 context = activity,
                 navigateToLibrary = { navigator.push(LibraryScreen(), saveInBackStack = false) }
             ))
         },
-        selectAddDialog = browseModel::onEvent,
+        selectAddDialog = { browseModel.onEvent(it) },
         changePinnedPaths = mainModel::onEvent,
         navigateToLibrary = { navigator.push(LibraryScreen(), saveInBackStack = false) },
         navigateToBrowseSettings = { navigator.push(BrowseSettingsScreen()) },

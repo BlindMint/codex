@@ -2,26 +2,32 @@
  * Codex — free and open-source Material You eBook reader.
  * Copyright (C) 2024-2025 BlindMint
  * SPDX-License-Identifier: GPL-3.0-only
+ *
+ * ColorPickerWithTitle.kt - Color selection component with RGB sliders and HEX input
+ * Used in appearance settings for background and font color customization
  */
 
 package us.blindmint.codex.presentation.core.components.settings
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,12 +43,17 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import us.blindmint.codex.R
+import us.blindmint.codex.presentation.core.components.common.IconButton
+import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 
 @OptIn(FlowPreview::class)
@@ -192,19 +203,26 @@ private fun ColorSliderWithControls(
     }
 
     Column(
-        modifier = Modifier.padding(
-            horizontal = horizontalPadding,
-            vertical = verticalPadding
-        )
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                horizontal = horizontalPadding,
+                vertical = verticalPadding
+            )
     ) {
-        SettingsSubcategoryTitle(title = title, padding = 0.dp)
-        Spacer(modifier = Modifier.height(8.dp))
+        // Title above the slider
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
 
-        // Row with slider and input field aligned together
+        // Slider row with input field on the right
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
+            // Slider takes available space
             Slider(
                 modifier = Modifier.weight(1f),
                 valueRange = 0f..1f,
@@ -222,7 +240,7 @@ private fun ColorSliderWithControls(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Editable RGB value field aligned with slider
+            // Editable RGB value field on the right, centered on the slider
             OutlinedTextField(
                 value = editValue,
                 onValueChange = { newValue ->
@@ -241,7 +259,8 @@ private fun ColorSliderWithControls(
                 enabled = !isLocked,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
-                textStyle = MaterialTheme.typography.bodyMedium
+                textStyle = MaterialTheme.typography.bodyMedium,
+                placeholder = { Text("0") }
             )
         }
     }

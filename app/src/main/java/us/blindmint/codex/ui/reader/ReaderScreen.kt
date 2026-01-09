@@ -282,15 +282,15 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
                 }
             }
         }
-        val systemBarsInsetsPadding = remember(mainState.value.fullscreen) {
+        val systemBarsInsetsPadding = remember {
             derivedStateOf {
                 systemBarsInsets.asPaddingValues(density = density).run {
-                    if (!mainState.value.fullscreen) PaddingValues(
+                    PaddingValues(
                         top = calculateTopPadding(),
                         start = calculateStartPadding(layoutDirection),
                         end = calculateEndPadding(layoutDirection),
                         bottom = calculateBottomPadding()
-                    ) else PaddingValues(0.dp)
+                    )
                 }
             }
         }

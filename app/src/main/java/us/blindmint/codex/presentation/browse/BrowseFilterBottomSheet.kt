@@ -6,82 +6,146 @@
 
 package us.blindmint.codex.presentation.browse
 
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import kotlinx.coroutines.launch
-import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
-import us.blindmint.codex.presentation.core.components.modal_bottom_sheet.ModalBottomSheet
-import us.blindmint.codex.presentation.settings.browse.display.BrowseDisplaySubcategory
-import us.blindmint.codex.presentation.settings.browse.filter.BrowseFilterSubcategory
-import us.blindmint.codex.presentation.settings.browse.sort.BrowseSortSubcategory
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import us.blindmint.codex.R
+import us.blindmint.codex.presentation.core.constants.provideExtensions
+import us.blindmint.codex.presentation.settings.browse.display.components.BrowseGridSizeOption
+import us.blindmint.codex.presentation.settings.browse.display.components.BrowseLayoutOption
 import us.blindmint.codex.ui.browse.BrowseEvent
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import us.blindmint.codex.ui.main.MainEvent
+import us.blindmint.codex.ui.main.MainModel
 
-private var initialPage = 0
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BrowseFilterBottomSheet(
     dismissBottomSheet: (BrowseEvent.OnDismissBottomSheet) -> Unit
 ) {
-    val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(initialPage) { 3 }
-    DisposableEffect(Unit) { onDispose { initialPage = pagerState.currentPage } }
-
     ModalBottomSheet(
-        hasFixedHeight = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.5f),
-        dragHandle = {},
-        onDismissRequest = {
-            dismissBottomSheet(BrowseEvent.OnDismissBottomSheet)
-        },
-        sheetGesturesEnabled = false
+        onDismissRequest = { dismissBottomSheet(BrowseEvent.OnDismissBottomSheet) },
+        modifier = Modifier.fillMaxWidth(),
+        sheetState = rememberModalBottomSheetState(),
+        dragHandle = { androidx.compose.material3.BottomSheetDefaults.DragHandle() },
     ) {
-        BrowseFilterBottomSheetTabRow(
-            currentPage = pagerState.currentPage,
-            scrollToPage = {
-                scope.launch {
-                    pagerState.animateScrollToPage(it)
+        BrowseFilterDialogContent(
+            dismissBottomSheet = dismissBottomSheet
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BrowseFilterDialogContent(
+    dismissBottomSheet: (BrowseEvent.OnDismissBottomSheet) -> Unit
+) {
+    val mainModel = hiltViewModel<MainModel>()
+    val mainState = mainModel.state.collectAsStateWithLifecycle()
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Header
+        androidx.compose.foundation.layout.Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.display_and_filter),
+                style = MaterialTheme.typography.titleLarge
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Content - single scrollable area with grouped sections
+        LazyColumn(
+            Modifier
+                .fillMaxWidth()
+                .height(500.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Display section - grouped in a card
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = stringResource(R.string.display_settings),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        BrowseLayoutOption()
+                        BrowseGridSizeOption()
+                    }
                 }
             }
-        )
 
-        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
-            when (page) {
-                0 -> {
-                    LazyColumnWithScrollbar(modifier = Modifier.fillMaxSize()) {
-                        BrowseFilterSubcategory(
-                            showTitle = false,
-                            showDivider = false
+            // Filter section - grouped in a card with multi-select chips
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = stringResource(R.string.filter_browse_settings),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 16.dp)
                         )
-                    }
-                }
-
-                1 -> {
-                    LazyColumnWithScrollbar(modifier = Modifier.fillMaxSize()) {
-                        BrowseSortSubcategory(
-                            showTitle = false,
-                            showDivider = false
-                        )
-                    }
-                }
-
-                2 -> {
-                    LazyColumnWithScrollbar(modifier = Modifier.fillMaxSize()) {
-                        BrowseDisplaySubcategory(
-                            showTitle = false,
-                            showDivider = false
-                        )
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            provideExtensions().forEach { extension ->
+                                androidx.compose.material3.FilterChip(
+                                    selected = mainState.value.browseIncludedFilterItems.any { it == extension },
+                                    onClick = {
+                                        mainModel.onEvent(
+                                            MainEvent.OnChangeBrowseIncludedFilterItem(extension)
+                                        )
+                                    },
+                                    label = { androidx.compose.material3.Text(extension.uppercase()) }
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
     }
 }
+

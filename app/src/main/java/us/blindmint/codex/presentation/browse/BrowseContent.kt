@@ -64,7 +64,9 @@ fun BrowseContent(
     navigateToLibrary: () -> Unit,
     navigateToBrowseSettings: () -> Unit,
     onRescan: () -> Unit,
+    showTopBar: Boolean = true,
 ) {
+
     BrowseDialog(
         dialog = dialog,
         loadingAddDialog = loadingAddDialog,

@@ -2,6 +2,9 @@
  * Codex — free and open-source Material You eBook reader.
  * Copyright (C) 2024-2025 BlindMint
  * SPDX-License-Identifier: GPL-3.0-only
+ *
+ * NavigatorTabs.kt - Main navigation container with adaptive layout
+ * Handles bottom navigation bar on phones, navigation rail on tablets
  */
 
 package us.blindmint.codex.presentation.navigator

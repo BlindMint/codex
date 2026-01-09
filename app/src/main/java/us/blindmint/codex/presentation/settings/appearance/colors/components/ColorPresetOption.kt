@@ -86,7 +86,10 @@ import us.blindmint.codex.ui.theme.FadeTransitionPreservingSpace
 import us.blindmint.codex.ui.theme.Transitions
 
 @Composable
-fun ColorPresetOption(backgroundColor: Color) {
+fun ColorPresetOption(
+    backgroundColor: Color,
+    showNestedBackground: Boolean = true
+) {
     val settingsModel = hiltViewModel<SettingsModel>()
     val state = settingsModel.state.collectAsStateWithLifecycle()
 
@@ -215,6 +218,8 @@ fun ColorPresetOption(backgroundColor: Color) {
                     selectedColorPreset = selectedPreset,
                     canEditName = selectedPreset.name != "Light" && selectedPreset.name != "Dark",
                     canDelete = state.value.colorPresets.size > 1 && selectedPreset.name != "Light" && selectedPreset.name != "Dark",
+                    showNestedBackground = showNestedBackground,
+                    backgroundColor = backgroundColor,
                     onTitleChange = {
                         settingsModel.onEvent(
                             SettingsEvent.OnUpdateColorPresetTitle(
@@ -230,20 +235,20 @@ fun ColorPresetOption(backgroundColor: Color) {
                             )
                         )
                     },
-                     onDelete = {
-                         settingsModel.onEvent(
-                             SettingsEvent.OnDeleteColorPreset(
-                                 id = selectedPreset.id
-                             )
-                         )
-                     },
-                     onToggleLock = {
-                         settingsModel.onEvent(
-                             SettingsEvent.OnToggleColorPresetLock(
-                                 id = selectedPreset.id
-                             )
-                         )
-                     }
+                      onDelete = {
+                          settingsModel.onEvent(
+                              SettingsEvent.OnDeleteColorPreset(
+                                  id = selectedPreset.id
+                              )
+                          )
+                      },
+                      onToggleLock = {
+                          settingsModel.onEvent(
+                              SettingsEvent.OnToggleColorPresetLock(
+                                  id = selectedPreset.id
+                              )
+                          )
+                      }
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -291,113 +296,16 @@ fun ColorPresetOption(backgroundColor: Color) {
 }
 
 @Composable
-private fun ReorderableCollectionItemScope.ColorPresetOptionRowItem(
-    colorPreset: ColorPreset,
-    colorPresets: List<ColorPreset>,
-    isSelected: Selected,
-    enableAnimation: Boolean,
-    onClick: () -> Unit
-) {
-    val context = LocalContext.current
-    val title = remember(colorPreset.id, colorPreset.name) {
-        if ((colorPreset.name ?: "").isBlank()) {
-            // Use the preset ID for consistent numbering
-            context.getString(R.string.color_preset_query, colorPreset.id.toString())
-        } else {
-            colorPreset.name!!
-        }
-    }
-
-    val borderColor = remember(isSelected, colorPreset.fontColor, colorPreset.backgroundColor) {
-        if (!isSelected) {
-            // For better contrast, use a darker border for light presets and lighter border for dark presets
-            // Calculate luminance manually: 0.299*R + 0.587*G + 0.114*B
-            val r = colorPreset.backgroundColor.red
-            val g = colorPreset.backgroundColor.green
-            val b = colorPreset.backgroundColor.blue
-            val luminance = 0.299f * r + 0.587f * g + 0.114f * b
-
-            if (luminance > 0.5f) {
-                // Light preset - use darker border for contrast
-                Color(0xFF1C1B1F) // Dark color for light background
-            } else {
-                // Dark preset - use the font color with some transparency
-                colorPreset.fontColor.copy(0.5f)
-            }
-        } else {
-            colorPreset.fontColor
-        }
-    }
-    val animatedBorderColor = animateColorAsState(
-        borderColor,
-        label = ""
-    )
-
-    val animatedBackgroundColor = animateColorAsState(
-        colorPreset.backgroundColor,
-        label = ""
-    )
-    val animatedFontColor = animateColorAsState(
-        colorPreset.fontColor,
-        label = ""
-    )
-
-    Row(
-        modifier = Modifier
-            .height(40.dp)
-            .clip(CircleShape)
-            .border(
-                width = 2.dp,
-                color = if (enableAnimation) animatedBorderColor.value
-                else borderColor,
-                shape = CircleShape
-            )
-            .background(animatedBackgroundColor.value, CircleShape)
-            .clickable(enabled = !isSelected) {
-                onClick()
-            }
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        AnimatedVisibility(
-            visible = isSelected,
-            enter = if (enableAnimation) expandHorizontally() + fadeIn()
-            else Transitions.NoEnterAnimation,
-            exit = if (enableAnimation) shrinkHorizontally() + fadeOut()
-            else Transitions.NoExitAnimation
-        ) {
-            Icon(
-                imageVector = Icons.Default.Done,
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(end = 8.dp)
-                    .size(18.dp),
-                tint = colorPreset.fontColor
-            )
-        }
-
-        StyledText(
-            text = title.trim(),
-            style = MaterialTheme.typography.labelLarge.copy(
-                color = animatedFontColor.value
-            ),
-            maxLines = 1
-        )
-    }
-}
-
-@OptIn(FlowPreview::class)
-@Composable
-private fun ColorPresetOptionConfigurationItem(
+private fun ColorPresetConfigurationContent(
     selectedColorPreset: ColorPreset,
     canEditName: Boolean,
     canDelete: Boolean,
+    showDeleteDialog: androidx.compose.runtime.MutableState<Boolean>,
     onTitleChange: (String) -> Unit,
     onRestore: () -> Unit,
     onDelete: () -> Unit,
     onToggleLock: () -> Unit
 ) {
-    val showDeleteDialog = remember { mutableStateOf(false) }
     val title = remember(selectedColorPreset.id) {
         mutableStateOf(selectedColorPreset.name ?: "")
     }
@@ -502,33 +410,239 @@ private fun ColorPresetOptionConfigurationItem(
                 }
             }
         }
+    }
+}
 
-        // Delete confirmation dialog
-        if (showDeleteDialog.value) {
-            AlertDialog(
-                onDismissRequest = { showDeleteDialog.value = false },
-                title = {
-                    Text(text = stringResource(id = R.string.delete_color_preset_title))
-                },
-                text = {
-                    Text(text = stringResource(id = R.string.delete_color_preset_message, selectedColorPreset.name ?: "Color Preset"))
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            showDeleteDialog.value = false
-                            onDelete()
-                        }
-                    ) {
-                        Text(text = stringResource(id = R.string.delete))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDeleteDialog.value = false }) {
-                        Text(text = stringResource(id = R.string.cancel))
-                    }
-                }
+@Composable
+private fun ReorderableCollectionItemScope.ColorPresetOptionRowItem(
+    colorPreset: ColorPreset,
+    colorPresets: List<ColorPreset>,
+    isSelected: Boolean,
+    enableAnimation: Boolean,
+    onClick: () -> Unit
+) {
+    val context = LocalContext.current
+    val title = remember(colorPreset.id, colorPreset.name) {
+        if ((colorPreset.name ?: "").isBlank()) {
+            // Use the preset ID for consistent numbering
+            context.getString(R.string.color_preset_query, colorPreset.id.toString())
+        } else {
+            colorPreset.name!!
+        }
+    }
+
+    val borderColor = remember(isSelected, colorPreset.fontColor, colorPreset.backgroundColor) {
+        if (!isSelected) {
+            // For better contrast, use a darker border for light presets and lighter border for dark presets
+            // Calculate luminance manually: 0.299*R + 0.587*G + 0.114*B
+            val r = colorPreset.backgroundColor.red
+            val g = colorPreset.backgroundColor.green
+            val b = colorPreset.backgroundColor.blue
+            val luminance = 0.299f * r + 0.587f * g + 0.114f * b
+
+            if (luminance > 0.5f) {
+                // Light preset - use darker border for contrast
+                Color(0xFF1C1B1F) // Dark color for light background
+            } else {
+                // Dark preset - use the font color with some transparency
+                colorPreset.fontColor.copy(0.5f)
+            }
+        } else {
+            colorPreset.fontColor
+        }
+    }
+    val animatedBorderColor = animateColorAsState(
+        borderColor,
+        label = ""
+    )
+
+    val animatedBackgroundColor = animateColorAsState(
+        colorPreset.backgroundColor,
+        label = ""
+    )
+    val animatedFontColor = animateColorAsState(
+        colorPreset.fontColor,
+        label = ""
+    )
+
+    Row(
+        modifier = Modifier
+            .height(40.dp)
+            .clip(CircleShape)
+            .border(
+                width = 2.dp,
+                color = if (enableAnimation) animatedBorderColor.value
+                else borderColor,
+                shape = CircleShape
+            )
+            .background(animatedBackgroundColor.value, CircleShape)
+            .clickable(enabled = !isSelected) {
+                onClick()
+            }
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AnimatedVisibility(
+            visible = isSelected,
+            enter = if (enableAnimation) expandHorizontally() + fadeIn()
+            else Transitions.NoEnterAnimation,
+            exit = if (enableAnimation) shrinkHorizontally() + fadeOut()
+            else Transitions.NoExitAnimation
+        ) {
+            Icon(
+                imageVector = Icons.Default.Done,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .size(18.dp),
+                tint = colorPreset.fontColor
             )
         }
+
+        StyledText(
+            text = title.trim(),
+            style = MaterialTheme.typography.labelLarge.copy(
+                color = animatedFontColor.value
+            ),
+            maxLines = 1
+        )
+    }
+}
+
+@OptIn(FlowPreview::class)
+@Composable
+private fun ColorPresetOptionConfigurationItem(
+    selectedColorPreset: ColorPreset,
+    canEditName: Boolean,
+    canDelete: Boolean,
+    showNestedBackground: Boolean = true,
+    backgroundColor: Color,
+    onTitleChange: (String) -> Unit,
+    onRestore: () -> Unit,
+    onDelete: () -> Unit,
+    onToggleLock: () -> Unit
+) {
+    val showDeleteDialog = remember { mutableStateOf(false) }
+
+    if (showNestedBackground) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp)
+                .clip(MaterialTheme.shapes.large)
+                .background(backgroundColor)
+                .padding(16.dp)
+        ) {
+            ColorPresetConfigurationContent(
+                selectedColorPreset = selectedColorPreset,
+                canEditName = canEditName,
+                canDelete = canDelete,
+                showDeleteDialog = showDeleteDialog,
+                onTitleChange = onTitleChange,
+                onRestore = onRestore,
+                onDelete = onDelete,
+                onToggleLock = onToggleLock
+            )
+        }
+    } else {
+        ColorPresetConfigurationContent(
+            selectedColorPreset = selectedColorPreset,
+            canEditName = canEditName,
+            canDelete = canDelete,
+            showDeleteDialog = showDeleteDialog,
+            onTitleChange = onTitleChange,
+            onRestore = onRestore,
+            onDelete = onDelete,
+            onToggleLock = onToggleLock
+        )
+    }
+
+    // Delete confirmation dialog (outside the conditional since it should always be shown)
+    if (showDeleteDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog.value = false },
+            title = {
+                Text(text = stringResource(id = R.string.delete_color_preset_title))
+            },
+            text = {
+                Text(text = stringResource(id = R.string.delete_color_preset_message, selectedColorPreset.name ?: "Color Preset"))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog.value = false
+                        onDelete()
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog.value = false }) {
+                    Text(text = stringResource(id = R.string.cancel))
+                }
+            }
+        )
+    }
+
+    if (showNestedBackground) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp)
+                .clip(MaterialTheme.shapes.large)
+                .background(backgroundColor)
+                .padding(16.dp)
+        ) {
+            ColorPresetConfigurationContent(
+                selectedColorPreset = selectedColorPreset,
+                canEditName = canEditName,
+                canDelete = canDelete,
+                showDeleteDialog = showDeleteDialog,
+                onTitleChange = onTitleChange,
+                onRestore = onRestore,
+                onDelete = onDelete,
+                onToggleLock = onToggleLock
+            )
+        }
+    } else {
+        ColorPresetConfigurationContent(
+            selectedColorPreset = selectedColorPreset,
+            canEditName = canEditName,
+            canDelete = canDelete,
+            showDeleteDialog = showDeleteDialog,
+            onTitleChange = onTitleChange,
+            onRestore = onRestore,
+            onDelete = onDelete,
+            onToggleLock = onToggleLock
+        )
+    }
+
+    // Delete confirmation dialog (outside the conditional since it should always be shown)
+    if (showDeleteDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog.value = false },
+            title = {
+                Text(text = stringResource(id = R.string.delete_color_preset_title))
+            },
+            text = {
+                Text(text = stringResource(id = R.string.delete_color_preset_message, selectedColorPreset.name ?: "Color Preset"))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog.value = false
+                        onDelete()
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog.value = false }) {
+                    Text(text = stringResource(id = R.string.cancel))
+                }
+            }
+        )
     }
 }

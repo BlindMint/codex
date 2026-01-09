@@ -154,10 +154,10 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 - [ ] Implement FilterState data class with all filter dimensions
 - [ ] Add local tag management in BookInfoScreen: editable chip list for add/remove
 - [ ] Auto-import tags from OPDS <category> elements on download
-- [ ] Create tag cloud visualization in filter panel
+# - [ ] Create tag cloud visualization in filter panel (hold off on this for now, consider later)
 - [ ] Support AND/OR logic for multi-tag filtering
 - [ ] Implement OPDS tag sync:
-  - Individual book sync: Pull tags from OPDS source for specific book
+  - Individual book sync: Pull tags from OPDS sources, sync locally for downloaded books.
   - Bulk sync: Sync tags for all books from configured OPDS sources
   - Sync options: Overwrite (remove local-only tags, sync 1:1 with OPDS) or Merge (add OPDS tags, preserve local tags)
   - UI prompts for sync conflicts and user choice
@@ -279,6 +279,19 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
   - Consistent 8dp spacing between items
   - Better handling of varying screen sizes
 
+#### Settings UI - Grouped Card Styling
+- [x] **All Settings Categories**: Applied grouped card styling to Appearance, Reader, Library, Browse, and Import/Export settings
+- [x] **Card-based Organization**: Each settings section wrapped in Material 3 Card with proper elevation and spacing
+- [x] **Vertical Spacing**: 16dp spacing between grouped sections, 8dp spacing between individual items within cards
+- [x] **Horizontal Padding**: 16dp outer padding for proper edge spacing
+- [x] **In-Book Settings**: Applied same grouped styling to in-book settings tabs (General, Reader, Colors)
+- [x] **Nested Grouping Removal**: Removed cramped nested containers from Colors settings while preserving all functionality
+
+#### Reader Layout Stability
+- [x] **Layout Shift Fix**: Resolved book content shifting when in-book settings menu opens/closes
+- [x] **System Bar Decoupling**: Separated system bar visibility from content positioning
+- [x] **Stable Positioning**: Book content maintains position regardless of system UI changes
+
 **Files Modified:**
 - `presentation/settings/browse/opds/BrowseOpdsSubcategory.kt`
 - `presentation/settings/browse/opds/BrowseOpdsManagementContent.kt`
@@ -289,6 +302,10 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 - `presentation/settings/reader/reading_speed/components/HighlightedReadingOption.kt`
 - `presentation/settings/reader/reading_speed/components/PerceptionExpanderOption.kt`
 - `presentation/settings/reader/images/components/ImagesOption.kt`
+- All settings layout files (AppearanceSettingsLayout.kt, ReaderSettingsLayout.kt, etc.)
+- All settings category files (AppearanceSettingsCategory.kt, ReaderSettingsCategory.kt, etc.)
+- `ui/reader/ReaderScreen.kt`
+- `presentation/reader/ReaderSettingsBottomSheet.kt`
 
 **Key Improvements:**
 - Consistent use of Material 3 components across all menus
@@ -296,6 +313,8 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 - Responsive layouts adapt to all screen sizes
 - Visual divider indicator clearly shows expandable toggles
 - Unified design language throughout app
+- Stable reader layout without content shifting
+- Professional grouped settings organization with proper spacing
 
 ## Current Implementation Status (January 2026)
 
@@ -328,17 +347,31 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
    - Fixed all navigation crashes between screens
    - Maintained shared state through companion objects where needed
 
+6. **Material 3 UI Consistency Polish** ✅ **Completed**
+   - Reader settings visual hierarchy improvements
+   - Color picker layout optimizations
+   - Full Material 3 alignment for OPDS settings and browsing
+   - Settings UI grouped card styling across all categories
+   - In-book settings grouped styling
+   - Reader layout stability (no content shifting)
+
+7. **Settings UI Improvements** ✅ **Completed**
+   - Grouped card styling applied to all settings menus (Appearance, Reader, Library, Browse, Import/Export)
+   - Proper vertical spacing between sections (16dp) and items (8dp)
+   - Removed nested grouping while preserving functionality
+   - Consistent Material 3 design throughout
+
 ### 🔄 **Partially Implemented**
 - **Book Downloading**: Backend fully implemented, UI confirmation dialogs ready, but downloads still failing (same error as before - needs debugging)
 - **Author Parsing**: Temporarily disabled due to XML conflicts (can be re-enabled)
-- **Large Catalog Handling**: 50-book hard limit implemented for performance, but needs lazy loading solution
+- **Large Catalog Handling**: 50-book hard limit removed, pagination backend implemented, but needs UI refinement
 
 ### ❌ **Deferred/Not Implemented**
 - Advanced filtering and tag management
 - OPDS search functionality
 - Offline caching
 - Bulk operations
-- Lazy loading for large OPDS catalogs (currently hard-limited to 50 books)
+- True lazy loading for OPDS catalogs (manual pagination implemented)
 
 ## Testing Results
 - ✅ **Calibre-Web Compatibility**: Fully tested and working
@@ -352,6 +385,11 @@ This document outlines the comprehensive plan for integrating OPDS (Open Publica
 - ✅ **Responsive Design**: OPDS book grid and UI elements adapt to all screen sizes (phones, tablets)
 
 ## Next Implementation Steps
+
+### Phase 14: UI Refinement & Bug Fixes
+- [x] **Layout Shift Fix**: ✅ Completed - Book content no longer shifts when in-book settings menu opens/closes
+- [x] **Settings Grouping**: ✅ Completed - All settings menus now use grouped card styling with proper spacing
+- [x] **Material 3 Polish**: ✅ Completed - Full Material 3 alignment across all menus and components
 
 ### Phase 10: Large Catalog Performance & Lazy Loading
 - **Current Issue**: Previously had hard limit of 50 books maximum per OPDS category/subcategory
@@ -494,3 +532,8 @@ Librera Reader's OPDS implementation was examined to understand efficient handli
 
 ## Git Commit Strategy
 Use git commits for checkpoints when phases or major features are completed. Commit messages should reference the integration plan phases (e.g., "Complete Phase 1: Database schema updates"). This enables progress tracking, easy rollback if needed, and clear history of implementation steps in addition to this document.
+
+## Current Commit Status
+- **Ready for Commit**: Phase 13 (Material 3 UI Consistency Polish) and Phase 14 (UI Refinement & Bug Fixes) have been completed
+- **Commit Scope**: Material 3 alignment, settings grouped styling, in-book settings improvements, reader layout stability
+- **Next Commit**: Will focus on Phase 10 (Large Catalog Performance) UI refinements and remaining OPDS features

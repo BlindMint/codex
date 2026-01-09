@@ -27,11 +27,6 @@ fun SettingsTopBar(
         title = {
             StyledText(stringResource(id = R.string.settings_screen))
         },
-        navigationIcon = {
-            NavigatorBackIconButton(
-                navigateBack = navigateBack
-            )
-        },
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.surface,
