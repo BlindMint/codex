@@ -247,6 +247,14 @@
     <string name="scan_browse_settings">Scan</string>
     <string name="opds_browse_settings">OPDS</string>
     <string name="add_opds_source">Add OPDS Source</string>
+    <string name="details">Details</string>
+    <string name="publisher">Publisher</string>
+    <string name="language">Language</string>
+    <string name="publication_date">Publication Date</string>
+    <string name="tags">Tags</string>
+    <string name="available_formats">Available Formats</string>
+    <string name="download_folder_not_set">Download folder not set</string>
+    <string name="download">Download</string>
     <string name="display_settings">Display</string>
     <string name="filter_browse_settings">Filter</string>
     <string name="filter_settings">Filter</string>

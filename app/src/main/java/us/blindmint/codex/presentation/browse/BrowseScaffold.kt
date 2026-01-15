@@ -60,6 +60,7 @@ fun BrowseScaffold(
     showAddDialog: (BrowseEvent.OnShowAddDialog) -> Unit,
     changePinnedPaths: (MainEvent.OnChangeBrowsePinnedPaths) -> Unit,
     navigateToBrowseSettings: () -> Unit,
+    onNavigateToOpdsCatalog: (us.blindmint.codex.ui.browse.OpdsRootScreen) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier
@@ -108,7 +109,8 @@ fun BrowseScaffold(
                     searchQueryChange = searchQueryChange,
                     search = search,
                     requestFocus = requestFocus,
-                    navigateToBrowseSettings = navigateToBrowseSettings
+                    navigateToBrowseSettings = navigateToBrowseSettings,
+                    onNavigateToOpdsCatalog = onNavigateToOpdsCatalog
                 )
             }
 

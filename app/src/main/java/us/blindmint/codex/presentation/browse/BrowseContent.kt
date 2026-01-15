@@ -63,6 +63,7 @@ fun BrowseContent(
     changePinnedPaths: (MainEvent.OnChangeBrowsePinnedPaths) -> Unit,
     navigateToLibrary: () -> Unit,
     navigateToBrowseSettings: () -> Unit,
+    onNavigateToOpdsCatalog: (us.blindmint.codex.ui.browse.OpdsRootScreen) -> Unit,
 ) {
     BrowseDialog(
         dialog = dialog,
@@ -110,7 +111,8 @@ fun BrowseContent(
         showFilterBottomSheet = showFilterBottomSheet,
         showAddDialog = showAddDialog,
         changePinnedPaths = changePinnedPaths,
-        navigateToBrowseSettings = navigateToBrowseSettings
+        navigateToBrowseSettings = navigateToBrowseSettings,
+        onNavigateToOpdsCatalog = onNavigateToOpdsCatalog
     )
 
     BrowseBackHandler(

@@ -31,14 +31,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import us.blindmint.codex.R
 import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import us.blindmint.codex.domain.browse.display.BrowseLayout
 import us.blindmint.codex.domain.browse.file.SelectableFile
+
 import us.blindmint.codex.ui.browse.BrowseEvent
 import us.blindmint.codex.ui.browse.OpdsAddSourceDialog
+import us.blindmint.codex.ui.browse.OpdsRootScreen
 import us.blindmint.codex.ui.browse.opds.model.OpdsCatalogModel
 import us.blindmint.codex.ui.main.MainEvent
+import us.blindmint.codex.ui.settings.BrowseSettingsScreen
 import us.blindmint.codex.ui.settings.opds.OpdsSourcesModel
 import us.blindmint.codex.ui.settings.opds.OpdsSourcesState
 
@@ -58,6 +62,7 @@ fun OpdsCatalogPanel(
     search: (BrowseEvent.OnSearch) -> Unit,
     requestFocus: (BrowseEvent.OnRequestFocus) -> Unit,
     navigateToBrowseSettings: () -> Unit,
+    onNavigateToOpdsCatalog: (OpdsRootScreen) -> Unit,
 ) {
     val sourcesModel = hiltViewModel<OpdsSourcesModel>()
     val sourcesState by sourcesModel.state.collectAsStateWithLifecycle()
@@ -97,7 +102,10 @@ fun OpdsCatalogPanel(
                     modifier = Modifier.padding(bottom = 32.dp)
                 )
                 OutlinedButton(
-                    onClick = { showAddSourceDialog = true }
+                    onClick = {
+                        showAddSourceDialog = true
+                        // Note: The actual validation happens in OpdsAddSourceDialog
+                    }
                 ) {
                     Text(stringResource(R.string.add_opds_source))
                 }
@@ -120,8 +128,7 @@ fun OpdsCatalogPanel(
                     OpdsSourceItem(
                         source = source,
                         onSourceClick = {
-                            // TODO: Navigate to OPDS catalog for this source
-                            // This would need the OpdsCatalogScreen and navigation setup
+                            onNavigateToOpdsCatalog(OpdsRootScreen(source))
                         }
                     )
                 }

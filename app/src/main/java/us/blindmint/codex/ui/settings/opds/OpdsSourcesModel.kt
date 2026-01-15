@@ -192,6 +192,10 @@ class OpdsSourcesModel @Inject constructor(
         }
     }
 
+    suspend fun isCodexDirectoryConfigured(): Boolean {
+        return codexDirectoryManager.isConfigured()
+    }
+
     suspend fun testConnection(url: String, username: String?, password: String?): String {
         // Try different URL variations to find a working one
         val urlVariations = generateUrlVariations(url)

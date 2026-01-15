@@ -31,35 +31,47 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import us.blindmint.codex.R
+import us.blindmint.codex.domain.storage.CodexDirectoryManager
 import us.blindmint.codex.presentation.core.util.showToast
+import us.blindmint.codex.presentation.navigator.LocalNavigator
+import us.blindmint.codex.ui.settings.BrowseSettingsScreen
 import us.blindmint.codex.ui.settings.opds.OpdsSourcesModel
 
 @Composable
 fun OpdsAddSourceDialog(
     showDialog: Boolean,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    initialName: String = "",
+    initialUrl: String = "",
+    initialUsername: String? = null,
+    initialPassword: String? = null,
+    onSourceAdded: ((String, String, String?, String?) -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val navigator = LocalNavigator.current
     val opdsModel = hiltViewModel<OpdsSourcesModel>()
     val scope = rememberCoroutineScope()
 
-    var name by remember { mutableStateOf("") }
-    var url by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf(initialName) }
+    var url by remember { mutableStateOf(initialUrl) }
+    var username by remember { mutableStateOf(initialUsername ?: "") }
+    var password by remember { mutableStateOf(initialPassword ?: "") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var showRootDirectoryPrompt by remember { mutableStateOf(false) }
 
     if (showDialog) {
         AlertDialog(
             onDismissRequest = {
                 onDismiss()
-                name = ""
-                url = ""
-                username = ""
-                password = ""
-                passwordVisible = false
+                if (onSourceAdded == null) { // Only reset for add dialog, not edit
+                    name = ""
+                    url = ""
+                    username = ""
+                    password = ""
+                    passwordVisible = false
+                }
             },
-            title = { Text("Add OPDS Source") },
+            title = { Text(if (onSourceAdded == null) "Add OPDS Source" else "Edit OPDS Source") },
             text = {
                 Column {
                     OutlinedTextField(
@@ -101,24 +113,37 @@ fun OpdsAddSourceDialog(
                 TextButton(
                     onClick = {
                         scope.launch {
-                            try {
-                                val workingUrl = opdsModel.testConnection(url, username.takeIf { it.isNotBlank() }, password.takeIf { it.isNotBlank() })
-                                opdsModel.addOpdsSource(name, workingUrl, username.takeIf { it.isNotBlank() }, password.takeIf { it.isNotBlank() })
-                                val successMessage = if (workingUrl != url) {
-                                    "Source added successfully (URL: $workingUrl)"
-                                } else {
-                                    "Source added successfully"
-                                }
-                                successMessage.showToast(context, longToast = false)
+                            // Check if Codex directory is configured
+                            val isCodexConfigured = opdsModel.isCodexDirectoryConfigured()
+                            if (!isCodexConfigured) {
+                                showRootDirectoryPrompt = true
+                                return@launch
+                            }
 
-                                onDismiss()
-                                name = ""
-                                url = ""
-                                username = ""
-                                password = ""
-                                passwordVisible = false
-                            } catch (e: Exception) {
-                                "Failed to connect: ${e.message}".showToast(context, longToast = false)
+                            if (onSourceAdded != null) {
+                                // Edit mode - use callback
+                                onSourceAdded(name, url, username.takeIf { it.isNotBlank() }, password.takeIf { it.isNotBlank() })
+                            } else {
+                                // Add mode - test connection first
+                                try {
+                                    val workingUrl = opdsModel.testConnection(url, username.takeIf { it.isNotBlank() }, password.takeIf { it.isNotBlank() })
+                                    opdsModel.addOpdsSource(name, workingUrl, username.takeIf { it.isNotBlank() }, password.takeIf { it.isNotBlank() })
+                                    val successMessage = if (workingUrl != url) {
+                                        "Source added successfully (URL: $workingUrl)"
+                                    } else {
+                                        "Source added successfully"
+                                    }
+                                    successMessage.showToast(context, longToast = false)
+
+                                    onDismiss()
+                                    name = ""
+                                    url = ""
+                                    username = ""
+                                    password = ""
+                                    passwordVisible = false
+                                } catch (e: Exception) {
+                                    "Failed to connect: ${e.message}".showToast(context, longToast = false)
+                                }
                             }
                         }
                     }
@@ -130,14 +155,47 @@ fun OpdsAddSourceDialog(
                 TextButton(
                     onClick = {
                         onDismiss()
-                        name = ""
-                        url = ""
-                        username = ""
-                        password = ""
-                        passwordVisible = false
+                        if (onSourceAdded == null) { // Only reset for add dialog, not edit
+                            name = ""
+                            url = ""
+                            username = ""
+                            password = ""
+                            passwordVisible = false
+                        }
                     }
                 ) {
                     Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // Root directory prompt dialog
+    if (showRootDirectoryPrompt) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showRootDirectoryPrompt = false },
+            title = { androidx.compose.material3.Text("Set Codex Directory") },
+            text = {
+                androidx.compose.material3.Text(
+                    "You need to configure your Codex directory before adding OPDS sources. " +
+                    "This is where downloaded books will be stored."
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = {
+                        showRootDirectoryPrompt = false
+                        navigator.push(BrowseSettingsScreen)
+                    }
+                ) {
+                    androidx.compose.material3.Text("Go to Settings")
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = { showRootDirectoryPrompt = false }
+                ) {
+                    androidx.compose.material3.Text("Cancel")
                 }
             }
         )

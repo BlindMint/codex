@@ -171,6 +171,9 @@ object BrowseScreen : Screen, Parcelable {
             navigateToBrowseSettings = {
                 navigator.push(BrowseSettingsScreen)
             },
+            onNavigateToOpdsCatalog = { opdsScreen ->
+                navigator.push(opdsScreen)
+            },
         )
     }
 }
