@@ -41,6 +41,7 @@ import us.blindmint.codex.presentation.core.constants.provideDefaultColorPresets
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import us.blindmint.codex.presentation.core.util.showToast
+import us.blindmint.codex.ui.library.LibraryScreen
 import javax.inject.Inject
 import kotlin.random.Random
 import kotlinx.coroutines.delay
@@ -638,6 +639,7 @@ class SettingsModel @Inject constructor(
 
                     if (success) {
                         val displayPath = codexDirectoryManager.getDisplayPath()
+                        Log.i("SettingsModel", "Codex root display path: $displayPath")
                         _state.update {
                             it.copy(
                                 codexRootDisplayPath = displayPath,
@@ -651,16 +653,26 @@ class SettingsModel @Inject constructor(
 
                         // Automatically import existing OPDS books from the downloads folder
                         Log.i("SettingsModel", "Starting auto-import of existing OPDS books")
-                        val importedCount = autoImportCodexBooksUseCase.execute { progress ->
-                            Log.d("SettingsModel", "Auto-import progress: ${progress.current}/${progress.total} - ${progress.currentFolder}")
-                        }
-                        Log.i("SettingsModel", "Auto-import completed. Imported $importedCount books")
-                        if (importedCount > 0) {
-                            // Trigger library refresh to show imported books
-                            Log.i("SettingsModel", "Triggering library refresh after auto-import")
-                            // The library should automatically detect new books, but let's trigger a refresh just in case
+                        try {
+                            val importedCount = autoImportCodexBooksUseCase.execute { progress ->
+                                Log.d("SettingsModel", "Auto-import progress: ${progress.current}/${progress.total} - ${progress.currentFolder}")
+                            }
+                            Log.i("SettingsModel", "Auto-import completed. Imported $importedCount books")
+
+                            if (importedCount > 0) {
+                                // Trigger library refresh to show imported books
+                                Log.i("SettingsModel", "Triggering library refresh after auto-import")
+                                try {
+                                    LibraryScreen.refreshListChannel.trySend(0)
+                                    Log.i("SettingsModel", "Library refresh signal sent successfully")
+                                } catch (e: Exception) {
+                                    Log.e("SettingsModel", "Failed to trigger library refresh", e)
+                                }
                         } else {
                             Log.w("SettingsModel", "No books were imported during auto-import")
+                        }
+                        } catch (e: Exception) {
+                            Log.e("SettingsModel", "Auto-import failed with exception", e)
                         }
                     } else {
                         Log.e("SettingsModel", "Failed to set Codex root folder")

@@ -64,6 +64,11 @@ class AutoImportCodexBooksUseCase @Inject constructor(
         val existingPaths = bookRepository.getBooks("").map { it.filePath }
         Log.d(AUTO_IMPORT, "Found ${existingPaths.size} existing books in library")
 
+        // Double-check that we have access to the directory
+        val canRead = downloadsDir.canRead()
+        val canWrite = downloadsDir.canWrite()
+        Log.d(AUTO_IMPORT, "Downloads directory permissions - canRead: $canRead, canWrite: $canWrite")
+
         var importedCount = 0
 
         // Get all book folders from downloads directory
@@ -75,6 +80,12 @@ class AutoImportCodexBooksUseCase @Inject constructor(
             return@withContext 0
         }
         Log.d(AUTO_IMPORT, "Downloads directory contains ${allFiles?.size ?: 0} items")
+
+        if (allFiles != null) {
+            allFiles.forEach { file ->
+                Log.d(AUTO_IMPORT, "Found item: ${file.name} (isDirectory: ${file.isDirectory}, isFile: ${file.isFile}, canRead: ${file.canRead()})")
+            }
+        }
 
         val bookFolders = allFiles?.filter { it.isDirectory }?.toTypedArray() ?: emptyArray()
         Log.i(AUTO_IMPORT, "Found ${bookFolders.size} book folders to process")
