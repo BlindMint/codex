@@ -10,8 +10,10 @@ import androidx.compose.runtime.Immutable
 
 @Immutable
 data class FilterState(
+    val selectedStatuses: Set<String> = emptySet(),
     val selectedTags: Set<String> = emptySet(),
     val selectedAuthors: Set<String> = emptySet(),
     val selectedSeries: Set<String> = emptySet(),
-    val publicationYearRange: IntRange = 1900..2026
+    val publicationYearRange: ClosedRange<Int> = 1900..2026,
+    val selectedLanguages: Set<String> = emptySet()
 )

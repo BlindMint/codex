@@ -144,5 +144,28 @@ interface BookDao {
 
     @Query("DELETE FROM bookmarkentity")
     suspend fun deleteAllBookmarks()
-    /* - - - - - - - - - - - - - - - - - - - - - - */
+    /* - - - - - - - - - - - - - - - - - - - - */
+
+    // Metadata extraction for filters
+    @Query("SELECT DISTINCT COALESCE(author, '') FROM bookentity WHERE COALESCE(author, '') != '' ORDER BY author")
+    suspend fun getAllAuthors(): List<String>
+
+    @Query("SELECT DISTINCT COALESCE(seriesName, '') FROM bookentity WHERE COALESCE(seriesName, '') != '' ORDER BY seriesName")
+    suspend fun getAllSeries(): List<String>
+
+    @Query("SELECT DISTINCT COALESCE(language, '') FROM bookentity WHERE COALESCE(language, '') != '' ORDER BY language")
+    suspend fun getAllLanguages(): List<String>
+
+    // Get all books for metadata extraction (used for tags and other complex fields)
+    @Query("SELECT * FROM bookentity ORDER BY title ASC")
+    suspend fun getAllBooks(): List<BookEntity>
+
+    // Get publication year range
+    @Query("SELECT MIN(publicationDate) as minYear, MAX(publicationDate) as maxYear FROM bookentity WHERE publicationDate IS NOT NULL AND publicationDate > 0")
+    suspend fun getPublicationYearRange(): PublicationYearRange?
+
+    data class PublicationYearRange(
+        val minYear: Long? = null,
+        val maxYear: Long? = null
+    )
 }

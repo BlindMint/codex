@@ -19,28 +19,37 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import us.blindmint.codex.presentation.core.components.modal_drawer.ModalDrawer
+import us.blindmint.codex.presentation.core.components.modal_drawer.DrawerSide
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.Icon
@@ -53,6 +62,9 @@ import us.blindmint.codex.domain.library.sort.LibrarySortOrder
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
+import us.blindmint.codex.ui.library.FilterState
+import us.blindmint.codex.ui.library.LibraryEvent
+import us.blindmint.codex.ui.library.LibraryModel
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryGridSizeOption
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryLayoutOption
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryListSizeOption
@@ -60,92 +72,72 @@ import us.blindmint.codex.presentation.settings.library.display.components.Libra
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryShowReadButtonOption
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryTitlePositionOption
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun LibrarySortMenu(
-    onDismiss: () -> Unit
-) {
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        modifier = Modifier.fillMaxWidth(),
-        sheetState = rememberModalBottomSheetState(),
-        dragHandle = { androidx.compose.material3.BottomSheetDefaults.DragHandle() },
-    ) {
-        LibrarySortMenuContent(
-            onDismiss = onDismiss
-        )
-    }
-}
-
-@Composable
-private fun LibrarySortMenuContent(
     onDismiss: () -> Unit
 ) {
     val mainModel = hiltViewModel<MainModel>()
     val state = mainModel.state.collectAsStateWithLifecycle()
 
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Header
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            StyledText(
-                text = stringResource(R.string.library_sort_and_display),
-                style = MaterialTheme.typography.titleLarge
-            )
+    // Tabs
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val tabs = listOf(
+        stringResource(R.string.sort_settings),
+        stringResource(R.string.display_settings),
+        stringResource(R.string.filter_settings)
+    )
+
+    ModalDrawer(
+        show = true,
+        side = DrawerSide.LEFT,
+        onDismissRequest = onDismiss,
+        header = {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                StyledText(
+                    text = stringResource(R.string.library_sort_and_display),
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
         }
+    ) {
+        item {
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                modifier = Modifier.fillMaxWidth(),
+                containerColor = Color.Transparent,
+                indicator = { tabPositions ->
+                    if (selectedTabIndex < tabPositions.size) {
+                        val width by animateDpAsState(
+                            targetValue = tabPositions[selectedTabIndex].contentWidth,
+                            label = ""
+                        )
 
-        Spacer(Modifier.height(16.dp))
-
-        // Tabs
-        var selectedTabIndex by remember { mutableIntStateOf(0) }
-        val tabs = listOf(
-            stringResource(R.string.sort_settings),
-            stringResource(R.string.display_settings),
-            stringResource(R.string.filter_settings)
-        )
-
-        TabRow(
-            selectedTabIndex = selectedTabIndex,
-            modifier = Modifier.fillMaxWidth(),
-            containerColor = Color.Transparent,
-            indicator = { tabPositions ->
-                if (selectedTabIndex < tabPositions.size) {
-                    val width by androidx.compose.animation.core.animateDpAsState(
-                        targetValue = tabPositions[selectedTabIndex].contentWidth,
-                        label = ""
-                    )
-
-                    TabRowDefaults.PrimaryIndicator(
-                        Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                        width = width
+                        TabRowDefaults.PrimaryIndicator(
+                            Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                            width = width
+                        )
+                    }
+                }
+            ) {
+                tabs.forEachIndexed { index, tab ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(tab) }
                     )
                 }
-            }
-        ) {
-            tabs.forEachIndexed { index, tab ->
-                Tab(
-                    selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
-                    text = { Text(tab) }
-                )
             }
         }
 
         // Content based on selected tab
-        LazyColumn(
-            Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.7f),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+        item {
             when (selectedTabIndex) {
                 0 -> LibrarySortTabContent(state, mainModel)
                 1 -> LibraryDisplayTabContent(state, mainModel)
@@ -155,109 +147,313 @@ private fun LibrarySortMenuContent(
     }
 }
 
-private fun LazyListScope.LibrarySortTabContent(
+@Composable
+private fun LibrarySortTabContent(
     state: androidx.compose.runtime.State<us.blindmint.codex.ui.main.MainState>,
     mainModel: MainModel
 ) {
     // Sort options grouped together
-    item {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
-            LibrarySortOrder.entries.forEach { sortOrder ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            if (state.value.librarySortOrder == sortOrder) {
-                                mainModel.onEvent(
-                                    MainEvent.OnChangeLibrarySortOrderDescending(
-                                        !state.value.librarySortOrderDescending
-                                    )
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.padding(vertical = 16.dp)
+    ) {
+        LibrarySortOrder.entries.forEach { sortOrder ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        if (state.value.librarySortOrder == sortOrder) {
+                            mainModel.onEvent(
+                                MainEvent.OnChangeLibrarySortOrderDescending(
+                                    !state.value.librarySortOrderDescending
                                 )
-                            } else {
-                                mainModel.onEvent(MainEvent.OnChangeLibrarySortOrderDescending(true))
-                                mainModel.onEvent(MainEvent.OnChangeLibrarySortOrder(sortOrder.name))
-                            }
-                        }
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = if (state.value.librarySortOrder == sortOrder) {
-                            if (state.value.librarySortOrderDescending) Icons.Default.ArrowDownward
-                            else Icons.Default.ArrowUpward
+                            )
                         } else {
-                            Icons.Default.ArrowUpward
-                        },
-                        contentDescription = stringResource(id = R.string.sort_order_content_desc),
-                        modifier = Modifier.size(24.dp),
-                        tint = if (state.value.librarySortOrder == sortOrder) MaterialTheme.colorScheme.secondary
-                        else Color.Transparent
-                    )
+                            mainModel.onEvent(MainEvent.OnChangeLibrarySortOrderDescending(true))
+                            mainModel.onEvent(MainEvent.OnChangeLibrarySortOrder(sortOrder.name))
+                        }
+                    }
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (state.value.librarySortOrder == sortOrder) {
+                        if (state.value.librarySortOrderDescending) Icons.Default.ArrowDownward
+                        else Icons.Default.ArrowUpward
+                    } else {
+                        Icons.Default.ArrowUpward
+                    },
+                    contentDescription = stringResource(id = R.string.sort_order_content_desc),
+                    modifier = Modifier.size(24.dp),
+                    tint = if (state.value.librarySortOrder == sortOrder) MaterialTheme.colorScheme.secondary
+                    else Color.Transparent
+                )
 
-                    Spacer(modifier = Modifier.width(24.dp))
+                Spacer(modifier = Modifier.width(24.dp))
 
-                    StyledText(
-                        text = stringResource(
-                            when (sortOrder) {
-                                LibrarySortOrder.NAME -> R.string.library_sort_order_name
-                                LibrarySortOrder.LAST_READ -> R.string.library_sort_order_last_read
-                                LibrarySortOrder.PROGRESS -> R.string.library_sort_order_progress
-                                LibrarySortOrder.AUTHOR -> R.string.library_sort_order_author
-                            }
-                        ),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                StyledText(
+                    text = stringResource(
+                        when (sortOrder) {
+                            LibrarySortOrder.NAME -> R.string.library_sort_order_name
+                            LibrarySortOrder.LAST_READ -> R.string.library_sort_order_last_read
+                            LibrarySortOrder.PROGRESS -> R.string.library_sort_order_progress
+                            LibrarySortOrder.AUTHOR -> R.string.library_sort_order_author
+                        }
+                    ),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }
 }
 
-private fun LazyListScope.LibraryDisplayTabContent(
+@Composable
+private fun LibraryDisplayTabContent(
     state: androidx.compose.runtime.State<us.blindmint.codex.ui.main.MainState>,
     mainModel: MainModel
 ) {
     // Display options
-    item {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier.padding(vertical = 16.dp)
+    ) {
         LibraryLayoutOption()
-    }
 
-    // Size slider - content changes based on layout
-    item {
+        // Size slider - content changes based on layout
         if (state.value.libraryLayout == LibraryLayout.GRID) {
             LibraryGridSizeOption()
         } else {
             LibraryListSizeOption()
         }
-    }
 
-    // Title Position (only visible in Grid mode)
-    item {
+        // Title Position (only visible in Grid mode)
         if (state.value.libraryLayout == LibraryLayout.GRID) {
             LibraryTitlePositionOption()
         }
-    }
 
-    item {
         LibraryShowReadButtonOption()
-    }
 
-    item {
         LibraryShowProgressOption()
     }
 }
 
-private fun LazyListScope.LibraryFilterTabContent() {
-    // Filter options content
-    item {
-        Text(
-            text = "Library filtering will be implemented here",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(16.dp)
+@Composable
+private fun LibraryFilterTabContent() {
+    val libraryModel = hiltViewModel<LibraryModel>()
+    val libraryState by libraryModel.state.collectAsStateWithLifecycle()
+
+    // Load metadata from repository
+    var availableTags by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var availableAuthors by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var availableSeries by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var availableLanguages by remember { mutableStateOf<Set<String>>(emptySet()) }
+
+    // Local state for UI
+    var selectedStatuses: Set<String> by remember(libraryState.filterState.selectedStatuses) {
+        mutableStateOf(libraryState.filterState.selectedStatuses)
+    }
+    var selectedTags: Set<String> by remember(libraryState.filterState.selectedTags) {
+        mutableStateOf(libraryState.filterState.selectedTags)
+    }
+    var selectedAuthors: Set<String> by remember(libraryState.filterState.selectedAuthors) {
+        mutableStateOf(libraryState.filterState.selectedAuthors)
+    }
+    var selectedSeries: Set<String> by remember(libraryState.filterState.selectedSeries) {
+        mutableStateOf(libraryState.filterState.selectedSeries)
+    }
+    var selectedLanguages: Set<String> by remember(libraryState.filterState.selectedLanguages) {
+        mutableStateOf(libraryState.filterState.selectedLanguages)
+    }
+
+    // Helper function to update filter state immediately when selections change
+    fun updateFilterState() {
+        val newFilterState = FilterState(
+            selectedStatuses = selectedStatuses,
+            selectedTags = selectedTags,
+            selectedAuthors = selectedAuthors,
+            selectedSeries = selectedSeries,
+            publicationYearRange = 1900..2026, // Default range since year slider is disabled
+            selectedLanguages = selectedLanguages
+        )
+        libraryModel.onEvent(LibraryEvent.OnUpdateFilterState(newFilterState))
+    }
+
+    // Load metadata on composition
+    LaunchedEffect(Unit) {
+        libraryModel.loadMetadata(
+            onTagsLoaded = { tags -> availableTags = tags.toSet() },
+            onAuthorsLoaded = { authors -> availableAuthors = authors.toSet() },
+            onSeriesLoaded = { series -> availableSeries = series.toSet() },
+            onLanguagesLoaded = { languages -> availableLanguages = languages.toSet() },
+            onYearRangeLoaded = { _, _ -> /* Year range disabled */ }
+        )
+    }
+
+    val sortedTags = availableTags.sorted()
+    val sortedAuthors = availableAuthors.sorted()
+    val sortedSeries = availableSeries.sorted()
+    val sortedLanguages = availableLanguages.sorted()
+
+    // Subpanel state
+    var showTagsSubpanel by remember { mutableStateOf(false) }
+    var showAuthorsSubpanel by remember { mutableStateOf(false) }
+    var showSeriesSubpanel by remember { mutableStateOf(false) }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text("Status Presets", style = MaterialTheme.typography.titleSmall)
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val statuses = listOf("Reading", "Planning", "Already Read")
+                    statuses.forEach { status ->
+                        FilterChip(
+                            selected = status in selectedStatuses,
+                            onClick = {
+                                selectedStatuses = if (status in selectedStatuses) {
+                                    selectedStatuses - status
+                                } else {
+                                    selectedStatuses + status
+                                }
+                                updateFilterState()
+                            },
+                            label = { Text(status) }
+                        )
+                    }
+                }
+
+                Text("Tags", style = MaterialTheme.typography.titleSmall)
+                if (sortedTags.isNotEmpty()) {
+                    OutlinedButton(
+                        onClick = { showTagsSubpanel = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("${selectedTags.size} selected")
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                    }
+                } else {
+                    Text("No tags available", style = MaterialTheme.typography.bodySmall)
+                }
+
+                Text("Authors", style = MaterialTheme.typography.titleSmall)
+                if (sortedAuthors.isNotEmpty()) {
+                    OutlinedButton(
+                        onClick = { showAuthorsSubpanel = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("${selectedAuthors.size} selected")
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                    }
+                } else {
+                    Text("No authors available", style = MaterialTheme.typography.bodySmall)
+                }
+
+                Text("Series", style = MaterialTheme.typography.titleSmall)
+                if (sortedSeries.isNotEmpty()) {
+                    OutlinedButton(
+                        onClick = { showSeriesSubpanel = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("${selectedSeries.size} selected")
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                    }
+                } else {
+                    Text("No series available", style = MaterialTheme.typography.bodySmall)
+                }
+
+                Text("Language", style = MaterialTheme.typography.titleSmall)
+                if (sortedLanguages.isNotEmpty()) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        sortedLanguages.forEach { language ->
+                            FilterChip(
+                                selected = selectedLanguages.contains(language),
+                                onClick = {
+                                    selectedLanguages = if (selectedLanguages.contains(language)) {
+                                        selectedLanguages - language
+                                    } else {
+                                        selectedLanguages + language
+                                    }
+                                    updateFilterState()
+                                },
+                                label = { Text(language) }
+                            )
+                        }
+                    }
+                } else {
+                    Text("No languages available", style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        }
+    }
+
+    // Tags subpanel
+    if (showTagsSubpanel) {
+        LibraryFilterSubpanel(
+            title = "Tags",
+            show = showTagsSubpanel,
+            items = sortedTags.toSet(),
+            selectedItems = selectedTags,
+            onItemToggle = { item, selected ->
+                selectedTags = if (selected) selectedTags + item else selectedTags - item
+                updateFilterState()
+            },
+            onSelectAll = { selectedTags = sortedTags.toSet() },
+            onDeselectAll = { selectedTags = emptySet() },
+            onReset = { selectedTags = libraryState.filterState.selectedTags },
+            onDismiss = { showTagsSubpanel = false }
+        )
+    }
+
+    // Authors subpanel
+    if (showAuthorsSubpanel) {
+        LibraryFilterSubpanel(
+            title = "Authors",
+            show = showAuthorsSubpanel,
+            items = sortedAuthors.toSet(),
+            selectedItems = selectedAuthors,
+            onItemToggle = { item, selected ->
+                selectedAuthors = if (selected) selectedAuthors + item else selectedAuthors - item
+                updateFilterState()
+            },
+            onSelectAll = { selectedAuthors = sortedAuthors.toSet() },
+            onDeselectAll = { selectedAuthors = emptySet() },
+            onReset = { selectedAuthors = libraryState.filterState.selectedAuthors },
+            onDismiss = { showAuthorsSubpanel = false }
+        )
+    }
+
+    // Series subpanel
+    if (showSeriesSubpanel) {
+        LibraryFilterSubpanel(
+            title = "Series",
+            show = showSeriesSubpanel,
+            items = sortedSeries.toSet(),
+            selectedItems = selectedSeries,
+            onItemToggle = { item, selected ->
+                selectedSeries = if (selected) selectedSeries + item else selectedSeries - item
+                updateFilterState()
+            },
+            onSelectAll = { selectedSeries = sortedSeries.toSet() },
+            onDeselectAll = { selectedSeries = emptySet() },
+            onReset = { selectedSeries = libraryState.filterState.selectedSeries },
+            onDismiss = { showSeriesSubpanel = false }
         )
     }
 }

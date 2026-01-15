@@ -481,24 +481,54 @@ class BookRepositoryImpl @Inject constructor(
      * Caches up to 3 most recent books to balance performance and memory usage.
      */
     override suspend fun preloadRecentBooksText() {
-        try {
-            val recentHistory = database.getRecentHistory(3) // Get 3 most recent books
-            val recentBookIds = recentHistory.map { it.bookId }.distinct()
+        // Implementation here
+    }
 
-            Log.i("CACHE_PRELOAD", "Preloading text for ${recentBookIds.size} recent books")
+    override suspend fun getAllAuthors(): List<String> = withContext(Dispatchers.IO) {
+        val knownAuthors = database.getAllAuthors().filter { it.isNotBlank() }
 
-            recentBookIds.forEach { bookId ->
-                // Only preload if not already in cache
-                if (textCache.get(bookId) == null) {
-                    val text = getBookText(bookId)
-                    if (text.isNotEmpty()) {
-                        Log.i("CACHE_PRELOAD", "Preloaded text for book $bookId")
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("CACHE_PRELOAD", "Failed to preload recent books", e)
+        // Check if any books have null/blank author
+        val hasUnknownAuthors = database.getAllBooks().any { it.author.isNullOrBlank() }
+
+        if (hasUnknownAuthors) {
+            listOf("Unknown") + knownAuthors
+        } else {
+            knownAuthors
         }
+    }
+
+    override suspend fun getAllSeries(): List<String> {
+        return database.getAllSeries().filter { it.isNotBlank() }
+    }
+
+    override suspend fun getAllTags(): List<String> = withContext(Dispatchers.IO) {
+        val allBooks = database.getAllBooks()
+        val tagsSet = mutableSetOf<String>()
+        allBooks.forEach { book ->
+            tagsSet.addAll(book.tags)
+        }
+
+        tagsSet.sorted()
+    }
+
+    override suspend fun getAllLanguages(): List<String> {
+        return database.getAllLanguages().filter { it.isNotBlank() }
+    }
+
+    override suspend fun getPublicationYearRange(): Pair<Int, Int> {
+        val yearRange = database.getPublicationYearRange()
+        val calendar = java.util.Calendar.getInstance()
+        val currentYear = calendar.get(java.util.Calendar.YEAR)
+
+        val minYear = yearRange?.minYear?.let {
+            java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).year
+        } ?: 1900
+
+        val maxYear = yearRange?.maxYear?.let {
+            java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).year
+        } ?: currentYear
+
+        return Pair(minYear, maxYear)
     }
 
     /**

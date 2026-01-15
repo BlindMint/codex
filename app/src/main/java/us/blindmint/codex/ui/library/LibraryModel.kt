@@ -6,6 +6,7 @@
 
 package us.blindmint.codex.ui.library
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,6 +28,7 @@ import us.blindmint.codex.R
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.SelectableBook
 import us.blindmint.codex.domain.library.sort.LibrarySortOrder
+import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.use_case.book.DeleteBooks
 import us.blindmint.codex.domain.use_case.book.DeleteProgressHistoryUseCase
 import us.blindmint.codex.domain.use_case.book.GetBooks
@@ -39,6 +41,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LibraryModel @Inject constructor(
     private val getBooks: GetBooks,
+    private val bookRepository: BookRepository,
     private val deleteBooks: DeleteBooks,
     private val moveBooks: UpdateBook,
     private val deleteProgressHistory: DeleteProgressHistoryUseCase
@@ -403,17 +406,43 @@ class LibraryModel @Inject constructor(
         onTagsLoaded: (List<String>) -> Unit,
         onAuthorsLoaded: (List<String>) -> Unit,
         onSeriesLoaded: (List<String>) -> Unit,
-        onYearRangeLoaded: (Int, Int) -> Unit
+        onLanguagesLoaded: (List<String>) -> Unit,
+        onYearRangeLoaded: (Int, Int) -> Unit = { _, _ -> }
     ) {
-        // Simplified for now - will load actual metadata later
-        onTagsLoaded(listOf("Fiction", "Science Fiction", "Fantasy"))
-        onAuthorsLoaded(listOf("Author 1", "Author 2", "Author 3"))
-        onSeriesLoaded(listOf("Series 1", "Series 2"))
-        onYearRangeLoaded(1900, 2024)
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val tags = bookRepository.getAllTags()
+                val authors = bookRepository.getAllAuthors()
+                val series = bookRepository.getAllSeries()
+                val languages = bookRepository.getAllLanguages()
+                val (minYear, maxYear) = bookRepository.getPublicationYearRange()
+
+                withContext(Dispatchers.Main) {
+                    onTagsLoaded(tags)
+                    onAuthorsLoaded(authors)
+                    onSeriesLoaded(series)
+                    onLanguagesLoaded(languages)
+                    onYearRangeLoaded(minYear, maxYear)
+                }
+            } catch (e: Exception) {
+                Log.e("LibraryModel", "Error loading metadata", e)
+            }
+        }
     }
 
     private fun applyFilters(books: List<Book>, filterState: FilterState): List<Book> {
         return books.filter { book ->
+            // Filter by selected statuses (Reading, Planning, Already Read)
+            val statusMatch = filterState.selectedStatuses.isEmpty() ||
+                filterState.selectedStatuses.any { selectedStatus ->
+                    when (selectedStatus) {
+                        "Reading" -> book.category.name == "READING"
+                        "Planning" -> book.category.name == "PLANNING"
+                        "Already Read" -> book.category.name == "ALREADY_READ"
+                        else -> false
+                    }
+                }
+
             // Filter by selected tags (if any selected, book must have at least one)
             val tagsMatch = filterState.selectedTags.isEmpty() ||
                 filterState.selectedTags.any { selectedTag ->
@@ -432,6 +461,12 @@ class LibraryModel @Inject constructor(
                     book.seriesName?.equals(selectedSeries, ignoreCase = true) == true
                 }
 
+            // Filter by selected languages
+            val languagesMatch = filterState.selectedLanguages.isEmpty() ||
+                filterState.selectedLanguages.any { selectedLanguage ->
+                    book.language?.equals(selectedLanguage, ignoreCase = true) == true
+                }
+
             // Filter by publication year range
             val yearMatch = if (book.publicationDate != null) {
                 val bookYear = java.time.Instant.ofEpochMilli(book.publicationDate).atZone(java.time.ZoneId.systemDefault()).year
@@ -440,7 +475,7 @@ class LibraryModel @Inject constructor(
                 true // Include books without publication date
             }
 
-            tagsMatch && authorsMatch && seriesMatch && yearMatch
+            statusMatch && tagsMatch && authorsMatch && seriesMatch && languagesMatch && yearMatch
         }
     }
 

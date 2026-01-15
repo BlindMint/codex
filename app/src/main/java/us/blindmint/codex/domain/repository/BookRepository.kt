@@ -59,4 +59,14 @@ interface BookRepository {
     )
 
     suspend fun preloadRecentBooksText()
+
+    suspend fun getAllTags(): List<String>
+
+    suspend fun getAllAuthors(): List<String>
+
+    suspend fun getAllSeries(): List<String>
+
+    suspend fun getAllLanguages(): List<String>
+
+    suspend fun getPublicationYearRange(): Pair<Int, Int>
 }
