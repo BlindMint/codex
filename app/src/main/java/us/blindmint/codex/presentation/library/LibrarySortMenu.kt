@@ -388,10 +388,13 @@ private fun LibraryFilterTabContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Status Presets", style = MaterialTheme.typography.titleSmall)
+        Text(
+            "Status Presets",
+            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+        )
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -406,7 +409,10 @@ private fun LibraryFilterTabContent(
             }
         }
 
-        Text("Tags", style = MaterialTheme.typography.titleSmall)
+        Text(
+            "Tags",
+            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+        )
         if (sortedTags.isNotEmpty()) {
             OutlinedButton(
                 onClick = onShowTagsSubpanel,
@@ -417,10 +423,16 @@ private fun LibraryFilterTabContent(
                 Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
             }
         } else {
-            Text("No tags available", style = MaterialTheme.typography.bodySmall)
+            Text(
+                "No tags available",
+                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
         }
 
-        Text("Authors", style = MaterialTheme.typography.titleSmall)
+        Text(
+            "Authors",
+            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+        )
         if (sortedAuthors.isNotEmpty()) {
             OutlinedButton(
                 onClick = onShowAuthorsSubpanel,
@@ -431,10 +443,16 @@ private fun LibraryFilterTabContent(
                 Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
             }
         } else {
-            Text("No authors available", style = MaterialTheme.typography.bodySmall)
+            Text(
+                "No authors available",
+                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
         }
 
-        Text("Series", style = MaterialTheme.typography.titleSmall)
+        Text(
+            "Series",
+            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+        )
         if (sortedSeries.isNotEmpty()) {
             OutlinedButton(
                 onClick = onShowSeriesSubpanel,
@@ -445,10 +463,16 @@ private fun LibraryFilterTabContent(
                 Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
             }
         } else {
-            Text("No series available", style = MaterialTheme.typography.bodySmall)
+            Text(
+                "No series available",
+                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
         }
 
-        Text("Language", style = MaterialTheme.typography.titleSmall)
+        Text(
+            "Language",
+            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+        )
         if (sortedLanguages.isNotEmpty()) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -463,7 +487,10 @@ private fun LibraryFilterTabContent(
                 }
             }
         } else {
-            Text("No languages available", style = MaterialTheme.typography.bodySmall)
+            Text(
+                "No languages available",
+                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
         }
     }
 }

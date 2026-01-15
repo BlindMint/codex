@@ -109,22 +109,26 @@ fun ModalDrawer(
             modifier = Modifier.align(
                 if (side == DrawerSide.LEFT) Alignment.CenterStart else Alignment.CenterEnd
             ),
-            enter = slideInHorizontally {
+            enter = slideInHorizontally(
+                animationSpec = androidx.compose.animation.core.tween(durationMillis = 300, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+            ) {
                 if (side == DrawerSide.LEFT) {
-                    if (layoutDirection == LayoutDirection.Ltr) (-it + with(density) { -20.dp.toPx() }).toInt()
-                    else (it + with(density) { 20.dp.toPx() }).toInt()
+                    if (layoutDirection == LayoutDirection.Ltr) (-it + with(density) { -60.dp.toPx() }).toInt()
+                    else (it + with(density) { 60.dp.toPx() }).toInt()
                 } else {
-                    if (layoutDirection == LayoutDirection.Ltr) (it + with(density) { 20.dp.toPx() }).toInt()
-                    else (-it + with(density) { -20.dp.toPx() }).toInt()
+                    if (layoutDirection == LayoutDirection.Ltr) (it + with(density) { 60.dp.toPx() }).toInt()
+                    else (-it + with(density) { -60.dp.toPx() }).toInt()
                 }
             },
-            exit = slideOutHorizontally {
+            exit = slideOutHorizontally(
+                animationSpec = androidx.compose.animation.core.tween(durationMillis = 250, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+            ) {
                 if (side == DrawerSide.LEFT) {
-                    if (layoutDirection == LayoutDirection.Ltr) (-it + with(density) { -20.dp.toPx() }).toInt()
-                    else (it + with(density) { 20.dp.toPx() }).toInt()
+                    if (layoutDirection == LayoutDirection.Ltr) (-it + with(density) { -60.dp.toPx() }).toInt()
+                    else (it + with(density) { 60.dp.toPx() }).toInt()
                 } else {
-                    if (layoutDirection == LayoutDirection.Ltr) (it + with(density) { 20.dp.toPx() }).toInt()
-                    else (-it + with(density) { -20.dp.toPx() }).toInt()
+                    if (layoutDirection == LayoutDirection.Ltr) (it + with(density) { 60.dp.toPx() }).toInt()
+                    else (-it + with(density) { -60.dp.toPx() }).toInt()
                 }
             }
         ) {
