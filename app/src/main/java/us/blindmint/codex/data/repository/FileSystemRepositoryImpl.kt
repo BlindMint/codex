@@ -7,6 +7,7 @@
 package us.blindmint.codex.data.repository
 
 import android.app.Application
+import android.net.Uri
 import android.util.Log
 import us.blindmint.codex.R
 import us.blindmint.codex.data.local.room.BookDao
@@ -150,5 +151,43 @@ class FileSystemRepositoryImpl @Inject constructor(
 
         Log.i(GET_BOOK_FROM_FILE, "Successfully got book from file.")
         return NotNull(bookWithCover = parsedBook)
+    }
+
+    /**
+     * Gets all files recursively from a specific folder.
+     */
+    override suspend fun getAllFilesFromFolder(folderUri: Uri): List<CachedFile> {
+        Log.i(GET_FILES, "Getting all files from folder: $folderUri")
+
+        return try {
+            val folder = CachedFileCompat.fromUri(
+                application,
+                folderUri,
+                builder = CachedFileCompat.build(
+                    name = UUID.randomUUID().toString(),
+                    size = 0,
+                    lastModified = 0
+                )
+            )
+
+            if (!folder.isDirectory) {
+                Log.w(GET_FILES, "Provided URI is not a directory")
+                return emptyList()
+            }
+
+            val files = mutableListOf<CachedFile>()
+            folder.walk { file ->
+                if (!file.isDirectory) {
+                    files.add(file)
+                }
+            }
+
+            Log.i(GET_FILES, "Found ${files.size} files in folder")
+            files
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e(GET_FILES, "Couldn't get files from folder.")
+            emptyList()
+        }
     }
 }

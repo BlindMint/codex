@@ -19,4 +19,8 @@ interface FileSystemRepository {
     suspend fun getBookFromFile(
         cachedFile: CachedFile
     ): NullableBook
+
+    suspend fun getAllFilesFromFolder(
+        folderUri: android.net.Uri
+    ): List<CachedFile>
 }

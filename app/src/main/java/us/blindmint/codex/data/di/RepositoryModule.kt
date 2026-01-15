@@ -30,6 +30,8 @@ import us.blindmint.codex.data.repository.ColorPresetRepositoryImpl
 import us.blindmint.codex.data.repository.DataStoreRepositoryImpl
 import us.blindmint.codex.data.repository.FileSystemRepositoryImpl
 import us.blindmint.codex.data.repository.HistoryRepositoryImpl
+import us.blindmint.codex.data.repository.CodexDirectoryManagerImpl
+import us.blindmint.codex.data.repository.OpdsRepositoryImpl
 import us.blindmint.codex.data.repository.PermissionRepositoryImpl
 import us.blindmint.codex.domain.repository.BookmarkRepository
 import us.blindmint.codex.domain.repository.BookRepository
@@ -37,7 +39,9 @@ import us.blindmint.codex.domain.repository.ColorPresetRepository
 import us.blindmint.codex.domain.repository.DataStoreRepository
 import us.blindmint.codex.domain.repository.FileSystemRepository
 import us.blindmint.codex.domain.repository.HistoryRepository
+import us.blindmint.codex.domain.repository.OpdsRepository
 import us.blindmint.codex.domain.repository.PermissionRepository
+import us.blindmint.codex.domain.storage.CodexDirectoryManager
 import javax.inject.Singleton
 
 @Module
@@ -90,6 +94,18 @@ abstract class RepositoryModule {
     abstract fun bindPermissionRepository(
         permissionRepositoryImpl: PermissionRepositoryImpl
     ): PermissionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindOpdsRepository(
+        opdsRepositoryImpl: OpdsRepositoryImpl
+    ): OpdsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCodexDirectoryManager(
+        codexDirectoryManagerImpl: CodexDirectoryManagerImpl
+    ): CodexDirectoryManager
 
     @Binds
     @Singleton

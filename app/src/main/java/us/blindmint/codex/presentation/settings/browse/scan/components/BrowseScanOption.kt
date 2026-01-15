@@ -24,10 +24,15 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,12 +43,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.anggrayudi.storage.file.DocumentFileCompat
 import com.anggrayudi.storage.file.getBasePath
 import com.anggrayudi.storage.file.getRootPath
+import kotlinx.coroutines.launch
 import us.blindmint.codex.R
+import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
+import us.blindmint.codex.domain.use_case.book.BulkImportProgress
 import us.blindmint.codex.presentation.core.components.common.IconButton
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.browse.BrowseScreen
+import us.blindmint.codex.ui.library.LibraryScreen
 import us.blindmint.codex.ui.settings.SettingsEvent
 import us.blindmint.codex.ui.settings.SettingsModel
 import us.blindmint.codex.ui.theme.dynamicListItemColor
@@ -52,6 +61,10 @@ import us.blindmint.codex.ui.theme.dynamicListItemColor
 fun BrowseScanOption() {
     val settingsModel = hiltViewModel<SettingsModel>()
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    var importProgress by remember { mutableStateOf<BulkImportProgress?>(null) }
+    var importingFolderUri by remember { mutableStateOf<android.net.Uri?>(null) }
 
     fun getPersistedUriPermissions(): List<UriPermission> {
         return context.contentResolver?.persistedUriPermissions.let { permissions ->
@@ -79,7 +92,24 @@ fun BrowseScanOption() {
 
         persistedUriPermissions.clear()
         persistedUriPermissions.addAll(getPersistedUriPermissions())
-        BrowseScreen.refreshListChannel.trySend(Unit)
+
+        // Start bulk import instead of refreshing Browse
+        importingFolderUri = uri
+        coroutineScope.launch {
+            try {
+                val importedCount = settingsModel.bulkImportBooksFromFolder.execute(uri) { progress ->
+                    importProgress = progress
+                }
+                context.getString(R.string.import_completed, importedCount).showToast(context, longToast = false)
+                LibraryScreen.refreshListChannel.trySend(0) // Refresh Library
+            } catch (e: Exception) {
+                e.printStackTrace()
+                context.getString(R.string.error_something_went_wrong).showToast(context, longToast = false)
+            } finally {
+                importProgress = null
+                importingFolderUri = null
+            }
+        }
     }
 
     Column(
@@ -102,7 +132,9 @@ fun BrowseScanOption() {
                     persistedUriPermissions.clear()
                     persistedUriPermissions.addAll(getPersistedUriPermissions())
                     BrowseScreen.refreshListChannel.trySend(Unit)
-                }
+                },
+                importProgress = importProgress,
+                isImportingThisFolder = importingFolderUri == permission.uri
             )
         }
     }
@@ -126,56 +158,83 @@ private fun BrowseScanFolderItem(
     index: Int,
     permission: UriPermission,
     context: Context,
-    releasePersistableUriPermission: () -> Unit
+    releasePersistableUriPermission: () -> Unit,
+    importProgress: BulkImportProgress?,
+    isImportingThisFolder: Boolean
 ) {
     val permissionFile = DocumentFileCompat.fromUri(context, permission.uri) ?: return
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(
                 horizontal = 18.dp,
                 vertical = 8.dp
-            ),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(18.dp)
+            )
     ) {
-        Icon(
-            imageVector = Icons.Outlined.Folder,
-            contentDescription = null,
-            modifier = Modifier
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.dynamicListItemColor(index))
-                .padding(11.dp)
-                .size(22.dp),
-            tint = MaterialTheme.colorScheme.onSurface
-        )
-
-        Column(
-            modifier = Modifier.weight(1f)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            StyledText(
-                text = permissionFile.getBasePath(context),
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            Icon(
+                imageVector = Icons.Outlined.Folder,
+                contentDescription = null,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.dynamicListItemColor(index))
+                    .padding(11.dp)
+                    .size(22.dp),
+                tint = MaterialTheme.colorScheme.onSurface
             )
-            StyledText(
-                text = permissionFile.getRootPath(context),
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                StyledText(
+                    text = permissionFile.getBasePath(context),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 )
-            )
+                StyledText(
+                    text = permissionFile.getRootPath(context),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+                if (isImportingThisFolder && importProgress != null) {
+                    StyledText(
+                        text = stringResource(
+                            R.string.importing_progress,
+                            importProgress.current,
+                            importProgress.total,
+                            importProgress.currentFile
+                        ),
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+            }
+
+            IconButton(
+                modifier = Modifier.size(24.dp),
+                icon = Icons.Outlined.Clear,
+                contentDescription = R.string.remove_content_desc,
+                disableOnClick = false,
+                color = MaterialTheme.colorScheme.onSurface
+            ) {
+                releasePersistableUriPermission()
+            }
         }
 
-        IconButton(
-            modifier = Modifier.size(24.dp),
-            icon = Icons.Outlined.Clear,
-            contentDescription = R.string.remove_content_desc,
-            disableOnClick = false,
-            color = MaterialTheme.colorScheme.onSurface
-        ) {
-            releasePersistableUriPermission()
+        if (isImportingThisFolder && importProgress != null) {
+            LinearProgressIndicator(
+                progress = { importProgress.current.toFloat() / importProgress.total.toFloat() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+            )
         }
     }
 }

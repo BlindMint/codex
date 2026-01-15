@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import us.blindmint.codex.domain.browse.display.BrowseLayout
 import us.blindmint.codex.domain.browse.file.SelectableFile
+import us.blindmint.codex.presentation.browse.opds.OpdsCatalogPanel
 import us.blindmint.codex.ui.browse.BrowseEvent
 import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.theme.DefaultTransition
@@ -87,68 +88,29 @@ fun BrowseScaffold(
                 showAddDialog = showAddDialog
             )
         }
-    ) { padding ->
+        ) { padding ->
         Box(
             Modifier
                 .fillMaxSize()
                 .padding(top = padding.calculateTopPadding())
         ) {
             DefaultTransition(visible = !isLoading) {
-                BrowseLayout(
-                    files = files,
-                    pinnedPaths = pinnedPaths,
-                    layout = layout,
-                    gridSize = gridSize,
-                    autoGridSize = autoGridSize,
+                OpdsCatalogPanel(
+                    refreshState = refreshState,
                     listState = listState,
                     gridState = gridState,
-                    headerContent = { header, pinned ->
-                        BrowseLayoutHeader(
-                            header = header,
-                            pinned = pinned,
-                            pin = {
-                                changePinnedPaths(
-                                    MainEvent.OnChangeBrowsePinnedPaths(
-                                        value = header
-                                    )
-                                )
-                            }
-                        )
-                    },
-                    itemContent = { file, groupFiles ->
-                        BrowseItem(
-                            file = file,
-                            layout = layout,
-                            hasSelectedItems = hasSelectedItems,
-                            onLongClick = {
-                                selectFiles(
-                                    BrowseEvent.OnSelectFiles(
-                                        includedFileFormats = includedFilterItems,
-                                        files = groupFiles
-                                    )
-                                )
-                            },
-                            onClick = {
-                                selectFile(
-                                    BrowseEvent.OnSelectFile(
-                                        includedFileFormats = includedFilterItems,
-                                        file = file
-                                    )
-                                )
-                            }
-                        )
-                    }
+                    layout = layout,
+                    isRefreshing = isRefreshing,
+                    showSearch = showSearch,
+                    searchQuery = searchQuery,
+                    focusRequester = focusRequester,
+                    searchVisibility = searchVisibility,
+                    searchQueryChange = searchQueryChange,
+                    search = search,
+                    requestFocus = requestFocus,
+                    navigateToBrowseSettings = navigateToBrowseSettings
                 )
             }
-
-            BrowseEmptyPlaceholder(
-                filesEmpty = filesEmpty,
-                dialogHidden = dialogHidden,
-                isLoading = isLoading,
-                isRefreshing = isRefreshing,
-                pinnedPaths = pinnedPaths,
-                navigateToBrowseSettings = navigateToBrowseSettings
-            )
 
             BrowseRefreshIndicator(
                 isRefreshing = isRefreshing,

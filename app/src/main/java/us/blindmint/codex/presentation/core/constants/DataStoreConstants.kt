@@ -108,4 +108,5 @@ object DataStoreConstants {
 
     // Settings
     val AUTO_COLOR_PRESET_SELECTED = booleanPreferencesKey("auto_color_preset_selected")
+    val CODEX_ROOT_URI = stringPreferencesKey("codex_root_uri")
 }

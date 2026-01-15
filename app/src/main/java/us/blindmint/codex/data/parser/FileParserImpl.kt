@@ -68,6 +68,11 @@ class FileParserImpl @Inject constructor(
                 fodtFileParser.parse(cachedFile)
             }
 
+            ".cbr", ".cbz", ".cb7" -> {
+                // Comic files - parsing not implemented yet
+                null
+            }
+
             else -> {
                 Log.e(FILE_PARSER, "Wrong file format, could not find supported extension.")
                 null

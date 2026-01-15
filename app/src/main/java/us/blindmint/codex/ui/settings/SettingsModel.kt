@@ -21,6 +21,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.reader.ColorPreset
+import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
+import us.blindmint.codex.domain.use_case.book.BulkImportProgress
 import us.blindmint.codex.domain.use_case.color_preset.DeleteColorPreset
 import us.blindmint.codex.domain.use_case.color_preset.GetColorPresets
 import us.blindmint.codex.domain.use_case.color_preset.ReorderColorPresets
@@ -51,6 +53,7 @@ class SettingsModel @Inject constructor(
     private val releasePersistableUriPermission: ReleasePersistableUriPermission,
     private val getAllSettings: GetAllSettings,
     private val setDatastore: SetDatastore,
+    val bulkImportBooksFromFolder: BulkImportBooksFromFolder,
 ) : ViewModel() {
 
     private val mutex = Mutex()

@@ -13,7 +13,12 @@ fun provideExtensions() = listOf(
     ".txt",
     ".html",
     ".htm",
-    ".md"
+    ".md",
+    ".cbr",
+    ".cbz",
+    ".cb7",
+    ".opf",
+    ".xml" // For OPDS feeds
 )
 
 fun provideImageExtensions() = listOf(

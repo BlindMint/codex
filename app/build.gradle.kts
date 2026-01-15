@@ -172,8 +172,9 @@ dependencies {
     // EPUB parser
     implementation("org.jsoup:jsoup:1.18.3")
 
-    // FB2 parser
+    // FB2 parser and OPDS v2 JSON parsing
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
 
     // Language Switcher
     implementation("androidx.appcompat:appcompat:1.7.0")
@@ -197,4 +198,10 @@ dependencies {
 
     // Markdown
     implementation("org.commonmark:commonmark:0.24.0")
+
+    // OPDS networking
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-simplexml:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("org.simpleframework:simple-xml:2.7.1")
 }

@@ -19,6 +19,7 @@ import us.blindmint.codex.data.local.dto.BookmarkEntity
 import us.blindmint.codex.data.local.dto.BookProgressHistoryEntity
 import us.blindmint.codex.data.local.dto.ColorPresetEntity
 import us.blindmint.codex.data.local.dto.HistoryEntity
+import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import java.io.File
 
 @Database(
@@ -28,12 +29,14 @@ import java.io.File
         ColorPresetEntity::class,
         BookProgressHistoryEntity::class,
         BookmarkEntity::class,
+        OpdsSourceEntity::class,
     ],
-    version = 14,
+    version = 15,
     exportSchema = false
 )
 abstract class BookDatabase : RoomDatabase() {
     abstract val dao: BookDao
+    abstract val opdsSourceDao: OpdsSourceDao
 }
 
 @Suppress("ClassName")
@@ -139,6 +142,43 @@ object DatabaseHelper {
     val MIGRATION_13_14 = object : Migration(13, 14) {
         override fun migrate(db: SupportSQLiteDatabase) {
             db.execSQL("ALTER TABLE `ColorPresetEntity` ADD COLUMN `isLocked` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
+    val MIGRATION_14_15 = object : Migration(14, 15) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Add OpdsSourceEntity table
+            db.execSQL("""CREATE TABLE IF NOT EXISTS OpdsSourceEntity (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                url TEXT NOT NULL,
+                username TEXT,
+                password TEXT,
+                enabled INTEGER NOT NULL DEFAULT 1,
+                lastSync INTEGER NOT NULL DEFAULT 0
+            )""")
+
+            // Add OPDS and metadata fields to BookEntity
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `tags` TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `seriesName` TEXT")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `seriesIndex` INTEGER")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `publicationDate` INTEGER")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `language` TEXT")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `publisher` TEXT")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `summary` TEXT")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `uuid` TEXT")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `isbn` TEXT")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `source` TEXT NOT NULL DEFAULT 'LOCAL'")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `remoteUrl` TEXT")
+
+            // Add comic-specific fields
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `isComic` INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `pageCount` INTEGER")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `currentPage` INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `lastPageRead` INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `readingDirection` TEXT NOT NULL DEFAULT 'LTR'")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `comicReaderMode` TEXT NOT NULL DEFAULT 'PAGED'")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `archiveFormat` TEXT")
         }
     }
 }
