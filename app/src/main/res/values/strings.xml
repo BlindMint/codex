@@ -244,7 +244,7 @@
     <string name="progress_reader_settings">Progress</string>
     <string name="theme_appearance_settings">Theme preferences</string>
     <string name="colors_appearance_settings">Colors</string>
-    <string name="scan_browse_settings">Scan</string>
+    <string name="scan_browse_settings">Local folders</string>
     <string name="opds_browse_settings">OPDS</string>
     <string name="add_opds_source">Add OPDS Source</string>
     <string name="details">Details</string>

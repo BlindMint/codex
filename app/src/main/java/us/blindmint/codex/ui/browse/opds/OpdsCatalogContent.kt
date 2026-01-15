@@ -296,7 +296,7 @@ fun OpdsCatalogContent(
                         link.rel == "subsection" ||
                         link.rel == "http://opds-spec.org/subsection" ||
                         link.type?.startsWith("application/atom+xml") == true
-                    } && !entry.links.any { it.rel == "http://opds-spec.org/acquisition" } &&
+                    } &&
                     entry.links.none { link ->
                         val resolvedUrl = runCatching {
                             URI(source.url).resolve(link.href).toString()
@@ -315,7 +315,12 @@ fun OpdsCatalogContent(
                 } else allCategories
 
                 val allBooks = state.feed?.entries?.filter { entry ->
-                    entry.links.any { it.rel == "http://opds-spec.org/acquisition" }
+                    entry.links.any { it.rel == "http://opds-spec.org/acquisition" } &&
+                    !entry.links.any { link ->
+                        link.rel == "subsection" ||
+                        link.rel == "http://opds-spec.org/subsection" ||
+                        link.type?.startsWith("application/atom+xml") == true
+                    }
                 } ?: emptyList()
 
                 val books = if (showSearch && searchQuery.isNotBlank()) {
