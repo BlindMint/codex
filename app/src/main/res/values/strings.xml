@@ -13,7 +13,7 @@
     <!-- Screens -->
     <string name="library_screen">Library</string>
     <string name="history_screen">History</string>
-    <string name="browse_screen">Browse</string>
+    <string name="browse_screen">Discover</string>
     <string name="settings_screen">Settings</string>
     <string name="import_export_settings">Import/Export</string>
     <string name="import_export_settings_desc">Backup and restore reading settings</string>
@@ -137,6 +137,8 @@
     <string name="change_path">Change path</string>
     <string name="add_folder">Add folder</string>
     <string name="set_up_scanning">Set up scanning</string>
+    <string name="importing_progress">Importing %1$d/%2$d: %3$s</string>
+    <string name="import_completed">Imported %1$d books successfully</string>
 
     <!-- Book -->
     <string name="unknown_author">Unknown</string>
@@ -167,7 +169,7 @@
     <string name="appearance_settings_desc">Theme, colors</string>
     <string name="reader_settings">Reader</string>
     <string name="reader_settings_desc">Font, text</string>
-    <string name="browse_settings">Browse</string>
+    <string name="browse_settings">Discover</string>
     <string name="browse_settings_desc">General, filter, sort</string>
     <string name="library_settings">Library</string>
 
@@ -243,6 +245,8 @@
     <string name="theme_appearance_settings">Theme preferences</string>
     <string name="colors_appearance_settings">Colors</string>
     <string name="scan_browse_settings">Scan</string>
+    <string name="opds_browse_settings">OPDS</string>
+    <string name="add_opds_source">Add OPDS Source</string>
     <string name="display_settings">Display</string>
     <string name="filter_browse_settings">Filter</string>
     <string name="sort_browse_settings">Sort</string>
