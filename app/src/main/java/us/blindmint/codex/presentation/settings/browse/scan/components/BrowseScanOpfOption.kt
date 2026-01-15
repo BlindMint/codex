@@ -23,6 +23,7 @@ fun BrowseScanOpfOption() {
     SwitchWithTitle(
         selected = state.value.useCalibreOpfMetadata,
         title = stringResource(id = R.string.use_calibre_opf_metadata),
+        showDivider = false,
         onClick = {
             mainModel.onEvent(MainEvent.OnChangeUseCalibreOpfMetadata(!state.value.useCalibreOpfMetadata))
         }

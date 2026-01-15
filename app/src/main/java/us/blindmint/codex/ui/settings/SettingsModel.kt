@@ -58,7 +58,7 @@ class SettingsModel @Inject constructor(
     private val setDatastore: SetDatastore,
     val bulkImportBooksFromFolder: BulkImportBooksFromFolder,
     private val autoImportCodexBooksUseCase: AutoImportCodexBooksUseCase,
-    private val codexDirectoryManager: CodexDirectoryManager,
+    val codexDirectoryManager: CodexDirectoryManager,
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -638,9 +638,11 @@ class SettingsModel @Inject constructor(
 
                     if (success) {
                         val displayPath = codexDirectoryManager.getDisplayPath()
-                        Log.i("SettingsModel", "Codex root display path: $displayPath")
                         _state.update {
-                            it.copy(codexRootDisplayPath = displayPath)
+                            it.copy(
+                                codexRootDisplayPath = displayPath,
+                                codexRootUri = event.uri
+                            )
                         }
 
                         // Check if directory is configured

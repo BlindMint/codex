@@ -42,6 +42,7 @@ fun SwitchWithTitle(
     enabled: Boolean = true,
     title: String,
     description: String? = null,
+    showDivider: Boolean = description.isNullOrBlank(),
     horizontalPadding: Dp = 18.dp,
     verticalPadding: Dp = 8.dp,
     onClick: () -> Unit
@@ -69,7 +70,7 @@ fun SwitchWithTitle(
             }
         }
 
-        if (description.isNullOrBlank()) {
+        if (showDivider) {
             Spacer(modifier = Modifier.width(18.dp))
             VerticalDivider(
                 modifier = Modifier.height(34.dp)

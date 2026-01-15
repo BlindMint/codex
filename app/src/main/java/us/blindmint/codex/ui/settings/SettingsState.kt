@@ -18,4 +18,5 @@ data class SettingsState(
     val animateColorPreset: Boolean = false,
     val colorPresetListState: LazyListState = LazyListState(),
     val codexRootDisplayPath: String? = null,
+    val codexRootUri: android.net.Uri? = null,
 )

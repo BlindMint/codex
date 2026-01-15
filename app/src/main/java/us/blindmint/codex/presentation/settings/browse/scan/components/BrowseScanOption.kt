@@ -69,7 +69,15 @@ fun BrowseScanOption() {
     fun getPersistedUriPermissions(): List<UriPermission> {
         return context.contentResolver?.persistedUriPermissions.let { permissions ->
             if (permissions.isNullOrEmpty()) return@let emptyList()
-            permissions.sortedBy { it.uri.path?.lowercase() }
+
+            // Filter out the Codex root directory from the manually added folders list
+            val codexRootUri = settingsModel.state.value.codexRootUri
+
+            val filteredPermissions = permissions.filter { permission ->
+                codexRootUri == null || !permission.uri.toString().equals(codexRootUri.toString(), ignoreCase = true)
+            }
+
+            filteredPermissions.sortedBy { it.uri.path?.lowercase() }
         }
     }
 
