@@ -76,4 +76,8 @@ sealed class SettingsEvent {
     data class OnScrollToColorPreset(
         val index: Int
     ) : SettingsEvent()
+
+    data class OnSetCodexRootFolder(
+        val uri: Uri
+    ) : SettingsEvent()
 }

@@ -251,6 +251,14 @@ class MainModel @Inject constructor(
                 event = event
             )
 
+            is MainEvent.OnChangeUseCalibreOpfMetadata -> handleDatastoreUpdate(
+                key = DataStoreConstants.USE_CALIBRE_OPF_METADATA,
+                value = event.value,
+                updateState = {
+                    it.copy(useCalibreOpfMetadata = this)
+                }
+            )
+
             is MainEvent.OnChangeTextAlignment -> handleDatastoreUpdate(
                 key = DataStoreConstants.TEXT_ALIGNMENT,
                 value = event.value,

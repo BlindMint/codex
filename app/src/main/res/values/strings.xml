@@ -249,6 +249,7 @@
     <string name="add_opds_source">Add OPDS Source</string>
     <string name="display_settings">Display</string>
     <string name="filter_browse_settings">Filter</string>
+    <string name="filter_settings">Filter</string>
     <string name="sort_browse_settings">Sort</string>
     <string name="sort_settings">Sort</string>
     <string name="tabs_settings">Tabs</string>
@@ -259,6 +260,8 @@
         Removing a folder here will not delete actual files or books from the Library.
         To revoke access, click the corresponding button.
     </string>
+
+    <string name="use_calibre_opf_metadata">Use Calibre OPF metadata</string>
 
     <!-- Settings options -->
     <!-- General -->

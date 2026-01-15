@@ -17,4 +17,5 @@ data class SettingsState(
     val selectedColorPreset: ColorPreset = provideDefaultColorPreset(),
     val animateColorPreset: Boolean = false,
     val colorPresetListState: LazyListState = LazyListState(),
+    val codexRootDisplayPath: String? = null,
 )

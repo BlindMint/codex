@@ -109,4 +109,7 @@ object DataStoreConstants {
     // Settings
     val AUTO_COLOR_PRESET_SELECTED = booleanPreferencesKey("auto_color_preset_selected")
     val CODEX_ROOT_URI = stringPreferencesKey("codex_root_uri")
+
+    // OPF Metadata settings
+    val USE_CALIBRE_OPF_METADATA = booleanPreferencesKey("use_calibre_opf_metadata")
 }

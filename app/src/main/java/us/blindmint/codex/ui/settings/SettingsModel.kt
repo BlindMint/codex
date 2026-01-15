@@ -32,6 +32,7 @@ import us.blindmint.codex.domain.use_case.data_store.GetAllSettings
 import us.blindmint.codex.domain.use_case.data_store.SetDatastore
 import us.blindmint.codex.domain.use_case.permission.GrantPersistableUriPermission
 import us.blindmint.codex.domain.use_case.permission.ReleasePersistableUriPermission
+import us.blindmint.codex.domain.storage.CodexDirectoryManager
 import us.blindmint.codex.presentation.core.constants.DataStoreConstants
 import us.blindmint.codex.presentation.core.constants.provideDefaultColorPreset
 import us.blindmint.codex.presentation.core.constants.provideDefaultColorPresets
@@ -54,6 +55,7 @@ class SettingsModel @Inject constructor(
     private val getAllSettings: GetAllSettings,
     private val setDatastore: SetDatastore,
     val bulkImportBooksFromFolder: BulkImportBooksFromFolder,
+    private val codexDirectoryManager: CodexDirectoryManager,
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -101,13 +103,15 @@ class SettingsModel @Inject constructor(
                 }
             }
 
+            val displayPath = codexDirectoryManager.getDisplayPath()
+
             _state.update {
                 it.copy(
                     selectedColorPreset = colorPresets.selected(),
-                    colorPresets = colorPresets
+                    colorPresets = colorPresets,
+                    codexRootDisplayPath = displayPath
                 )
             }
-
 
             Log.i("SETTINGS", "SettingsModel is ready.")
             _isReady.update { true }
@@ -532,7 +536,7 @@ class SettingsModel @Inject constructor(
                         // Immediately update local state to deselect old preset and add new one
                         // This prevents the checkmark from briefly appearing on the old preset
                         val updatedPresets = currentPresets.map { it.copy(isSelected = false) } + newColorPreset
-                        
+
                         _state.update {
                             it.copy(
                                 selectedColorPreset = newColorPreset,
@@ -619,6 +623,18 @@ class SettingsModel @Inject constructor(
                         )
                     } catch (e: Exception) {
                         e.printStackTrace()
+                    }
+                }
+            }
+
+            is SettingsEvent.OnSetCodexRootFolder -> {
+                viewModelScope.launch {
+                    val success = codexDirectoryManager.setCodexRootUri(event.uri)
+                    if (success) {
+                        val displayPath = codexDirectoryManager.getDisplayPath()
+                        _state.update {
+                            it.copy(codexRootDisplayPath = displayPath)
+                        }
                     }
                 }
             }

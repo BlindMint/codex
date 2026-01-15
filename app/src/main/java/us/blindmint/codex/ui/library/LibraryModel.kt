@@ -349,6 +349,18 @@ class LibraryModel @Inject constructor(
                 }
             }
         }
+
+        is LibraryEvent.OnUpdateFilterState -> {
+            viewModelScope.launch {
+                _state.update {
+                    it.copy(
+                        filterState = event.filterState
+                    )
+                }
+                // Refresh the list to apply filters
+                onEvent(LibraryEvent.OnRefreshList(loading = false, hideSearch = false))
+            }
+        }
         }
     }
 

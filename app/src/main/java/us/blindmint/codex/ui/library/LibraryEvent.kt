@@ -65,4 +65,6 @@ sealed class LibraryEvent {
     data object OnShowSortMenu : LibraryEvent()
 
     data object OnDismissSortMenu : LibraryEvent()
+
+    data class OnUpdateFilterState(val filterState: FilterState) : LibraryEvent()
 }

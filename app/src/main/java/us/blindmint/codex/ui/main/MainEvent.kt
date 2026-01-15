@@ -40,6 +40,7 @@ sealed class MainEvent {
     data class OnChangeBrowseSortOrder(val value: String) : MainEvent()
     data class OnChangeBrowseSortOrderDescending(val value: Boolean) : MainEvent()
     data class OnChangeBrowseIncludedFilterItem(val value: String) : MainEvent()
+    data class OnChangeUseCalibreOpfMetadata(val value: Boolean) : MainEvent()
     data class OnChangeTextAlignment(val value: String) : MainEvent()
     data class OnChangeDoublePressExit(val value: Boolean) : MainEvent()
     data class OnChangeLetterSpacing(val value: Int) : MainEvent()

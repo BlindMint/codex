@@ -58,6 +58,7 @@ import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.components.settings.SegmentedButtonWithTitle
 import us.blindmint.codex.presentation.core.components.settings.SliderWithTitle
 import us.blindmint.codex.presentation.core.components.settings.SwitchWithTitle
+import us.blindmint.codex.ui.library.LibraryModel
 import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.theme.ExpandingTransition
@@ -109,7 +110,8 @@ private fun LibrarySortMenuContent(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf(
         stringResource(R.string.sort_settings),
-        stringResource(R.string.display_settings)
+        stringResource(R.string.display_settings),
+        stringResource(R.string.filter_settings)
     )
 
     Column(
@@ -161,6 +163,7 @@ private fun LibrarySortMenuContent(
             when (selectedTabIndex) {
                 0 -> LibrarySortTabContent()
                 1 -> LibraryDisplayTabContent()
+                2 -> LibraryFilterTabContent()
             }
         }
     }
@@ -375,6 +378,62 @@ private fun LibraryDisplayTabContent() {
         // Add spacer to match height of Sort tab
         item {
             Spacer(Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+private fun LibraryFilterTabContent() {
+    val libraryModel = hiltViewModel<LibraryModel>()
+    val libraryState = libraryModel.state.collectAsStateWithLifecycle()
+
+    LazyColumn {
+        // Tags section
+        item {
+            Text(
+                text = "Tags",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+            )
+        }
+
+        // Authors section
+        item {
+            Text(
+                text = "Authors",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+            )
+        }
+
+        // Series section
+        item {
+            Text(
+                text = "Series",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+            )
+        }
+
+        // Publication Year section
+        item {
+            Text(
+                text = "Publication Year",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+            )
+        }
+
+        item {
+            Text(
+                text = "Filter functionality will be implemented with metadata chips and year slider",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

@@ -9,10 +9,14 @@
 package us.blindmint.codex.presentation.settings.browse
 
 import androidx.compose.foundation.lazy.LazyListScope
+import us.blindmint.codex.presentation.settings.browse.components.StorageLocationPicker
 import us.blindmint.codex.presentation.settings.browse.opds.BrowseOpdsSubcategory
 import us.blindmint.codex.presentation.settings.browse.scan.BrowseScanSubcategory
 
 fun LazyListScope.BrowseSettingsCategory() {
+    item {
+        StorageLocationPicker()
+    }
     BrowseScanSubcategory()
     BrowseOpdsSubcategory(
         showDivider = false

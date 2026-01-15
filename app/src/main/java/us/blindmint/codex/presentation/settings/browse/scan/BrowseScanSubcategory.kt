@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
+import us.blindmint.codex.presentation.settings.browse.scan.components.BrowseScanOpfOption
 import us.blindmint.codex.presentation.settings.browse.scan.components.BrowseScanOption
 import us.blindmint.codex.presentation.settings.browse.scan.components.BrowseScanOptionNote
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
@@ -32,6 +33,10 @@ fun LazyListScope.BrowseScanSubcategory(
     ) {
         item {
             BrowseScanOption()
+        }
+
+        item {
+            BrowseScanOpfOption()
         }
 
         item {

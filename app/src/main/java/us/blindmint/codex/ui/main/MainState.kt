@@ -152,6 +152,7 @@ data class MainState(
     val browseSortOrderDescending: Boolean = provideDefaultValue { true },
     val browseIncludedFilterItems: List<String> = provideDefaultValue { emptyList() },
     val browsePinnedPaths: List<String> = provideDefaultValue { emptyList() },
+    val useCalibreOpfMetadata: Boolean = provideDefaultValue { true },
 
     // Library Settings
     val libraryLayout: LibraryLayout = provideDefaultValue { LibraryLayout.GRID },
@@ -408,6 +409,10 @@ data class MainState(
                     browsePinnedPaths = provideValue(
                         BROWSE_PINNED_PATHS, convert = { toList() }
                     ) { browsePinnedPaths },
+
+                    useCalibreOpfMetadata = provideValue(
+                        USE_CALIBRE_OPF_METADATA
+                    ) { useCalibreOpfMetadata },
 
                     fontThickness = provideValue(
                         FONT_THICKNESS, convert = { toFontThickness() }
