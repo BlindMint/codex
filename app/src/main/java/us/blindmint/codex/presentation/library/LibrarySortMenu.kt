@@ -23,9 +23,16 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -95,130 +102,136 @@ private fun LibrarySortMenuContent(
 
         Spacer(Modifier.height(16.dp))
 
-        // Content - single scrollable area with grouped sections
+        // Tabs
+        var selectedTabIndex by remember { mutableIntStateOf(0) }
+        val tabs = listOf(
+            stringResource(R.string.sort_settings),
+            stringResource(R.string.display_settings),
+            stringResource(R.string.filter_settings)
+        )
+
+        TabRow(
+            selectedTabIndex = selectedTabIndex,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            tabs.forEachIndexed { index, tab ->
+                Tab(
+                    selected = selectedTabIndex == index,
+                    onClick = { selectedTabIndex = index },
+                    text = { Text(tab) }
+                )
+            }
+        }
+
+        // Content based on selected tab
         LazyColumn(
             Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.7f),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Sort section
-            item {
-                Text(
-                    text = stringResource(R.string.sort_settings),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 0.dp)
-                )
+            when (selectedTabIndex) {
+                0 -> LibrarySortTabContent(state, mainModel)
+                1 -> LibraryDisplayTabContent(state, mainModel)
+                2 -> LibraryFilterTabContent()
             }
-
-            // Sort options grouped together
-            item {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    LibrarySortOrder.entries.forEach { sortOrder ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    if (state.value.librarySortOrder == sortOrder) {
-                                        mainModel.onEvent(
-                                            MainEvent.OnChangeLibrarySortOrderDescending(
-                                                !state.value.librarySortOrderDescending
-                                            )
-                                        )
-                                    } else {
-                                        mainModel.onEvent(MainEvent.OnChangeLibrarySortOrderDescending(true))
-                                        mainModel.onEvent(MainEvent.OnChangeLibrarySortOrder(sortOrder.name))
-                                    }
-                                }
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = if (state.value.librarySortOrder == sortOrder) {
-                                    if (state.value.librarySortOrderDescending) Icons.Default.ArrowDownward
-                                    else Icons.Default.ArrowUpward
-                                } else {
-                                    Icons.Default.ArrowUpward
-                                },
-                                contentDescription = stringResource(id = R.string.sort_order_content_desc),
-                                modifier = Modifier.size(24.dp),
-                                tint = if (state.value.librarySortOrder == sortOrder) MaterialTheme.colorScheme.secondary
-                                else Color.Transparent
-                            )
-
-                            Spacer(modifier = Modifier.width(24.dp))
-
-                            StyledText(
-                                text = stringResource(
-                                    when (sortOrder) {
-                                        LibrarySortOrder.NAME -> R.string.library_sort_order_name
-                                        LibrarySortOrder.LAST_READ -> R.string.library_sort_order_last_read
-                                        LibrarySortOrder.PROGRESS -> R.string.library_sort_order_progress
-                                        LibrarySortOrder.AUTHOR -> R.string.library_sort_order_author
-                                    }
-                                ),
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Display section
-            item {
-                Text(
-                    text = stringResource(R.string.display_settings),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 0.dp)
-                )
-            }
-
-            // Display options
-            item {
-                LibraryLayoutOption()
-            }
-
-            // Size slider - content changes based on layout
-            item {
-                if (state.value.libraryLayout == LibraryLayout.GRID) {
-                    LibraryGridSizeOption()
-                } else {
-                    LibraryListSizeOption()
-                }
-            }
-
-            // Title Position (only visible in Grid mode)
-            if (state.value.libraryLayout == LibraryLayout.GRID) {
-                item {
-                    LibraryTitlePositionOption()
-                }
-            }
-
-            item {
-                LibraryShowReadButtonOption()
-            }
-
-            item {
-                LibraryShowProgressOption()
-            }
-
-            // Filter section
-            item {
-                Text(
-                    text = stringResource(R.string.filter_settings),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 0.dp)
-                )
-            }
-
-            LibraryFilterTabContent()
         }
+    }
+}
+
+private fun LazyListScope.LibrarySortTabContent(
+    state: androidx.compose.runtime.State<us.blindmint.codex.ui.main.MainState>,
+    mainModel: MainModel
+) {
+    // Sort options grouped together
+    item {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            LibrarySortOrder.entries.forEach { sortOrder ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            if (state.value.librarySortOrder == sortOrder) {
+                                mainModel.onEvent(
+                                    MainEvent.OnChangeLibrarySortOrderDescending(
+                                        !state.value.librarySortOrderDescending
+                                    )
+                                )
+                            } else {
+                                mainModel.onEvent(MainEvent.OnChangeLibrarySortOrderDescending(true))
+                                mainModel.onEvent(MainEvent.OnChangeLibrarySortOrder(sortOrder.name))
+                            }
+                        }
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = if (state.value.librarySortOrder == sortOrder) {
+                            if (state.value.librarySortOrderDescending) Icons.Default.ArrowDownward
+                            else Icons.Default.ArrowUpward
+                        } else {
+                            Icons.Default.ArrowUpward
+                        },
+                        contentDescription = stringResource(id = R.string.sort_order_content_desc),
+                        modifier = Modifier.size(24.dp),
+                        tint = if (state.value.librarySortOrder == sortOrder) MaterialTheme.colorScheme.secondary
+                        else Color.Transparent
+                    )
+
+                    Spacer(modifier = Modifier.width(24.dp))
+
+                    StyledText(
+                        text = stringResource(
+                            when (sortOrder) {
+                                LibrarySortOrder.NAME -> R.string.library_sort_order_name
+                                LibrarySortOrder.LAST_READ -> R.string.library_sort_order_last_read
+                                LibrarySortOrder.PROGRESS -> R.string.library_sort_order_progress
+                                LibrarySortOrder.AUTHOR -> R.string.library_sort_order_author
+                            }
+                        ),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun LazyListScope.LibraryDisplayTabContent(
+    state: androidx.compose.runtime.State<us.blindmint.codex.ui.main.MainState>,
+    mainModel: MainModel
+) {
+    // Display options
+    item {
+        LibraryLayoutOption()
+    }
+
+    // Size slider - content changes based on layout
+    item {
+        if (state.value.libraryLayout == LibraryLayout.GRID) {
+            LibraryGridSizeOption()
+        } else {
+            LibraryListSizeOption()
+        }
+    }
+
+    // Title Position (only visible in Grid mode)
+    item {
+        if (state.value.libraryLayout == LibraryLayout.GRID) {
+            LibraryTitlePositionOption()
+        }
+    }
+
+    item {
+        LibraryShowReadButtonOption()
+    }
+
+    item {
+        LibraryShowProgressOption()
     }
 }
 

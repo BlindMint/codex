@@ -65,17 +65,29 @@ fun BrowseScanOption() {
 
     var importProgress by remember { mutableStateOf<BulkImportProgress?>(null) }
     var importingFolderUri by remember { mutableStateOf<android.net.Uri?>(null) }
+    var codexRootUri by remember { mutableStateOf<android.net.Uri?>(null) }
+
+    // Get the Codex root URI asynchronously
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        codexRootUri = runCatching {
+            settingsModel.codexDirectoryManager.getCodexRootUri()
+        }.getOrNull()
+    }
 
     fun getPersistedUriPermissions(): List<UriPermission> {
         return context.contentResolver?.persistedUriPermissions.let { permissions ->
             if (permissions.isNullOrEmpty()) return@let emptyList()
 
-            // Filter out the Codex root directory from the manually added folders list
-            val codexRootUri = settingsModel.state.value.codexRootUri
-
+            val originalCount = permissions.size
             val filteredPermissions = permissions.filter { permission ->
-                codexRootUri == null || !permission.uri.toString().equals(codexRootUri.toString(), ignoreCase = true)
+                val shouldInclude = codexRootUri == null || !permission.uri.toString().equals(codexRootUri.toString(), ignoreCase = true)
+                if (!shouldInclude) {
+                    android.util.Log.d("BrowseScanOption", "Filtering out Codex root directory: ${permission.uri}")
+                }
+                shouldInclude
             }
+
+            android.util.Log.d("BrowseScanOption", "Filtered permissions: $originalCount -> ${filteredPermissions.size} (Codex root: $codexRootUri)")
 
             filteredPermissions.sortedBy { it.uri.path?.lowercase() }
         }
