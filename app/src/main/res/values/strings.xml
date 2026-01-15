@@ -94,13 +94,13 @@
         Read your favorite books and sort them between categories
     </string>
     <string name="library_reading_empty">
-        Start your reading journey by adding books from Browse
+        No books found. Add books from Browse
     </string>
     <string name="library_planning_empty">
-        Save books here that you\'re planning to read later
+        Your book collection. Add books from Browse
     </string>
     <string name="library_already_read_empty">
-        Track your reading accomplishments and completed books
+        Your comic collection. Add comics from Browse
     </string>
     <string name="library_favorites_empty">
         Mark your most beloved books as favorites
@@ -151,9 +151,9 @@
     <string name="author">Author</string>
 
     <!-- Tabs -->
-    <string name="reading_tab">Reading</string>
-    <string name="already_read_tab">Already Read</string>
-    <string name="planning_tab">Planning</string>
+    <string name="reading_tab">All</string>
+    <string name="already_read_tab">Comics</string>
+    <string name="planning_tab">Books</string>
     <string name="favorites_tab">Favorites</string>
     <string name="general_tab">General</string>
     <string name="display_tab">Display</string>
