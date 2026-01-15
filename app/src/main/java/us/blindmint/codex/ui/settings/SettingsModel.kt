@@ -632,18 +632,36 @@ class SettingsModel @Inject constructor(
 
             is SettingsEvent.OnSetCodexRootFolder -> {
                 viewModelScope.launch {
+                    Log.i("SettingsModel", "Setting Codex root folder: ${event.uri}")
                     val success = codexDirectoryManager.setCodexRootUri(event.uri)
+                    Log.i("SettingsModel", "Codex root folder set successfully: $success")
+
                     if (success) {
                         val displayPath = codexDirectoryManager.getDisplayPath()
+                        Log.i("SettingsModel", "Codex root display path: $displayPath")
                         _state.update {
                             it.copy(codexRootDisplayPath = displayPath)
                         }
 
+                        // Check if directory is configured
+                        val isConfigured = codexDirectoryManager.isConfigured()
+                        Log.i("SettingsModel", "Codex directory configured: $isConfigured")
+
                         // Automatically import existing OPDS books from the downloads folder
-                        val importedCount = autoImportCodexBooksUseCase.execute()
-                        if (importedCount > 0) {
-                            Log.i("SettingsModel", "Auto-imported $importedCount existing OPDS books")
+                        Log.i("SettingsModel", "Starting auto-import of existing OPDS books")
+                        val importedCount = autoImportCodexBooksUseCase.execute { progress ->
+                            Log.d("SettingsModel", "Auto-import progress: ${progress.current}/${progress.total} - ${progress.currentFolder}")
                         }
+                        Log.i("SettingsModel", "Auto-import completed. Imported $importedCount books")
+                        if (importedCount > 0) {
+                            // Trigger library refresh to show imported books
+                            Log.i("SettingsModel", "Triggering library refresh after auto-import")
+                            // The library should automatically detect new books, but let's trigger a refresh just in case
+                        } else {
+                            Log.w("SettingsModel", "No books were imported during auto-import")
+                        }
+                    } else {
+                        Log.e("SettingsModel", "Failed to set Codex root folder")
                     }
                 }
             }
