@@ -367,14 +367,15 @@ class LibraryModel @Inject constructor(
     private suspend fun getBooksFromDatabase(
         query: String = if (_state.value.showSearch) _state.value.searchQuery else ""
     ) {
-        val books = getBooks
-            .execute(query)
+        val allBooks = getBooks.execute(query)
+        val filteredBooks = applyFilters(allBooks, _state.value.filterState)
+        val sortedBooks = filteredBooks
             .sortedWith(compareByDescending<Book> { it.lastOpened }.thenBy { it.title })
             .map { book -> SelectableBook(book, false) }
 
         _state.update {
             it.copy(
-                books = books,
+                books = sortedBooks,
                 hasSelectedItems = false,
                 isLoading = false
             )
@@ -395,6 +396,51 @@ class LibraryModel @Inject constructor(
             books.sortedWith(comparator.reversed())
         } else {
             books.sortedWith(comparator)
+        }
+    }
+
+    fun loadMetadata(
+        onTagsLoaded: (List<String>) -> Unit,
+        onAuthorsLoaded: (List<String>) -> Unit,
+        onSeriesLoaded: (List<String>) -> Unit,
+        onYearRangeLoaded: (Int, Int) -> Unit
+    ) {
+        // Simplified for now - will load actual metadata later
+        onTagsLoaded(listOf("Fiction", "Science Fiction", "Fantasy"))
+        onAuthorsLoaded(listOf("Author 1", "Author 2", "Author 3"))
+        onSeriesLoaded(listOf("Series 1", "Series 2"))
+        onYearRangeLoaded(1900, 2024)
+    }
+
+    private fun applyFilters(books: List<Book>, filterState: FilterState): List<Book> {
+        return books.filter { book ->
+            // Filter by selected tags (if any selected, book must have at least one)
+            val tagsMatch = filterState.selectedTags.isEmpty() ||
+                filterState.selectedTags.any { selectedTag ->
+                    book.tags.any { bookTag -> bookTag.equals(selectedTag, ignoreCase = true) }
+                }
+
+            // Filter by selected authors
+            val authorsMatch = filterState.selectedAuthors.isEmpty() ||
+                filterState.selectedAuthors.any { selectedAuthor ->
+                    book.author.getAsString()?.equals(selectedAuthor, ignoreCase = true) == true
+                }
+
+            // Filter by selected series
+            val seriesMatch = filterState.selectedSeries.isEmpty() ||
+                filterState.selectedSeries.any { selectedSeries ->
+                    book.seriesName?.equals(selectedSeries, ignoreCase = true) == true
+                }
+
+            // Filter by publication year range
+            val yearMatch = if (book.publicationDate != null) {
+                val bookYear = java.time.Instant.ofEpochMilli(book.publicationDate).atZone(java.time.ZoneId.systemDefault()).year
+                bookYear in filterState.publicationYearRange
+            } else {
+                true // Include books without publication date
+            }
+
+            tagsMatch && authorsMatch && seriesMatch && yearMatch
         }
     }
 
