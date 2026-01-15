@@ -11,60 +11,54 @@ package us.blindmint.codex.presentation.library
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.ui.res.stringResource
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import us.blindmint.codex.presentation.core.components.modal_drawer.ModalDrawer
-import us.blindmint.codex.presentation.core.components.modal_drawer.DrawerSide
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.clickable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.library.display.LibraryLayout
 import us.blindmint.codex.domain.library.sort.LibrarySortOrder
 import us.blindmint.codex.presentation.core.components.common.StyledText
-import us.blindmint.codex.ui.main.MainEvent
-import us.blindmint.codex.ui.main.MainModel
+import us.blindmint.codex.presentation.core.components.modal_drawer.ModalDrawer
+import us.blindmint.codex.presentation.core.components.modal_drawer.DrawerSide
 import us.blindmint.codex.ui.library.FilterState
 import us.blindmint.codex.ui.library.LibraryEvent
 import us.blindmint.codex.ui.library.LibraryModel
+import us.blindmint.codex.ui.main.MainEvent
+import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryGridSizeOption
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryLayoutOption
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryListSizeOption
@@ -87,6 +81,67 @@ fun LibrarySortMenu(
         stringResource(R.string.display_settings),
         stringResource(R.string.filter_settings)
     )
+
+    // Subpanel state and data for filters
+    val libraryModel = hiltViewModel<LibraryModel>()
+    val libraryState by libraryModel.state.collectAsStateWithLifecycle()
+
+    // Load metadata from repository
+    var availableTags by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var availableAuthors by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var availableSeries by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var availableLanguages by remember { mutableStateOf<Set<String>>(emptySet()) }
+
+    // Load metadata on composition
+    LaunchedEffect(Unit) {
+        libraryModel.loadMetadata(
+            onTagsLoaded = { tags -> availableTags = tags.toSet() },
+            onAuthorsLoaded = { authors -> availableAuthors = authors.toSet() },
+            onSeriesLoaded = { series -> availableSeries = series.toSet() },
+            onLanguagesLoaded = { languages -> availableLanguages = languages.toSet() },
+            onYearRangeLoaded = { _, _ -> /* Year range disabled */ }
+        )
+    }
+
+    val sortedTags = availableTags.sorted()
+    val sortedAuthors = availableAuthors.sorted()
+    val sortedSeries = availableSeries.sorted()
+    val sortedLanguages = availableLanguages.sorted()
+
+    // Local state for UI
+    var selectedStatuses: Set<String> by remember(libraryState.filterState.selectedStatuses) {
+        mutableStateOf(libraryState.filterState.selectedStatuses)
+    }
+    var selectedTags: Set<String> by remember(libraryState.filterState.selectedTags) {
+        mutableStateOf(libraryState.filterState.selectedTags)
+    }
+    var selectedAuthors: Set<String> by remember(libraryState.filterState.selectedAuthors) {
+        mutableStateOf(libraryState.filterState.selectedAuthors)
+    }
+    var selectedSeries: Set<String> by remember(libraryState.filterState.selectedSeries) {
+        mutableStateOf(libraryState.filterState.selectedSeries)
+    }
+    var selectedLanguages: Set<String> by remember(libraryState.filterState.selectedLanguages) {
+        mutableStateOf(libraryState.filterState.selectedLanguages)
+    }
+
+    // Helper function to update filter state immediately when selections change
+    fun updateFilterState() {
+        val newFilterState = FilterState(
+            selectedStatuses = selectedStatuses,
+            selectedTags = selectedTags,
+            selectedAuthors = selectedAuthors,
+            selectedSeries = selectedSeries,
+            publicationYearRange = 1900..2026, // Default range since year slider is disabled
+            selectedLanguages = selectedLanguages
+        )
+        libraryModel.onEvent(LibraryEvent.OnUpdateFilterState(newFilterState))
+    }
+
+    // Subpanel state
+    var showTagsSubpanel by remember { mutableStateOf(false) }
+    var showAuthorsSubpanel by remember { mutableStateOf(false) }
+    var showSeriesSubpanel by remember { mutableStateOf(false) }
 
     ModalDrawer(
         show = true,
@@ -141,9 +196,84 @@ fun LibrarySortMenu(
             when (selectedTabIndex) {
                 0 -> LibrarySortTabContent(state, mainModel)
                 1 -> LibraryDisplayTabContent(state, mainModel)
-                2 -> LibraryFilterTabContent()
+                2 -> LibraryFilterTabContent(
+                    selectedStatuses = selectedStatuses,
+                    selectedTags = selectedTags,
+                    selectedAuthors = selectedAuthors,
+                    selectedSeries = selectedSeries,
+                    selectedLanguages = selectedLanguages,
+                    sortedTags = sortedTags,
+                    sortedAuthors = sortedAuthors,
+                    sortedSeries = sortedSeries,
+                    sortedLanguages = sortedLanguages,
+                    onStatusToggle = { status, selected ->
+                        selectedStatuses = if (selected) selectedStatuses + status else selectedStatuses - status
+                        updateFilterState()
+                    },
+                    onShowTagsSubpanel = { showTagsSubpanel = true },
+                    onShowAuthorsSubpanel = { showAuthorsSubpanel = true },
+                    onShowSeriesSubpanel = { showSeriesSubpanel = true },
+                    onLanguageToggle = { language, selected ->
+                        selectedLanguages = if (selected) selectedLanguages + language else selectedLanguages - language
+                        updateFilterState()
+                    }
+                )
             }
         }
+    }
+
+    // Tags subpanel
+    if (showTagsSubpanel) {
+        LibraryFilterSubpanel(
+            title = "Tags",
+            show = showTagsSubpanel,
+            items = sortedTags.toSet(),
+            selectedItems = selectedTags,
+            onItemToggle = { item, selected ->
+                selectedTags = if (selected) selectedTags + item else selectedTags - item
+                updateFilterState()
+            },
+            onSelectAll = { selectedTags = sortedTags.toSet() },
+            onDeselectAll = { selectedTags = emptySet() },
+            onReset = { selectedTags = libraryState.filterState.selectedTags },
+            onDismiss = { showTagsSubpanel = false }
+        )
+    }
+
+    // Authors subpanel
+    if (showAuthorsSubpanel) {
+        LibraryFilterSubpanel(
+            title = "Authors",
+            show = showAuthorsSubpanel,
+            items = sortedAuthors.toSet(),
+            selectedItems = selectedAuthors,
+            onItemToggle = { item, selected ->
+                selectedAuthors = if (selected) selectedAuthors + item else selectedAuthors - item
+                updateFilterState()
+            },
+            onSelectAll = { selectedAuthors = sortedAuthors.toSet() },
+            onDeselectAll = { selectedAuthors = emptySet() },
+            onReset = { selectedAuthors = libraryState.filterState.selectedAuthors },
+            onDismiss = { showAuthorsSubpanel = false }
+        )
+    }
+
+    // Series subpanel
+    if (showSeriesSubpanel) {
+        LibraryFilterSubpanel(
+            title = "Series",
+            show = showSeriesSubpanel,
+            items = sortedSeries.toSet(),
+            selectedItems = selectedSeries,
+            onItemToggle = { item, selected ->
+                selectedSeries = if (selected) selectedSeries + item else selectedSeries - item
+                updateFilterState()
+            },
+            onSelectAll = { selectedSeries = sortedSeries.toSet() },
+            onDeselectAll = { selectedSeries = emptySet() },
+            onReset = { selectedSeries = libraryState.filterState.selectedSeries },
+            onDismiss = { showSeriesSubpanel = false }
+        )
     }
 }
 
@@ -239,221 +369,101 @@ private fun LibraryDisplayTabContent(
 }
 
 @Composable
-private fun LibraryFilterTabContent() {
-    val libraryModel = hiltViewModel<LibraryModel>()
-    val libraryState by libraryModel.state.collectAsStateWithLifecycle()
-
-    // Load metadata from repository
-    var availableTags by remember { mutableStateOf<Set<String>>(emptySet()) }
-    var availableAuthors by remember { mutableStateOf<Set<String>>(emptySet()) }
-    var availableSeries by remember { mutableStateOf<Set<String>>(emptySet()) }
-    var availableLanguages by remember { mutableStateOf<Set<String>>(emptySet()) }
-
-    // Local state for UI
-    var selectedStatuses: Set<String> by remember(libraryState.filterState.selectedStatuses) {
-        mutableStateOf(libraryState.filterState.selectedStatuses)
-    }
-    var selectedTags: Set<String> by remember(libraryState.filterState.selectedTags) {
-        mutableStateOf(libraryState.filterState.selectedTags)
-    }
-    var selectedAuthors: Set<String> by remember(libraryState.filterState.selectedAuthors) {
-        mutableStateOf(libraryState.filterState.selectedAuthors)
-    }
-    var selectedSeries: Set<String> by remember(libraryState.filterState.selectedSeries) {
-        mutableStateOf(libraryState.filterState.selectedSeries)
-    }
-    var selectedLanguages: Set<String> by remember(libraryState.filterState.selectedLanguages) {
-        mutableStateOf(libraryState.filterState.selectedLanguages)
-    }
-
-    // Helper function to update filter state immediately when selections change
-    fun updateFilterState() {
-        val newFilterState = FilterState(
-            selectedStatuses = selectedStatuses,
-            selectedTags = selectedTags,
-            selectedAuthors = selectedAuthors,
-            selectedSeries = selectedSeries,
-            publicationYearRange = 1900..2026, // Default range since year slider is disabled
-            selectedLanguages = selectedLanguages
-        )
-        libraryModel.onEvent(LibraryEvent.OnUpdateFilterState(newFilterState))
-    }
-
-    // Load metadata on composition
-    LaunchedEffect(Unit) {
-        libraryModel.loadMetadata(
-            onTagsLoaded = { tags -> availableTags = tags.toSet() },
-            onAuthorsLoaded = { authors -> availableAuthors = authors.toSet() },
-            onSeriesLoaded = { series -> availableSeries = series.toSet() },
-            onLanguagesLoaded = { languages -> availableLanguages = languages.toSet() },
-            onYearRangeLoaded = { _, _ -> /* Year range disabled */ }
-        )
-    }
-
-    val sortedTags = availableTags.sorted()
-    val sortedAuthors = availableAuthors.sorted()
-    val sortedSeries = availableSeries.sorted()
-    val sortedLanguages = availableLanguages.sorted()
-
-    // Subpanel state
-    var showTagsSubpanel by remember { mutableStateOf(false) }
-    var showAuthorsSubpanel by remember { mutableStateOf(false) }
-    var showSeriesSubpanel by remember { mutableStateOf(false) }
-
-    LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
+private fun LibraryFilterTabContent(
+    selectedStatuses: Set<String>,
+    selectedTags: Set<String>,
+    selectedAuthors: Set<String>,
+    selectedSeries: Set<String>,
+    selectedLanguages: Set<String>,
+    sortedTags: List<String>,
+    sortedAuthors: List<String>,
+    sortedSeries: List<String>,
+    sortedLanguages: List<String>,
+    onStatusToggle: (String, Boolean) -> Unit,
+    onShowTagsSubpanel: () -> Unit,
+    onShowAuthorsSubpanel: () -> Unit,
+    onShowSeriesSubpanel: () -> Unit,
+    onLanguageToggle: (String, Boolean) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text("Status Presets", style = MaterialTheme.typography.titleSmall)
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    val statuses = listOf("Reading", "Planning", "Already Read")
-                    statuses.forEach { status ->
-                        FilterChip(
-                            selected = status in selectedStatuses,
-                            onClick = {
-                                selectedStatuses = if (status in selectedStatuses) {
-                                    selectedStatuses - status
-                                } else {
-                                    selectedStatuses + status
-                                }
-                                updateFilterState()
-                            },
-                            label = { Text(status) }
-                        )
-                    }
-                }
-
-                Text("Tags", style = MaterialTheme.typography.titleSmall)
-                if (sortedTags.isNotEmpty()) {
-                    OutlinedButton(
-                        onClick = { showTagsSubpanel = true },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("${selectedTags.size} selected")
-                        Spacer(modifier = Modifier.weight(1f))
-                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
-                    }
-                } else {
-                    Text("No tags available", style = MaterialTheme.typography.bodySmall)
-                }
-
-                Text("Authors", style = MaterialTheme.typography.titleSmall)
-                if (sortedAuthors.isNotEmpty()) {
-                    OutlinedButton(
-                        onClick = { showAuthorsSubpanel = true },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("${selectedAuthors.size} selected")
-                        Spacer(modifier = Modifier.weight(1f))
-                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
-                    }
-                } else {
-                    Text("No authors available", style = MaterialTheme.typography.bodySmall)
-                }
-
-                Text("Series", style = MaterialTheme.typography.titleSmall)
-                if (sortedSeries.isNotEmpty()) {
-                    OutlinedButton(
-                        onClick = { showSeriesSubpanel = true },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("${selectedSeries.size} selected")
-                        Spacer(modifier = Modifier.weight(1f))
-                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
-                    }
-                } else {
-                    Text("No series available", style = MaterialTheme.typography.bodySmall)
-                }
-
-                Text("Language", style = MaterialTheme.typography.titleSmall)
-                if (sortedLanguages.isNotEmpty()) {
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        sortedLanguages.forEach { language ->
-                            FilterChip(
-                                selected = selectedLanguages.contains(language),
-                                onClick = {
-                                    selectedLanguages = if (selectedLanguages.contains(language)) {
-                                        selectedLanguages - language
-                                    } else {
-                                        selectedLanguages + language
-                                    }
-                                    updateFilterState()
-                                },
-                                label = { Text(language) }
-                            )
-                        }
-                    }
-                } else {
-                    Text("No languages available", style = MaterialTheme.typography.bodySmall)
-                }
+        Text("Status Presets", style = MaterialTheme.typography.titleSmall)
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            val statuses = listOf("Reading", "Planning", "Already Read")
+            statuses.forEach { status ->
+                FilterChip(
+                    selected = status in selectedStatuses,
+                    onClick = { onStatusToggle(status, status !in selectedStatuses) },
+                    label = { Text(status) }
+                )
             }
         }
-    }
 
-    // Tags subpanel
-    if (showTagsSubpanel) {
-        LibraryFilterSubpanel(
-            title = "Tags",
-            show = showTagsSubpanel,
-            items = sortedTags.toSet(),
-            selectedItems = selectedTags,
-            onItemToggle = { item, selected ->
-                selectedTags = if (selected) selectedTags + item else selectedTags - item
-                updateFilterState()
-            },
-            onSelectAll = { selectedTags = sortedTags.toSet() },
-            onDeselectAll = { selectedTags = emptySet() },
-            onReset = { selectedTags = libraryState.filterState.selectedTags },
-            onDismiss = { showTagsSubpanel = false }
-        )
-    }
+        Text("Tags", style = MaterialTheme.typography.titleSmall)
+        if (sortedTags.isNotEmpty()) {
+            OutlinedButton(
+                onClick = onShowTagsSubpanel,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("${selectedTags.size} selected")
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+            }
+        } else {
+            Text("No tags available", style = MaterialTheme.typography.bodySmall)
+        }
 
-    // Authors subpanel
-    if (showAuthorsSubpanel) {
-        LibraryFilterSubpanel(
-            title = "Authors",
-            show = showAuthorsSubpanel,
-            items = sortedAuthors.toSet(),
-            selectedItems = selectedAuthors,
-            onItemToggle = { item, selected ->
-                selectedAuthors = if (selected) selectedAuthors + item else selectedAuthors - item
-                updateFilterState()
-            },
-            onSelectAll = { selectedAuthors = sortedAuthors.toSet() },
-            onDeselectAll = { selectedAuthors = emptySet() },
-            onReset = { selectedAuthors = libraryState.filterState.selectedAuthors },
-            onDismiss = { showAuthorsSubpanel = false }
-        )
-    }
+        Text("Authors", style = MaterialTheme.typography.titleSmall)
+        if (sortedAuthors.isNotEmpty()) {
+            OutlinedButton(
+                onClick = onShowAuthorsSubpanel,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("${selectedAuthors.size} selected")
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+            }
+        } else {
+            Text("No authors available", style = MaterialTheme.typography.bodySmall)
+        }
 
-    // Series subpanel
-    if (showSeriesSubpanel) {
-        LibraryFilterSubpanel(
-            title = "Series",
-            show = showSeriesSubpanel,
-            items = sortedSeries.toSet(),
-            selectedItems = selectedSeries,
-            onItemToggle = { item, selected ->
-                selectedSeries = if (selected) selectedSeries + item else selectedSeries - item
-                updateFilterState()
-            },
-            onSelectAll = { selectedSeries = sortedSeries.toSet() },
-            onDeselectAll = { selectedSeries = emptySet() },
-            onReset = { selectedSeries = libraryState.filterState.selectedSeries },
-            onDismiss = { showSeriesSubpanel = false }
-        )
+        Text("Series", style = MaterialTheme.typography.titleSmall)
+        if (sortedSeries.isNotEmpty()) {
+            OutlinedButton(
+                onClick = onShowSeriesSubpanel,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("${selectedSeries.size} selected")
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+            }
+        } else {
+            Text("No series available", style = MaterialTheme.typography.bodySmall)
+        }
+
+        Text("Language", style = MaterialTheme.typography.titleSmall)
+        if (sortedLanguages.isNotEmpty()) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                sortedLanguages.forEach { language ->
+                    FilterChip(
+                        selected = selectedLanguages.contains(language),
+                        onClick = { onLanguageToggle(language, !selectedLanguages.contains(language)) },
+                        label = { Text(language) }
+                    )
+                }
+            }
+        } else {
+            Text("No languages available", style = MaterialTheme.typography.bodySmall)
+        }
     }
 }
