@@ -9,16 +9,12 @@
 package us.blindmint.codex.presentation.settings.browse
 
 import androidx.compose.foundation.lazy.LazyListScope
-import us.blindmint.codex.presentation.settings.browse.display.BrowseDisplaySubcategory
-import us.blindmint.codex.presentation.settings.browse.filter.BrowseFilterSubcategory
+import us.blindmint.codex.presentation.settings.browse.opds.BrowseOpdsSubcategory
 import us.blindmint.codex.presentation.settings.browse.scan.BrowseScanSubcategory
-import us.blindmint.codex.presentation.settings.browse.sort.BrowseSortSubcategory
 
 fun LazyListScope.BrowseSettingsCategory() {
     BrowseScanSubcategory()
-    BrowseDisplaySubcategory()
-    BrowseFilterSubcategory()
-    BrowseSortSubcategory(
+    BrowseOpdsSubcategory(
         showDivider = false
     )
 }
