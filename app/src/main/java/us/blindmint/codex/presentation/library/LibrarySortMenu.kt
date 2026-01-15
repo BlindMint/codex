@@ -8,6 +8,7 @@
 
 package us.blindmint.codex.presentation.library
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +27,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -112,7 +114,21 @@ private fun LibrarySortMenuContent(
 
         TabRow(
             selectedTabIndex = selectedTabIndex,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            containerColor = Color.Transparent,
+            indicator = { tabPositions ->
+                if (selectedTabIndex < tabPositions.size) {
+                    val width by androidx.compose.animation.core.animateDpAsState(
+                        targetValue = tabPositions[selectedTabIndex].contentWidth,
+                        label = ""
+                    )
+
+                    TabRowDefaults.PrimaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                        width = width
+                    )
+                }
+            }
         ) {
             tabs.forEachIndexed { index, tab ->
                 Tab(

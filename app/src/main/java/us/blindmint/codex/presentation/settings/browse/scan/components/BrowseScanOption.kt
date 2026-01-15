@@ -66,12 +66,14 @@ fun BrowseScanOption() {
     var importProgress by remember { mutableStateOf<BulkImportProgress?>(null) }
     var importingFolderUri by remember { mutableStateOf<android.net.Uri?>(null) }
     var codexRootUri by remember { mutableStateOf<android.net.Uri?>(null) }
+    var isInitialized by remember { mutableStateOf(false) }
 
-    // Get the Codex root URI asynchronously
+    // Get the Codex root URI asynchronously and initialize the list
     androidx.compose.runtime.LaunchedEffect(Unit) {
         codexRootUri = runCatching {
             settingsModel.codexDirectoryManager.getCodexRootUri()
         }.getOrNull()
+        isInitialized = true
     }
 
     fun getPersistedUriPermissions(): List<UriPermission> {
@@ -94,9 +96,14 @@ fun BrowseScanOption() {
     }
 
     val persistedUriPermissions = remember {
-        mutableStateListOf<UriPermission>().apply {
-            clear()
-            addAll(getPersistedUriPermissions())
+        mutableStateListOf<UriPermission>()
+    }
+
+    // Initialize the list only after codexRootUri is loaded
+    androidx.compose.runtime.LaunchedEffect(isInitialized) {
+        if (isInitialized) {
+            persistedUriPermissions.clear()
+            persistedUriPermissions.addAll(getPersistedUriPermissions())
         }
     }
 
@@ -137,25 +144,27 @@ fun BrowseScanOption() {
             .fillMaxWidth()
             .animateContentSize()
     ) {
-        persistedUriPermissions.forEachIndexed { index, permission ->
-            BrowseScanFolderItem(
-                index = index,
-                permission = permission,
-                context = context,
-                releasePersistableUriPermission = {
-                    settingsModel.onEvent(
-                        SettingsEvent.OnReleasePersistableUriPermission(
-                            uri = permission.uri
+        if (isInitialized) {
+            persistedUriPermissions.forEachIndexed { index, permission ->
+                BrowseScanFolderItem(
+                    index = index,
+                    permission = permission,
+                    context = context,
+                    releasePersistableUriPermission = {
+                        settingsModel.onEvent(
+                            SettingsEvent.OnReleasePersistableUriPermission(
+                                uri = permission.uri
+                            )
                         )
-                    )
 
-                    persistedUriPermissions.clear()
-                    persistedUriPermissions.addAll(getPersistedUriPermissions())
-                    BrowseScreen.refreshListChannel.trySend(Unit)
-                },
-                importProgress = importProgress,
-                isImportingThisFolder = importingFolderUri == permission.uri
-            )
+                        persistedUriPermissions.clear()
+                        persistedUriPermissions.addAll(getPersistedUriPermissions())
+                        BrowseScreen.refreshListChannel.trySend(Unit)
+                    },
+                    importProgress = importProgress,
+                    isImportingThisFolder = importingFolderUri == permission.uri
+                )
+            }
         }
     }
 
