@@ -22,6 +22,7 @@ import kotlinx.coroutines.yield
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.reader.ColorPreset
 // import us.blindmint.codex.domain.use_case.book.AutoImportOpdsBooksUseCase
+import us.blindmint.codex.domain.use_case.book.AutoImportCodexBooksUseCase
 import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
 import us.blindmint.codex.domain.use_case.book.BulkImportProgress
 import us.blindmint.codex.domain.use_case.color_preset.DeleteColorPreset
@@ -56,6 +57,7 @@ class SettingsModel @Inject constructor(
     private val getAllSettings: GetAllSettings,
     private val setDatastore: SetDatastore,
     val bulkImportBooksFromFolder: BulkImportBooksFromFolder,
+    private val autoImportCodexBooksUseCase: AutoImportCodexBooksUseCase,
     private val codexDirectoryManager: CodexDirectoryManager,
 ) : ViewModel() {
 
@@ -632,16 +634,16 @@ class SettingsModel @Inject constructor(
                 viewModelScope.launch {
                     val success = codexDirectoryManager.setCodexRootUri(event.uri)
                     if (success) {
-                            val displayPath = codexDirectoryManager.getDisplayPath()
+                        val displayPath = codexDirectoryManager.getDisplayPath()
                         _state.update {
                             it.copy(codexRootDisplayPath = displayPath)
                         }
 
-                        // TODO: Automatically import existing OPDS books
-                        // val importedCount = autoImportOpdsBooksUseCase.execute()
-                        // if (importedCount > 0) {
-                        //     Log.i("SettingsModel", "Auto-imported $importedCount existing OPDS books")
-                        // }
+                        // Automatically import existing OPDS books from the downloads folder
+                        val importedCount = autoImportCodexBooksUseCase.execute()
+                        if (importedCount > 0) {
+                            Log.i("SettingsModel", "Auto-imported $importedCount existing OPDS books")
+                        }
                     }
                 }
             }
