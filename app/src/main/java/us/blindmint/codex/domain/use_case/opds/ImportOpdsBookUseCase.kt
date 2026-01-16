@@ -20,6 +20,7 @@ import us.blindmint.codex.domain.repository.OpdsRepository
 import us.blindmint.codex.domain.util.CoverImage
 import us.blindmint.codex.presentation.core.constants.DataStoreConstants
 import java.io.File
+import java.util.zip.ZipFile
 import javax.inject.Inject
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -29,8 +30,13 @@ import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jsoup.Jsoup
+import us.blindmint.codex.R
 import us.blindmint.codex.data.parser.opf.OpfWriter
+import us.blindmint.codex.domain.library.book.Book
+import us.blindmint.codex.domain.library.category.Category
 import us.blindmint.codex.domain.storage.CodexDirectoryManager
+import us.blindmint.codex.domain.ui.UIText
 import java.util.UUID
 
 /**
@@ -184,6 +190,88 @@ class ImportOpdsBookUseCase @Inject constructor(
         }
     }
 
+    /**
+     * Parse EPUB file directly without CachedFile complications
+     */
+    private suspend fun parseEpubDirectly(file: File): BookWithCover? {
+        android.util.Log.d("OPDS_DEBUG", "Parsing EPUB directly: ${file.absolutePath}")
+        return try {
+            withContext(Dispatchers.IO) {
+                ZipFile(file).use { zip ->
+                    val opfEntry = zip.entries().asSequence().find { entry ->
+                        entry.name.endsWith(".opf", ignoreCase = true)
+                    } ?: run {
+                        android.util.Log.e("OPDS_DEBUG", "No OPF file found in EPUB")
+                        return@withContext null
+                    }
+
+                    val opfContent = zip.getInputStream(opfEntry).bufferedReader().use { it.readText() }
+                    val document = Jsoup.parse(opfContent)
+
+                    val title = document.select("metadata > dc|title").text().trim().run {
+                        ifBlank { file.name.substringBeforeLast(".").trim() }
+                    }
+
+                    val author = document.select("metadata > dc|creator").text().trim().run {
+                        if (isBlank()) UIText.StringResource(R.string.unknown_author) else UIText.StringValue(this)
+                    }
+
+                    val description = Jsoup.parse(document.select("metadata > dc|description").text()).text().run {
+                        ifBlank { null }
+                    }
+
+                    android.util.Log.d("OPDS_DEBUG", "Parsed EPUB: title='$title', author='$author'")
+
+                    BookWithCover(
+                        book = Book(
+                            title = title,
+                            author = author,
+                            description = description,
+                            scrollIndex = 0,
+                            scrollOffset = 0,
+                            progress = 0f,
+                            filePath = file.absolutePath,
+                            lastOpened = null,
+                            category = Category.entries[0],
+                            coverImage = null
+                        ),
+                        coverImage = extractCoverImageFromEpub(file)
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("OPDS_DEBUG", "Failed to parse EPUB directly", e)
+            null
+        }
+    }
+
+    private fun extractCoverImageFromEpub(file: File): Bitmap? {
+        return try {
+            ZipFile(file).use { zip ->
+                // Find cover image path from OPF
+                val opfEntry = zip.entries().asSequence().find { it.name.endsWith(".opf", ignoreCase = true) } ?: return null
+                val opfContent = zip.getInputStream(opfEntry).bufferedReader().use { it.readText() }
+                val document = Jsoup.parse(opfContent)
+
+                val coverImagePath = document.select("metadata > meta[name=cover]").attr("content").run {
+                    if (isNotBlank()) {
+                        document.select("manifest > item[id=$this]").attr("href")
+                    } else {
+                        document.select("manifest > item[media-type*=image]").firstOrNull()?.attr("href")
+                    }
+                } ?: return null
+
+                // Find and extract the image
+                val imageEntry = zip.entries().asSequence().find { it.name.endsWith(coverImagePath) } ?: return null
+                val imageBytes = zip.getInputStream(imageEntry).readBytes()
+                BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("OPDS_DEBUG", "Failed to extract cover image", e)
+            null
+        }
+    }
+
     private suspend fun performImport(
         opdsEntry: OpdsEntry,
         sourceUrl: String,
@@ -195,13 +283,25 @@ class ImportOpdsBookUseCase @Inject constructor(
         val acquisitionLink = opdsEntry.links.firstOrNull {
             it.rel == "http://opds-spec.org/acquisition" ||
             it.rel?.startsWith("http://opds-spec.org/acquisition/") == true
-        } ?: return null
+        }
+        if (acquisitionLink == null) {
+            android.util.Log.d("OPDS_DEBUG", "No acquisition link found for book: ${opdsEntry.title}")
+            android.util.Log.d("OPDS_DEBUG", "Available links:")
+            opdsEntry.links.forEach { link ->
+                android.util.Log.d("OPDS_DEBUG", "  Link: rel='${link.rel}', type='${link.type}', href='${link.href}'")
+            }
+            return null
+        }
+        android.util.Log.d("OPDS_DEBUG", "Found acquisition link: rel='${acquisitionLink.rel}', type='${acquisitionLink.type}', href='${acquisitionLink.href}'")
 
         // Resolve relative URL against source URL
         val resolvedUrl = try {
-            java.net.URI(sourceUrl).resolve(acquisitionLink.href).toString()
+            val resolved = java.net.URI(sourceUrl).resolve(acquisitionLink.href).toString()
+            android.util.Log.d("OPDS_DEBUG", "Resolved acquisition URL: $resolved (from href: ${acquisitionLink.href}, source: $sourceUrl)")
+            resolved
         } catch (e: Exception) {
             if (acquisitionLink.href.startsWith("http")) {
+                android.util.Log.d("OPDS_DEBUG", "Using absolute href URL: ${acquisitionLink.href}")
                 acquisitionLink.href
             } else {
                 throw Exception("Cannot resolve relative URL: ${acquisitionLink.href}")
@@ -217,49 +317,93 @@ class ImportOpdsBookUseCase @Inject constructor(
         // Save to temp file
         val tempFile = File(application.cacheDir, "temp_book_${System.currentTimeMillis()}$extension")
         tempFile.writeBytes(bookBytes)
+        android.util.Log.d("OPDS_DEBUG", "Saved ${bookBytes.size} bytes to temp file: ${tempFile.absolutePath}")
+
+        // Debug: Check if file looks like a ZIP/EPUB
+        try {
+            val firstBytes = bookBytes.take(4).toByteArray()
+            val hexString = firstBytes.joinToString("") { "%02x".format(it) }
+            android.util.Log.d("OPDS_DEBUG", "First 4 bytes of file: $hexString (should be 504b for ZIP)")
+            if (bookBytes.size > 100) {
+                val header = String(bookBytes.take(100).toByteArray(), Charsets.UTF_8)
+                if (header.contains("<html", ignoreCase = true)) {
+                    android.util.Log.e("OPDS_DEBUG", "Downloaded file appears to be HTML, not a book file!")
+                    android.util.Log.d("OPDS_DEBUG", "HTML content preview: ${header.take(200)}")
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("OPDS_DEBUG", "Error checking file header", e)
+        }
 
         try {
-            // Parse the file
-            val cachedFile = CachedFile(
-                context = application,
-                uri = android.net.Uri.fromFile(tempFile),
-                builder = CachedFileCompat.build(
-                    name = tempFile.name,
-                    path = tempFile.absolutePath,
-                    isDirectory = false
-                )
-            )
+            // Parse the file using a direct File-based approach
+            android.util.Log.d("OPDS_DEBUG", "Attempting to parse file: ${tempFile.name} (extension: $extension)")
 
-            val parsedBook = fileParser.parse(cachedFile) ?: return null
+            // Create a simple wrapper that provides the raw file
+            val simpleCachedFile = object {
+                val rawFile = tempFile
+                val name = tempFile.name
+                val path = tempFile.absolutePath
+            }
+
+            // For EPUB files, parse directly
+            val parsedBook = if (extension == ".epub") {
+                parseEpubDirectly(tempFile)
+            } else {
+                // For other formats, use the existing parser with a proper CachedFile
+                val cachedFile = CachedFile(
+                    context = application,
+                    uri = android.net.Uri.fromFile(tempFile),
+                    builder = CachedFileCompat.build(
+                        name = tempFile.name,
+                        path = tempFile.absolutePath,
+                        isDirectory = false
+                    )
+                )
+                fileParser.parse(cachedFile)
+            }
+            if (parsedBook == null) {
+                android.util.Log.e("OPDS_DEBUG", "File parser returned null for ${tempFile.name}")
+                return null
+            }
+            android.util.Log.d("OPDS_DEBUG", "Successfully parsed book: ${parsedBook.book.title}")
 
             // Create book folder in Codex downloads directory
             val uuid = extractUuid(opdsEntry) ?: UUID.randomUUID().toString().take(8)
             val title = sanitizeFilename(opdsEntry.title.trim())
             val folderName = "${uuid}_$title"
+            android.util.Log.d("OPDS_DEBUG", "Creating book folder: $folderName")
 
             val bookFolder = codexDirectoryManager.createBookFolder(folderName)
             if (bookFolder == null) {
-                Log.e(TAG, "Failed to create book folder")
+                android.util.Log.e("OPDS_DEBUG", "Failed to create book folder: $folderName")
                 return null
             }
+            android.util.Log.d("OPDS_DEBUG", "Successfully created book folder: ${bookFolder.uri}")
 
             // Generate book filename
             val author = opdsEntry.author?.trim() ?: "Unknown"
             val bookFilename = sanitizeFilename("$title - $author$extension")
 
             // Save book file to folder
+            android.util.Log.d("OPDS_DEBUG", "Creating book file: $bookFilename")
             val bookFile = bookFolder.createFile("application/octet-stream", bookFilename)
             if (bookFile == null) {
-                Log.e(TAG, "Failed to create book file")
+                android.util.Log.e("OPDS_DEBUG", "Failed to create book file: $bookFilename")
                 return null
             }
 
-            application.contentResolver.openOutputStream(bookFile.uri)?.use { output ->
-                tempFile.inputStream().use { input ->
-                    input.copyTo(output)
+            try {
+                application.contentResolver.openOutputStream(bookFile.uri)?.use { output ->
+                    tempFile.inputStream().use { input ->
+                        input.copyTo(output)
+                    }
                 }
+                android.util.Log.i("OPDS_DEBUG", "Saved book to: ${bookFile.uri}")
+            } catch (e: Exception) {
+                android.util.Log.e("OPDS_DEBUG", "Failed to copy book file", e)
+                return null
             }
-            Log.i(TAG, "Saved book to: ${bookFile.uri}")
 
             // Download and save cover image
             val coverUrl = opdsEntry.coverUrl ?: opdsEntry.links.firstOrNull {

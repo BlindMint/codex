@@ -93,8 +93,10 @@ class OpdsCatalogModel @Inject constructor(
 
     fun downloadBook(entry: OpdsEntry, source: OpdsSourceEntity, onSuccess: () -> Unit) {
         _state.value = _state.value.copy(isDownloading = true, downloadProgress = 0f, downloadError = null)
+        android.util.Log.d("OPDS_DEBUG", "Starting download for book: ${entry.title}")
         viewModelScope.launch {
             try {
+                android.util.Log.d("OPDS_DEBUG", "Calling importOpdsBookUseCase for: ${entry.title}")
                 val bookWithCover = importOpdsBookUseCase(
                     opdsEntry = entry,
                     sourceUrl = source.url,
@@ -105,14 +107,29 @@ class OpdsCatalogModel @Inject constructor(
                     }
                 )
                 if (bookWithCover != null) {
-                    // Save the downloaded book to the database
-                    bookRepository.insertBook(bookWithCover)
-                    _state.value = _state.value.copy(isDownloading = false, downloadProgress = 0f)
-                    onSuccess()
+                    android.util.Log.d("OPDS_DEBUG", "Book import successful, saving to database: ${bookWithCover.book.title}")
+                    try {
+                        // Save the downloaded book to the database
+                        val insertedBookId = bookRepository.insertBook(bookWithCover)
+                        android.util.Log.d("OPDS_DEBUG", "Book saved to database with ID: $insertedBookId")
+
+                        // Trigger Library refresh
+                        us.blindmint.codex.ui.library.LibraryScreen.refreshListChannel.trySend(0)
+                        android.util.Log.d("OPDS_DEBUG", "Triggered Library refresh")
+
+                        _state.value = _state.value.copy(isDownloading = false, downloadProgress = 0f)
+                        android.util.Log.d("OPDS_DEBUG", "Download completed successfully")
+                        onSuccess()
+                    } catch (e: Exception) {
+                        android.util.Log.e("OPDS_DEBUG", "Failed to save book to database", e)
+                        _state.value = _state.value.copy(isDownloading = false, downloadProgress = 0f, downloadError = "Failed to save book to database")
+                    }
                 } else {
+                    android.util.Log.e("OPDS_DEBUG", "Book import returned null for: ${entry.title}")
                     _state.value = _state.value.copy(isDownloading = false, downloadProgress = 0f, downloadError = "Failed to download book")
                 }
             } catch (e: Exception) {
+                android.util.Log.e("OPDS_DEBUG", "Download failed with exception", e)
                 _state.value = _state.value.copy(isDownloading = false, downloadProgress = 0f, downloadError = "Download failed: ${e.message ?: "Unknown error"}")
             }
         }

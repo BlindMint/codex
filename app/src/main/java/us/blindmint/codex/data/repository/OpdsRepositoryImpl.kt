@@ -160,11 +160,15 @@ class OpdsRepositoryImpl @Inject constructor() : OpdsRepository {
     }
 
     override suspend fun downloadBook(url: String, username: String?, password: String?, onProgress: ((Float) -> Unit)?): Pair<ByteArray, String?> {
+        android.util.Log.d("OPDS_DEBUG", "Downloading book from URL: $url")
         return withContext(Dispatchers.IO) {
             try {
                 val client = createOkHttpClient(username, password)
                 val request = okhttp3.Request.Builder().url(url).build()
+                android.util.Log.d("OPDS_DEBUG", "Making HTTP request to: $url")
                 val response = client.newCall(request).execute()
+                android.util.Log.d("OPDS_DEBUG", "HTTP Response: ${response.code} ${response.message}")
+                android.util.Log.d("OPDS_DEBUG", "Content-Type: ${response.header("Content-Type")}")
                 if (!response.isSuccessful) {
                     throw Exception("Download failed: HTTP ${response.code} ${response.message}")
                 }
@@ -188,10 +192,19 @@ class OpdsRepositoryImpl @Inject constructor() : OpdsRepository {
                 }
 
                 val result = buffer.readByteArray()
+                android.util.Log.d("OPDS_DEBUG", "Downloaded ${result.size} bytes")
 
                 // Extract filename from content-disposition header
                 val contentDisposition = response.header("content-disposition")
                 val filename = extractFilenameFromContentDisposition(contentDisposition)
+                android.util.Log.d("OPDS_DEBUG", "Suggested filename: $filename")
+
+                // Log first 200 chars of content for debugging (if it's text)
+                val contentType = response.header("Content-Type") ?: ""
+                if (contentType.contains("text") || contentType.contains("html") || result.size < 1000) {
+                    val preview = String(result.take(200).toByteArray(), Charsets.UTF_8)
+                    android.util.Log.d("OPDS_DEBUG", "Content preview: $preview")
+                }
 
                 Pair(result, filename)
             } catch (e: Exception) {
