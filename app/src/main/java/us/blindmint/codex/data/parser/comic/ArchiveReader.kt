@@ -38,7 +38,7 @@ class ArchiveReader @Inject constructor() {
 
     fun openArchive(cachedFile: CachedFile): ArchiveHandle {
         val format = getArchiveFormat(cachedFile)
-        android.util.Log.d("ArchiveReader", "Opening archive ${cachedFile.name} with format: $format")
+        android.util.Log.d("CodexComic", "Opening archive ${cachedFile.name} with format: $format")
         return when (format) {
             ArchiveFormat.ZIP, ArchiveFormat.SEVEN_Z -> LibArchiveHandle(cachedFile)
             ArchiveFormat.RAR -> RarArchiveHandle(cachedFile)
@@ -63,11 +63,11 @@ class ArchiveReader @Inject constructor() {
 
         private fun loadArchive() {
             try {
-                android.util.Log.d("LibArchiveHandle", "Loading archive: ${cachedFile.name}")
+                android.util.Log.d("CodexComic", "Loading archive: ${cachedFile.name}")
 
                 // Use cached file if available (preferred for content:// URIs)
                 cachedFile.rawFile?.let { cachedRawFile ->
-                    android.util.Log.d("LibArchiveHandle", "Using raw file: ${cachedRawFile.absolutePath}")
+                    android.util.Log.d("CodexComic", "Using raw file: ${cachedRawFile.absolutePath}")
                     zipFile = java.util.zip.ZipFile(cachedRawFile)
                 } ?: run {
                     // Fallback: Use Java's built-in ZipFile for CBZ files
@@ -97,18 +97,18 @@ class ArchiveReader @Inject constructor() {
                 }
 
                 // Read all entries (must happen for ALL code paths)
-                android.util.Log.d("LibArchiveHandle", "Reading entries from zip file")
+                android.util.Log.d("CodexComic", "Reading entries from zip file")
                 val entries = zipFile!!.entries()
                 var entryCount = 0
                 while (entries.hasMoreElements()) {
                     val entry = entries.nextElement()
-                    android.util.Log.d("LibArchiveHandle", "Entry: ${entry.name}, isDir: ${entry.isDirectory}")
+                    android.util.Log.d("CodexComic", "Entry: ${entry.name}, isDir: ${entry.isDirectory}")
                     if (!entry.isDirectory && ArchiveReader.isImageFile(entry.name)) {
                         _entries.add(LibArchiveEntry(ZipEntryAdapter(entry)))
                         entryCount++
                     }
                 }
-                android.util.Log.d("LibArchiveHandle", "Found $entryCount image entries")
+                android.util.Log.d("CodexComic", "Found $entryCount image entries")
 
                 // Sort entries by name for consistent ordering
                 _entries.sortBy { it.entry.getPath() }
