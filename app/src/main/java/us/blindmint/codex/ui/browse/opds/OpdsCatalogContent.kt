@@ -297,9 +297,10 @@ fun OpdsCatalogContent(
                 )
             }
             else -> androidx.compose.foundation.lazy.LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()),
+                modifier = Modifier.fillMaxSize(),
                 state = listState,
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                    top = 0.dp,
                     bottom = 16.dp
                 )
             ) {
@@ -373,7 +374,7 @@ fun OpdsCatalogContent(
                         Text(
                             "Categories",
                             style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                         )
                     }
 
