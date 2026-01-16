@@ -16,7 +16,7 @@ fun provideExtensions() = listOf(
     ".md",
     ".cbr",
     ".cbz",
-    ".cb7",
+
     ".opf",
     ".xml" // For OPDS feeds
 )

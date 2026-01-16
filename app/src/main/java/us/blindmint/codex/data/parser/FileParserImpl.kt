@@ -70,7 +70,7 @@ class FileParserImpl @Inject constructor(
                 fodtFileParser.parse(cachedFile)
             }
 
-            ".cbr", ".cbz", ".cb7" -> {
+            ".cbr", ".cbz" -> {
                 comicFileParser.parse(cachedFile)
             }
 

@@ -24,14 +24,13 @@ class ArchiveReader @Inject constructor() {
     }
 
     enum class ArchiveFormat {
-        ZIP, RAR, SEVEN_Z, UNKNOWN
+        ZIP, RAR, UNKNOWN
     }
 
     fun getArchiveFormat(cachedFile: CachedFile): ArchiveFormat {
         return when (cachedFile.name.substringAfterLast('.').lowercase()) {
             "zip", "cbz" -> ArchiveFormat.ZIP
             "rar", "cbr" -> ArchiveFormat.RAR
-            "7z", "cb7" -> ArchiveFormat.SEVEN_Z
             else -> ArchiveFormat.UNKNOWN
         }
     }
@@ -40,7 +39,7 @@ class ArchiveReader @Inject constructor() {
         val format = getArchiveFormat(cachedFile)
         android.util.Log.d("CodexComic", "Opening archive ${cachedFile.name} with format: $format")
         return when (format) {
-            ArchiveFormat.ZIP, ArchiveFormat.SEVEN_Z -> LibArchiveHandle(cachedFile)
+            ArchiveFormat.ZIP -> LibArchiveHandle(cachedFile)
             ArchiveFormat.RAR -> RarArchiveHandle(cachedFile)
             ArchiveFormat.UNKNOWN -> throw IllegalArgumentException("Unsupported archive format for file: ${cachedFile.name}")
         }
