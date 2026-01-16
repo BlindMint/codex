@@ -67,6 +67,7 @@ import us.blindmint.codex.ui.book_info.BookInfoScreen
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.settings.SettingsModel
 import kotlin.math.roundToInt
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 
 @Parcelize
@@ -608,7 +609,7 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
         SpeedReadingSettingsBottomSheet(
             show = state.value.speedReadingSettingsVisible,
             onDismiss = {
-                screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
+                screenModel.onEvent(ReaderEvent.OnDismissSpeedReadingSettings)
             }
         )
 
@@ -616,12 +617,17 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
         if (state.value.speedReadingMode) {
             SpeedReadingScaffold(
                 text = state.value.text,
+                bookTitle = state.value.book.title,
+                chapterTitle = state.value.currentChapter?.title,
                 currentProgress = state.value.book.progress,
                 backgroundColor = backgroundColor.value,
+                fontColor = fontColor.value,
+                accentColor = MaterialTheme.colorScheme.error,
                 fontFamily = fontFamily.font,
-                sentencePauseMs = 2000, // TODO: Get from MainState
+                sentencePauseMs = 2000, // TODO: Get from MainState when implemented
                 progress = progress,
                 bottomBarPadding = bottomBarPadding,
+                showWpmIndicator = true,
                 onExitSpeedReading = {
                     screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
                 },

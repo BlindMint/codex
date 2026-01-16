@@ -8,21 +8,13 @@ package us.blindmint.codex.presentation.reader
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,31 +26,37 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import us.blindmint.codex.domain.reader.ReaderText
+import kotlin.math.roundToInt
 
 @Composable
 fun SpeedReadingContent(
     text: List<ReaderText>,
     currentProgress: Float,
     backgroundColor: Color,
+    fontColor: Color,
     fontFamily: FontFamily,
     sentencePauseMs: Int,
     wpm: Int,
     isPlaying: Boolean,
-    onWpmChange: (Int) -> Unit,
-    onPlayPause: () -> Unit,
-    alwaysShowPlayPause: Boolean
+    showWpmIndicator: Boolean,
+    accentColor: Color,
+    modifier: Modifier = Modifier
 ) {
     // Extract words from text starting from current position
     val words = remember(text, currentProgress) {
@@ -69,37 +67,34 @@ fun SpeedReadingContent(
             .filter { it.isNotBlank() }
     }
 
-    val currentWordIndex = remember { mutableIntStateOf(0) }
-    val showCountdown = remember { mutableStateOf(false) }
-    val countdownValue = remember { mutableIntStateOf(3) }
-    val wordFontSize = remember { mutableStateOf(48.sp) }
+    var currentWordIndex by remember { mutableIntStateOf(0) }
+    var showCountdown by remember { mutableStateOf(false) }
+    var countdownValue by remember { mutableIntStateOf(3) }
+    val wordFontSize = 48.sp
+    val density = LocalDensity.current
+    val textMeasurer = rememberTextMeasurer()
 
-    // Update current word
-    LaunchedEffect(currentWordIndex.intValue, words) {
-        if (currentWordIndex.intValue < words.size) {
-            // currentWord is handled in the display logic below
-        } else {
-            // Reset to beginning when finished
-            currentWordIndex.intValue = 0
-        }
+    // Reset word index when words change
+    LaunchedEffect(words) {
+        currentWordIndex = 0
     }
 
     // Countdown animation
-    LaunchedEffect(showCountdown.value) {
-        if (showCountdown.value) {
-            countdownValue.intValue = 3
-            while (countdownValue.intValue > 0) {
+    LaunchedEffect(showCountdown) {
+        if (showCountdown) {
+            countdownValue = 3
+            while (countdownValue > 0) {
                 delay(1000)
-                countdownValue.intValue--
+                countdownValue--
             }
-            showCountdown.value = false
+            showCountdown = false
         }
     }
 
     // Auto-advance words when playing
-    LaunchedEffect(isPlaying, currentWordIndex.intValue, wpm) {
-        if (isPlaying && currentWordIndex.intValue < words.size) {
-            val currentWordText = words.getOrNull(currentWordIndex.intValue) ?: ""
+    LaunchedEffect(isPlaying, currentWordIndex, wpm, words) {
+        if (isPlaying && words.isNotEmpty() && currentWordIndex < words.size) {
+            val currentWordText = words.getOrNull(currentWordIndex) ?: ""
             val isSentenceEnd = currentWordText.endsWith(".") ||
                                currentWordText.endsWith("!") ||
                                currentWordText.endsWith("?") ||
@@ -109,116 +104,156 @@ fun SpeedReadingContent(
             val wordDelay = (60.0 / wpm * 1000).toLong()
             val delayTime = if (isSentenceEnd) sentencePauseMs.toLong() else wordDelay
             delay(delayTime)
-            currentWordIndex.intValue++
+            currentWordIndex = if (currentWordIndex < words.size - 1) currentWordIndex + 1 else 0
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Main word display area
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Horizontal bars (gray frames) - now positioned around the word area
-            Box(
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        if (words.isNotEmpty() && currentWordIndex < words.size) {
+            val currentWord = words[currentWordIndex]
+            val accentIndex = findAccentCharIndex(currentWord)
+
+            // Measure text parts for proper positioning
+            val textStyle = TextStyle(
+                fontSize = wordFontSize,
+                fontFamily = fontFamily,
+                color = fontColor
+            )
+
+            BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp)
+                    .padding(horizontal = 24.dp),
+                contentAlignment = Alignment.Center
             ) {
+                val containerWidth = constraints.maxWidth.toFloat()
+                val centerX = containerWidth / 2f
+
+                // Measure text before accent to calculate offset
+                val beforeAccent = if (accentIndex > 0) currentWord.substring(0, accentIndex) else ""
+                val accentChar = if (accentIndex >= 0 && accentIndex < currentWord.length)
+                    currentWord[accentIndex].toString() else ""
+
+                val beforeAccentWidth = if (beforeAccent.isNotEmpty()) {
+                    with(density) {
+                        textMeasurer.measure(
+                            text = beforeAccent,
+                            style = textStyle
+                        ).size.width.toFloat()
+                    }
+                } else 0f
+
+                val accentCharWidth = if (accentChar.isNotEmpty()) {
+                    with(density) {
+                        textMeasurer.measure(
+                            text = accentChar,
+                            style = textStyle
+                        ).size.width.toFloat()
+                    }
+                } else 0f
+
+                // Calculate offset to center the accent character
+                // The accent char center should be at the screen center
+                val accentCenterOffset = beforeAccentWidth + (accentCharWidth / 2f)
+                val wordOffsetX = centerX - accentCenterOffset
+
+                // Draw the RSVP frame
                 Canvas(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 24.dp)
+                        .height(120.dp)
                 ) {
-                    val barHeight = 2f
-                    val barColor = Color.Gray.copy(alpha = 0.5f)
-                    val centerY = size.height / 2
-                    drawRect(
-                        color = barColor,
-                        topLeft = androidx.compose.ui.geometry.Offset(0f, centerY - barHeight / 2),
-                        size = androidx.compose.ui.geometry.Size(size.width, barHeight)
+                    val frameColor = fontColor.copy(alpha = 0.3f)
+                    val lineThickness = 1.dp.toPx()
+                    val verticalIndicatorHeight = 12.dp.toPx()
+                    val verticalIndicatorWidth = 1.5.dp.toPx()
+                    val horizontalLineY = size.height / 2f
+                    val gapHalfWidth = 120.dp.toPx() // Gap around the word
+
+                    // Left horizontal line
+                    drawLine(
+                        color = frameColor,
+                        start = Offset(0f, horizontalLineY),
+                        end = Offset(centerX - gapHalfWidth, horizontalLineY),
+                        strokeWidth = lineThickness
+                    )
+
+                    // Right horizontal line
+                    drawLine(
+                        color = frameColor,
+                        start = Offset(centerX + gapHalfWidth, horizontalLineY),
+                        end = Offset(size.width, horizontalLineY),
+                        strokeWidth = lineThickness
+                    )
+
+                    // Top vertical indicator (points down to accent position)
+                    drawLine(
+                        color = accentColor.copy(alpha = 0.7f),
+                        start = Offset(centerX, horizontalLineY - 40.dp.toPx()),
+                        end = Offset(centerX, horizontalLineY - 40.dp.toPx() + verticalIndicatorHeight),
+                        strokeWidth = verticalIndicatorWidth
+                    )
+
+                    // Bottom vertical indicator (points up to accent position)
+                    drawLine(
+                        color = accentColor.copy(alpha = 0.7f),
+                        start = Offset(centerX, horizontalLineY + 40.dp.toPx() - verticalIndicatorHeight),
+                        end = Offset(centerX, horizontalLineY + 40.dp.toPx()),
+                        strokeWidth = verticalIndicatorWidth
                     )
                 }
 
-                // Word display with accent character centering
-                if (currentWordIndex.intValue < words.size) {
-                    val currentWord = words[currentWordIndex.intValue]
-                    SpeedReadingWordDisplay(
-                        word = currentWord,
-                        fontSize = wordFontSize.value,
-                        fontFamily = fontFamily,
-                        onFontSizeChange = { wordFontSize.value = it }
-                    )
-                }
-
-                // Vertical indicators aligned with accent character
-                if (currentWordIndex.intValue < words.size) {
-                    val currentWord = words[currentWordIndex.intValue]
-                    val accentCharIndex = findAccentCharIndex(currentWord)
-
-                    if (accentCharIndex >= 0) {
-                        Canvas(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 16.dp)
-                        ) {
-                            val indicatorColor = Color.Red // Accent color
-                            val indicatorWidth = 2f
-                            val indicatorHeight = 32f
-
-                            // Calculate position based on accent character
-                            // This is approximate - would need more sophisticated text measurement
-                            val approxCharWidth = wordFontSize.value.toPx() * 0.6f // Rough estimate
-                            val accentPosition = accentCharIndex * approxCharWidth
-                            val centerX = size.width / 2
-                            val indicatorX = centerX - accentPosition
-
-                            // Draw vertical indicator at accent character position
-                            drawRect(
-                                color = indicatorColor,
-                                topLeft = androidx.compose.ui.geometry.Offset(
-                                    x = indicatorX - indicatorWidth / 2,
-                                    y = size.height / 2 - indicatorHeight / 2
-                                ),
-                                size = androidx.compose.ui.geometry.Size(indicatorWidth, indicatorHeight)
-                            )
+                // Word display with accent character highlighted and properly offset
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = buildAnnotatedString {
+                            if (accentIndex > 0) {
+                                append(currentWord.substring(0, accentIndex))
+                            }
+                            if (accentIndex >= 0 && accentIndex < currentWord.length) {
+                                withStyle(style = SpanStyle(color = accentColor)) {
+                                    append(currentWord[accentIndex])
+                                }
+                            }
+                            if (accentIndex >= 0 && accentIndex < currentWord.length - 1) {
+                                append(currentWord.substring(accentIndex + 1))
+                            } else if (accentIndex < 0) {
+                                // No accent found, show whole word
+                                append(currentWord)
+                            }
+                        },
+                        style = textStyle,
+                        modifier = Modifier.offset {
+                            IntOffset(wordOffsetX.roundToInt(), 0)
                         }
-                    }
+                    )
                 }
             }
         }
 
-        // Floating play/pause button
-        if (alwaysShowPlayPause) {
-            Box(
+        // WPM indicator in bottom right
+        if (showWpmIndicator) {
+            Text(
+                text = "$wpm wpm",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = fontColor.copy(alpha = 0.5f)
+                ),
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                contentAlignment = Alignment.BottomEnd
-            ) {
-                FloatingActionButton(
-                    onClick = {
-                        if (!isPlaying) {
-                            showCountdown.value = true
-                        }
-                    }
-                ) {
-                    Icon(
-                        imageVector = if (isPlaying)
-                            Icons.Default.Pause
-                        else
-                            Icons.Default.PlayArrow,
-                        contentDescription = if (isPlaying) "Pause" else "Play"
-                    )
-                }
-            }
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+            )
         }
 
         // Countdown overlay
-        if (showCountdown.value) {
+        if (showCountdown) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -226,7 +261,7 @@ fun SpeedReadingContent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = countdownValue.intValue.toString(),
+                    text = countdownValue.toString(),
                     style = MaterialTheme.typography.displayLarge.copy(
                         fontSize = 120.sp,
                         color = Color.White
@@ -237,73 +272,50 @@ fun SpeedReadingContent(
     }
 }
 
-@Composable
-private fun SpeedReadingWordDisplay(
-    word: String,
-    fontSize: androidx.compose.ui.unit.TextUnit,
-    fontFamily: FontFamily,
-    onFontSizeChange: (androidx.compose.ui.unit.TextUnit) -> Unit
-) {
-    val accentCharIndex = findAccentCharIndex(word)
+/**
+ * Find the Optimal Recognition Point (ORP) for RSVP.
+ *
+ * The ORP is typically around 25-35% into the word, often on a vowel.
+ * This follows standard RSVP guidelines where the eye fixation point
+ * should be slightly left of center for most words.
+ */
+fun findAccentCharIndex(word: String): Int {
+    if (word.isEmpty()) return -1
 
-    if (accentCharIndex >= 0) {
-        // Split word around accent character for proper centering
-        val beforeAccent = word.substring(0, accentCharIndex)
-        val accentChar = word[accentCharIndex]
-        val afterAccent = word.substring(accentCharIndex + 1)
+    // Strip punctuation for calculation
+    val cleanWord = word.trimEnd { it in ".,!?;:'\"-" }
+    if (cleanWord.isEmpty()) return 0
 
-        // Create annotated string with accent character highlighted
-        val annotatedWord = buildAnnotatedString {
-            append(beforeAccent)
-            withStyle(style = SpanStyle(color = Color.Red)) {
-                append(accentChar)
-            }
-            append(afterAccent)
-        }
-
-        Text(
-            text = annotatedWord,
-            style = TextStyle(
-                fontSize = fontSize,
-                textAlign = TextAlign.Center,
-                fontFamily = fontFamily
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-    } else {
-        // No accent character found, display normally
-        Text(
-            text = word,
-            style = TextStyle(
-                fontSize = fontSize,
-                textAlign = TextAlign.Center,
-                fontFamily = fontFamily
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-private fun findAccentCharIndex(word: String): Int {
-    // Find the first vowel (a, e, i, o, u) as accent character
-    // Prioritize 2nd or 3rd character if it's a vowel
     val vowels = setOf('a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U')
 
-    // Check positions 1, 2, then 0, then 3, etc.
-    val preferredPositions = listOf(1, 2, 0, 3, 4)
+    // ORP position based on word length (roughly 25-35% into the word)
+    // For short words (1-3 chars): first char
+    // For medium words (4-6 chars): 2nd char preferred
+    // For longer words: around 25-30% position
+    val optimalPosition = when {
+        cleanWord.length <= 1 -> 0
+        cleanWord.length <= 3 -> 0
+        cleanWord.length <= 5 -> 1
+        cleanWord.length <= 9 -> 2
+        cleanWord.length <= 13 -> 3
+        else -> (cleanWord.length * 0.25).toInt().coerceAtMost(4)
+    }
 
-    for (pos in preferredPositions) {
-        if (pos < word.length && word[pos] in vowels) {
+    // Check optimal position first, then nearby positions
+    val positionsToCheck = listOf(
+        optimalPosition,
+        optimalPosition + 1,
+        optimalPosition - 1,
+        optimalPosition + 2
+    ).filter { it in cleanWord.indices }
+
+    // Prefer vowels at or near the optimal position
+    for (pos in positionsToCheck) {
+        if (cleanWord[pos] in vowels) {
             return pos
         }
     }
 
-    // If no vowel found in preferred positions, find first vowel
-    for (i in word.indices) {
-        if (word[i] in vowels) {
-            return i
-        }
-    }
-
-    return -1 // No accent character found
+    // If no vowel found near optimal, use the optimal position anyway
+    return optimalPosition.coerceIn(0, cleanWord.length - 1)
 }

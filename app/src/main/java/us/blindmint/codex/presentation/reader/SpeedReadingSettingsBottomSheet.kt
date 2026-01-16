@@ -7,6 +7,7 @@
 package us.blindmint.codex.presentation.reader
 
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -46,7 +47,8 @@ fun SpeedReadingSettingsBottomSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight(),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Top
                 ) {
                     androidx.compose.material3.Text(
                         text = stringResource(id = R.string.speed_reading_reader_settings),
@@ -61,7 +63,7 @@ fun SpeedReadingSettingsBottomSheet(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .fillMaxHeight(0.7f),
+                            .weight(1f), // Use weight to take remaining space
                         horizontalAlignment = Alignment.Start
                     ) {
                         item {

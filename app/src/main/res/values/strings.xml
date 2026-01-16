@@ -789,6 +789,8 @@
     <string name="chapters_content_desc">Chapters</string>
     <string name="speed_reading_content_desc">Speed reading</string>
     <string name="speed_reading_reader_settings">Speed Reading</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
     <string name="speed_reading_wpm">Words Per Minute</string>
     <string name="speed_reading_accent_character">Accent Character</string>
     <string name="speed_reading_vertical_indicators">Vertical Indicators</string>

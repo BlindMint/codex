@@ -682,6 +682,14 @@ class ReaderModel @Inject constructor(
                     }
                 }
 
+                is ReaderEvent.OnDismissSpeedReadingSettings -> {
+                    _state.update {
+                        it.copy(
+                            speedReadingSettingsVisible = false
+                        )
+                    }
+                }
+
                 is ReaderEvent.OnDismissSpeedReading -> {
                     _state.update {
                         it.copy(

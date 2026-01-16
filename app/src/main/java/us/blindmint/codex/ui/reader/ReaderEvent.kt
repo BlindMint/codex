@@ -130,6 +130,8 @@ sealed class ReaderEvent {
 
     data object OnShowSpeedReadingSettings : ReaderEvent()
 
+    data object OnDismissSpeedReadingSettings : ReaderEvent()
+
     data object OnDismissSpeedReading : ReaderEvent()
 
     data object OnDismissDrawer : ReaderEvent()

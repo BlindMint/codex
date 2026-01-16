@@ -8,14 +8,14 @@ package us.blindmint.codex.presentation.reader
 
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
 import us.blindmint.codex.presentation.core.util.noRippleClickable
@@ -32,19 +31,23 @@ import us.blindmint.codex.presentation.core.util.noRippleClickable
 @Composable
 fun SpeedReadingScaffold(
     text: List<ReaderText>,
+    bookTitle: String,
+    chapterTitle: String?,
     currentProgress: Float,
     backgroundColor: Color,
+    fontColor: Color,
+    accentColor: Color,
     fontFamily: FontFamily,
     sentencePauseMs: Int,
     progress: String,
     bottomBarPadding: Dp,
+    showWpmIndicator: Boolean,
     onExitSpeedReading: () -> Unit,
     onShowSpeedReadingSettings: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    var alwaysShowPlayPause by remember { mutableStateOf(false) }
-    val wpm = remember { mutableStateOf(300) }
-    val isPlaying = remember { mutableStateOf(false) }
+    var wpm by remember { mutableIntStateOf(300) }
+    var isPlaying by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -55,9 +58,11 @@ fun SpeedReadingScaffold(
                 exit = fadeOut()
             ) {
                 SpeedReadingTopBar(
+                    bookTitle = bookTitle,
+                    chapterTitle = chapterTitle,
+                    currentProgress = currentProgress,
                     onExitSpeedReading = onExitSpeedReading,
-                    alwaysShowPlayPause = alwaysShowPlayPause,
-                    onToggleAlwaysShowPlayPause = { alwaysShowPlayPause = !alwaysShowPlayPause }
+                    onShowSettings = onShowSpeedReadingSettings
                 )
             }
         },
@@ -70,34 +75,34 @@ fun SpeedReadingScaffold(
             ) {
                 SpeedReadingBottomBar(
                     progress = progress,
-                    wpm = wpm.value,
-                    onWpmChange = { wpm.value = it },
-                    isPlaying = isPlaying.value,
-                    onPlayPause = { isPlaying.value = !isPlaying.value },
-                    onShowSettings = onShowSpeedReadingSettings,
+                    wpm = wpm,
+                    onWpmChange = { wpm = it },
+                    isPlaying = isPlaying,
+                    onPlayPause = { isPlaying = !isPlaying },
                     bottomBarPadding = bottomBarPadding
                 )
             }
         },
         containerColor = backgroundColor
-    ) { paddingValues ->
+    ) { _ ->
+        // Don't use paddingValues to avoid content shifting when menu shows/hides
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(backgroundColor)
                 .noRippleClickable { showMenu = !showMenu }
-                .padding(paddingValues)
         ) {
             SpeedReadingContent(
                 text = text,
                 currentProgress = currentProgress,
                 backgroundColor = backgroundColor,
+                fontColor = fontColor,
                 fontFamily = fontFamily,
                 sentencePauseMs = sentencePauseMs,
-                wpm = wpm.value,
-                isPlaying = isPlaying.value,
-                onWpmChange = { wpm.value = it },
-                onPlayPause = { isPlaying.value = !isPlaying.value },
-                alwaysShowPlayPause = alwaysShowPlayPause
+                wpm = wpm,
+                isPlaying = isPlaying,
+                showWpmIndicator = showWpmIndicator && !showMenu,
+                accentColor = accentColor
             )
         }
     }
