@@ -79,8 +79,14 @@ fun ReaderSearchBottomPanel(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(panelHeight)
-                    .align(Alignment.BottomCenter)
-                    .offset(y = with(density) { -bottomBarHeight.toDp() })
+                    .offset(y = with(density) {
+                        val screenHeightDp = screenHeight / density.density
+                        val topBarHeightDp = topBarHeight.toDp().toPx() / density.density
+                        val bottomBarHeightDp = bottomBarHeight.toDp().toPx() / density.density
+                        val contentAreaHeight = screenHeightDp - topBarHeightDp - bottomBarHeightDp
+                        // Position at the middle of content area with small adjustment
+                        (topBarHeightDp + contentAreaHeight * 0.5f + 4f).dp
+                    })
                     .background(
                         MaterialTheme.colorScheme.readerBarsColor
                     )
