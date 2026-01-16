@@ -410,22 +410,6 @@ fun OpdsCatalogContent(
                                         }
                                     }
                                     android.util.Log.d("OPDS_DEBUG", "Final navigation URL: $fullUrl")
-                                    navigator.push(OpdsCategoryScreen(source, fullUrl, entry.title))
-                                } else {
-                                    android.util.Log.d("OPDS_DEBUG", "No navigation link found for '${entry.title}'")
-                                }
-
-                                        if (href.startsWith("/")) {
-                                            // Absolute path - combine with domain from normalized source URL
-                                            val domain = normalizedSourceUrl.substringBefore("/opds").trimEnd('/')
-                                            "$domain$href"
-                                        } else {
-                                            // Relative path - append to normalized source URL
-                                            val baseUrl = normalizedSourceUrl.removeSuffix("/")
-                                            "$baseUrl/$href"
-                                        }
-                                    }
-                                    android.util.Log.d("OPDS_DEBUG", "Final navigation URL: $fullUrl")
                                     android.util.Log.d("OPDS_DEBUG", "About to call navigator.push...")
                                     try {
                                         navigator.push(OpdsCategoryScreen(source, fullUrl, entry.title))
