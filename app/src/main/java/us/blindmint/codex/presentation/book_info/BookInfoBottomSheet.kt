@@ -48,6 +48,12 @@ fun BookInfoBottomSheet(
             BookInfoDetailsBottomSheet(
                 book = book,
                 showPathDialog = showPathDialog,
+                showTitleDialog = showTitleDialog,
+                showAuthorDialog = showAuthorDialog,
+                showDescriptionDialog = showDescriptionDialog,
+                resetTitle = resetTitle,
+                resetAuthor = resetAuthor,
+                resetDescription = resetDescription,
                 clearProgressHistory = clearProgressHistory,
                 dismissBottomSheet = dismissBottomSheet
             )

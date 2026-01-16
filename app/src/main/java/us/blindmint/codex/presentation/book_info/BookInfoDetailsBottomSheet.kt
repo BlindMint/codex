@@ -6,18 +6,29 @@
 
 package us.blindmint.codex.presentation.book_info
 
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import android.net.Uri
 import androidx.compose.ui.unit.dp
+import us.blindmint.codex.presentation.core.components.common.IconButton
+import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.file.CachedFileCompat
 import us.blindmint.codex.domain.library.book.Book
@@ -34,6 +45,12 @@ import java.util.Locale
 fun BookInfoDetailsBottomSheet(
     book: Book,
     showPathDialog: (BookInfoEvent.OnShowPathDialog) -> Unit,
+    showTitleDialog: (BookInfoEvent.OnShowTitleDialog) -> Unit,
+    showAuthorDialog: (BookInfoEvent.OnShowAuthorDialog) -> Unit,
+    showDescriptionDialog: (BookInfoEvent.OnShowDescriptionDialog) -> Unit,
+    resetTitle: (BookInfoEvent.OnResetTitle) -> Unit,
+    resetAuthor: (BookInfoEvent.OnResetAuthor) -> Unit,
+    resetDescription: (BookInfoEvent.OnResetDescription) -> Unit,
     clearProgressHistory: (BookInfoEvent.OnClearProgressHistory) -> Unit,
     dismissBottomSheet: (BookInfoEvent.OnDismissBottomSheet) -> Unit
 ) {
@@ -74,6 +91,10 @@ fun BookInfoDetailsBottomSheet(
         }
     }
 
+    val fileExtension = remember(cachedFile) {
+        cachedFile?.name?.substringAfterLast('.', "")?.uppercase() ?: ""
+    }
+
     ModalBottomSheet(
         modifier = Modifier.fillMaxWidth(),
         onDismissRequest = {
@@ -86,12 +107,63 @@ fun BookInfoDetailsBottomSheet(
             contentPadding = PaddingValues(bottom = 8.dp)
         ) {
             item {
-                SettingsSubcategoryTitle(
-                    title = stringResource(id = R.string.file_details),
-                    padding = 16.dp,
-                    color = MaterialTheme.colorScheme.primary
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SettingsSubcategoryTitle(
+                        title = stringResource(id = R.string.file_details),
+                        padding = 0.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    IconButton(
+                        icon = Icons.Default.Restore,
+                        contentDescription = R.string.reset_content_desc,
+                        disableOnClick = false,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        resetTitle(BookInfoEvent.OnResetTitle(context))
+                        resetAuthor(BookInfoEvent.OnResetAuthor(context))
+                        resetDescription(BookInfoEvent.OnResetDescription(context))
+                    }
+                }
+            }
+
+            item {
+                BookInfoDetailsBottomSheetItem(
+                    label = stringResource(id = R.string.title),
+                    text = book.title,
+                    editable = true,
+                    onEdit = {
+                        showTitleDialog(BookInfoEvent.OnShowTitleDialog)
+                    }
                 )
-                Spacer(Modifier.height(8.dp))
+            }
+
+            item {
+                BookInfoDetailsBottomSheetItem(
+                    label = stringResource(id = R.string.author),
+                    text = book.author.asString(),
+                    editable = true,
+                    onEdit = {
+                        showAuthorDialog(BookInfoEvent.OnShowAuthorDialog)
+                    }
+                )
+            }
+
+            item {
+                BookInfoDetailsBottomSheetItem(
+                    label = stringResource(id = R.string.description),
+                    text = book.description ?: "",
+                    editable = true,
+                    onEdit = {
+                        showDescriptionDialog(BookInfoEvent.OnShowDescriptionDialog)
+                    }
+                )
             }
 
             item {
@@ -117,23 +189,40 @@ fun BookInfoDetailsBottomSheet(
             }
 
             item {
-                BookInfoDetailsBottomSheetItem(
-                    label = stringResource(id = R.string.file_size),
-                    text = fileSize.ifBlank { stringResource(id = R.string.unknown) },
-                    editable = false
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .weight(1f)
+                            .focusable(false),
+                        value = fileSize.ifBlank { stringResource(id = R.string.unknown) },
+                        onValueChange = {},
+                        readOnly = true,
+                        label = {
+                            StyledText(stringResource(id = R.string.file_size))
+                        }
+                    )
+
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .weight(1f)
+                            .focusable(false),
+                        value = fileExtension.ifBlank { stringResource(id = R.string.unknown) },
+                        onValueChange = {},
+                        readOnly = true,
+                        label = {
+                            StyledText(stringResource(id = R.string.file_extension))
+                        }
+                    )
+                }
             }
 
-            item {
-                BookInfoDetailsBottomSheetItem(
-                    label = stringResource(id = R.string.clear_progress_history),
-                    text = "",
-                    editable = true,
-                    onEdit = {
-                        clearProgressHistory(BookInfoEvent.OnClearProgressHistory(context))
-                    }
-                )
-            }
+
         }
     }
 }

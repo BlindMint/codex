@@ -21,7 +21,6 @@ fun BookInfoDialog(
     actionDescriptionDialog: (BookInfoEvent.OnActionDescriptionDialog) -> Unit,
     actionPathDialog: (BookInfoEvent.OnActionPathDialog) -> Unit,
     actionDeleteDialog: (BookInfoEvent.OnActionDeleteDialog) -> Unit,
-    actionMoveDialog: (BookInfoEvent.OnActionMoveDialog) -> Unit,
     dismissDialog: (BookInfoEvent.OnDismissDialog) -> Unit,
     navigateBack: () -> Unit,
     navigateToLibrary: () -> Unit
@@ -32,15 +31,6 @@ fun BookInfoDialog(
                 actionDeleteDialog = actionDeleteDialog,
                 dismissDialog = dismissDialog,
                 navigateBack = navigateBack
-            )
-        }
-
-        BookInfoScreen.MOVE_DIALOG -> {
-            BookInfoMoveDialog(
-                book = book,
-                actionMoveDialog = actionMoveDialog,
-                dismissDialog = dismissDialog,
-                navigateToLibrary = navigateToLibrary
             )
         }
 

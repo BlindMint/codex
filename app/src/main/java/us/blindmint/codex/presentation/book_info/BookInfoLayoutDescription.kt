@@ -86,7 +86,6 @@ fun BookInfoLayoutDescription(
             modifier = Modifier
                 .fillMaxWidth()
                 .animateContentSize()
-                .heightIn(0.dp, if (!expand.value && expandable) 60.dp else Dp.Unspecified)
                 .drawWithContent {
                     drawContent()
                     drawRect(

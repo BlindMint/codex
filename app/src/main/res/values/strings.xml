@@ -526,6 +526,7 @@
     <string name="file_path">Path</string>
     <string name="file_last_opened">Last opened</string>
     <string name="file_size">Size</string>
+    <string name="file_extension">Extension</string>
     <string name="unknown">Unknown</string>
 
     <!-- Reader -->
