@@ -71,9 +71,13 @@ fun ReaderBottomBar(
             }
         }
     }
-    val checkpointProgress = remember(checkpoint.index, text.lastIndex) {
+    val checkpointProgress = remember(checkpoint.index, text.lastIndex, book.isComic) {
         derivedStateOf {
-            (checkpoint.index / text.lastIndex.toFloat()) * 0.987f
+            if (book.isComic || text.isEmpty()) {
+                0f // Comics don't use text-based checkpoints
+            } else {
+                (checkpoint.index / text.lastIndex.toFloat()) * 0.987f
+            }
         }
     }
 
@@ -118,16 +122,18 @@ fun ReaderBottomBar(
                 modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.CenterStart
             ) {
-                ReaderBottomBarSlider(
-                    book = book,
-                    lockMenu = lockMenu,
-                    listState = listState,
-                    scroll = scroll,
-                    changeProgress = changeProgress
-                )
+                if (!book.isComic) {
+                    ReaderBottomBarSlider(
+                        book = book,
+                        lockMenu = lockMenu,
+                        listState = listState,
+                        scroll = scroll,
+                        changeProgress = changeProgress
+                    )
 
-                if (arrowDirection.value != Direction.NEUTRAL) {
-                    ReaderBottomBarSliderIndicator(progress = checkpointProgress.value)
+                    if (arrowDirection.value != Direction.NEUTRAL) {
+                        ReaderBottomBarSliderIndicator(progress = checkpointProgress.value)
+                    }
                 }
             }
 

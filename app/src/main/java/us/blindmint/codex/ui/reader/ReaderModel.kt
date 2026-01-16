@@ -807,12 +807,37 @@ class ReaderModel @Inject constructor(
                 ReaderState(book = book)
             }
 
-            onEvent(
-                ReaderEvent.OnLoadText(
-                    activity = activity,
-                    fullscreenMode = fullscreenMode
+            // Skip text loading for comics - they use image-based rendering
+            if (!book.isComic) {
+                onEvent(
+                    ReaderEvent.OnLoadText(
+                        activity = activity,
+                        fullscreenMode = fullscreenMode
+                    )
                 )
-            )
+            } else {
+                // For comics, set loading to false and show menu
+                systemBarsVisibility(
+                    show = !fullscreenMode,
+                    activity = activity
+                )
+
+                val lastOpened = getLatestHistory.execute(book.id)
+
+                _state.update {
+                    it.copy(
+                        showMenu = false,
+                        book = it.book.copy(
+                            lastOpened = lastOpened?.time
+                        ),
+                        isLoading = false
+                    )
+                }
+
+                updateBook.execute(book)
+                LibraryScreen.refreshListChannel.trySend(0)
+                HistoryScreen.refreshListChannel.trySend(0)
+            }
         }
     }
 

@@ -327,47 +327,69 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
 
         val bookProgress = remember(
             state.value.book.progress,
+            state.value.book.isComic,
             state.value.text,
             mainState.value.progressCount
         ) {
-            when (mainState.value.progressCount) {
-                ReaderProgressCount.PERCENTAGE -> {
-                    "${state.value.book.progress.calculateProgress(2)}%"
-                }
-
-                ReaderProgressCount.QUANTITY -> {
-                    val index =
-                        (state.value.book.progress * state.value.text.lastIndex + 1).roundToInt()
-                    "$index / ${state.value.text.size}"
-                }
-
-                ReaderProgressCount.PAGE -> {
-                    val totalChars = state.value.text.sumOf { text ->
-                        when (text) {
-                            is ReaderText.Text -> text.line.text.length.toInt()
-                            else -> 0
-                        }
+            if (state.value.book.isComic) {
+                // For comics, show page-based progress
+                when (mainState.value.progressCount) {
+                    ReaderProgressCount.PERCENTAGE -> {
+                        "${state.value.book.progress.calculateProgress(2)}%"
                     }
-                    val currentIndex = (state.value.book.progress * state.value.text.lastIndex).roundToInt()
-                    val currentChars = state.value.text.take(currentIndex + 1).sumOf { text ->
-                        when (text) {
-                            is ReaderText.Text -> text.line.text.length.toInt()
-                            else -> 0
-                        }
+                    ReaderProgressCount.QUANTITY -> {
+                        // For comics, we don't have item count, so show page estimate
+                        val estimatedPage = (state.value.book.progress * 100).roundToInt() + 1
+                        "Page $estimatedPage"
                     }
-                    val currentPage = (currentChars / CHARACTERS_PER_PAGE) + 1
-                    val totalPages = (totalChars / CHARACTERS_PER_PAGE) + 1
-                    "$currentPage / $totalPages"
+                    ReaderProgressCount.PAGE -> {
+                        // For comics, page count is the same as quantity
+                        val estimatedPage = (state.value.book.progress * 100).roundToInt() + 1
+                        "Page $estimatedPage"
+                    }
+                }
+            } else {
+                when (mainState.value.progressCount) {
+                    ReaderProgressCount.PERCENTAGE -> {
+                        "${state.value.book.progress.calculateProgress(2)}%"
+                    }
+
+                    ReaderProgressCount.QUANTITY -> {
+                        val index =
+                            (state.value.book.progress * state.value.text.lastIndex + 1).roundToInt()
+                        "$index / ${state.value.text.size}"
+                    }
+
+                    ReaderProgressCount.PAGE -> {
+                        val totalChars = state.value.text.sumOf { text ->
+                            when (text) {
+                                is ReaderText.Text -> text.line.text.length.toInt()
+                                else -> 0
+                            }
+                        }
+                        val currentIndex = (state.value.book.progress * state.value.text.lastIndex).roundToInt()
+                        val currentChars = state.value.text.take(currentIndex + 1).sumOf { text ->
+                            when (text) {
+                                is ReaderText.Text -> text.line.text.length.toInt()
+                                else -> 0
+                            }
+                        }
+                        val currentPage = (currentChars / CHARACTERS_PER_PAGE) + 1
+                        val totalPages = (totalChars / CHARACTERS_PER_PAGE) + 1
+                        "$currentPage / $totalPages"
+                    }
                 }
             }
         }
         val chapterProgress = remember(
+            state.value.book.isComic,
             state.value.text,
             state.value.book.progress,
             state.value.currentChapter,
             state.value.currentChapterProgress,
             mainState.value.progressCount
         ) {
+            if (state.value.book.isComic) return@remember "" // Comics don't have chapters
             if (state.value.currentChapter == null) return@remember ""
             when (mainState.value.progressCount) {
                 ReaderProgressCount.PERCENTAGE -> {
