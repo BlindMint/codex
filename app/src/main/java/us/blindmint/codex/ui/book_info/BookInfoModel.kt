@@ -437,6 +437,14 @@ class BookInfoModel @Inject constructor(
                             .showToast(context = event.context)
                     }
                 }
+
+                is BookInfoEvent.OnToggleFavorite -> {
+                    val currentBook = _state.value.book
+                    val updatedBook = currentBook.copy(isFavorite = !currentBook.isFavorite)
+                    updateBook.execute(updatedBook)
+                    _state.update { it.copy(book = updatedBook) }
+                    LibraryScreen.refreshListChannel.trySend(0)
+                }
             }
         }
     }

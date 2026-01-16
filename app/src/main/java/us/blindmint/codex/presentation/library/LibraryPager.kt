@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import us.blindmint.codex.domain.library.category.CategoryWithBooks
+import us.blindmint.codex.domain.library.LibraryTabWithBooks
 import us.blindmint.codex.domain.library.display.LibraryLayout
 import us.blindmint.codex.ui.library.LibraryEvent
 import us.blindmint.codex.ui.main.MainModel
@@ -29,7 +29,7 @@ import us.blindmint.codex.ui.theme.DefaultTransition
 @Composable
 fun LibraryPager(
     pagerState: PagerState,
-    categories: List<CategoryWithBooks>,
+    categories: List<LibraryTabWithBooks>,
     hasSelectedItems: Boolean,
     isLoading: Boolean,
     isRefreshing: Boolean,

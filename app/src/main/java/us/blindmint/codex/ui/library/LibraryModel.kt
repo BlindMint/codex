@@ -52,6 +52,13 @@ class LibraryModel @Inject constructor(
     private val _state = MutableStateFlow(LibraryState())
     val state = _state.asStateFlow()
 
+    val allSelectedBooksAreFavorites: Boolean
+        get() = _state.value.books.filter { it.selected }.all { it.data.isFavorite }
+
+    fun toggleSelectedBooksFavorite() {
+        onEvent(LibraryEvent.OnToggleSelectedBooksFavorite)
+    }
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             onEvent(
@@ -362,6 +369,33 @@ class LibraryModel @Inject constructor(
                 }
                 // Refresh the list to apply filters
                 onEvent(LibraryEvent.OnRefreshList(loading = false, hideSearch = false))
+            }
+        }
+
+        is LibraryEvent.OnToggleSelectedBooksFavorite -> {
+            viewModelScope.launch(Dispatchers.IO) {
+                val selectedBooks = _state.value.books.filter { it.selected }
+                val allAreFavorites = selectedBooks.all { it.data.isFavorite }
+                val newFavoriteState = !allAreFavorites // If all are favorites, remove; if some aren't, add
+
+                selectedBooks.forEach { book ->
+                    if (book.data.isFavorite != newFavoriteState) {
+                        moveBooks.execute(book.data.copy(isFavorite = newFavoriteState))
+                    }
+                }
+
+                // Update the local state
+                _state.update {
+                    it.copy(
+                        books = it.books.map { book ->
+                            if (book.selected) {
+                                book.copy(data = book.data.copy(isFavorite = newFavoriteState))
+                            } else {
+                                book
+                            }
+                        }
+                    )
+                }
             }
         }
         }

@@ -31,6 +31,7 @@ fun BookInfoScaffold(
     showDescriptionDialog: (BookInfoEvent.OnShowDescriptionDialog) -> Unit,
     showMoveDialog: (BookInfoEvent.OnShowMoveDialog) -> Unit,
     showDeleteDialog: (BookInfoEvent.OnShowDeleteDialog) -> Unit,
+    toggleFavorite: () -> Unit,
     navigateToReader: () -> Unit,
     navigateBack: () -> Unit
 ) {
@@ -46,6 +47,7 @@ fun BookInfoScaffold(
                 listState = listState,
                 showEditBottomSheet = showEditBottomSheet,
                 showDetailsBottomSheet = showDetailsBottomSheet,
+                toggleFavorite = toggleFavorite,
                 navigateBack = navigateBack
             )
         }

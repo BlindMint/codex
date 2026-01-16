@@ -162,6 +162,10 @@
     <string name="sort_tab">Sort</string>
     <string name="reader_tab">Reader</string>
 
+    <!-- Favorites -->
+    <string name="add_to_favorites">Add to favorites</string>
+    <string name="remove_from_favorites">Remove from favorites</string>
+
     <!-- Settings categories -->
     <string name="general_settings">General</string>
     <string name="general_settings_desc">App language</string>

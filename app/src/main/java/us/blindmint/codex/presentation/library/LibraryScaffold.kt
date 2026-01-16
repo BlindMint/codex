@@ -18,7 +18,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import us.blindmint.codex.domain.library.category.CategoryWithBooks
+import us.blindmint.codex.domain.library.LibraryTabWithBooks
 import us.blindmint.codex.ui.library.LibraryEvent
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -35,7 +35,7 @@ fun LibraryScaffold(
     isLoading: Boolean,
     isRefreshing: Boolean,
     refreshState: PullRefreshState,
-    categories: List<CategoryWithBooks>,
+    categories: List<LibraryTabWithBooks>,
     libraryShowCategoryTabs: Boolean,
     libraryShowBookCount: Boolean,
     searchVisibility: (LibraryEvent.OnSearchVisibility) -> Unit,
@@ -48,6 +48,8 @@ fun LibraryScaffold(
     showDeleteDialog: (LibraryEvent.OnShowDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
     sortMenuVisibility: (LibraryEvent) -> Unit,
+    allSelectedBooksAreFavorites: Boolean,
+    toggleSelectedBooksFavorite: () -> Unit,
     navigateToBrowse: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
     navigateToReader: (id: Int) -> Unit,
@@ -80,7 +82,9 @@ fun LibraryScaffold(
                 showMoveDialog = showMoveDialog,
                 showDeleteDialog = showDeleteDialog,
                 showClearProgressHistoryDialog = showClearProgressHistoryDialog,
-                sortMenuVisibility = sortMenuVisibility
+                sortMenuVisibility = sortMenuVisibility,
+                allSelectedBooksAreFavorites = allSelectedBooksAreFavorites,
+                toggleSelectedBooksFavorite = toggleSelectedBooksFavorite
             )
         }
     ) { paddingValues ->

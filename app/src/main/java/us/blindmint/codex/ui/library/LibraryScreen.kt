@@ -32,8 +32,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import us.blindmint.codex.R
-import us.blindmint.codex.domain.library.category.Category
-import us.blindmint.codex.domain.library.category.CategoryWithBooks
+import us.blindmint.codex.domain.library.LibraryTab
+import us.blindmint.codex.domain.library.LibraryTabWithBooks
 import us.blindmint.codex.domain.library.sort.LibrarySortOrder
 import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.domain.ui.UIText
@@ -112,34 +112,44 @@ object LibraryScreen : Screen, Parcelable {
 
         val skullPainter = painterResource(id = R.drawable.skull_outline)
 
-        val categories = remember(sortedBooks) {
+        val tabs = remember(sortedBooks) {
             derivedStateOf {
+                // Book file extensions for filtering
+                val bookExtensions = setOf("epub", "pdf", "azw3", "mobi", "fb2", "txt", "html", "htm", "md")
+                val comicExtensions = setOf("cbr", "cbz", "cb7")
+
                 listOf(
-                    CategoryWithBooks(
-                        category = Category.READING,
-                        title = UIText.StringResource(R.string.reading_tab),
-                        books = sortedBooks.filter { it.data.category == Category.READING },
+                    LibraryTabWithBooks(
+                        tab = LibraryTab.ALL,
+                        title = UIText.StringResource(R.string.reading_tab), // "All"
+                        books = sortedBooks,
                         emptyIcon = skullPainter,
                         emptyMessage = UIText.StringResource(R.string.library_reading_empty)
                     ),
-                    CategoryWithBooks(
-                        category = Category.PLANNING,
-                        title = UIText.StringResource(R.string.planning_tab),
-                        books = sortedBooks.filter { it.data.category == Category.PLANNING },
+                    LibraryTabWithBooks(
+                        tab = LibraryTab.BOOKS,
+                        title = UIText.StringResource(R.string.planning_tab), // "Books"
+                        books = sortedBooks.filter { book ->
+                            val extension = book.data.filePath.substringAfterLast('.', "").lowercase()
+                            extension in bookExtensions
+                        },
                         emptyIcon = skullPainter,
                         emptyMessage = UIText.StringResource(R.string.library_planning_empty)
                     ),
-                    CategoryWithBooks(
-                        category = Category.ALREADY_READ,
-                        title = UIText.StringResource(R.string.already_read_tab),
-                        books = sortedBooks.filter { it.data.category == Category.ALREADY_READ },
+                    LibraryTabWithBooks(
+                        tab = LibraryTab.COMICS,
+                        title = UIText.StringResource(R.string.already_read_tab), // "Comics"
+                        books = sortedBooks.filter { book ->
+                            val extension = book.data.filePath.substringAfterLast('.', "").lowercase()
+                            extension in comicExtensions
+                        },
                         emptyIcon = skullPainter,
                         emptyMessage = UIText.StringResource(R.string.library_already_read_empty)
                     ),
-                    CategoryWithBooks(
-                        category = Category.FAVORITES,
-                        title = UIText.StringResource(R.string.favorites_tab),
-                        books = sortedBooks.filter { it.data.category == Category.FAVORITES },
+                    LibraryTabWithBooks(
+                        tab = LibraryTab.FAVORITES,
+                        title = UIText.StringResource(R.string.favorites_tab), // "Favorites"
+                        books = sortedBooks.filter { it.data.isFavorite },
                         emptyIcon = skullPainter,
                         emptyMessage = UIText.StringResource(R.string.library_favorites_empty)
                     )
@@ -162,7 +172,7 @@ object LibraryScreen : Screen, Parcelable {
 
         val pagerState = rememberPagerState(
             initialPage = initialPage
-        ) { categories.value.count() }
+        ) { tabs.value.count() }
         DisposableEffect(Unit) { onDispose { initialPage = pagerState.currentPage } }
 
         LaunchedEffect(Unit) {
@@ -184,7 +194,7 @@ object LibraryScreen : Screen, Parcelable {
             isLoading = state.value.isLoading,
             isRefreshing = state.value.isRefreshing,
             doublePressExit = mainState.value.doublePressExit,
-            categories = categories.value,
+            categories = tabs.value,
             refreshState = refreshState,
             dialog = state.value.dialog,
             libraryShowCategoryTabs = mainState.value.libraryShowCategoryTabs,
@@ -202,6 +212,8 @@ object LibraryScreen : Screen, Parcelable {
             showClearProgressHistoryDialog = screenModel::onEvent,
             dismissDialog = screenModel::onEvent,
             sortMenuVisibility = screenModel::onEvent,
+            allSelectedBooksAreFavorites = screenModel.allSelectedBooksAreFavorites,
+            toggleSelectedBooksFavorite = screenModel::toggleSelectedBooksFavorite,
             navigateToBrowse = {
                 navigator.push(BrowseScreen)
             },

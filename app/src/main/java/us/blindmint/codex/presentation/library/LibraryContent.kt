@@ -12,7 +12,7 @@ import androidx.compose.material.pullrefresh.PullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.focus.FocusRequester
 import us.blindmint.codex.domain.library.book.SelectableBook
-import us.blindmint.codex.domain.library.category.CategoryWithBooks
+import us.blindmint.codex.domain.library.LibraryTabWithBooks
 import us.blindmint.codex.domain.util.Dialog
 import us.blindmint.codex.ui.library.LibraryEvent
 
@@ -31,7 +31,7 @@ fun LibraryContent(
     isLoading: Boolean,
     isRefreshing: Boolean,
     doublePressExit: Boolean,
-    categories: List<CategoryWithBooks>,
+    categories: List<LibraryTabWithBooks>,
     refreshState: PullRefreshState,
     dialog: Dialog?,
     libraryShowCategoryTabs: Boolean,
@@ -49,6 +49,8 @@ fun LibraryContent(
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
     dismissDialog: (LibraryEvent.OnDismissDialog) -> Unit,
     sortMenuVisibility: (LibraryEvent) -> Unit,
+    allSelectedBooksAreFavorites: Boolean,
+    toggleSelectedBooksFavorite: () -> Unit,
     navigateToBrowse: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
     navigateToReader: (id: Int) -> Unit
@@ -92,6 +94,8 @@ fun LibraryContent(
         showDeleteDialog = showDeleteDialog,
         showClearProgressHistoryDialog = showClearProgressHistoryDialog,
         sortMenuVisibility = sortMenuVisibility,
+        allSelectedBooksAreFavorites = allSelectedBooksAreFavorites,
+        toggleSelectedBooksFavorite = toggleSelectedBooksFavorite,
         refreshState = refreshState,
         navigateToBrowse = navigateToBrowse,
         navigateToBookInfo = navigateToBookInfo,

@@ -67,4 +67,6 @@ sealed class LibraryEvent {
     data object OnDismissSortMenu : LibraryEvent()
 
     data class OnUpdateFilterState(val filterState: FilterState) : LibraryEvent()
+
+    data object OnToggleSelectedBooksFavorite : LibraryEvent()
 }

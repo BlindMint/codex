@@ -45,6 +45,7 @@ fun BookInfoContent(
     checkCoverReset: (BookInfoEvent.OnCheckCoverReset) -> Unit,
     dismissDialog: (BookInfoEvent.OnDismissDialog) -> Unit,
     dismissBottomSheet: (BookInfoEvent.OnDismissBottomSheet) -> Unit,
+    toggleFavorite: () -> Unit,
     navigateToReader: () -> Unit,
     navigateToLibrary: () -> Unit,
     navigateBack: () -> Unit
@@ -93,6 +94,7 @@ fun BookInfoContent(
         showEditBottomSheet = showEditBottomSheet,
         showMoveDialog = showMoveDialog,
         showDeleteDialog = showDeleteDialog,
+        toggleFavorite = toggleFavorite,
         navigateToReader = navigateToReader,
         navigateBack = navigateBack
     )

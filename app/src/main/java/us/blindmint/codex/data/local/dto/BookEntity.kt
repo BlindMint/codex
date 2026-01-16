@@ -44,5 +44,6 @@ data class BookEntity(
     val lastPageRead: Int = 0,
     val readingDirection: String = "LTR",
     val comicReaderMode: String = "PAGED",
-    val archiveFormat: String? = null
+    val archiveFormat: String? = null,
+    val isFavorite: Boolean = false
 )

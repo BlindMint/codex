@@ -18,14 +18,33 @@ class BookMapperImpl @Inject constructor() : BookMapper {
         return BookEntity(
             id = book.id,
             title = book.title,
+            author = book.author.getAsString(),
+            description = book.description,
             filePath = book.filePath,
             scrollIndex = book.scrollIndex,
             scrollOffset = book.scrollOffset,
             progress = book.progress,
-            author = book.author.getAsString(),
-            description = book.description,
             image = book.coverImage?.toString(),
-            category = book.category
+            category = book.category,
+            tags = book.tags,
+            seriesName = book.seriesName,
+            seriesIndex = book.seriesIndex,
+            publicationDate = book.publicationDate,
+            language = book.language,
+            publisher = book.publisher,
+            summary = book.summary,
+            uuid = book.uuid,
+            isbn = book.isbn,
+            source = book.source,
+            remoteUrl = book.remoteUrl,
+            isComic = book.isComic,
+            pageCount = book.pageCount,
+            currentPage = book.currentPage,
+            lastPageRead = book.lastPageRead,
+            readingDirection = book.readingDirection,
+            comicReaderMode = book.comicReaderMode,
+            archiveFormat = book.archiveFormat,
+            isFavorite = book.isFavorite
         )
     }
 
@@ -37,13 +56,32 @@ class BookMapperImpl @Inject constructor() : BookMapper {
                 R.string.unknown_author
             ),
             description = bookEntity.description,
+            filePath = bookEntity.filePath,
+            coverImage = bookEntity.image?.toUri(),
             scrollIndex = bookEntity.scrollIndex,
             scrollOffset = bookEntity.scrollOffset,
             progress = bookEntity.progress,
-            filePath = bookEntity.filePath,
             lastOpened = null,
             category = bookEntity.category,
-            coverImage = bookEntity.image?.toUri()
+            tags = bookEntity.tags,
+            seriesName = bookEntity.seriesName,
+            seriesIndex = bookEntity.seriesIndex,
+            publicationDate = bookEntity.publicationDate,
+            language = bookEntity.language,
+            publisher = bookEntity.publisher,
+            summary = bookEntity.summary,
+            uuid = bookEntity.uuid,
+            isbn = bookEntity.isbn,
+            source = bookEntity.source,
+            remoteUrl = bookEntity.remoteUrl,
+            isComic = bookEntity.isComic,
+            pageCount = bookEntity.pageCount,
+            currentPage = bookEntity.currentPage,
+            lastPageRead = bookEntity.lastPageRead,
+            readingDirection = bookEntity.readingDirection,
+            comicReaderMode = bookEntity.comicReaderMode,
+            archiveFormat = bookEntity.archiveFormat,
+            isFavorite = bookEntity.isFavorite
         )
     }
 }

@@ -98,4 +98,6 @@ sealed class BookInfoEvent {
     data class OnResetDescription(
         val context: Context
     ) : BookInfoEvent()
+
+    data object OnToggleFavorite : BookInfoEvent()
 }

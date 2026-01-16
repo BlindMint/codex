@@ -18,12 +18,14 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MoveUp
 import androidx.compose.material.icons.outlined.RestoreFromTrash
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -37,7 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import us.blindmint.codex.R
-import us.blindmint.codex.domain.library.category.CategoryWithBooks
+import us.blindmint.codex.domain.library.LibraryTabWithBooks
 import us.blindmint.codex.presentation.core.components.common.IconButton
 import us.blindmint.codex.presentation.core.components.common.SearchTextField
 import us.blindmint.codex.presentation.core.components.common.StyledText
@@ -59,7 +61,7 @@ fun LibraryTopBar(
     pagerState: PagerState,
     isLoading: Boolean,
     isRefreshing: Boolean,
-    categories: List<CategoryWithBooks>,
+    categories: List<LibraryTabWithBooks>,
     libraryShowCategoryTabs: Boolean,
     libraryShowBookCount: Boolean,
     searchVisibility: (LibraryEvent.OnSearchVisibility) -> Unit,
@@ -70,7 +72,9 @@ fun LibraryTopBar(
     showMoveDialog: (LibraryEvent.OnShowMoveDialog) -> Unit,
     showDeleteDialog: (LibraryEvent.OnShowDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
-    sortMenuVisibility: (LibraryEvent) -> Unit
+    sortMenuVisibility: (LibraryEvent) -> Unit,
+    allSelectedBooksAreFavorites: Boolean,
+    toggleSelectedBooksFavorite: () -> Unit
 ) {
     val animatedItemCountBackgroundColor = animateColorAsState(
         if (hasSelectedItems) MaterialTheme.colorScheme.surfaceContainerHighest
@@ -125,7 +129,7 @@ fun LibraryTopBar(
                         searchVisibility(LibraryEvent.OnSearchVisibility(true))
                     }
                     IconButton(
-                        icon = Icons.AutoMirrored.Default.Sort,
+                        icon = Icons.AutoMirrored.Outlined.Sort,
                         contentDescription = R.string.sort_content_desc,
                         disableOnClick = false,
                     ) {
@@ -186,12 +190,12 @@ fun LibraryTopBar(
                 },
                 contentActions = {
                     IconButton(
-                        icon = Icons.Outlined.MoveUp,
-                        contentDescription = R.string.move_books_content_desc,
+                        icon = if (allSelectedBooksAreFavorites) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                        contentDescription = if (allSelectedBooksAreFavorites) R.string.remove_from_favorites else R.string.add_to_favorites,
                         enabled = !isLoading && !isRefreshing,
                         disableOnClick = false,
                     ) {
-                        showMoveDialog(LibraryEvent.OnShowMoveDialog)
+                        toggleSelectedBooksFavorite()
                     }
                     IconButton(
                         icon = Icons.Outlined.Delete,

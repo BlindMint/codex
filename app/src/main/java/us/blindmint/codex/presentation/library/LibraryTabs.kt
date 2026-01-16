@@ -30,12 +30,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import us.blindmint.codex.domain.library.category.CategoryWithBooks
+import us.blindmint.codex.domain.library.LibraryTabWithBooks
 import us.blindmint.codex.presentation.core.components.common.StyledText
 
 @Composable
 fun LibraryTabs(
-    categories: List<CategoryWithBooks>,
+    categories: List<LibraryTabWithBooks>,
     pagerState: PagerState,
     itemCountBackgroundColor: Color,
     showBookCount: Boolean = true,

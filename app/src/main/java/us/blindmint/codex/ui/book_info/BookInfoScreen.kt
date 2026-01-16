@@ -102,6 +102,7 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 actionMoveDialog = screenModel::onEvent,
                 showDeleteDialog = screenModel::onEvent,
                 actionDeleteDialog = screenModel::onEvent,
+                toggleFavorite = { screenModel.onEvent(BookInfoEvent.OnToggleFavorite) },
                 navigateToReader = {
                     if (state.value.book.id != -1) {
                         HistoryScreen.insertHistoryChannel.trySend(state.value.book.id)
