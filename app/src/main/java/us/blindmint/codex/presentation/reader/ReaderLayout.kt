@@ -93,6 +93,7 @@ fun ReaderLayout(
     paragraphIndentation: TextUnit,
     doubleClickTranslation: Boolean,
     fullscreenMode: Boolean,
+    showPageIndicator: Boolean = true,
     isLoading: Boolean,
     showMenu: Boolean,
     menuVisibility: (ReaderEvent.OnMenuVisibility) -> Unit,
@@ -117,6 +118,7 @@ fun ReaderLayout(
             backgroundColor = backgroundColor,
             comicReadingDirection = mainState.value.comicReadingDirection,
             comicTapZone = mainState.value.comicTapZone,
+            showPageIndicator = !fullscreenMode,
             onLoadingComplete = {
                 // Signal that comic loading is complete
                 onReaderEvent(ReaderEvent.OnComicLoadingComplete)

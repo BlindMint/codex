@@ -67,6 +67,7 @@ fun ComicReaderLayout(
     backgroundColor: Color,
     comicReadingDirection: String,
     comicTapZone: Int,
+    showPageIndicator: Boolean = true,
     onLoadingComplete: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -168,39 +169,50 @@ fun ComicReaderLayout(
         } else if (errorMessage != null) {
             // Error state - could add error UI here
             Box(modifier = Modifier.fillMaxSize())
-        } else if (comicPages.isNotEmpty()) {
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    top = (WindowInsets.displayCutout.asPaddingValues()
-                        .calculateTopPadding())
-                        .coerceAtLeast(18.dp),
-                    bottom = (WindowInsets.displayCutout.asPaddingValues()
-                        .calculateBottomPadding())
-                        .coerceAtLeast(18.dp),
-                )
-            ) { page ->
-                val pageImage = comicPages.getOrNull(page)
-                if (pageImage != null) {
-                    ComicPage(
-                        imageBitmap = pageImage,
-                        comicReadingDirection = comicReadingDirection,
-                        comicTapZone = comicTapZone,
-                        onPreviousPage = {
-                            scope.launch {
-                                if (pagerState.currentPage > 0) {
-                                    pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                } else if (comicPages.isNotEmpty()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        top = (WindowInsets.displayCutout.asPaddingValues()
+                            .calculateTopPadding())
+                            .coerceAtLeast(18.dp),
+                        bottom = (WindowInsets.displayCutout.asPaddingValues()
+                            .calculateBottomPadding())
+                            .coerceAtLeast(18.dp),
+                    )
+                ) { page ->
+                    val pageImage = comicPages.getOrNull(page)
+                    if (pageImage != null) {
+                        ComicPage(
+                            imageBitmap = pageImage,
+                            comicReadingDirection = comicReadingDirection,
+                            comicTapZone = comicTapZone,
+                            onPreviousPage = {
+                                scope.launch {
+                                    if (pagerState.currentPage > 0) {
+                                        pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                                    }
+                                }
+                            },
+                            onNextPage = {
+                                scope.launch {
+                                    if (pagerState.currentPage < comicPages.size - 1) {
+                                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                    }
                                 }
                             }
-                        },
-                        onNextPage = {
-                            scope.launch {
-                                if (pagerState.currentPage < comicPages.size - 1) {
-                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                                }
-                            }
-                        }
+                        )
+                    }
+                }
+
+                // Page indicator
+                if (showPageIndicator && comicPages.isNotEmpty()) {
+                    ComicPageIndicator(
+                        currentPage = currentPage,
+                        totalPages = comicPages.size,
+                        modifier = Modifier.align(Alignment.BottomCenter)
                     )
                 }
             }
