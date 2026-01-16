@@ -131,8 +131,7 @@ object LibraryScreen : Screen, Parcelable {
                         tab = LibraryTab.BOOKS,
                         title = UIText.StringResource(R.string.planning_tab), // "Books"
                         books = sortedBooks.filter { book ->
-                            val extension = book.data.filePath.substringAfterLast('.', "").lowercase()
-                            extension in bookExtensions
+                            !book.data.isComic
                         },
                         emptyIcon = skullPainter,
                         emptyMessage = UIText.StringResource(R.string.library_planning_empty)
@@ -141,8 +140,7 @@ object LibraryScreen : Screen, Parcelable {
                         tab = LibraryTab.COMICS,
                         title = UIText.StringResource(R.string.already_read_tab), // "Comics"
                         books = sortedBooks.filter { book ->
-                            val extension = book.data.filePath.substringAfterLast('.', "").lowercase()
-                            extension in comicExtensions
+                            book.data.isComic
                         },
                         emptyIcon = skullPainter,
                         emptyMessage = UIText.StringResource(R.string.library_already_read_empty)

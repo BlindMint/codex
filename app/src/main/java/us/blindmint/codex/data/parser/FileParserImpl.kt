@@ -7,6 +7,7 @@
 package us.blindmint.codex.data.parser
 
 import android.util.Log
+import us.blindmint.codex.data.parser.comic.ComicFileParser
 import us.blindmint.codex.data.parser.epub.EpubFileParser
 import us.blindmint.codex.data.parser.fb2.Fb2FileParser
 import us.blindmint.codex.data.parser.fodt.FodtFileParser
@@ -26,6 +27,7 @@ class FileParserImpl @Inject constructor(
     private val fb2FileParser: Fb2FileParser,
     private val htmlFileParser: HtmlFileParser,
     private val fodtFileParser: FodtFileParser,
+    private val comicFileParser: ComicFileParser,
 ) : FileParser {
 
     override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
@@ -69,8 +71,7 @@ class FileParserImpl @Inject constructor(
             }
 
             ".cbr", ".cbz", ".cb7" -> {
-                // Comic files - parsing not implemented yet
-                null
+                comicFileParser.parse(cachedFile)
             }
 
             else -> {
