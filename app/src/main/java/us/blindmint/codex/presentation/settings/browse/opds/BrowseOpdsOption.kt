@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -224,7 +225,7 @@ private fun OpdsSourceItem(
                 modifier = Modifier.size(36.dp)
             ) {
                 Icon(
-                    Icons.Default.Delete,
+                    Icons.Outlined.Clear,
                     contentDescription = "Remove source",
                     modifier = Modifier.size(20.dp)
                 )

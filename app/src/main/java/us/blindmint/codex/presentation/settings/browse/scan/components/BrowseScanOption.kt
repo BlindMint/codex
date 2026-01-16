@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -50,7 +51,7 @@ import us.blindmint.codex.R
 import us.blindmint.codex.data.local.data_store.DataStore
 import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
 import us.blindmint.codex.domain.use_case.book.BulkImportProgress
-import us.blindmint.codex.presentation.core.components.common.IconButton
+
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.constants.DataStoreConstants
 import us.blindmint.codex.presentation.core.util.noRippleClickable
@@ -151,19 +152,7 @@ fun BrowseScanOption() {
                 index = index,
                 permission = permission,
                 context = context,
-                releasePersistableUriPermission = {
-                    settingsModel.onEvent(
-                        SettingsEvent.OnReleasePersistableUriPermission(
-                            uri = permission.uri
-                        )
-                    )
-
-                    coroutineScope.launch {
-                        persistedUriPermissions = getPersistedUriPermissions()
-                    }
-                    BrowseScreen.refreshListChannel.trySend(Unit)
-                },
-                refreshFolder = {
+                onRefreshClick = {
                     importingFolderUri = permission.uri
                     coroutineScope.launch {
                         try {
@@ -180,6 +169,18 @@ fun BrowseScanOption() {
                             importingFolderUri = null
                         }
                     }
+                },
+                onRemoveClick = {
+                    settingsModel.onEvent(
+                        SettingsEvent.OnReleasePersistableUriPermission(
+                            uri = permission.uri
+                        )
+                    )
+
+                    coroutineScope.launch {
+                        persistedUriPermissions = getPersistedUriPermissions()
+                    }
+                    BrowseScreen.refreshListChannel.trySend(Unit)
                 },
                 importProgress = importProgress,
                 isImportingThisFolder = importingFolderUri == permission.uri
@@ -206,8 +207,8 @@ private fun BrowseScanFolderItem(
     index: Int,
     permission: UriPermission,
     context: Context,
-    releasePersistableUriPermission: () -> Unit,
-    refreshFolder: () -> Unit,
+    onRefreshClick: () -> Unit,
+    onRemoveClick: () -> Unit,
     importProgress: BulkImportProgress?,
     isImportingThisFolder: Boolean
 ) {
@@ -266,25 +267,29 @@ private fun BrowseScanFolderItem(
                 }
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 IconButton(
-                    modifier = Modifier.size(24.dp),
-                    icon = Icons.Outlined.Refresh,
-                    contentDescription = R.string.refresh_content_desc,
-                    disableOnClick = false,
-                    color = MaterialTheme.colorScheme.onSurface
+                    onClick = onRefreshClick,
+                    modifier = Modifier.size(36.dp)
                 ) {
-                    refreshFolder()
+                    Icon(
+                        Icons.Outlined.Refresh,
+                        contentDescription = "Refresh folder",
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
 
                 IconButton(
-                    modifier = Modifier.size(24.dp),
-                    icon = Icons.Outlined.Clear,
-                    contentDescription = R.string.remove_content_desc,
-                    disableOnClick = false,
-                    color = MaterialTheme.colorScheme.onSurface
+                    onClick = onRemoveClick,
+                    modifier = Modifier.size(36.dp)
                 ) {
-                    releasePersistableUriPermission()
+                    Icon(
+                        Icons.Outlined.Clear,
+                        contentDescription = "Remove folder",
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }
