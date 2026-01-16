@@ -15,11 +15,13 @@ import android.util.Log
 import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import us.blindmint.codex.data.local.dto.BookEntity
 import us.blindmint.codex.data.local.dto.BookProgressHistoryEntity
 import us.blindmint.codex.data.local.room.BookDao
 import us.blindmint.codex.data.mapper.book.BookMapper
 import us.blindmint.codex.data.parser.FileParser
 import us.blindmint.codex.data.parser.TextParser
+import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.file.CachedFileCompat
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.BookWithCover
@@ -56,6 +58,41 @@ class BookRepositoryImpl @Inject constructor(
 
     // LRU cache for recently opened book text (100MB cache size for 3-5 books)
     private val textCache = LruCache<Int, List<ReaderText>>(1024 * 1024 * 100)
+
+    /**
+     * Creates a CachedFile from book.filePath, handling both file paths and content URIs.
+     */
+    private fun getCachedFile(book: BookEntity): CachedFile? {
+        val uri = Uri.parse(book.filePath)
+        return if (!uri.scheme.isNullOrBlank()) {
+            // It's a URI (content:// or file://)
+            val name = if (uri.scheme == "content") {
+                uri.lastPathSegment?.let { Uri.decode(it) } ?: "unknown"
+            } else {
+                uri.lastPathSegment ?: book.filePath.substringAfterLast(File.separator)
+            }
+            CachedFileCompat.fromUri(
+                context = application,
+                uri = uri,
+                builder = CachedFileCompat.build(
+                    name = name,
+                    path = book.filePath,
+                    isDirectory = false
+                )
+            )
+        } else {
+            // It's a file path
+            CachedFileCompat.fromFullPath(
+                context = application,
+                path = book.filePath,
+                builder = CachedFileCompat.build(
+                    name = book.filePath.substringAfterLast(File.separator),
+                    path = book.filePath,
+                    isDirectory = false
+                )
+            )
+        }
+    }
 
     /**
      * Get all books matching [query] from database.
@@ -122,15 +159,7 @@ class BookRepositoryImpl @Inject constructor(
         }
 
         val book = database.findBookById(bookId)
-        val cachedFile = CachedFileCompat.fromFullPath(
-            context = application,
-            path = book.filePath,
-            builder = CachedFileCompat.build(
-                name = book.filePath.substringAfterLast(File.separator),
-                path = book.filePath,
-                isDirectory = false
-            )
-        )
+        val cachedFile = getCachedFile(book)
 
         if (cachedFile == null || !cachedFile.canAccess()) {
             Log.e(GET_TEXT, "File [$bookId] does not exist")
@@ -389,15 +418,7 @@ class BookRepositoryImpl @Inject constructor(
     override suspend fun canResetCover(bookId: Int): Boolean {
         val book = database.findBookById(bookId)
 
-        val cachedFile = CachedFileCompat.fromFullPath(
-            application,
-            book.filePath,
-            builder = CachedFileCompat.build(
-                name = book.filePath.substringAfterLast(File.separator),
-                path = book.filePath,
-                isDirectory = false
-            )
-        )
+        val cachedFile = getCachedFile(book)
 
         if (cachedFile == null || !cachedFile.canAccess()) {
             return false
@@ -445,15 +466,7 @@ class BookRepositoryImpl @Inject constructor(
         }
 
         val book = database.findBookById(bookId)
-        val cachedFile = CachedFileCompat.fromFullPath(
-            application,
-            book.filePath,
-            builder = CachedFileCompat.build(
-                name = book.filePath.substringAfterLast(File.separator),
-                path = book.filePath,
-                isDirectory = false
-            )
-        )
+        val cachedFile = getCachedFile(book)
 
         if (cachedFile == null || !cachedFile.canAccess()) {
             return false
