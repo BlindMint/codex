@@ -147,4 +147,7 @@ sealed class ReaderEvent {
     data class OnScrollToSearchResult(
         val resultIndex: Int
     ) : ReaderEvent()
+
+    // Comic events
+    data object OnComicLoadingComplete : ReaderEvent()
 }

@@ -779,6 +779,15 @@ class ReaderModel @Inject constructor(
                         )
                     }
                 }
+
+                is ReaderEvent.OnComicLoadingComplete -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = null
+                        )
+                    }
+                }
             }
         }
     }
@@ -816,7 +825,7 @@ class ReaderModel @Inject constructor(
                     )
                 )
             } else {
-                // For comics, set loading to false and show menu
+                // For comics, keep loading state until comic pages are loaded
                 systemBarsVisibility(
                     show = !fullscreenMode,
                     activity = activity
@@ -830,7 +839,8 @@ class ReaderModel @Inject constructor(
                         book = it.book.copy(
                             lastOpened = lastOpened?.time
                         ),
-                        isLoading = false
+                        // Keep isLoading = true for comics until pages are loaded
+                        isLoading = true
                     )
                 }
 

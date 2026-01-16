@@ -588,16 +588,17 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             navigateBack = {
                 navigator.pop()
             },
-            navigateToBookInfo = { changePath ->
-                if (changePath) BookInfoScreen.changePathChannel.trySend(true)
-                navigator.push(
-                    BookInfoScreen(
-                        bookId = bookId,
-                    ),
-                    popping = true,
-                    saveInBackStack = false
-                )
-            }
-        )
+             navigateToBookInfo = { changePath ->
+                 if (changePath) BookInfoScreen.changePathChannel.trySend(true)
+                 navigator.push(
+                     BookInfoScreen(
+                         bookId = bookId,
+                     ),
+                     popping = true,
+                     saveInBackStack = false
+                 )
+             },
+             onReaderEvent = screenModel::onEvent
+         )
     }
 }

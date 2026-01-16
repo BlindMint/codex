@@ -114,6 +114,7 @@ fun ReaderScaffold(
     changeProgress: (ReaderEvent.OnChangeProgress) -> Unit,
     openTranslator: (ReaderEvent.OnOpenTranslator) -> Unit,
     onTextSelected: (ReaderEvent.OnTextSelected) -> Unit,
+    onReaderEvent: (ReaderEvent) -> Unit,
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
     showBookmarksDrawer: (ReaderEvent.OnShowBookmarksDrawer) -> Unit,
@@ -262,9 +263,10 @@ fun ReaderScaffold(
             showMenu = showMenu,
             menuVisibility = menuVisibility,
             openTranslator = openTranslator,
-            onTextSelected = onTextSelected,
-            searchQuery = searchQuery,
-            searchHighlightColor = searchHighlightColor
+             onTextSelected = onTextSelected,
+             onReaderEvent = onReaderEvent,
+             searchQuery = searchQuery,
+             searchHighlightColor = searchHighlightColor
         )
 
         // Search scrollbar - visible when search bar is active and setting is enabled

@@ -50,8 +50,8 @@ import us.blindmint.codex.presentation.core.components.common.SelectionContainer
 import us.blindmint.codex.presentation.core.components.common.SpacedItem
 import us.blindmint.codex.presentation.core.util.LocalActivity
 import us.blindmint.codex.presentation.core.util.noRippleClickable
-import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.reader.ReaderEvent
+import us.blindmint.codex.ui.reader.ReaderModel
 
 @Composable
 fun ReaderLayout(
@@ -98,6 +98,7 @@ fun ReaderLayout(
     menuVisibility: (ReaderEvent.OnMenuVisibility) -> Unit,
     openTranslator: (ReaderEvent.OnOpenTranslator) -> Unit,
     onTextSelected: (ReaderEvent.OnTextSelected) -> Unit,
+    onReaderEvent: (ReaderEvent) -> Unit,
     searchQuery: String,
     searchHighlightColor: ComposeColor
 ) {
@@ -116,6 +117,10 @@ fun ReaderLayout(
             backgroundColor = backgroundColor,
             comicReadingDirection = mainState.value.comicReadingDirection,
             comicTapZone = mainState.value.comicTapZone,
+            onLoadingComplete = {
+                // Signal that comic loading is complete
+                onReaderEvent(ReaderEvent.OnComicLoadingComplete)
+            },
             modifier = Modifier.fillMaxSize()
         )
         return

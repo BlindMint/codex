@@ -67,6 +67,7 @@ fun ComicReaderLayout(
     backgroundColor: Color,
     comicReadingDirection: String,
     comicTapZone: Int,
+    onLoadingComplete: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -128,6 +129,7 @@ fun ComicReaderLayout(
             errorMessage = "Failed to load comic: ${e.message}"
         } finally {
             isLoading = false
+            onLoadingComplete()
         }
     }
 

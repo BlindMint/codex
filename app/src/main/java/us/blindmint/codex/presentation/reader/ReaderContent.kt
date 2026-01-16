@@ -118,6 +118,7 @@ fun ReaderContent(
     showBookmarksDrawer: (ReaderEvent.OnShowBookmarksDrawer) -> Unit,
     scrollToBookmark: (ReaderEvent.OnScrollToBookmark) -> Unit,
     dismissDrawer: (ReaderEvent.OnDismissDrawer) -> Unit,
+    onReaderEvent: (ReaderEvent) -> Unit,
     onDeleteBookmark: (bookmark: us.blindmint.codex.domain.bookmark.Bookmark) -> Unit,
     onClearAllBookmarks: () -> Unit,
     showSearch: (ReaderEvent.OnShowSearchPersistent) -> Unit,
@@ -234,10 +235,11 @@ fun ReaderContent(
             onSearchQueryChange = onSearchQueryChange,
             onNextSearchResult = onNextSearchResult,
             onPrevSearchResult = onPrevSearchResult,
-            onScrollToSearchResult = onScrollToSearchResult,
-            navigateBack = navigateBack,
-            navigateToBookInfo = navigateToBookInfo
-        )
+             onScrollToSearchResult = onScrollToSearchResult,
+             onReaderEvent = onReaderEvent,
+             navigateBack = navigateBack,
+             navigateToBookInfo = navigateToBookInfo
+         )
     } else {
         ReaderErrorPlaceholder(
             errorMessage = errorMessage,
