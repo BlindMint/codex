@@ -70,7 +70,6 @@ fun ComicReadingDirectionOption() {
 
     ChipsWithTitle(
         title = stringResource(R.string.reading_direction),
-        horizontalPadding = 0.dp,
         chips = ComicReadingDirection.entries.map { direction ->
             ButtonItem(
                 id = direction.name,
@@ -92,7 +91,6 @@ fun ComicReaderModeOption() {
 
     ChipsWithTitle(
         title = stringResource(R.string.reader_mode),
-        horizontalPadding = 0.dp,
         chips = ComicReaderModeType.entries.map { mode ->
             ButtonItem(
                 id = mode.name,
@@ -123,7 +121,6 @@ fun ComicTapZoneOption() {
 
     ChipsWithTitle(
         title = stringResource(R.string.tap_zones),
-        horizontalPadding = 0.dp,
         chips = tapZones.map { (value, name) ->
             ButtonItem(
                 id = value.toString(),
@@ -145,7 +142,6 @@ fun ComicInvertTapsOption() {
 
     ChipsWithTitle(
         title = stringResource(R.string.invert_taps),
-        horizontalPadding = 0.dp,
         chips = ComicTapInversion.entries.map { invert ->
             ButtonItem(
                 id = invert.name,
@@ -167,7 +163,6 @@ fun ComicImageScaleOption() {
 
     ChipsWithTitle(
         title = stringResource(R.string.image_scale),
-        horizontalPadding = 0.dp,
         chips = ComicImageScale.entries.map { scale ->
             ButtonItem(
                 id = scale.value.toString(),
@@ -189,7 +184,6 @@ fun ComicZoomStartOption() {
 
     ChipsWithTitle(
         title = stringResource(R.string.zoom_start),
-        horizontalPadding = 0.dp,
         chips = ComicZoomStart.entries.map { zoom ->
             ButtonItem(
                 id = zoom.value.toString(),
@@ -213,7 +207,6 @@ fun ComicCropBordersOption() {
         selected = state.value.comicCropBorders,
         title = stringResource(R.string.crop_borders),
         description = stringResource(R.string.crop_borders_desc),
-        horizontalPadding = 0.dp,
         onClick = {
             mainModel.onEvent(MainEvent.OnChangeComicCropBorders(!state.value.comicCropBorders))
         }
@@ -229,7 +222,6 @@ fun ComicLandscapeZoomOption() {
         selected = state.value.comicLandscapeZoom,
         title = stringResource(R.string.landscape_zoom),
         description = stringResource(R.string.landscape_zoom_desc),
-        horizontalPadding = 0.dp,
         onClick = {
             mainModel.onEvent(MainEvent.OnChangeComicLandscapeZoom(!state.value.comicLandscapeZoom))
         }
