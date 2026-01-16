@@ -88,7 +88,7 @@ fun ReaderSearchBottomPanel(
                         (topBarHeightDp + contentAreaHeight * 0.5f).dp
                     })
                     .background(
-                        MaterialTheme.colorScheme.readerBarsColor.copy(alpha = 0.95f)
+                        MaterialTheme.colorScheme.readerBarsColor
                     )
                     .clip(
                         MaterialTheme.shapes.large.copy(
