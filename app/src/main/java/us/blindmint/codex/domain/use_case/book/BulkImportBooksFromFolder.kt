@@ -40,37 +40,40 @@ class BulkImportBooksFromFolder @Inject constructor(
 
         // Get all files recursively from the folder
         val allFiles = getAllFilesFromFolder(folderUri)
+        Log.i(BULK_IMPORT, "Found ${allFiles.size} total files in folder")
 
-        Log.i(BULK_IMPORT, "Found ${allFiles.size} files to process")
-
-        allFiles.forEachIndexed { index, cachedFile ->
-            onProgress(BulkImportProgress(index + 1, allFiles.size, cachedFile.name))
-
-            // Check if file is supported and not already imported
+        // Filter to only include supported file types that haven't been imported yet
+        val supportedFiles = allFiles.filter { cachedFile ->
             val isSupported = supportedExtensions.any { ext ->
                 cachedFile.name.endsWith(ext, ignoreCase = true)
             }
-
             val alreadyExists = existingPaths.any { existingPath ->
                 existingPath.equals(cachedFile.path, ignoreCase = true)
             }
+            val canAccess = cachedFile.canAccess()
 
-            if (isSupported && !alreadyExists && cachedFile.canAccess()) {
-                try {
-                    val nullableBook = fileSystemRepository.getBookFromFile(cachedFile)
-                    when (nullableBook) {
-                        is us.blindmint.codex.domain.library.book.NullableBook.NotNull -> {
-                            insertBook.execute(nullableBook.bookWithCover!!)
-                            importedCount++
-                            Log.i(BULK_IMPORT, "Imported: ${cachedFile.name}")
-                        }
-                        is us.blindmint.codex.domain.library.book.NullableBook.Null -> {
-                            Log.w(BULK_IMPORT, "Failed to parse: ${cachedFile.name} - ${nullableBook.message}")
-                        }
+            isSupported && !alreadyExists && canAccess
+        }
+
+        Log.i(BULK_IMPORT, "Found ${supportedFiles.size} supported files to import")
+
+        supportedFiles.forEachIndexed { index, cachedFile ->
+            onProgress(BulkImportProgress(index + 1, supportedFiles.size, cachedFile.name))
+
+            try {
+                val nullableBook = fileSystemRepository.getBookFromFile(cachedFile)
+                when (nullableBook) {
+                    is us.blindmint.codex.domain.library.book.NullableBook.NotNull -> {
+                        insertBook.execute(nullableBook.bookWithCover!!)
+                        importedCount++
+                        Log.i(BULK_IMPORT, "Imported: ${cachedFile.name}")
                     }
-                } catch (e: Exception) {
-                    Log.e(BULK_IMPORT, "Error importing ${cachedFile.name}: ${e.message}")
+                    is us.blindmint.codex.domain.library.book.NullableBook.Null -> {
+                        Log.w(BULK_IMPORT, "Failed to parse: ${cachedFile.name} - ${nullableBook.message}")
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e(BULK_IMPORT, "Error importing ${cachedFile.name}: ${e.message}")
             }
         }
 

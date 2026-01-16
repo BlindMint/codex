@@ -44,6 +44,7 @@ import us.blindmint.codex.ui.browse.BrowseScreen
 import us.blindmint.codex.ui.history.HistoryScreen
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.reader.ReaderScreen
+import us.blindmint.codex.ui.settings.BrowseSettingsScreen
 
 @Parcelize
 object LibraryScreen : Screen, Parcelable {
@@ -216,6 +217,9 @@ object LibraryScreen : Screen, Parcelable {
             toggleSelectedBooksFavorite = screenModel::toggleSelectedBooksFavorite,
             navigateToBrowse = {
                 navigator.push(BrowseScreen)
+            },
+            navigateToStorage = {
+                navigator.push(BrowseSettingsScreen)
             },
             navigateToReader = {
                 HistoryScreen.insertHistoryChannel.trySend(it)

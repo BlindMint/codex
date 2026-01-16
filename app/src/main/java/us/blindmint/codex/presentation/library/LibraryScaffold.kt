@@ -51,6 +51,7 @@ fun LibraryScaffold(
     allSelectedBooksAreFavorites: Boolean,
     toggleSelectedBooksFavorite: () -> Unit,
     navigateToBrowse: () -> Unit,
+    navigateToStorage: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
     navigateToReader: (id: Int) -> Unit,
 ) {
@@ -101,6 +102,7 @@ fun LibraryScaffold(
                 isRefreshing = isRefreshing,
                 selectBook = selectBook,
                 navigateToBrowse = navigateToBrowse,
+                navigateToStorage = navigateToStorage,
                 navigateToReader = navigateToReader,
                 navigateToBookInfo = navigateToBookInfo,
             )

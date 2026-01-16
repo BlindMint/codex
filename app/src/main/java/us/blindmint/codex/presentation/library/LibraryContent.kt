@@ -52,6 +52,7 @@ fun LibraryContent(
     allSelectedBooksAreFavorites: Boolean,
     toggleSelectedBooksFavorite: () -> Unit,
     navigateToBrowse: () -> Unit,
+    navigateToStorage: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
     navigateToReader: (id: Int) -> Unit
 ) {
@@ -98,6 +99,7 @@ fun LibraryContent(
         toggleSelectedBooksFavorite = toggleSelectedBooksFavorite,
         refreshState = refreshState,
         navigateToBrowse = navigateToBrowse,
+        navigateToStorage = navigateToStorage,
         navigateToBookInfo = navigateToBookInfo,
         navigateToReader = navigateToReader
     )

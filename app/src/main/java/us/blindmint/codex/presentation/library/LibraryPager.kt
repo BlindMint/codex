@@ -35,6 +35,7 @@ fun LibraryPager(
     isRefreshing: Boolean,
     selectBook: (LibraryEvent.OnSelectBook) -> Unit,
     navigateToBrowse: () -> Unit,
+    navigateToStorage: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
     navigateToReader: (id: Int) -> Unit,
 ) {
@@ -119,7 +120,7 @@ fun LibraryPager(
                 isBooksEmpty = category.value.books.isEmpty(),
                 emptyIcon = category.value.emptyIcon,
                 emptyMessage = category.value.emptyMessage,
-                navigateToBrowse = navigateToBrowse
+                navigateToBrowse = navigateToStorage
             )
         }
     }

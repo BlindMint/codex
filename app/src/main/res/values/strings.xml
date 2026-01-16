@@ -173,7 +173,7 @@
     <string name="appearance_settings_desc">Theme, colors</string>
     <string name="reader_settings">Reader</string>
     <string name="reader_settings_desc">Font, text</string>
-    <string name="browse_settings">Discover</string>
+    <string name="browse_settings">Storage</string>
     <string name="browse_settings_desc">General, filter, sort</string>
     <string name="library_settings">Library</string>
 

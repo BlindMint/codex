@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,10 +47,12 @@ import com.anggrayudi.storage.file.getBasePath
 import com.anggrayudi.storage.file.getRootPath
 import kotlinx.coroutines.launch
 import us.blindmint.codex.R
+import us.blindmint.codex.data.local.data_store.DataStore
 import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
 import us.blindmint.codex.domain.use_case.book.BulkImportProgress
 import us.blindmint.codex.presentation.core.components.common.IconButton
 import us.blindmint.codex.presentation.core.components.common.StyledText
+import us.blindmint.codex.presentation.core.constants.DataStoreConstants
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.browse.BrowseScreen
@@ -60,51 +64,48 @@ import us.blindmint.codex.ui.theme.dynamicListItemColor
 @Composable
 fun BrowseScanOption() {
     val settingsModel = hiltViewModel<SettingsModel>()
+    val state by settingsModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
     var importProgress by remember { mutableStateOf<BulkImportProgress?>(null) }
     var importingFolderUri by remember { mutableStateOf<android.net.Uri?>(null) }
-    var codexRootUri by remember { mutableStateOf<android.net.Uri?>(null) }
-    var isInitialized by remember { mutableStateOf(false) }
 
-    // Get the Codex root URI asynchronously and initialize the list
-    androidx.compose.runtime.LaunchedEffect(Unit) {
-        codexRootUri = runCatching {
-            settingsModel.codexDirectoryManager.getCodexRootUri()
-        }.getOrNull()
-        isInitialized = true
-    }
-
-    fun getPersistedUriPermissions(): List<UriPermission> {
+    suspend fun getPersistedUriPermissions(): List<UriPermission> {
         return context.contentResolver?.persistedUriPermissions.let { permissions ->
             if (permissions.isNullOrEmpty()) return@let emptyList()
 
+            // Always get the most current Codex root URI directly from storage
+            // This prevents timing issues where the root folder might appear in local folders
+            val storedCodexRootUri = settingsModel.codexDirectoryManager.getCodexRootUri()
+
             val originalCount = permissions.size
             val filteredPermissions = permissions.filter { permission ->
-                val shouldInclude = codexRootUri == null || !permission.uri.toString().equals(codexRootUri.toString(), ignoreCase = true)
+                val shouldInclude = storedCodexRootUri == null || !permission.uri.toString().equals(storedCodexRootUri.toString(), ignoreCase = true)
                 if (!shouldInclude) {
                     android.util.Log.d("BrowseScanOption", "Filtering out Codex root directory: ${permission.uri}")
                 }
                 shouldInclude
             }
 
-            android.util.Log.d("BrowseScanOption", "Filtered permissions: $originalCount -> ${filteredPermissions.size} (Codex root: $codexRootUri)")
+            android.util.Log.d("BrowseScanOption", "Filtered permissions: $originalCount -> ${filteredPermissions.size} (Codex root: $storedCodexRootUri)")
 
             filteredPermissions.sortedBy { it.uri.path?.lowercase() }
         }
     }
 
-    val persistedUriPermissions = remember {
-        mutableStateListOf<UriPermission>()
+    var persistedUriPermissions by remember {
+        mutableStateOf<List<android.content.UriPermission>>(emptyList())
     }
 
-    // Initialize the list only after codexRootUri is loaded
-    androidx.compose.runtime.LaunchedEffect(isInitialized) {
-        if (isInitialized) {
-            persistedUriPermissions.clear()
-            persistedUriPermissions.addAll(getPersistedUriPermissions())
-        }
+    // Initialize the list when component loads
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        persistedUriPermissions = getPersistedUriPermissions()
+    }
+
+    // Refresh the list when codexRootUri changes (e.g., when root folder is set/changed)
+    androidx.compose.runtime.LaunchedEffect(state.codexRootUri) {
+        persistedUriPermissions = getPersistedUriPermissions()
     }
 
     val persistedUriIntent = rememberLauncherForActivityResult(
@@ -117,8 +118,9 @@ fun BrowseScanOption() {
             )
         )
 
-        persistedUriPermissions.clear()
-        persistedUriPermissions.addAll(getPersistedUriPermissions())
+                        coroutineScope.launch {
+                            persistedUriPermissions = getPersistedUriPermissions()
+                        }
 
         // Start bulk import instead of refreshing Browse
         importingFolderUri = uri
@@ -144,27 +146,44 @@ fun BrowseScanOption() {
             .fillMaxWidth()
             .animateContentSize()
     ) {
-        if (isInitialized) {
-            persistedUriPermissions.forEachIndexed { index, permission ->
-                BrowseScanFolderItem(
-                    index = index,
-                    permission = permission,
-                    context = context,
-                    releasePersistableUriPermission = {
-                        settingsModel.onEvent(
-                            SettingsEvent.OnReleasePersistableUriPermission(
-                                uri = permission.uri
-                            )
+        persistedUriPermissions.forEachIndexed { index, permission ->
+            BrowseScanFolderItem(
+                index = index,
+                permission = permission,
+                context = context,
+                releasePersistableUriPermission = {
+                    settingsModel.onEvent(
+                        SettingsEvent.OnReleasePersistableUriPermission(
+                            uri = permission.uri
                         )
+                    )
 
-                        persistedUriPermissions.clear()
-                        persistedUriPermissions.addAll(getPersistedUriPermissions())
-                        BrowseScreen.refreshListChannel.trySend(Unit)
-                    },
-                    importProgress = importProgress,
-                    isImportingThisFolder = importingFolderUri == permission.uri
-                )
-            }
+                    coroutineScope.launch {
+                        persistedUriPermissions = getPersistedUriPermissions()
+                    }
+                    BrowseScreen.refreshListChannel.trySend(Unit)
+                },
+                refreshFolder = {
+                    importingFolderUri = permission.uri
+                    coroutineScope.launch {
+                        try {
+                            val importedCount = settingsModel.bulkImportBooksFromFolder.execute(permission.uri) { progress ->
+                                importProgress = progress
+                            }
+                            context.getString(R.string.import_completed, importedCount).showToast(context, longToast = false)
+                            LibraryScreen.refreshListChannel.trySend(0) // Refresh Library
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            context.getString(R.string.error_something_went_wrong).showToast(context, longToast = false)
+                        } finally {
+                            importProgress = null
+                            importingFolderUri = null
+                        }
+                    }
+                },
+                importProgress = importProgress,
+                isImportingThisFolder = importingFolderUri == permission.uri
+            )
         }
     }
 
@@ -188,6 +207,7 @@ private fun BrowseScanFolderItem(
     permission: UriPermission,
     context: Context,
     releasePersistableUriPermission: () -> Unit,
+    refreshFolder: () -> Unit,
     importProgress: BulkImportProgress?,
     isImportingThisFolder: Boolean
 ) {
@@ -246,14 +266,26 @@ private fun BrowseScanFolderItem(
                 }
             }
 
-            IconButton(
-                modifier = Modifier.size(24.dp),
-                icon = Icons.Outlined.Clear,
-                contentDescription = R.string.remove_content_desc,
-                disableOnClick = false,
-                color = MaterialTheme.colorScheme.onSurface
-            ) {
-                releasePersistableUriPermission()
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                IconButton(
+                    modifier = Modifier.size(24.dp),
+                    icon = Icons.Outlined.Refresh,
+                    contentDescription = R.string.refresh_content_desc,
+                    disableOnClick = false,
+                    color = MaterialTheme.colorScheme.onSurface
+                ) {
+                    refreshFolder()
+                }
+
+                IconButton(
+                    modifier = Modifier.size(24.dp),
+                    icon = Icons.Outlined.Clear,
+                    contentDescription = R.string.remove_content_desc,
+                    disableOnClick = false,
+                    color = MaterialTheme.colorScheme.onSurface
+                ) {
+                    releasePersistableUriPermission()
+                }
             }
         }
 
