@@ -46,13 +46,16 @@ fun SpeedReadingSettingsBottomSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight(),
-                    horizontalAlignment = Alignment.Start
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     androidx.compose.material3.Text(
                         text = stringResource(id = R.string.speed_reading_reader_settings),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 18.dp, vertical = 16.dp)
                     )
 
                     LazyColumn(

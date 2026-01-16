@@ -6,8 +6,27 @@
 
 package us.blindmint.codex.presentation.settings.reader.speed_reading.components
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.R
@@ -20,11 +39,81 @@ fun SpeedReadingWpmOption() {
     val mainModel = hiltViewModel<MainModel>()
     val state = mainModel.state.collectAsStateWithLifecycle()
 
-    SliderWithTitle(
-        title = stringResource(id = R.string.speed_reading_wpm),
-        value = Pair(300, " WPM"), // TODO: Add speed reading WPM to MainState
-        fromValue = 100,
-        toValue = 1000,
-        onValueChange = { /* TODO: Save to settings */ }
-    )
+    var wpm by remember { mutableIntStateOf(300) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = stringResource(id = R.string.speed_reading_wpm),
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // WPM Visualization
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "${wpm} WPM",
+                style = MaterialTheme.typography.displaySmall,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // WPM Slider
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "100",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Slider(
+                value = wpm.toFloat(),
+                onValueChange = { wpm = it.toInt() },
+                valueRange = 100f..1000f,
+                steps = 9, // 100 WPM increments
+                modifier = Modifier.weight(1f)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Text(
+                text = "1000",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Speed indicator text
+        Text(
+            text = when {
+                wpm < 200 -> "Slow - Good for beginners"
+                wpm < 400 -> "Medium - Comfortable reading speed"
+                wpm < 600 -> "Fast - Experienced readers"
+                wpm < 800 -> "Very Fast - Speed reading"
+                else -> "Extreme - Advanced speed reading"
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }

@@ -24,6 +24,12 @@ import us.blindmint.codex.presentation.settings.reader.speed_reading.components.
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingCustomFontOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingFontFamilyOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingWordSizeOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingBackgroundColorOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingFontColorOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingBackgroundImageOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsSizeOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsThicknessOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsColorOption
 
 fun LazyListScope.SpeedReadingSubcategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary },
@@ -37,12 +43,39 @@ fun LazyListScope.SpeedReadingSubcategory(
         showTitle = showTitle,
         showDivider = showDivider
     ) {
+        // Speed Reading Performance
         item {
             SpeedReadingWpmOption()
         }
 
         item {
+            SpeedReadingSentencePauseOption()
+        }
+
+        item {
+            SpeedReadingWordSizeOption()
+        }
+
+        // Appearance - Colors
+        item {
+            SpeedReadingBackgroundColorOption()
+        }
+
+        item {
+            SpeedReadingFontColorOption()
+        }
+
+        item {
+            SpeedReadingBackgroundImageOption()
+        }
+
+        // Accent & Indicators
+        item {
             SpeedReadingAccentCharacterOption()
+        }
+
+        item {
+            SpeedReadingColorsOption() // Accent color with RGB sliders
         }
 
         item {
@@ -50,21 +83,23 @@ fun LazyListScope.SpeedReadingSubcategory(
         }
 
         item {
+            SpeedReadingVerticalIndicatorsSizeOption()
+        }
+
+        // Horizontal Bars
+        item {
             SpeedReadingHorizontalBarsOption()
         }
 
         item {
-            SpeedReadingColorsOption()
+            SpeedReadingHorizontalBarsThicknessOption()
         }
 
         item {
-            SpeedReadingWordSizeOption()
+            SpeedReadingHorizontalBarsColorOption()
         }
 
-        item {
-            SpeedReadingSentencePauseOption()
-        }
-
+        // Font Settings
         item {
             SpeedReadingCustomFontOption()
         }
