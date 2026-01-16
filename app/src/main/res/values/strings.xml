@@ -816,4 +816,43 @@
     <string name="open_in_browser">Open in browser</string>
     <string name="opening_existing_book">Opening: %1$s</string>
 
+    <!-- Comic Reader Settings -->
+    <string name="books_tab">Books</string>
+    <string name="comics_tab">Comics</string>
+    <string name="reading_direction">Reading direction</string>
+    <string name="reading_direction_ltr">Left to right</string>
+    <string name="reading_direction_rtl">Right to left</string>
+    <string name="reading_direction_vertical">Vertical</string>
+    <string name="reader_mode">Reader mode</string>
+    <string name="reader_mode_paged">Paged</string>
+    <string name="reader_mode_webtoon">Webtoon</string>
+    <string name="tap_zones">Tap zones</string>
+    <string name="tap_zone_default">Default</string>
+    <string name="tap_zone_l_navigation">L-shaped navigation</string>
+    <string name="tap_zone_kindlish">Kindle-ish</string>
+    <string name="tap_zone_edge">Edge</string>
+    <string name="tap_zone_right_left">Right and left</string>
+    <string name="tap_zone_disabled">Disabled</string>
+    <string name="invert_taps">Invert taps</string>
+    <string name="tap_invert_none">None</string>
+    <string name="tap_invert_horizontal">Horizontal</string>
+    <string name="tap_invert_vertical">Vertical</string>
+    <string name="tap_invert_both">Both</string>
+    <string name="image_scale">Image scale</string>
+    <string name="scale_fit_screen">Fit screen</string>
+    <string name="scale_stretch">Stretch</string>
+    <string name="scale_fit_width">Fit width</string>
+    <string name="scale_fit_height">Fit height</string>
+    <string name="scale_original">Original</string>
+    <string name="scale_smart_fit">Smart fit</string>
+    <string name="zoom_start">Zoom start</string>
+    <string name="zoom_automatic">Automatic</string>
+    <string name="zoom_left">Left</string>
+    <string name="zoom_right">Right</string>
+    <string name="zoom_center">Center</string>
+    <string name="crop_borders">Crop borders</string>
+    <string name="crop_borders_desc">Automatically crop white borders around images</string>
+    <string name="landscape_zoom">Landscape zoom</string>
+    <string name="landscape_zoom_desc">Enable zoom when device is in landscape mode</string>
+
  </resources>

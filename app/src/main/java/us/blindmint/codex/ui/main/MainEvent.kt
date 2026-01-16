@@ -109,4 +109,14 @@ sealed class MainEvent {
     data class OnRemoveCustomBackgroundImage(val value: BackgroundImage) : MainEvent()
     data class OnChangeBackgroundImageOpacity(val value: Float) : MainEvent()
     data class OnChangeBackgroundScaleMode(val value: BackgroundScaleMode) : MainEvent()
+
+    // Comic Reader Events
+    data class OnChangeComicReadingDirection(val value: String) : MainEvent()
+    data class OnChangeComicReaderMode(val value: String) : MainEvent()
+    data class OnChangeComicTapZone(val value: Int) : MainEvent()
+    data class OnChangeComicInvertTaps(val value: String) : MainEvent()
+    data class OnChangeComicScaleType(val value: Int) : MainEvent()
+    data class OnChangeComicZoomStart(val value: Int) : MainEvent()
+    data class OnChangeComicCropBorders(val value: Boolean) : MainEvent()
+    data class OnChangeComicLandscapeZoom(val value: Boolean) : MainEvent()
 }

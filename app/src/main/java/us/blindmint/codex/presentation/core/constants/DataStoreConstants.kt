@@ -114,4 +114,14 @@ object DataStoreConstants {
 
     // OPF Metadata settings
     val USE_CALIBRE_OPF_METADATA = booleanPreferencesKey("use_calibre_opf_metadata")
+
+    // Comic reader settings
+    val COMIC_READING_DIRECTION = stringPreferencesKey("comic_reading_direction")
+    val COMIC_READER_MODE = stringPreferencesKey("comic_reader_mode")
+    val COMIC_TAP_ZONE = intPreferencesKey("comic_tap_zone")
+    val COMIC_INVERT_TAPS = stringPreferencesKey("comic_invert_taps")
+    val COMIC_SCALE_TYPE = intPreferencesKey("comic_scale_type")
+    val COMIC_ZOOM_START = intPreferencesKey("comic_zoom_start")
+    val COMIC_CROP_BORDERS = booleanPreferencesKey("comic_crop_borders")
+    val COMIC_LANDSCAPE_ZOOM = booleanPreferencesKey("comic_landscape_zoom")
 }

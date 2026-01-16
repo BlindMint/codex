@@ -735,6 +735,71 @@ class MainModel @Inject constructor(
                     it.copy(backgroundScaleMode = this.toBackgroundScaleMode())
                 }
             )
+
+            // Comic Reader Events
+            is MainEvent.OnChangeComicReadingDirection -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_READING_DIRECTION,
+                value = event.value,
+                updateState = {
+                    it.copy(comicReadingDirection = this)
+                }
+            )
+
+            is MainEvent.OnChangeComicReaderMode -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_READER_MODE,
+                value = event.value,
+                updateState = {
+                    it.copy(comicReaderMode = this)
+                }
+            )
+
+            is MainEvent.OnChangeComicTapZone -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_TAP_ZONE,
+                value = event.value,
+                updateState = {
+                    it.copy(comicTapZone = this)
+                }
+            )
+
+            is MainEvent.OnChangeComicInvertTaps -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_INVERT_TAPS,
+                value = event.value,
+                updateState = {
+                    it.copy(comicInvertTaps = this)
+                }
+            )
+
+            is MainEvent.OnChangeComicScaleType -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_SCALE_TYPE,
+                value = event.value,
+                updateState = {
+                    it.copy(comicScaleType = this)
+                }
+            )
+
+            is MainEvent.OnChangeComicZoomStart -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_ZOOM_START,
+                value = event.value,
+                updateState = {
+                    it.copy(comicZoomStart = this)
+                }
+            )
+
+            is MainEvent.OnChangeComicCropBorders -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_CROP_BORDERS,
+                value = event.value,
+                updateState = {
+                    it.copy(comicCropBorders = this)
+                }
+            )
+
+            is MainEvent.OnChangeComicLandscapeZoom -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_LANDSCAPE_ZOOM,
+                value = event.value,
+                updateState = {
+                    it.copy(comicLandscapeZoom = this)
+                }
+            )
         }
     }
 

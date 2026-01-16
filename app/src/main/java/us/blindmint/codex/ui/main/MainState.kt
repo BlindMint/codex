@@ -132,6 +132,16 @@ data class MainState(
     val searchScrollbarOpacity: Double = provideDefaultValue { 0.9 },
     val showSearchScrollbar: Boolean = provideDefaultValue { false },
 
+    // Comic Reader Settings
+    val comicReadingDirection: String = provideDefaultValue { "RTL" },
+    val comicReaderMode: String = provideDefaultValue { "PAGED" },
+    val comicTapZone: Int = provideDefaultValue { 0 },
+    val comicInvertTaps: String = provideDefaultValue { "NONE" },
+    val comicScaleType: Int = provideDefaultValue { 1 },
+    val comicZoomStart: Int = provideDefaultValue { 1 },
+    val comicCropBorders: Boolean = provideDefaultValue { false },
+    val comicLandscapeZoom: Boolean = provideDefaultValue { true },
+
     // Background Image Settings
     val backgroundImage: BackgroundImage? = provideDefaultValue { null },
     val customBackgroundImages: List<BackgroundImage> = provideDefaultValue { emptyList() },
@@ -496,6 +506,39 @@ data class MainState(
                     libraryShowProgress = provideValue(
                         LIBRARY_SHOW_PROGRESS
                     ) { libraryShowProgress },
+
+                    // Comic Reader Settings
+                    comicReadingDirection = provideValue(
+                        COMIC_READING_DIRECTION
+                    ) { comicReadingDirection },
+
+                    comicReaderMode = provideValue(
+                        COMIC_READER_MODE
+                    ) { comicReaderMode },
+
+                    comicTapZone = provideValue(
+                        COMIC_TAP_ZONE
+                    ) { comicTapZone },
+
+                    comicInvertTaps = provideValue(
+                        COMIC_INVERT_TAPS
+                    ) { comicInvertTaps },
+
+                    comicScaleType = provideValue(
+                        COMIC_SCALE_TYPE
+                    ) { comicScaleType },
+
+                    comicZoomStart = provideValue(
+                        COMIC_ZOOM_START
+                    ) { comicZoomStart },
+
+                    comicCropBorders = provideValue(
+                        COMIC_CROP_BORDERS
+                    ) { comicCropBorders },
+
+                    comicLandscapeZoom = provideValue(
+                        COMIC_LANDSCAPE_ZOOM
+                    ) { comicLandscapeZoom },
 
                 )
             }

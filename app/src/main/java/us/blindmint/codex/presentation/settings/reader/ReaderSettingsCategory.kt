@@ -25,7 +25,7 @@ import us.blindmint.codex.presentation.settings.reader.search.SearchSubcategory
 import us.blindmint.codex.presentation.settings.reader.system.SystemSubcategory
 import us.blindmint.codex.presentation.settings.reader.text.TextSubcategory
 
-fun LazyListScope.ReaderSettingsCategory(
+fun LazyListScope.BooksReaderSettingsCategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary }
 ) {
     FontSubcategory(

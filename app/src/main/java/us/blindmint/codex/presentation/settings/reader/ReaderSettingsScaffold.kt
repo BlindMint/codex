@@ -23,7 +23,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 @Composable
 fun ReaderSettingsScaffold(
     scrollBehavior: TopAppBarScrollBehavior,
-    listState: LazyListState,
     navigateBack: () -> Unit
 ) {
     Scaffold(
@@ -40,7 +39,6 @@ fun ReaderSettingsScaffold(
         }
     ) { paddingValues ->
         ReaderSettingsLayout(
-            listState = listState,
             paddingValues = paddingValues
         )
     }

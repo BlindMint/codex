@@ -23,11 +23,10 @@ object ReaderSettingsScreen : Screen, Parcelable {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current
-        val (scrollBehavior, listState) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior()
+        val (scrollBehavior, _) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior()
 
         ReaderSettingsContent(
             scrollBehavior = scrollBehavior,
-            listState = listState,
             navigateBack = {
                 navigator.pop()
             }

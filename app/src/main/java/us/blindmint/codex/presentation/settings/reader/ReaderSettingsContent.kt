@@ -15,12 +15,10 @@ import androidx.compose.runtime.Composable
 @Composable
 fun ReaderSettingsContent(
     scrollBehavior: TopAppBarScrollBehavior,
-    listState: LazyListState,
     navigateBack: () -> Unit
 ) {
     ReaderSettingsScaffold(
         scrollBehavior = scrollBehavior,
-        listState = listState,
         navigateBack = navigateBack
     )
 }
