@@ -44,8 +44,8 @@ fun ChipsWithTitle(
         Spacer(modifier = Modifier.height(8.dp))
 
         FlowRow(
-            horizontalArrangement = Arrangement.Center,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             content = {
                 chips.forEach { item ->
                     FilterChip(

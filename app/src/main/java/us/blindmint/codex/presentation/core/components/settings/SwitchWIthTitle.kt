@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,8 +41,8 @@ fun SwitchWithTitle(
     enabled: Boolean = true,
     title: String,
     description: String? = null,
-    showDivider: Boolean = description.isNullOrBlank(),
-    horizontalPadding: Dp = 18.dp,
+    showDivider: Boolean = false,
+    horizontalPadding: Dp = 16.dp,
     verticalPadding: Dp = 8.dp,
     onClick: () -> Unit
 ) {
@@ -70,14 +69,7 @@ fun SwitchWithTitle(
             }
         }
 
-        if (showDivider) {
-            Spacer(modifier = Modifier.width(18.dp))
-            VerticalDivider(
-                modifier = Modifier.height(34.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(18.dp))
+        Spacer(modifier = Modifier.width(16.dp))
         Switch(
             checked = selected,
             enabled = enabled,
