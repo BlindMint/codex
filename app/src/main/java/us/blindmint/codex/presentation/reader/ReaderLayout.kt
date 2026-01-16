@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.reader.FontWithName
 import us.blindmint.codex.ui.main.MainModel
+import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.reader.ReaderFontThickness
 import us.blindmint.codex.domain.reader.ReaderHorizontalGesture
 import us.blindmint.codex.domain.reader.ReaderText
@@ -54,6 +55,7 @@ import us.blindmint.codex.ui.reader.ReaderEvent
 
 @Composable
 fun ReaderLayout(
+    book: Book,
     text: List<ReaderText>,
     listState: LazyListState,
     contentPadding: PaddingValues,
@@ -102,6 +104,22 @@ fun ReaderLayout(
     val activity = LocalActivity.current
     val mainModel = hiltViewModel<MainModel>()
     val mainState = mainModel.state.collectAsStateWithLifecycle()
+
+    // Conditional rendering based on whether it's a comic or text book
+    if (book.isComic) {
+        // Comic reader layout
+        ComicReaderLayout(
+            book = book,
+            currentPage = 0, // TODO: Implement page tracking
+            onPageChanged = { /* TODO: Handle page changes */ },
+            contentPadding = contentPadding,
+            backgroundColor = backgroundColor,
+            comicReadingDirection = mainState.value.comicReadingDirection,
+            comicTapZone = mainState.value.comicTapZone,
+            modifier = Modifier.fillMaxSize()
+        )
+        return
+    }
 
     SelectionContainerWithBottomSheet(
         onTextSelected = { selectedText ->

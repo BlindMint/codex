@@ -220,6 +220,7 @@ fun ReaderScaffold(
         }
     ) {
         ReaderLayout(
+            book = book,
             text = text,
             listState = listState,
             contentPadding = contentPadding,
