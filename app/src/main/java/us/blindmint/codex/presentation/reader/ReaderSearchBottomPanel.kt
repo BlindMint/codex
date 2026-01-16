@@ -79,14 +79,8 @@ fun ReaderSearchBottomPanel(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(panelHeight)
-                    .offset(y = with(density) {
-                        val screenHeightDp = screenHeight / density.density
-                        val topBarHeightDp = topBarHeight.toDp().toPx() / density.density
-                        val bottomBarHeightDp = bottomBarHeight.toDp().toPx() / density.density
-                        val contentAreaHeight = screenHeightDp - topBarHeightDp - bottomBarHeightDp
-                        // Position at the middle of content area
-                        (topBarHeightDp + contentAreaHeight * 0.5f).dp
-                    })
+                    .align(Alignment.BottomCenter)
+                    .offset(y = with(density) { -bottomBarHeight.toDp() })
                     .background(
                         MaterialTheme.colorScheme.readerBarsColor
                     )
@@ -123,11 +117,11 @@ fun ReaderSearchBottomPanel(
                                 }
                                 .background(
                                     if (isCurrent)
-                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                                        MaterialTheme.colorScheme.primaryContainer
                                     else
-                                        Color.Transparent
+                                        MaterialTheme.colorScheme.surfaceContainerHigh
                                 )
-                                .padding(horizontal = 8.dp, vertical = 12.dp),
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // Progress indicator (moved further left)
