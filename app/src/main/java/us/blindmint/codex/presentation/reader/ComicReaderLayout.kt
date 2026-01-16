@@ -100,34 +100,58 @@ fun ComicReaderLayout(
 
         try {
             withContext(Dispatchers.IO) {
-                val cachedFile = CachedFile(context, Uri.parse(book.filePath))
+                android.util.Log.d("ComicReader", "Starting to load comic: ${book.title}")
+                android.util.Log.d("ComicReader", "Book filePath: ${book.filePath}")
+
+                val uri = Uri.parse(book.filePath)
+                android.util.Log.d("ComicReader", "Parsed URI: $uri")
+
+                val cachedFile = CachedFile(context, uri)
+                android.util.Log.d("ComicReader", "CachedFile created: ${cachedFile.name}, path: ${cachedFile.path}, size: ${cachedFile.size}")
+
                 val archiveReader = ArchiveReader()
+                android.util.Log.d("ComicReader", "ArchiveReader created")
 
                 archiveReader.openArchive(cachedFile).use { archive ->
+                    android.util.Log.d("ComicReader", "Archive opened, entries: ${archive.entries.size}")
+
                     val pages = mutableListOf<ImageBitmap>()
 
-                    for (entry in archive.entries) {
-                        if (ArchiveReader.isImageFile(entry.getPath())) {
+                    for ((index, entry) in archive.entries.withIndex()) {
+                        val entryPath = entry.getPath()
+                        android.util.Log.d("ComicReader", "Processing entry $index: $entryPath")
+
+                        if (entryPath != null && ArchiveReader.isImageFile(entryPath)) {
+                            android.util.Log.d("ComicReader", "Loading image: $entryPath")
                             try {
                                 archive.getInputStream(entry).use { input ->
                                     val bitmap = BitmapFactory.decodeStream(input)
-                                    bitmap?.let {
-                                        pages.add(it.asImageBitmap())
+                                    if (bitmap != null) {
+                                        pages.add(bitmap.asImageBitmap())
+                                        android.util.Log.d("ComicReader", "Loaded page ${pages.size}")
+                                    } else {
+                                        android.util.Log.w("ComicReader", "Failed to decode bitmap for: $entryPath")
                                     }
                                 }
                             } catch (e: Exception) {
+                                android.util.Log.w("ComicReader", "Failed to load image $entryPath: ${e.message}", e)
                                 // Skip corrupted images
                                 continue
                             }
+                        } else {
+                            android.util.Log.d("ComicReader", "Skipping non-image entry: $entryPath")
                         }
                     }
 
+                    android.util.Log.d("ComicReader", "Loaded ${pages.size} pages")
                     comicPages = pages
                 }
             }
         } catch (e: Exception) {
+            android.util.Log.e("ComicReader", "Failed to load comic", e)
             errorMessage = "Failed to load comic: ${e.message}"
         } finally {
+            android.util.Log.d("ComicReader", "Comic loading finished")
             isLoading = false
             onLoadingComplete()
         }
