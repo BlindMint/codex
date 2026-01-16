@@ -17,9 +17,6 @@ val ColorScheme.readerBarsColor: Color
 fun ColorScheme.dynamicListItemColor(
     index: Int
 ): Color {
-    return when (index % 3) {
-        0 -> surfaceContainer
-        1 -> surfaceContainerHigh
-        else -> tertiaryContainer
-    }
+    // Use consistent dark background for all icons
+    return surfaceContainerHigh
 }

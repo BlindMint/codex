@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyListState
@@ -26,7 +27,11 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
+import androidx.compose.ui.draw.clip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -65,6 +70,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import us.blindmint.codex.domain.opds.OpdsEntry
 import us.blindmint.codex.presentation.navigator.LocalNavigator
+import us.blindmint.codex.domain.navigator.Navigator
+import us.blindmint.codex.presentation.core.util.noRippleClickable
+import us.blindmint.codex.ui.theme.dynamicListItemColor
 import us.blindmint.codex.ui.browse.OpdsCategoryScreen
 import us.blindmint.codex.ui.browse.opds.model.OpdsCatalogModel
 import us.blindmint.codex.ui.library.LibraryScreen
@@ -290,7 +298,10 @@ fun OpdsCatalogContent(
             }
             else -> androidx.compose.foundation.lazy.LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()),
-                state = listState
+                state = listState,
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                    bottom = 16.dp
+                )
             ) {
                   val allCategories = state.feed?.entries?.filter { entry ->
                       val hasNavigationLinks = entry.links.any { link ->
@@ -362,88 +373,17 @@ fun OpdsCatalogContent(
                         Text(
                             "Categories",
                             style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                         )
                     }
 
                     items(categories) { entry ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-                            onClick = {
-                                android.util.Log.d("OPDS_DEBUG", "Category tapped: '${entry.title}'")
-                                android.util.Log.d("OPDS_DEBUG", "Source URL: ${source.url}")
-
-                                // Find navigation link - try multiple strategies
-                                val link = entry.links.firstOrNull { link ->
-                                    link.href?.isNotBlank() == true && (
-                                        link.type?.startsWith("application/atom+xml") == true ||
-                                        link.rel == "subsection" ||
-                                        link.rel == "http://opds-spec.org/subsection" ||
-                                        (link.rel != null && link.rel != "http://opds-spec.org/acquisition" &&
-                                         link.rel != "http://opds-spec.org/image/thumbnail" &&
-                                         link.rel != "self" && link.rel != "alternate")
-                                    )
-                                }
-
-                                android.util.Log.d("OPDS_DEBUG", "Found navigation link: ${link?.let { "rel='${it.rel}', href='${it.href}'" } ?: "null"}")
-
-                                if (link != null) {
-                                    var href = link.href.trim()
-
-                                    // Special handling for href ending with "." - double encode to handle server issues
-                                    if (href.endsWith(".")) {
-                                        href = href.replace(".", "%252E")
-                                    }
-
-                                    val fullUrl = if (href.startsWith("http")) {
-                                        href
-                                    } else {
-                                        // Manual URL construction to avoid URI.resolve() issues with special chars
-                                        if (href.startsWith("/")) {
-                                            // Absolute path - combine with domain from source URL
-                                            val domain = source.url.substringBefore("/opds").trimEnd('/')
-                                            "$domain$href"
-                                        } else {
-                                            // Relative path - append to source URL
-                                            val baseUrl = source.url.removeSuffix("/")
-                                            "$baseUrl/$href"
-                                        }
-                                    }
-                                    android.util.Log.d("OPDS_DEBUG", "Final navigation URL: $fullUrl")
-                                    android.util.Log.d("OPDS_DEBUG", "About to call navigator.push...")
-                                    try {
-                                        navigator.push(OpdsCategoryScreen(source, fullUrl, entry.title))
-                                        android.util.Log.d("OPDS_DEBUG", "navigator.push() completed successfully")
-                                    } catch (e: Exception) {
-                                        android.util.Log.e("OPDS_DEBUG", "Error calling navigator.push()", e)
-                                    }
-                                } else {
-                                    android.util.Log.d("OPDS_DEBUG", "No navigation link found for '${entry.title}'")
-                                }
-                            }
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    Icons.Default.Folder,
-                                    "Category",
-                                    modifier = Modifier.padding(end = 16.dp)
-                                )
-                                Column {
-                                    Text(
-                                        entry.title ?: "No title",
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                    Text(
-                                        "Tap to browse",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
+                        OpdsCategoryItem(
+                            index = categories.indexOf(entry),
+                            entry = entry,
+                            source = source,
+                            navigator = navigator
+                        )
                     }
                 }
 
@@ -545,6 +485,90 @@ fun OpdsCatalogContent(
             },
             username = state.username,
             password = state.password
+        )
+    }
+}
+
+@Composable
+private fun OpdsCategoryItem(
+    index: Int,
+    entry: OpdsEntry,
+    source: OpdsSourceEntity,
+    navigator: us.blindmint.codex.domain.navigator.Navigator
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .noRippleClickable {
+                android.util.Log.d("OPDS_DEBUG", "Category tapped: '${entry.title}'")
+                android.util.Log.d("OPDS_DEBUG", "Source URL: ${source.url}")
+
+                // Find navigation link - try multiple strategies
+                val link = entry.links.firstOrNull { link ->
+                    link.href?.isNotBlank() == true && (
+                        link.type?.startsWith("application/atom+xml") == true ||
+                        link.rel == "subsection" ||
+                        link.rel == "http://opds-spec.org/subsection" ||
+                        (link.rel != null && link.rel != "http://opds-spec.org/acquisition" &&
+                         link.rel != "http://opds-spec.org/image/thumbnail" &&
+                         link.rel != "self" && link.rel != "alternate")
+                    )
+                }
+
+                android.util.Log.d("OPDS_DEBUG", "Found navigation link: ${link?.let { "rel='${it.rel}', href='${it.href}'" } ?: "null"}")
+
+                if (link != null) {
+                    var href = link.href.trim()
+
+                    // Special handling for href ending with "." - double encode to handle server issues
+                    if (href.endsWith(".")) {
+                        href = href.replace(".", "%252E")
+                    }
+
+                    val fullUrl = if (href.startsWith("http")) {
+                        href
+                    } else {
+                        // Manual URL construction to avoid URI.resolve() issues with special chars
+                        if (href.startsWith("/")) {
+                            // Absolute path - combine with domain from source URL
+                            val domain = source.url.substringBefore("/opds").trimEnd('/')
+                            "$domain$href"
+                        } else {
+                            // Relative path - append to source URL
+                            val baseUrl = source.url.removeSuffix("/")
+                            "$baseUrl/$href"
+                        }
+                    }
+                    android.util.Log.d("OPDS_DEBUG", "Final navigation URL: $fullUrl")
+                    android.util.Log.d("OPDS_DEBUG", "About to call navigator.push...")
+                    try {
+                        navigator.push(OpdsCategoryScreen(source, fullUrl, entry.title))
+                        android.util.Log.d("OPDS_DEBUG", "navigator.push() completed successfully")
+                    } catch (e: Exception) {
+                        android.util.Log.e("OPDS_DEBUG", "Error calling navigator.push()", e)
+                    }
+                } else {
+                    android.util.Log.d("OPDS_DEBUG", "No navigation link found for '${entry.title}'")
+                }
+            }
+            .padding(horizontal = 18.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(18.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Folder,
+            contentDescription = null,
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.dynamicListItemColor(index))
+                .padding(11.dp)
+                .size(22.dp),
+            tint = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = entry.title ?: "No title",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }

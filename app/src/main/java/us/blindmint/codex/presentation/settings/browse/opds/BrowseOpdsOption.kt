@@ -6,6 +6,7 @@
 
 package us.blindmint.codex.presentation.settings.browse.opds
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,11 +14,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -41,6 +45,7 @@ import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.ui.browse.OpdsAddSourceDialog
 import us.blindmint.codex.ui.browse.OpdsRootScreen
 import us.blindmint.codex.ui.settings.opds.OpdsSourcesModel
+import us.blindmint.codex.ui.theme.dynamicListItemColor
 import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import us.blindmint.codex.data.local.dto.OpdsSourceStatus
 
@@ -114,23 +119,17 @@ fun BrowseOpdsOption(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Header
-        Text(
-            text = "OPDS Sources",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
-        )
-
         // Sources list
-        sourcesState.sources.forEach { source ->
+        sourcesState.sources.forEachIndexed { index, source ->
             OpdsSourceItem(
+                index = index,
                 source = source,
                 onSourceClick = {
                     onNavigateToOpdsCatalog(OpdsRootScreen(source))
                 },
                 onEditClick = { editingSource = source },
                 onDeleteClick = { showDeleteConfirmation = source },
-                modifier = Modifier.padding(horizontal = 18.dp, vertical = 4.dp)
+                modifier = Modifier
             )
         }
 
@@ -143,6 +142,7 @@ fun BrowseOpdsOption(
 
 @Composable
 private fun OpdsSourceItem(
+    index: Int,
     source: OpdsSourceEntity,
     onSourceClick: () -> Unit,
     onEditClick: () -> Unit,
@@ -153,19 +153,22 @@ private fun OpdsSourceItem(
         modifier = modifier
             .fillMaxWidth()
             .noRippleClickable { onSourceClick() }
-            .padding(horizontal = 18.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 18.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(18.dp)
     ) {
         Icon(
-            modifier = Modifier.size(24.dp),
-            imageVector = Icons.Filled.Folder,
+            imageVector = Icons.Outlined.Public,
             contentDescription = null,
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.dynamicListItemColor(index))
+                .padding(11.dp)
+                .size(22.dp),
             tint = MaterialTheme.colorScheme.onSurface
         )
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 12.dp)
+            modifier = Modifier.weight(1f)
         ) {
             Text(
                 text = source.name,

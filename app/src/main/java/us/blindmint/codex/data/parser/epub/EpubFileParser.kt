@@ -35,7 +35,7 @@ class EpubFileParser @Inject constructor() : FileParser {
                 android.util.Log.d("EPUB_PARSER", "CachedFile.rawFile is null/inaccessible, trying path: ${cachedFile.path}")
                 // Try to create file from path
                 if (cachedFile.path.isNotEmpty()) {
-                    val fileFromPath = java.io.File(cachedFile.path)
+                    val fileFromPath = File(cachedFile.path)
                     if (fileFromPath.exists() && fileFromPath.canRead()) {
                         rawFile = fileFromPath
                         android.util.Log.d("EPUB_PARSER", "Successfully created file from path: ${rawFile.absolutePath}")
