@@ -62,6 +62,7 @@ import us.blindmint.codex.presentation.core.util.setBrightness
 import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.presentation.reader.ReaderContent
 import us.blindmint.codex.presentation.reader.SpeedReadingScaffold
+import us.blindmint.codex.presentation.reader.SpeedReadingSettingsBottomSheet
 import us.blindmint.codex.ui.book_info.BookInfoScreen
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.settings.SettingsModel
@@ -601,7 +602,15 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
                  )
              },
              onReaderEvent = screenModel::onEvent
-          )
+           )
+
+        // Speed reading settings bottom sheet
+        SpeedReadingSettingsBottomSheet(
+            show = state.value.speedReadingSettingsVisible,
+            onDismiss = {
+                screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
+            }
+        )
 
         // Speed reading overlay
         if (state.value.speedReadingMode) {
@@ -616,9 +625,8 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
                 onExitSpeedReading = {
                     screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
                 },
-                onShowSettings = {
-                    // TODO: Show speed reading settings
-                    screenModel.onEvent(ReaderEvent.OnShowSettingsBottomSheet)
+                onShowSpeedReadingSettings = {
+                    screenModel.onEvent(ReaderEvent.OnShowSpeedReadingSettings)
                 }
             )
         }
