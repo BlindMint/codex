@@ -35,8 +35,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import kotlin.math.min
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -76,15 +78,54 @@ fun ComicReaderLayout(
     val mainModel = hiltViewModel<MainModel>()
     val scope = rememberCoroutineScope()
 
-    // Comic pages state
-    var comicPages by remember { mutableStateOf<List<ImageBitmap>>(emptyList()) }
+    // Archive state
+    var archiveHandle by remember { mutableStateOf<ArchiveReader.ArchiveHandle?>(null) }
+    var totalPages by remember { mutableIntStateOf(0) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    // Lazy loading cache
+    val loadedPages = remember { mutableMapOf<Int, ImageBitmap>() }
+
+    // Function to load a specific page
+    fun loadPage(pageIndex: Int): ImageBitmap? {
+        // Check if already loaded
+        loadedPages[pageIndex]?.let { return it }
+
+        // Load the page
+        try {
+            archiveHandle?.let { archive ->
+                val imageEntries = archive.entries.filter { entry ->
+                    val entryPath = entry.getPath()
+                    entryPath != null && ArchiveReader.isImageFile(entryPath)
+                }
+
+                if (pageIndex < imageEntries.size) {
+                    val entry = imageEntries[pageIndex]
+                    android.util.Log.d("CodexComic", "Lazy loading page ${pageIndex + 1}")
+
+                    archive.getInputStream(entry).use { input ->
+                        val bitmap = BitmapFactory.decodeStream(input)
+                        if (bitmap != null) {
+                            val imageBitmap = bitmap.asImageBitmap()
+                            loadedPages[pageIndex] = imageBitmap
+                            android.util.Log.d("CodexComic", "Loaded page ${pageIndex + 1}")
+                            return imageBitmap
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("CodexComic", "Failed to load page $pageIndex: ${e.message}", e)
+        }
+
+        return null
+    }
+
     // Pager state
     val pagerState = rememberPagerState(
-        initialPage = currentPage.coerceIn(0, (comicPages.size - 1).coerceAtLeast(0)),
-        pageCount = { comicPages.size }
+        initialPage = currentPage.coerceIn(0, (totalPages - 1).coerceAtLeast(0)),
+        pageCount = { totalPages }
     )
 
     // Update current page when pager changes
@@ -94,7 +135,7 @@ fun ComicReaderLayout(
         }
     }
 
-    // Load comic pages
+    // Load comic archive structure
     LaunchedEffect(book) {
         isLoading = true
         errorMessage = null
@@ -113,46 +154,29 @@ fun ComicReaderLayout(
                 val archiveReader = ArchiveReader()
                 android.util.Log.d("CodexComic", "ArchiveReader created")
 
-                archiveReader.openArchive(cachedFile).use { archive ->
-                    android.util.Log.d("CodexComic", "Archive opened, entries: ${archive.entries.size}")
+                val archive = archiveReader.openArchive(cachedFile)
+                android.util.Log.d("CodexComic", "Archive opened, entries: ${archive.entries.size}")
 
-                    val pages = mutableListOf<ImageBitmap>()
+                // Count image entries for total pages
+                val imageEntries = archive.entries.filter { entry ->
+                    val entryPath = entry.getPath()
+                    entryPath != null && ArchiveReader.isImageFile(entryPath)
+                }
 
-                    for ((index, entry) in archive.entries.withIndex()) {
-                        val entryPath = entry.getPath()
-                        android.util.Log.d("CodexComic", "Processing entry $index: $entryPath")
+                android.util.Log.d("CodexComic", "Found ${imageEntries.size} image pages")
+                archiveHandle = archive
+                totalPages = imageEntries.size
 
-                        if (entryPath != null && ArchiveReader.isImageFile(entryPath)) {
-                            android.util.Log.d("CodexComic", "Loading image: $entryPath")
-                            try {
-                                archive.getInputStream(entry).use { input ->
-                                    val bitmap = BitmapFactory.decodeStream(input)
-                                    if (bitmap != null) {
-                                        pages.add(bitmap.asImageBitmap())
-                                        android.util.Log.d("CodexComic", "Loaded page ${pages.size}")
-                                    } else {
-                                        android.util.Log.w("CodexComic", "Failed to decode bitmap for: $entryPath")
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                android.util.Log.w("CodexComic", "Failed to load image $entryPath: ${e.message}", e)
-                                // Skip corrupted images
-                                continue
-                            }
-                        } else {
-                            android.util.Log.d("CodexComic", "Skipping non-image entry: $entryPath")
-                        }
-                    }
-
-                    android.util.Log.d("CodexComic", "Loaded ${pages.size} pages")
-                    comicPages = pages
+                // Pre-load the first few pages for smooth UX
+                for (i in 0 until min(3, imageEntries.size)) {
+                    loadPage(i)
                 }
             }
         } catch (e: Exception) {
-            android.util.Log.e("CodexComic", "Failed to load comic", e)
+            android.util.Log.e("CodexComic", "Failed to load comic archive", e)
             errorMessage = "Failed to load comic: ${e.message}"
         } finally {
-            android.util.Log.d("CodexComic", "Comic loading finished")
+            android.util.Log.d("CodexComic", "Comic archive loading finished")
             isLoading = false
             onLoadingComplete()
         }
@@ -169,7 +193,7 @@ fun ComicReaderLayout(
         } else if (errorMessage != null) {
             // Error state - could add error UI here
             Box(modifier = Modifier.fillMaxSize())
-                } else if (comicPages.isNotEmpty()) {
+                } else if (totalPages > 0) {
             Box(modifier = Modifier.fillMaxSize()) {
                 HorizontalPager(
                     state = pagerState,
@@ -183,7 +207,7 @@ fun ComicReaderLayout(
                             .coerceAtLeast(18.dp),
                     )
                 ) { page ->
-                    val pageImage = comicPages.getOrNull(page)
+                    val pageImage = loadPage(page)
                     if (pageImage != null) {
                         ComicPage(
                             imageBitmap = pageImage,
@@ -198,20 +222,28 @@ fun ComicReaderLayout(
                             },
                             onNextPage = {
                                 scope.launch {
-                                    if (pagerState.currentPage < comicPages.size - 1) {
+                                    if (pagerState.currentPage < totalPages - 1) {
                                         pagerState.animateScrollToPage(pagerState.currentPage + 1)
                                     }
                                 }
                             }
                         )
+                    } else {
+                        // Show loading placeholder for pages that haven't loaded yet
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            // Could add a loading indicator here if needed
+                        }
                     }
                 }
 
                 // Page indicator
-                if (showPageIndicator && comicPages.isNotEmpty()) {
+                if (showPageIndicator && totalPages > 0) {
                     ComicPageIndicator(
                         currentPage = currentPage,
-                        totalPages = comicPages.size,
+                        totalPages = totalPages,
                         modifier = Modifier.align(Alignment.BottomCenter)
                     )
                 }
