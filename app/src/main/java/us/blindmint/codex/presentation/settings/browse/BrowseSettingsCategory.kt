@@ -12,13 +12,17 @@ import androidx.compose.foundation.lazy.LazyListScope
 import us.blindmint.codex.presentation.settings.browse.components.StorageLocationPicker
 import us.blindmint.codex.presentation.settings.browse.opds.BrowseOpdsSubcategory
 import us.blindmint.codex.presentation.settings.browse.scan.BrowseScanSubcategory
+import us.blindmint.codex.ui.browse.OpdsRootScreen
 
-fun LazyListScope.BrowseSettingsCategory() {
+fun LazyListScope.BrowseSettingsCategory(
+    onNavigateToOpdsCatalog: (OpdsRootScreen) -> Unit
+) {
     item {
         StorageLocationPicker()
     }
     BrowseScanSubcategory()
     BrowseOpdsSubcategory(
+        onNavigateToOpdsCatalog = onNavigateToOpdsCatalog,
         showDivider = false
     )
 }

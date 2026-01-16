@@ -15,9 +15,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,14 +39,21 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.ui.browse.OpdsAddSourceDialog
+import us.blindmint.codex.ui.browse.OpdsRootScreen
 import us.blindmint.codex.ui.settings.opds.OpdsSourcesModel
+import us.blindmint.codex.data.local.dto.OpdsSourceEntity
+import us.blindmint.codex.data.local.dto.OpdsSourceStatus
 
 @Composable
-fun BrowseOpdsOption() {
+fun BrowseOpdsOption(
+    onNavigateToOpdsCatalog: (OpdsRootScreen) -> Unit
+) {
     val sourcesModel = hiltViewModel<OpdsSourcesModel>()
     val sourcesState by sourcesModel.state.collectAsStateWithLifecycle()
 
     var showAddSourceDialog by remember { mutableStateOf(false) }
+    var editingSource by remember { mutableStateOf<OpdsSourceEntity?>(null) }
+    var showDeleteConfirmation by remember { mutableStateOf<OpdsSourceEntity?>(null) }
 
     OpdsAddSourceDialog(
         showDialog = showAddSourceDialog,
@@ -49,6 +63,52 @@ fun BrowseOpdsOption() {
             showAddSourceDialog = false
         }
     )
+
+    // Edit dialog
+    editingSource?.let { source ->
+        OpdsAddSourceDialog(
+            showDialog = true,
+            initialName = source.name,
+            initialUrl = source.url,
+            initialUsername = source.username,
+            initialPassword = source.password,
+            onDismiss = { editingSource = null },
+            onSourceAdded = { name, url, username, password ->
+                val updatedSource = source.copy(
+                    name = name,
+                    url = url,
+                    username = username,
+                    password = password
+                )
+                sourcesModel.updateOpdsSource(updatedSource)
+                editingSource = null
+            }
+        )
+    }
+
+    // Delete confirmation dialog
+    showDeleteConfirmation?.let { source ->
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = null },
+            title = { Text("Remove OPDS Source") },
+            text = { Text("Are you sure you want to remove \"${source.name}\"?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        sourcesModel.deleteOpdsSource(source.id)
+                        showDeleteConfirmation = null
+                    }
+                ) {
+                    Text("Remove")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -61,38 +121,16 @@ fun BrowseOpdsOption() {
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
         )
 
-        // List of sources
-        if (sourcesState.sources.isEmpty()) {
-            // Empty state
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = "No OPDS sources configured",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "Add an OPDS source to browse and download books from online catalogs.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 32.dp)
-                    )
-                }
-            }
-        } else {
-            // Sources list - placeholder for now
-            Text(
-                text = "${sourcesState.sources.size} sources configured",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 18.dp)
+        // Sources list
+        sourcesState.sources.forEach { source ->
+            OpdsSourceItem(
+                source = source,
+                onSourceClick = {
+                    onNavigateToOpdsCatalog(OpdsRootScreen(source))
+                },
+                onEditClick = { editingSource = source },
+                onDeleteClick = { showDeleteConfirmation = source },
+                modifier = Modifier.padding(horizontal = 18.dp, vertical = 4.dp)
             )
         }
 
@@ -100,6 +138,95 @@ fun BrowseOpdsOption() {
         OpdsAddSourceAction(
             onClick = { showAddSourceDialog = true }
         )
+    }
+}
+
+@Composable
+private fun OpdsSourceItem(
+    source: OpdsSourceEntity,
+    onSourceClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .noRippleClickable { onSourceClick() }
+            .padding(horizontal = 18.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            modifier = Modifier.size(24.dp),
+            imageVector = Icons.Filled.Folder,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface
+        )
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 12.dp)
+        ) {
+            Text(
+                text = source.name,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = source.url,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            // Status based on connection test
+            val statusText = when (source.status) {
+                OpdsSourceStatus.CONNECTING -> "Testing connection..."
+                OpdsSourceStatus.CONNECTED -> {
+                    if (!source.username.isNullOrBlank()) "Authenticated"
+                    else "Connected"
+                }
+                OpdsSourceStatus.AUTH_FAILED -> "Authentication failed"
+                OpdsSourceStatus.CONNECTION_FAILED -> "Connection failed"
+                OpdsSourceStatus.DISABLED -> "Disabled"
+                OpdsSourceStatus.UNKNOWN -> "Not tested"
+            }
+            val statusColor = when (source.status) {
+                OpdsSourceStatus.CONNECTING -> MaterialTheme.colorScheme.onSurfaceVariant
+                OpdsSourceStatus.CONNECTED -> MaterialTheme.colorScheme.primary
+                OpdsSourceStatus.AUTH_FAILED -> MaterialTheme.colorScheme.error
+                OpdsSourceStatus.CONNECTION_FAILED -> MaterialTheme.colorScheme.error
+                OpdsSourceStatus.DISABLED -> MaterialTheme.colorScheme.onSurfaceVariant
+                OpdsSourceStatus.UNKNOWN -> MaterialTheme.colorScheme.onSurfaceVariant
+            }
+            Text(
+                text = statusText,
+                style = MaterialTheme.typography.bodySmall,
+                color = statusColor
+            )
+        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            IconButton(
+                onClick = onEditClick,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Edit source",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            IconButton(
+                onClick = onDeleteClick,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Remove source",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
     }
 }
 

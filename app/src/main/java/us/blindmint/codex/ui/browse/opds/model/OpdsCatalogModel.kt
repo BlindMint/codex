@@ -31,7 +31,10 @@ class OpdsCatalogModel @Inject constructor(
     val state = _state.asStateFlow()
 
     fun loadFeed(source: OpdsSourceEntity, url: String, isDownloadDirectoryAccessible: Boolean = true) {
+        android.util.Log.d("OPDS_DEBUG", "loadFeed called for URL: $url")
+
         if (state.value.feed != null && state.value.feedUrl == url) {
+            android.util.Log.d("OPDS_DEBUG", "Feed already loaded for this URL, skipping")
             return
         }
 
@@ -45,8 +48,10 @@ class OpdsCatalogModel @Inject constructor(
         )
         viewModelScope.launch {
             try {
+                android.util.Log.d("OPDS_DEBUG", "Fetching feed from: $url")
                 val feed = opdsRepository.fetchFeed(url, source.username, source.password)
                 val nextPageUrl = feed.links.firstOrNull { it.rel == "next" }?.href
+                android.util.Log.d("OPDS_DEBUG", "Feed loaded successfully: ${feed.entries?.size ?: 0} entries, title: ${feed.title}")
                 _state.value = _state.value.copy(
                     isLoading = false,
                     feed = feed,
@@ -54,6 +59,7 @@ class OpdsCatalogModel @Inject constructor(
                     nextPageUrl = nextPageUrl
                 )
             } catch (e: Exception) {
+                android.util.Log.e("OPDS_DEBUG", "Error loading feed from $url", e)
                 _state.value = _state.value.copy(isLoading = false, error = e.message)
             }
         }
@@ -91,7 +97,7 @@ class OpdsCatalogModel @Inject constructor(
             try {
                 val bookWithCover = importOpdsBookUseCase(
                     opdsEntry = entry,
-                    sourceUrl = _state.value.feedUrl ?: source.url,
+                    sourceUrl = source.url,
                     username = source.username,
                     password = source.password,
                     onProgress = { progress ->
@@ -187,7 +193,7 @@ class OpdsCatalogModel @Inject constructor(
                 try {
                     val bookWithCover = importOpdsBookUseCase(
                         opdsEntry = entry,
-                        sourceUrl = _state.value.feedUrl ?: source.url,
+                        sourceUrl = source.url,
                         username = source.username,
                         password = source.password
                     )

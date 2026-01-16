@@ -20,8 +20,10 @@ import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
 import us.blindmint.codex.ui.browse.OpdsAddSourceDialog
+import us.blindmint.codex.ui.browse.OpdsRootScreen
 
 fun LazyListScope.BrowseOpdsSubcategory(
+    onNavigateToOpdsCatalog: (OpdsRootScreen) -> Unit,
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary },
     title: @Composable () -> String = { stringResource(id = R.string.opds_browse_settings) },
     showTitle: Boolean = true,
@@ -34,7 +36,7 @@ fun LazyListScope.BrowseOpdsSubcategory(
         showDivider = showDivider
     ) {
         item {
-            BrowseOpdsOption()
+            BrowseOpdsOption(onNavigateToOpdsCatalog = onNavigateToOpdsCatalog)
         }
     }
 }

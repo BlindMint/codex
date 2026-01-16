@@ -19,13 +19,15 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import us.blindmint.codex.ui.browse.OpdsRootScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BrowseSettingsScaffold(
     listState: LazyListState,
     scrollBehavior: TopAppBarScrollBehavior,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    onNavigateToOpdsCatalog: (OpdsRootScreen) -> Unit
 ) {
     Scaffold(
         Modifier
@@ -43,7 +45,8 @@ fun BrowseSettingsScaffold(
     ) { paddingValues ->
         BrowseSettingsLayout(
             listState = listState,
-            paddingValues = paddingValues
+            paddingValues = paddingValues,
+            onNavigateToOpdsCatalog = onNavigateToOpdsCatalog
         )
     }
 }

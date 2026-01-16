@@ -13,11 +13,13 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
+import us.blindmint.codex.ui.browse.OpdsRootScreen
 
 @Composable
 fun BrowseSettingsLayout(
     listState: LazyListState,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    onNavigateToOpdsCatalog: (OpdsRootScreen) -> Unit
 ) {
     LazyColumnWithScrollbar(
         Modifier
@@ -25,6 +27,6 @@ fun BrowseSettingsLayout(
             .padding(top = paddingValues.calculateTopPadding()),
         state = listState
     ) {
-        BrowseSettingsCategory()
+        BrowseSettingsCategory(onNavigateToOpdsCatalog = onNavigateToOpdsCatalog)
     }
 }

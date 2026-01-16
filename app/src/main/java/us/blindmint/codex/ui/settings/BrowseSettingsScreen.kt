@@ -15,6 +15,7 @@ import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.presentation.core.components.top_bar.collapsibleTopAppBarScrollBehavior
 import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.presentation.settings.browse.BrowseSettingsContent
+import us.blindmint.codex.ui.browse.OpdsRootScreen
 
 @Parcelize
 object BrowseSettingsScreen : Screen, Parcelable {
@@ -30,6 +31,9 @@ object BrowseSettingsScreen : Screen, Parcelable {
             scrollBehavior = scrollBehavior,
             navigateBack = {
                 navigator.pop()
+            },
+            onNavigateToOpdsCatalog = { opdsScreen ->
+                navigator.push(opdsScreen)
             }
         )
     }

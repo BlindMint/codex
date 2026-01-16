@@ -52,7 +52,16 @@ class Navigator @AssistedInject constructor(
         popping: Boolean = false,
         saveInBackStack: Boolean = true
     ) {
-        if (lastItem.value::class == targetScreen::class) return
+        android.util.Log.d("NAV_DEBUG", "Navigator.push called with screen: ${targetScreen::class.simpleName}")
+
+        // Special case: Allow multiple OpdsCategoryScreen instances for catalog navigation
+        val isOpdsCategoryScreen = targetScreen::class.simpleName == "OpdsCategoryScreen"
+        val skipDuplicateCheck = isOpdsCategoryScreen
+
+        if (!skipDuplicateCheck && lastItem.value::class == targetScreen::class) {
+            android.util.Log.d("NAV_DEBUG", "Screen type already on top, skipping push")
+            return
+        }
         if (!saveInBackStack) items.removeLast()
 
         changeStackEvent(
@@ -60,8 +69,9 @@ class Navigator @AssistedInject constructor(
             else StackEvent.Default
         )
 
-        if (lastItem.value::class == targetScreen::class) items.removeLast()
+        if (!skipDuplicateCheck && lastItem.value::class == targetScreen::class) items.removeLast()
         items.add(targetScreen)
+        android.util.Log.d("NAV_DEBUG", "Screen pushed successfully. Stack size: ${items.value.size}")
     }
 
     fun pop(popping: Boolean = true) {

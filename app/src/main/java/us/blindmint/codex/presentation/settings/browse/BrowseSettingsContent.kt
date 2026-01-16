@@ -10,17 +10,20 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import us.blindmint.codex.ui.browse.OpdsRootScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BrowseSettingsContent(
     listState: LazyListState,
     scrollBehavior: TopAppBarScrollBehavior,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    onNavigateToOpdsCatalog: (OpdsRootScreen) -> Unit
 ) {
     BrowseSettingsScaffold(
         listState = listState,
         scrollBehavior = scrollBehavior,
-        navigateBack = navigateBack
+        navigateBack = navigateBack,
+        onNavigateToOpdsCatalog = onNavigateToOpdsCatalog
     )
 }

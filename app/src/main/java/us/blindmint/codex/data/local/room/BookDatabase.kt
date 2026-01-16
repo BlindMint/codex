@@ -31,7 +31,7 @@ import java.io.File
         BookmarkEntity::class,
         OpdsSourceEntity::class,
     ],
-    version = 15,
+    version = 16,
     exportSchema = false
 )
 abstract class BookDatabase : RoomDatabase() {
@@ -179,6 +179,13 @@ object DatabaseHelper {
             db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `readingDirection` TEXT NOT NULL DEFAULT 'LTR'")
             db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `comicReaderMode` TEXT NOT NULL DEFAULT 'PAGED'")
             db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `archiveFormat` TEXT")
+        }
+    }
+
+    val MIGRATION_15_16 = object : Migration(15, 16) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Add status column to OpdsSourceEntity
+            db.execSQL("ALTER TABLE `OpdsSourceEntity` ADD COLUMN `status` TEXT NOT NULL DEFAULT 'UNKNOWN'")
         }
     }
 }

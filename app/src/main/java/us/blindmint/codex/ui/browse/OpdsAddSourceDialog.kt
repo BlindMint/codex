@@ -71,7 +71,7 @@ fun OpdsAddSourceDialog(
                     passwordVisible = false
                 }
             },
-            title = { Text(if (onSourceAdded == null) "Add OPDS Source" else "Edit OPDS Source") },
+            title = { Text(if (initialName.isEmpty()) "Add OPDS Source" else "Edit OPDS Source") },
             text = {
                 Column {
                     OutlinedTextField(
@@ -185,6 +185,7 @@ fun OpdsAddSourceDialog(
                 androidx.compose.material3.TextButton(
                     onClick = {
                         showRootDirectoryPrompt = false
+                        onDismiss() // Dismiss the OPDS dialog
                         navigator.push(BrowseSettingsScreen)
                     }
                 ) {

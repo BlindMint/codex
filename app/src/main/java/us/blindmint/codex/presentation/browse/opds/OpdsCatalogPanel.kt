@@ -12,9 +12,12 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.pullrefresh.PullRefreshState
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -36,6 +39,7 @@ import us.blindmint.codex.R
 import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import us.blindmint.codex.domain.browse.display.BrowseLayout
 import us.blindmint.codex.domain.browse.file.SelectableFile
+import us.blindmint.codex.presentation.core.util.noRippleClickable
 
 import us.blindmint.codex.ui.browse.BrowseEvent
 import us.blindmint.codex.ui.browse.OpdsAddSourceDialog
@@ -146,18 +150,28 @@ private fun OpdsSourceItem(
     source: OpdsSourceEntity,
     onSourceClick: () -> Unit
 ) {
-    Card(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        onClick = onSourceClick
+            .noRippleClickable { onSourceClick() }
+            .padding(horizontal = 18.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        Icon(
+            modifier = Modifier.size(24.dp),
+            imageVector = Icons.Filled.Folder,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface
+        )
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 12.dp)
         ) {
             Text(
                 text = source.name,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = source.url,

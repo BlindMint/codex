@@ -47,12 +47,17 @@ class OpdsRepositoryImpl @Inject constructor() : OpdsRepository {
      */
     override suspend fun fetchFeed(url: String, username: String?, password: String?): OpdsFeed {
         return withContext(Dispatchers.IO) {
+            android.util.Log.d("OPDS_DEBUG", "Fetching OPDS feed from URL: $url")
+
             val client = createOkHttpClient(username, password)
             val request = okhttp3.Request.Builder()
                 .url(encodeUrl(url))
                 .build()
 
             val response = client.newCall(request).execute()
+            android.util.Log.d("OPDS_DEBUG", "HTTP Response: ${response.code} ${response.message}")
+            android.util.Log.d("OPDS_DEBUG", "Content-Type: ${response.header("Content-Type")}")
+
             if (!response.isSuccessful) {
                 throw Exception("Failed to fetch feed: HTTP ${response.code} ${response.message}")
             }
@@ -60,12 +65,18 @@ class OpdsRepositoryImpl @Inject constructor() : OpdsRepository {
             val contentType = response.header("Content-Type") ?: ""
             val body = response.body?.string() ?: throw Exception("Empty response body")
 
+            // Log first 500 chars of response for debugging
+            val preview = body.take(500).replace("\n", " ").replace("\r", " ")
+            android.util.Log.d("OPDS_DEBUG", "Response preview: $preview${if (body.length > 500) "..." else ""}")
+
             // Detect feed format based on content-type or content inspection
             when {
                 isOpdsV2ContentType(contentType) || isOpdsV2Content(body) -> {
+                    android.util.Log.d("OPDS_DEBUG", "Detected OPDS v2 format")
                     parseOpdsV2(body)
                 }
                 else -> {
+                    android.util.Log.d("OPDS_DEBUG", "Detected OPDS v1 format (default)")
                     // Default to OPDS v1 (XML/Atom)
                     parseOpdsV1(url, username, password)
                 }
@@ -93,11 +104,18 @@ class OpdsRepositoryImpl @Inject constructor() : OpdsRepository {
      * Parses an OPDS v1 (XML/Atom) feed using Retrofit with SimpleXml.
      */
     private suspend fun parseOpdsV1(url: String, username: String?, password: String?): OpdsFeed {
-        val client = createOkHttpClient(username, password)
-        val retrofitWithAuth = retrofit.newBuilder().client(client).build()
-        val service = retrofitWithAuth.create(OpdsApiService::class.java)
-        val dto = service.getFeed(url)
-        return mapV1ToDomain(dto)
+        android.util.Log.d("OPDS_DEBUG", "Parsing OPDS v1 XML feed")
+        try {
+            val client = createOkHttpClient(username, password)
+            val retrofitWithAuth = retrofit.newBuilder().client(client).build()
+            val service = retrofitWithAuth.create(OpdsApiService::class.java)
+            val dto = service.getFeed(url)
+            android.util.Log.d("OPDS_DEBUG", "Successfully parsed OPDS v1 feed with ${dto.entries?.size ?: 0} entries")
+            return mapV1ToDomain(dto)
+        } catch (e: Exception) {
+            android.util.Log.e("OPDS_DEBUG", "Failed to parse OPDS v1 feed", e)
+            throw e
+        }
     }
 
     /**

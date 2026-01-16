@@ -16,12 +16,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import us.blindmint.codex.data.local.dto.OpdsSourceEntity
+import us.blindmint.codex.data.local.dto.OpdsSourceStatus
 import us.blindmint.codex.data.local.room.BookDatabase
 import us.blindmint.codex.data.local.room.DatabaseHelper
 import us.blindmint.codex.domain.repository.OpdsRepository
 import us.blindmint.codex.domain.storage.CodexDirectoryManager
 import us.blindmint.codex.domain.backup.OpdsSourceData
 import us.blindmint.codex.domain.backup.CodexBackup
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -44,7 +46,8 @@ class OpdsSourcesModel @Inject constructor(
             DatabaseHelper.MIGRATION_11_12,
             DatabaseHelper.MIGRATION_12_13,
             DatabaseHelper.MIGRATION_13_14,
-            DatabaseHelper.MIGRATION_14_15
+            DatabaseHelper.MIGRATION_14_15,
+            DatabaseHelper.MIGRATION_15_16
         ).build()
     }
 
@@ -171,17 +174,25 @@ class OpdsSourcesModel @Inject constructor(
                 name = name,
                 url = url,
                 username = username,
-                password = password
+                password = password,
+                status = OpdsSourceStatus.CONNECTING
             )
-            opdsSourceDao.insertOpdsSource(entity)
-            loadOpdsSources()
+            val id = opdsSourceDao.insertOpdsSource(entity)
+            val insertedEntity = entity.copy(id = id.toInt())
+
+            // Test the connection
+            testConnectionForSource(insertedEntity)
         }
     }
 
     fun updateOpdsSource(entity: OpdsSourceEntity) {
         viewModelScope.launch {
-            opdsSourceDao.updateOpdsSource(entity)
+            val updatedEntity = entity.copy(status = OpdsSourceStatus.CONNECTING)
+            opdsSourceDao.updateOpdsSource(updatedEntity)
             loadOpdsSources()
+
+            // Test the connection
+            testConnectionForSource(updatedEntity)
         }
     }
 
@@ -228,20 +239,43 @@ class OpdsSourcesModel @Inject constructor(
         val hasProtocol = cleanUrl.startsWith("http://") || cleanUrl.startsWith("https://")
 
         if (hasProtocol) {
-            // Has protocol, try original and with /opds
-            variations.add(cleanUrl)
+            // Has protocol, try with /opds first, then original
             if (!cleanUrl.endsWith("/opds")) {
                 variations.add("$cleanUrl/opds")
             }
+            variations.add(cleanUrl)
         } else {
-            // No protocol, try both http and https, with and without /opds
+            // No protocol, try both http and https, with /opds first
             // Prioritize https
-            variations.add("https://$cleanUrl")
             variations.add("https://$cleanUrl/opds")
-            variations.add("http://$cleanUrl")
+            variations.add("https://$cleanUrl")
             variations.add("http://$cleanUrl/opds")
+            variations.add("http://$cleanUrl")
         }
 
         return variations.distinct() // Remove duplicates in case original already had /opds
+    }
+
+    private fun testConnectionForSource(source: OpdsSourceEntity) {
+        viewModelScope.launch {
+            try {
+                opdsRepository.fetchFeed(source.url, source.username, source.password)
+                // Connection successful
+                val status = if (source.username != null) OpdsSourceStatus.CONNECTED else OpdsSourceStatus.CONNECTED
+                val updatedSource = source.copy(status = status)
+                opdsSourceDao.updateOpdsSource(updatedSource)
+                loadOpdsSources()
+            } catch (e: Exception) {
+                // Connection failed
+                val status = if (e.message?.contains("401") == true || e.message?.contains("auth") == true) {
+                    OpdsSourceStatus.AUTH_FAILED
+                } else {
+                    OpdsSourceStatus.CONNECTION_FAILED
+                }
+                val updatedSource = source.copy(status = status)
+                opdsSourceDao.updateOpdsSource(updatedSource)
+                loadOpdsSources()
+            }
+        }
     }
 }

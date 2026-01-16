@@ -299,6 +299,7 @@ class MainActivity : AppCompatActivity() {
                             }
 
                             else -> {
+                                android.util.Log.d("NAV_DEBUG", "Rendering screen: ${screen::class.simpleName}")
                                 screen.Content()
                             }
                         }

@@ -11,6 +11,15 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 
+enum class OpdsSourceStatus {
+    UNKNOWN,
+    CONNECTING,
+    CONNECTED,
+    AUTH_FAILED,
+    CONNECTION_FAILED,
+    DISABLED
+}
+
 @Entity
 @Parcelize
 data class OpdsSourceEntity(
@@ -20,5 +29,6 @@ data class OpdsSourceEntity(
     val username: String? = null,
     val password: String? = null,
     val enabled: Boolean = true,
-    val lastSync: Long = 0
+    val lastSync: Long = 0,
+    val status: OpdsSourceStatus = OpdsSourceStatus.UNKNOWN
 ) : Parcelable

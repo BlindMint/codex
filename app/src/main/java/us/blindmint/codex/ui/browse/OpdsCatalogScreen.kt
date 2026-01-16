@@ -29,6 +29,7 @@ abstract class BaseOpdsCatalogScreen(
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
+        android.util.Log.d("OPDS_DEBUG", "OpdsCategoryScreen.Content() called for title: $title, url: $url")
         val navigator = LocalNavigator.current
         val (scrollBehavior, listState) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior()
 

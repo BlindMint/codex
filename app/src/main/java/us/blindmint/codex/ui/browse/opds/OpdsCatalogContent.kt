@@ -109,6 +109,7 @@ fun OpdsCatalogContent(
     }
 
     LaunchedEffect(url) {
+        android.util.Log.d("OPDS_DEBUG", "LaunchedEffect triggered for URL: $url")
         val isDownloadAccessible = downloadModel.isDownloadDirectoryAccessible()
         model.loadFeed(source, url ?: source.url, isDownloadAccessible)
     }
@@ -291,37 +292,62 @@ fun OpdsCatalogContent(
                 modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()),
                 state = listState
             ) {
-                val allCategories = state.feed?.entries?.filter { entry ->
-                    entry.links.any { link ->
-                        link.rel == "subsection" ||
-                        link.rel == "http://opds-spec.org/subsection" ||
-                        link.type?.startsWith("application/atom+xml") == true
-                    } &&
-                    entry.links.none { link ->
-                        val resolvedUrl = runCatching {
-                            URI(source.url).resolve(link.href).toString()
-                        }.getOrNull()
-                        resolvedUrl != null && (
-                            resolvedUrl == state.feedUrl ||
-                            state.feedUrl?.startsWith(resolvedUrl) == true
-                        )
-                    }
-                } ?: emptyList()
+                  val allCategories = state.feed?.entries?.filter { entry ->
+                      val hasNavigationLinks = entry.links.any { link ->
+                          link.rel == "subsection" ||
+                          link.rel == "http://opds-spec.org/subsection" ||
+                          link.type?.startsWith("application/atom+xml") == true ||
+                          (link.rel != null && link.rel != "http://opds-spec.org/acquisition" &&
+                           link.rel != "http://opds-spec.org/image/thumbnail" &&
+                           link.rel != "self" && link.rel != "alternate")
+                      }
+                      val hasAcquisitionLinks = entry.links.any { it.rel == "http://opds-spec.org/acquisition" }
+                      val hasSelfReferencingLinks = entry.links.any { link ->
+                          link.href?.let { href ->
+                              val resolvedUrl = runCatching {
+                                  URI(source.url).resolve(href).toString()
+                              }.getOrNull()
+                              resolvedUrl != null && (
+                                  resolvedUrl == state.feedUrl ||
+                                  state.feedUrl?.startsWith(resolvedUrl) == true
+                              )
+                          } ?: false
+                      }
 
-                val categories = if (showSearch && searchQuery.isNotBlank()) {
-                    allCategories.filter { entry ->
-                        entry.title?.contains(searchQuery, ignoreCase = true) == true
-                    }
-                } else allCategories
+                      val isCategory = hasNavigationLinks && !hasAcquisitionLinks && !hasSelfReferencingLinks
 
-                val allBooks = state.feed?.entries?.filter { entry ->
-                    entry.links.any { it.rel == "http://opds-spec.org/acquisition" } &&
-                    !entry.links.any { link ->
-                        link.rel == "subsection" ||
-                        link.rel == "http://opds-spec.org/subsection" ||
-                        link.type?.startsWith("application/atom+xml") == true
-                    }
-                } ?: emptyList()
+                      // Debug logging
+                      if (entry.title?.contains("sub", ignoreCase = true) == true || isCategory) {
+                          android.util.Log.d("OPDS_DEBUG", "Entry '${entry.title}' - Navigation: $hasNavigationLinks, Acquisition: $hasAcquisitionLinks, SelfRef: $hasSelfReferencingLinks, IsCategory: $isCategory")
+                          entry.links.forEach { link ->
+                              android.util.Log.d("OPDS_DEBUG", "  Link: rel='${link.rel}', type='${link.type}', href='${link.href}'")
+                          }
+                      }
+
+                      isCategory
+                  } ?: emptyList()
+
+                 val categories = if (showSearch && searchQuery.isNotBlank()) {
+                     allCategories.filter { entry ->
+                         entry.title?.contains(searchQuery, ignoreCase = true) == true
+                     }
+                 } else allCategories
+
+                 android.util.Log.d("OPDS_DEBUG", "Feed URL: ${state.feedUrl}")
+                 android.util.Log.d("OPDS_DEBUG", "Total entries: ${state.feed?.entries?.size ?: 0}")
+                 android.util.Log.d("OPDS_DEBUG", "Categories found: ${allCategories.size}")
+                 android.util.Log.d("OPDS_DEBUG", "Categories shown: ${categories.size}")
+
+                 val allBooks = state.feed?.entries?.filter { entry ->
+                     entry.links.any { it.rel == "http://opds-spec.org/acquisition" } &&
+                     !entry.links.any { link ->
+                         link.rel == "subsection" ||
+                         link.rel == "http://opds-spec.org/subsection" ||
+                         link.type?.startsWith("application/atom+xml") == true
+                     }
+                 } ?: emptyList()
+
+                 android.util.Log.d("OPDS_DEBUG", "Books found: ${allBooks.size}")
 
                 val books = if (showSearch && searchQuery.isNotBlank()) {
                     allBooks.filter { entry ->
@@ -344,29 +370,71 @@ fun OpdsCatalogContent(
                         Card(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
                             onClick = {
+                                android.util.Log.d("OPDS_DEBUG", "Category tapped: '${entry.title}'")
+                                android.util.Log.d("OPDS_DEBUG", "Source URL: ${source.url}")
+
+                                // Find navigation link - try multiple strategies
                                 val link = entry.links.firstOrNull { link ->
-                                    link.type?.startsWith("application/atom+xml") == true ||
-                                    link.rel == "subsection" ||
-                                    link.rel == "http://opds-spec.org/subsection" ||
-                                    (link.rel != "http://opds-spec.org/acquisition" &&
-                                     link.rel != "http://opds-spec.org/image/thumbnail" &&
-                                     !link.rel.isNullOrBlank())
+                                    link.href?.isNotBlank() == true && (
+                                        link.type?.startsWith("application/atom+xml") == true ||
+                                        link.rel == "subsection" ||
+                                        link.rel == "http://opds-spec.org/subsection" ||
+                                        (link.rel != null && link.rel != "http://opds-spec.org/acquisition" &&
+                                         link.rel != "http://opds-spec.org/image/thumbnail" &&
+                                         link.rel != "self" && link.rel != "alternate")
+                                    )
                                 }
+
+                                android.util.Log.d("OPDS_DEBUG", "Found navigation link: ${link?.let { "rel='${it.rel}', href='${it.href}'" } ?: "null"}")
+
                                 if (link != null) {
-                                    val encodedHref = link.href.replace(".", "%252E")
-                                    val fullUrl = if (encodedHref.startsWith("http")) {
-                                        encodedHref
+                                    var href = link.href.trim()
+
+                                    // Special handling for href ending with "." - double encode to handle server issues
+                                    if (href.endsWith(".")) {
+                                        href = href.replace(".", "%252E")
+                                    }
+
+                                    val fullUrl = if (href.startsWith("http")) {
+                                        href
                                     } else {
-                                        val baseUri = URI(source.url)
-                                        val port = if (baseUri.port != -1 && baseUri.port != 80 && baseUri.port != 443) ":${baseUri.port}" else ""
-                                        if (encodedHref.startsWith("/")) {
-                                            "${baseUri.scheme}://${baseUri.host}${port}${encodedHref}"
+                                        // Manual URL construction to avoid URI.resolve() issues with special chars
+                                        if (href.startsWith("/")) {
+                                            // Absolute path - combine with domain from source URL
+                                            val domain = source.url.substringBefore("/opds").trimEnd('/')
+                                            "$domain$href"
                                         } else {
-                                            val basePath = baseUri.path.removeSuffix("/")
-                                            "${baseUri.scheme}://${baseUri.host}${port}${basePath}/${encodedHref}"
+                                            // Relative path - append to source URL
+                                            val baseUrl = source.url.removeSuffix("/")
+                                            "$baseUrl/$href"
                                         }
                                     }
+                                    android.util.Log.d("OPDS_DEBUG", "Final navigation URL: $fullUrl")
                                     navigator.push(OpdsCategoryScreen(source, fullUrl, entry.title))
+                                } else {
+                                    android.util.Log.d("OPDS_DEBUG", "No navigation link found for '${entry.title}'")
+                                }
+
+                                        if (href.startsWith("/")) {
+                                            // Absolute path - combine with domain from normalized source URL
+                                            val domain = normalizedSourceUrl.substringBefore("/opds").trimEnd('/')
+                                            "$domain$href"
+                                        } else {
+                                            // Relative path - append to normalized source URL
+                                            val baseUrl = normalizedSourceUrl.removeSuffix("/")
+                                            "$baseUrl/$href"
+                                        }
+                                    }
+                                    android.util.Log.d("OPDS_DEBUG", "Final navigation URL: $fullUrl")
+                                    android.util.Log.d("OPDS_DEBUG", "About to call navigator.push...")
+                                    try {
+                                        navigator.push(OpdsCategoryScreen(source, fullUrl, entry.title))
+                                        android.util.Log.d("OPDS_DEBUG", "navigator.push() completed successfully")
+                                    } catch (e: Exception) {
+                                        android.util.Log.e("OPDS_DEBUG", "Error calling navigator.push()", e)
+                                    }
+                                } else {
+                                    android.util.Log.d("OPDS_DEBUG", "No navigation link found for '${entry.title}'")
                                 }
                             }
                         ) {
@@ -400,7 +468,7 @@ fun OpdsCatalogContent(
                         Text(
                             "Books",
                             style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
                         )
                     }
 
