@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import android.net.Uri
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.file.CachedFileCompat
@@ -41,7 +42,12 @@ fun BookInfoDetailsBottomSheet(
 
     val context = LocalContext.current
     val cachedFile = remember(book.filePath) {
-        CachedFileCompat.fromFullPath(context, book.filePath)
+        val uri = Uri.parse(book.filePath)
+        if (!uri.scheme.isNullOrBlank()) {
+            CachedFileCompat.fromUri(context, uri)
+        } else {
+            CachedFileCompat.fromFullPath(context, book.filePath)
+        }
     }
 
     val fileSize = remember(cachedFile) {
@@ -91,7 +97,7 @@ fun BookInfoDetailsBottomSheet(
             item {
                 BookInfoDetailsBottomSheetItem(
                     label = stringResource(id = R.string.file_path),
-                    text = book.filePath,
+                    text = cachedFile?.path ?: book.filePath,
                     editable = true,
                     onEdit = {
                         showPathDialog(BookInfoEvent.OnShowPathDialog)
