@@ -61,6 +61,7 @@ import us.blindmint.codex.presentation.core.util.calculateProgress
 import us.blindmint.codex.presentation.core.util.setBrightness
 import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.presentation.reader.ReaderContent
+import us.blindmint.codex.presentation.reader.SpeedReadingScaffold
 import us.blindmint.codex.ui.book_info.BookInfoScreen
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.settings.SettingsModel
@@ -543,11 +544,11 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             openTranslator = screenModel::onEvent,
             onTextSelected = screenModel::onEvent,
             scrollToChapter = screenModel::onEvent,
-            showSettingsBottomSheet = screenModel::onEvent,
-            dismissBottomSheet = screenModel::onEvent,
-            showChaptersDrawer = screenModel::onEvent,
-            showBookmarksDrawer = screenModel::onEvent,
-            scrollToBookmark = screenModel::onEvent,
+             showSettingsBottomSheet = screenModel::onEvent,
+             dismissBottomSheet = screenModel::onEvent,
+             showChaptersDrawer = screenModel::onEvent,
+             showSpeedReading = screenModel::onEvent,
+             scrollToBookmark = screenModel::onEvent,
             dismissDrawer = screenModel::onEvent,
             onDeleteBookmark = { bookmark ->
                 screenModel.deleteBookmarkItem(bookmark)
@@ -600,6 +601,26 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
                  )
              },
              onReaderEvent = screenModel::onEvent
-         )
-    }
+          )
+
+        // Speed reading overlay
+        if (state.value.speedReadingMode) {
+            SpeedReadingScaffold(
+                text = state.value.text,
+                currentProgress = state.value.book.progress,
+                backgroundColor = backgroundColor.value,
+                fontFamily = fontFamily.font,
+                sentencePauseMs = 2000, // TODO: Get from MainState
+                progress = progress,
+                bottomBarPadding = bottomBarPadding,
+                onExitSpeedReading = {
+                    screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
+                },
+                onShowSettings = {
+                    // TODO: Show speed reading settings
+                    screenModel.onEvent(ReaderEvent.OnShowSettingsBottomSheet)
+                }
+            )
+        }
+     }
 }

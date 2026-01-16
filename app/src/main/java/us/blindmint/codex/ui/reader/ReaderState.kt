@@ -36,6 +36,8 @@ data class ReaderState(
     val checkpoint: Checkpoint = Checkpoint(0, 0),
     val lockMenu: Boolean = false,
 
+    val speedReadingMode: Boolean = false,
+
     val bottomSheet: BottomSheet? = null,
     val drawer: Drawer? = null,
 

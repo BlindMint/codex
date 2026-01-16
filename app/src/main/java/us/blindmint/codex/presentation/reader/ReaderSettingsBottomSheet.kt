@@ -47,6 +47,7 @@ import us.blindmint.codex.presentation.settings.reader.padding.PaddingSubcategor
 import us.blindmint.codex.presentation.settings.reader.progress.ProgressSubcategory
 import us.blindmint.codex.presentation.settings.reader.reading_mode.ReadingModeSubcategory
 import us.blindmint.codex.presentation.settings.reader.reading_speed.ReadingSpeedSubcategory
+import us.blindmint.codex.presentation.settings.reader.speed_reading.SpeedReadingSubcategory
 import us.blindmint.codex.presentation.settings.reader.dictionary.DictionarySubcategory
 import us.blindmint.codex.presentation.settings.reader.search.SearchSubcategory
 import us.blindmint.codex.presentation.settings.reader.system.SystemSubcategory
@@ -152,12 +153,12 @@ fun ReaderSettingsBottomSheet(
                         SystemSubcategory(
                             titleColor = { MaterialTheme.colorScheme.onSurface }
                         )
-                        ReadingSpeedSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        SearchSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
+                         ReadingSpeedSubcategory(
+                             titleColor = { MaterialTheme.colorScheme.onSurface }
+                         )
+                         SearchSubcategory(
+                             titleColor = { MaterialTheme.colorScheme.onSurface }
+                         )
                         DictionarySubcategory(
                             titleColor = { MaterialTheme.colorScheme.onSurface }
                         )
@@ -182,10 +183,13 @@ fun ReaderSettingsBottomSheet(
                         ChaptersSubcategory(
                             titleColor = { MaterialTheme.colorScheme.onSurface }
                         )
-                        ProgressSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface },
-                            showDivider = false
-                        )
+                         ProgressSubcategory(
+                             titleColor = { MaterialTheme.colorScheme.onSurface }
+                         )
+                         SpeedReadingSubcategory(
+                             titleColor = { MaterialTheme.colorScheme.onSurface },
+                             showDivider = false
+                         )
                     }
                 }
 

@@ -27,18 +27,13 @@ fun ReaderDrawer(
     clearAllBookmarks: () -> Unit,
     onQuickBookmark: (customName: String) -> Unit
 ) {
-    ReaderChaptersDrawer(
-        show = drawer == ReaderScreen.CHAPTERS_DRAWER,
+    ReaderChaptersBookmarksDrawer(
+        show = drawer == ReaderScreen.CHAPTERS_DRAWER || drawer == ReaderScreen.BOOKMARKS_DRAWER,
         chapters = chapters,
         currentChapter = currentChapter,
         currentChapterProgress = currentChapterProgress,
-        scrollToChapter = scrollToChapter,
-        dismissDrawer = dismissDrawer
-    )
-
-    ReaderBookmarksDrawer(
-        show = drawer == ReaderScreen.BOOKMARKS_DRAWER,
         bookmarks = bookmarks,
+        scrollToChapter = scrollToChapter,
         scrollToBookmark = scrollToBookmark,
         dismissDrawer = dismissDrawer,
         deleteBookmark = deleteBookmark,

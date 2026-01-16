@@ -658,8 +658,26 @@ class ReaderModel @Inject constructor(
                 is ReaderEvent.OnShowBookmarksDrawer -> {
                     _state.update {
                         it.copy(
-                            drawer = ReaderScreen.BOOKMARKS_DRAWER,
+                            drawer = ReaderScreen.CHAPTERS_DRAWER, // Now combined with chapters
                             bottomSheet = null
+                        )
+                    }
+                }
+
+                is ReaderEvent.OnShowSpeedReading -> {
+                    _state.update {
+                        it.copy(
+                            speedReadingMode = true,
+                            drawer = null,
+                            bottomSheet = null
+                        )
+                    }
+                }
+
+                is ReaderEvent.OnDismissSpeedReading -> {
+                    _state.update {
+                        it.copy(
+                            speedReadingMode = false
                         )
                     }
                 }

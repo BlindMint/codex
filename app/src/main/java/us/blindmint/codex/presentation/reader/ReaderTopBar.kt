@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.rounded.Bookmark
+import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -55,7 +55,7 @@ fun ReaderTopBar(
     selectNextPreset: (SettingsEvent.OnSelectNextPreset) -> Unit,
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
-    showBookmarksDrawer: (ReaderEvent.OnShowBookmarksDrawer) -> Unit,
+    showSpeedReading: (ReaderEvent.OnShowSpeedReading) -> Unit,
     isSearchVisible: Boolean,
     showSearch: (ReaderEvent.OnShowSearchPersistent) -> Unit,
     hideSearch: (ReaderEvent.OnHideSearch) -> Unit,
@@ -158,12 +158,12 @@ fun ReaderTopBar(
                 }
 
                 IconButton(
-                    icon = Icons.Rounded.Bookmark,
-                    contentDescription = R.string.bookmarks_content_desc,
+                    icon = Icons.Rounded.Bolt,
+                    contentDescription = R.string.speed_reading_content_desc,
                     disableOnClick = false,
                     enabled = !lockMenu
                 ) {
-                    showBookmarksDrawer(ReaderEvent.OnShowBookmarksDrawer)
+                    showSpeedReading(ReaderEvent.OnShowSpeedReading)
                 }
 
                 IconButton(
