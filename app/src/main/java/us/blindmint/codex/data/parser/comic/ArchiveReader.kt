@@ -24,13 +24,14 @@ class ArchiveReader @Inject constructor() {
     }
 
     enum class ArchiveFormat {
-        ZIP, RAR, UNKNOWN
+        ZIP, RAR, SEVEN_Z, UNKNOWN
     }
 
     fun getArchiveFormat(cachedFile: CachedFile): ArchiveFormat {
         return when (cachedFile.name.substringAfterLast('.').lowercase()) {
             "zip", "cbz" -> ArchiveFormat.ZIP
             "rar", "cbr" -> ArchiveFormat.RAR
+            "7z", "cb7" -> ArchiveFormat.SEVEN_Z
             else -> ArchiveFormat.UNKNOWN
         }
     }
@@ -41,8 +42,115 @@ class ArchiveReader @Inject constructor() {
         return when (format) {
             ArchiveFormat.ZIP -> LibArchiveHandle(cachedFile)
             ArchiveFormat.RAR -> RarArchiveHandle(cachedFile)
+            ArchiveFormat.SEVEN_Z -> SevenZArchiveHandle(cachedFile)
             ArchiveFormat.UNKNOWN -> throw IllegalArgumentException("Unsupported archive format for file: ${cachedFile.name}")
         }
+    }
+
+    private class SevenZArchiveHandle(private val cachedFile: CachedFile) : ArchiveHandle {
+        private val _entries = mutableListOf<SevenZArchiveEntry>()
+        private var sevenZFile: org.apache.commons.compress.archivers.sevenz.SevenZFile? = null
+        private var tempFile: java.io.File? = null
+
+        init {
+            loadArchive()
+        }
+
+        private fun loadArchive() {
+            try {
+                android.util.Log.d("SevenZArchiveHandle", "Loading 7Z archive: ${cachedFile.name}")
+
+                // Use cached file if available (preferred for content:// URIs)
+                cachedFile.rawFile?.let { cachedRawFile ->
+                    android.util.Log.d("SevenZArchiveHandle", "Using raw file: ${cachedRawFile.absolutePath}")
+                    sevenZFile = org.apache.commons.compress.archivers.sevenz.SevenZFile(cachedRawFile)
+                } ?: run {
+                    // For content:// URIs, copy to temp file first
+                    val temp = createTempFileFromUri()
+                    if (temp != null) {
+                        android.util.Log.d("SevenZArchiveHandle", "Using temp file: ${temp.absolutePath}")
+                        sevenZFile = org.apache.commons.compress.archivers.sevenz.SevenZFile(temp)
+                        tempFile = temp
+                    } else {
+                        throw Exception("Failed to create temp file from URI")
+                    }
+                }
+
+                // Read all entries
+                var entryCount = 0
+                sevenZFile?.use { szf ->
+                    for (entry in szf.entries) {
+                        android.util.Log.d("SevenZArchiveHandle", "Entry: ${entry.name}, isDir: ${entry.isDirectory}")
+                        if (!entry.isDirectory && ArchiveReader.isImageFile(entry.name)) {
+                            _entries.add(SevenZArchiveEntry(entry))
+                            entryCount++
+                        }
+                    }
+                }
+
+                android.util.Log.d("SevenZArchiveHandle", "Found $entryCount image entries")
+
+                // Re-open for reading (SevenZFile can only be iterated once)
+                cachedFile.rawFile?.let { cachedRawFile ->
+                    sevenZFile = org.apache.commons.compress.archivers.sevenz.SevenZFile(cachedRawFile)
+                } ?: tempFile?.let { temp ->
+                    sevenZFile = org.apache.commons.compress.archivers.sevenz.SevenZFile(temp)
+                }
+
+            } catch (e: Exception) {
+                android.util.Log.e("SevenZArchiveHandle", "Failed to load 7Z archive", e)
+                throw e
+            }
+        }
+
+        private fun createTempFileFromUri(): java.io.File? {
+            return try {
+                val tempFile = java.io.File.createTempFile("temp_archive", ".7z")
+                tempFile.deleteOnExit()
+
+                cachedFile.openInputStream()?.use { input ->
+                    tempFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                tempFile
+            } catch (e: Exception) {
+                android.util.Log.e("SevenZArchiveHandle", "Failed to create temp file", e)
+                null
+            }
+        }
+
+        override val entries: List<ArchiveEntry>
+            get() = _entries
+
+        override fun getInputStream(entry: ArchiveEntry): InputStream {
+            val szEntry = (entry as SevenZArchiveEntry).entry
+            sevenZFile?.let { szf ->
+                // Find and return the entry's input stream
+                szf.entries.forEach { currentEntry ->
+                    if (currentEntry.name == szEntry.name) {
+                        return szf.getInputStream(currentEntry)
+                    }
+                }
+            }
+            throw IllegalStateException("Archive not open or entry not found")
+        }
+
+        override fun getEntryCount(): Int = entries.size
+
+        override fun close() {
+            sevenZFile?.close()
+            sevenZFile = null
+            tempFile?.delete()
+            tempFile = null
+        }
+    }
+
+    private class SevenZArchiveEntry(val entry: org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry) : ArchiveEntry {
+        override fun getPath(): String = entry.name
+        override fun getSize(): Long = entry.size
+        override fun isDirectory(): Boolean = entry.isDirectory
+        override fun getMtime(): Long = entry.lastModifiedDate?.time ?: 0L
     }
 
     interface ArchiveHandle : AutoCloseable {

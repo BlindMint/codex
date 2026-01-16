@@ -27,7 +27,7 @@ class ComicFileParser @Inject constructor(
     private val archiveReader: ArchiveReader
 ) : FileParser {
 
-    private val supportedExtensions = setOf("cbz", "cbr")
+    private val supportedExtensions = setOf("cbz", "cbr", "cb7")
 
     override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
         if (!isComicFile(cachedFile)) return null
@@ -90,6 +90,7 @@ class ComicFileParser @Inject constructor(
         return when (extension) {
             "cbz" -> "CBZ"
             "cbr" -> "CBR"
+            "cb7" -> "CB7"
             else -> null
         }
     }

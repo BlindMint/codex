@@ -207,4 +207,5 @@ dependencies {
 
     // Comic archive support
     implementation("com.github.junrar:junrar:7.5.5")
+    implementation("org.apache.commons:commons-compress:1.26.0")
 }

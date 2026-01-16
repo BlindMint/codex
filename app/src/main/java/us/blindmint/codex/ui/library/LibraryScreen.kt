@@ -117,7 +117,7 @@ object LibraryScreen : Screen, Parcelable {
             derivedStateOf {
                 // Book file extensions for filtering
                 val bookExtensions = setOf("epub", "pdf", "azw3", "mobi", "fb2", "txt", "html", "htm", "md")
-                val comicExtensions = setOf("cbr", "cbz")
+                val comicExtensions = setOf("cbr", "cbz", "cb7")
 
                 listOf(
                     LibraryTabWithBooks(
