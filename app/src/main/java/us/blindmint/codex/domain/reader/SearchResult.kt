@@ -11,5 +11,8 @@ import androidx.compose.runtime.Immutable
 @Immutable
 data class SearchResult(
     val textIndex: Int,
-    val text: String
+    val fullText: String,
+    val matchedText: String,
+    val beforeContext: String = "",
+    val afterContext: String = ""
 )

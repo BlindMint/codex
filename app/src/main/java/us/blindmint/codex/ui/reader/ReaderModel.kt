@@ -970,11 +970,40 @@ class ReaderModel @Inject constructor(
             }
 
             if (text != null && text.lowercase().contains(queryLower)) {
-                results.add(SearchResult(textIndex = index, text = text))
+                // Find the matched text with context
+                val (matchedText, beforeContext, afterContext) = extractContext(text, queryLower)
+                results.add(SearchResult(
+                    textIndex = index,
+                    fullText = text,
+                    matchedText = matchedText,
+                    beforeContext = beforeContext,
+                    afterContext = afterContext
+                ))
             }
         }
 
         return results
+    }
+
+    private fun extractContext(text: String, queryLower: String): Triple<String, String, String> {
+        val textLower = text.lowercase()
+        val queryIndex = textLower.indexOf(queryLower)
+        if (queryIndex == -1) return Triple(text, "", "")
+
+        // Extract matched text (the actual query match)
+        val matchedText = text.substring(
+            queryIndex,
+            (queryIndex + queryLower.length).coerceAtMost(text.length)
+        )
+
+        // Calculate context - aim for about 20-30 characters before and after
+        val beforeStart = (queryIndex - 25).coerceAtLeast(0)
+        val beforeContext = text.substring(beforeStart, queryIndex).trimStart()
+
+        val afterEnd = (queryIndex + queryLower.length + 25).coerceAtMost(text.length)
+        val afterContext = text.substring(queryIndex + queryLower.length, afterEnd).trimEnd()
+
+        return Triple(matchedText, beforeContext, afterContext)
     }
 
     private suspend fun scrollToSearchResult(resultIndex: Int) {

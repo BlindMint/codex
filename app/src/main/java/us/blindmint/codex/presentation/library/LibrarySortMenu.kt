@@ -69,6 +69,7 @@ import us.blindmint.codex.presentation.settings.library.display.components.Libra
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun LibrarySortMenu(
+    show: Boolean,
     onDismiss: () -> Unit
 ) {
     val mainModel = hiltViewModel<MainModel>()
@@ -144,7 +145,7 @@ fun LibrarySortMenu(
     var showSeriesSubpanel by remember { mutableStateOf(false) }
 
     ModalDrawer(
-        show = true,
+        show = show,
         side = DrawerSide.LEFT,
         onDismissRequest = onDismiss,
         header = {

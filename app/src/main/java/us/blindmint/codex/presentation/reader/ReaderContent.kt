@@ -35,6 +35,7 @@ import us.blindmint.codex.domain.reader.ReaderFontThickness
 import us.blindmint.codex.domain.reader.ReaderHorizontalGesture
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.ReaderText.Chapter
+import us.blindmint.codex.domain.reader.ReaderProgressCount
 import us.blindmint.codex.domain.reader.ReaderTextAlignment
 import us.blindmint.codex.domain.reader.SearchResult
 import us.blindmint.codex.domain.ui.UIText
@@ -74,6 +75,7 @@ fun ReaderContent(
     highlightedReading: Boolean,
     highlightedReadingThickness: FontWeight,
     progress: String,
+    progressCount: ReaderProgressCount,
     progressBar: Boolean,
     progressBarPadding: Dp,
     progressBarAlignment: HorizontalAlignment,
@@ -125,6 +127,7 @@ fun ReaderContent(
     currentSearchResultIndex: Int,
     searchHighlightColor: Color,
     searchScrollbarOpacity: Double,
+    showSearchScrollbar: Boolean,
     isSearchVisible: Boolean,
     searchBarPersistent: Boolean,
     onSearchQueryChange: (ReaderEvent.OnSearchQueryChange) -> Unit,
@@ -179,6 +182,7 @@ fun ReaderContent(
             highlightedReading = highlightedReading,
             highlightedReadingThickness = highlightedReadingThickness,
             progress = progress,
+            progressCount = progressCount,
             progressBar = progressBar,
             progressBarPadding = progressBarPadding,
             progressBarAlignment = progressBarAlignment,
@@ -224,6 +228,7 @@ fun ReaderContent(
             currentSearchResultIndex = currentSearchResultIndex,
             searchHighlightColor = searchHighlightColor,
             searchScrollbarOpacity = searchScrollbarOpacity,
+            showSearchScrollbar = showSearchScrollbar,
             isSearchVisible = isSearchVisible,
             searchBarPersistent = searchBarPersistent,
             onSearchQueryChange = onSearchQueryChange,

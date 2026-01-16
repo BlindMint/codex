@@ -15,8 +15,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
+import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 import us.blindmint.codex.presentation.settings.reader.search.components.SearchHighlightColorOption
 import us.blindmint.codex.presentation.settings.reader.search.components.SearchScrollbarOpacityOption
+import us.blindmint.codex.presentation.settings.reader.search.components.ShowSearchScrollbarOption
 
 fun LazyListScope.SearchSubcategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary },
@@ -32,6 +34,14 @@ fun LazyListScope.SearchSubcategory(
     ) {
         item {
             SearchHighlightColorOption()
+        }
+
+        // Search scrollbar section
+        item {
+            SettingsSubcategoryTitle(title = stringResource(id = R.string.search_scrollbar_settings))
+        }
+        item {
+            ShowSearchScrollbarOption()
         }
         item {
             SearchScrollbarOpacityOption()

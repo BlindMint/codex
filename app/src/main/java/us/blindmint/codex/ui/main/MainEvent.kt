@@ -79,6 +79,7 @@ sealed class MainEvent {
     data class OnChangeHorizontalGesturePullAnim(val value: Boolean) : MainEvent()
     data class OnChangeSearchHighlightColor(val value: Long) : MainEvent()
     data class OnChangeSearchScrollbarOpacity(val value: Double) : MainEvent()
+    data class OnChangeShowSearchScrollbar(val value: Boolean) : MainEvent()
 
     // Dictionary Events
     data class OnChangeDictionarySource(val value: DictionarySource) : MainEvent()

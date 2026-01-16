@@ -102,13 +102,12 @@ fun LibraryContent(
         navigateToReader = navigateToReader
     )
 
-    if (showSortMenu) {
-        LibrarySortMenu(
-            onDismiss = {
-                sortMenuVisibility(LibraryEvent.OnDismissSortMenu)
-            }
-        )
-    }
+    LibrarySortMenu(
+        show = showSortMenu,
+        onDismiss = {
+            sortMenuVisibility(LibraryEvent.OnDismissSortMenu)
+        }
+    )
 
     LibraryBackHandler(
         hasSelectedItems = hasSelectedItems,

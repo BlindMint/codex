@@ -186,6 +186,8 @@
     <string name="search_reader_settings">Search</string>
     <string name="search_highlight_color">Search highlight color</string>
     <string name="search_scrollbar_opacity">Search scrollbar opacity</string>
+    <string name="show_search_scrollbar">Show search scrollbar</string>
+    <string name="search_scrollbar_settings">Search scrollbar</string>
     <string name="alpha_opacity">Opacity</string>
     <string name="dictionary_settings">Dictionary</string>
     <string name="dictionary_source_option">Web Dictionary</string>

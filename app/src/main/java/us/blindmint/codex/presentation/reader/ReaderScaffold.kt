@@ -41,6 +41,7 @@ import us.blindmint.codex.domain.reader.Checkpoint
 import us.blindmint.codex.domain.reader.FontWithName
 import us.blindmint.codex.domain.reader.ReaderFontThickness
 import us.blindmint.codex.domain.reader.ReaderHorizontalGesture
+import us.blindmint.codex.domain.reader.ReaderProgressCount
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.ReaderText.Chapter
 import us.blindmint.codex.domain.reader.ReaderTextAlignment
@@ -77,6 +78,7 @@ fun ReaderScaffold(
     highlightedReading: Boolean,
     highlightedReadingThickness: FontWeight,
     progress: String,
+    progressCount: ReaderProgressCount,
     progressBar: Boolean,
     progressBarPadding: Dp,
     progressBarAlignment: HorizontalAlignment,
@@ -122,6 +124,7 @@ fun ReaderScaffold(
     currentSearchResultIndex: Int,
     searchHighlightColor: Color,
     searchScrollbarOpacity: Double,
+    showSearchScrollbar: Boolean,
     isSearchVisible: Boolean,
     searchBarPersistent: Boolean,
     onSearchQueryChange: (ReaderEvent.OnSearchQueryChange) -> Unit,
@@ -263,8 +266,8 @@ fun ReaderScaffold(
             searchHighlightColor = searchHighlightColor
         )
 
-        // Search scrollbar - visible when search bar is active
-        if (isSearchVisible) {
+        // Search scrollbar - visible when search bar is active and setting is enabled
+        if (isSearchVisible && showSearchScrollbar) {
             ReaderSearchScrollbar(
                 text = text,
                 listState = listState,
@@ -286,6 +289,18 @@ fun ReaderScaffold(
                 }
             )
         }
+
+        // Search bottom panel
+        ReaderSearchBottomPanel(
+            show = isSearchVisible,
+            searchResults = searchResults,
+            currentSearchResultIndex = currentSearchResultIndex,
+            text = text,
+            progressCount = progressCount,
+            bottomBarHeight = bottomBarHeight,
+            topBarHeight = topBarHeight,
+            onScrollToSearchResult = onScrollToSearchResult
+        )
 
         ReaderPerceptionExpander(
             perceptionExpander = perceptionExpander,

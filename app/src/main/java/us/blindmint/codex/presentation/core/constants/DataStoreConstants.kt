@@ -69,6 +69,7 @@ object DataStoreConstants {
     val PROGRESS_COUNT = stringPreferencesKey("progress_count")
     val SEARCH_HIGHLIGHT_COLOR = stringPreferencesKey("search_highlight_color")
     val SEARCH_SCROLLBAR_OPACITY = doublePreferencesKey("search_scrollbar_opacity")
+    val SHOW_SEARCH_SCROLLBAR = booleanPreferencesKey("show_search_scrollbar")
 
     // Dictionary settings
     val DICTIONARY_SOURCE = stringPreferencesKey("dictionary_source")

@@ -559,6 +559,14 @@ class MainModel @Inject constructor(
                 }
             )
 
+            is MainEvent.OnChangeShowSearchScrollbar -> handleDatastoreUpdate(
+                key = DataStoreConstants.SHOW_SEARCH_SCROLLBAR,
+                value = event.value,
+                updateState = {
+                    it.copy(showSearchScrollbar = this)
+                }
+            )
+
             // Dictionary Events
             is MainEvent.OnChangeDictionarySource -> handleDatastoreUpdate(
                 key = DataStoreConstants.DICTIONARY_SOURCE,
