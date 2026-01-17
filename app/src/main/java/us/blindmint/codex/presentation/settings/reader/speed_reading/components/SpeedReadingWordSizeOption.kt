@@ -29,6 +29,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
+import kotlin.math.roundToInt
 
 @Composable
 fun SpeedReadingWordSizeOption(
@@ -56,10 +57,12 @@ fun SpeedReadingWordSizeOption(
         Slider(
             value = localWordSize.toFloat(),
             onValueChange = {
-                localWordSize = it.toInt()
-                onWordSizeChange(it.toInt())
+                val roundedValue = (it / 2).roundToInt() * 2 // Round to nearest even number
+                localWordSize = roundedValue.coerceIn(24, 96)
+                onWordSizeChange(localWordSize)
             },
             valueRange = 24f..96f,
+            steps = 36, // (96-24)/2 - 1 = 36 steps for 2-unit increments
             modifier = Modifier.weight(1f)
         )
 

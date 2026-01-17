@@ -49,7 +49,7 @@ fun SpeedReadingSettingsBottomSheet(
     onAccentOpacityChange: (Float) -> Unit = {},
     showVerticalIndicators: Boolean = true,
     onShowVerticalIndicatorsChange: (Boolean) -> Unit = {},
-    verticalIndicatorsSize: Int = 32,
+    verticalIndicatorsSize: Int = 8,
     onVerticalIndicatorsSizeChange: (Int) -> Unit = {},
     showHorizontalBars: Boolean = true,
     onShowHorizontalBarsChange: (Boolean) -> Unit = {},

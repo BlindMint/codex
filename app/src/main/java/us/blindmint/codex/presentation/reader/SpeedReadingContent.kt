@@ -17,8 +17,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,6 +37,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -185,6 +191,14 @@ fun SpeedReadingContent(
                     }
                 } else 0f
 
+                // Measure full word height for bar positioning when distance is 0
+                val fullWordHeight = with(density) {
+                    textMeasurer.measure(
+                        text = currentWord,
+                        style = textStyle
+                    ).size.height.toFloat()
+                }
+
                 // Calculate offset to position the accent character at the focal point
                 val accentCenterOffset = beforeAccentWidth + (accentCharWidth / 2f)
                 val wordOffsetX = focalPointX - accentCenterOffset
@@ -295,68 +309,79 @@ fun SpeedReadingContent(
             }
         }
 
-        // WPM indicator and OSD controls in bottom area
-        if (showWpmIndicator || odsEnabled) {
-            Row(
+        // OSD controls centered at bottom
+        if (odsEnabled) {
+            val configuration = LocalConfiguration.current
+            val screenHeight = configuration.screenHeightDp.dp
+            val bottomPadding = screenHeight * 0.2f // 20% from bottom
+
+            Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 24.dp), // Material 3 standard spacing from bottom
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(bottom = bottomPadding),
+                contentAlignment = Alignment.Center
             ) {
-                // OSD controls (if enabled) - positioned to the left
-                if (odsEnabled) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Left arrow (<) - decrease WPM
-                        Text(
-                            text = "<",
-                            style = MaterialTheme.typography.headlineSmall.copy(
-                                color = fontColor.copy(alpha = 0.7f)
-                            ),
-                            modifier = Modifier.noRippleClickable {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(24.dp), // Increased spacing
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Left arrow (<) - decrease WPM
+                    Text(
+                        text = "<",
+                        style = MaterialTheme.typography.headlineMedium.copy( // Increased size
+                            color = fontColor.copy(alpha = 0.7f),
+                            fontSize = 28.sp // Larger size
+                        ),
+                        modifier = Modifier
+                            .padding(12.dp) // Increased clickable area
+                            .noRippleClickable {
                                 val newWpm = (wpm - 50).coerceAtLeast(200)
                                 onWpmChange(newWpm)
                             }
-                        )
+                    )
 
-                        // Play/Pause button - centered and larger
-                        Text(
-                            text = if (isPlaying) "⏸️" else "▶️",
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                fontSize = 32.sp // Slightly larger than default
-                            ),
-                            modifier = Modifier.noRippleClickable {
+                    // Play/Pause button - centered and larger, minimal icon
+                    Icon(
+                        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                        contentDescription = if (isPlaying) "Pause" else "Play",
+                        tint = fontColor,
+                        modifier = Modifier
+                            .size(60.dp) // 2.5x larger than default 24.dp
+                            .padding(8.dp)
+                            .noRippleClickable {
                                 onPlayPause()
                             }
-                        )
+                    )
 
-                        // Right arrow (>) - increase WPM
-                        Text(
-                            text = ">",
-                            style = MaterialTheme.typography.headlineSmall.copy(
-                                color = fontColor.copy(alpha = 0.7f)
-                            ),
-                            modifier = Modifier.noRippleClickable {
+                    // Right arrow (>) - increase WPM
+                    Text(
+                        text = ">",
+                        style = MaterialTheme.typography.headlineMedium.copy( // Increased size
+                            color = fontColor.copy(alpha = 0.7f),
+                            fontSize = 28.sp // Larger size
+                        ),
+                        modifier = Modifier
+                            .padding(12.dp) // Increased clickable area
+                            .noRippleClickable {
                                 val newWpm = (wpm + 50).coerceAtMost(1200)
                                 onWpmChange(newWpm)
                             }
-                        )
-                    }
-                }
-
-                // WPM indicator on the right
-                if (showWpmIndicator) {
-                    Text(
-                        text = "$wpm wpm",
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = fontColor.copy(alpha = 0.5f)
-                        )
                     )
                 }
             }
+        }
+
+        // WPM indicator in bottom right corner
+        if (showWpmIndicator) {
+            Text(
+                text = "$wpm wpm",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = fontColor.copy(alpha = 0.5f)
+                ),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(bottom = 24.dp, end = 24.dp)
+            )
         }
 
         // Countdown overlay

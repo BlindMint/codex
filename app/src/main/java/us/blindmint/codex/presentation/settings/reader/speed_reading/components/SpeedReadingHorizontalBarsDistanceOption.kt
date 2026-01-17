@@ -20,7 +20,8 @@ fun SpeedReadingHorizontalBarsDistanceOption(
         title = stringResource(id = R.string.speed_reading_horizontal_bars_distance),
         value = Pair(distance, "dp"),
         fromValue = 0,
-        toValue = 32,
+        toValue = 64,
+        steps = 8,
         onValueChange = onDistanceChange
     )
 }

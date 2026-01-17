@@ -31,7 +31,7 @@ import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingWpmOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingAccentCharacterOption
-import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsCombinedOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingColorsOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingSentencePauseOption
@@ -40,7 +40,6 @@ import us.blindmint.codex.presentation.settings.reader.speed_reading.components.
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingWordSizeOption
 import us.blindmint.codex.presentation.settings.appearance.colors.components.BackgroundImageOption
 import us.blindmint.codex.presentation.settings.appearance.colors.components.ColorPresetOption
-import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsSizeOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsThicknessOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsColorOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsDistanceOption
@@ -72,7 +71,7 @@ fun LazyListScope.SpeedReadingSubcategory(
     onAccentOpacityChange: (Float) -> Unit = {},
     showVerticalIndicators: Boolean = true,
     onShowVerticalIndicatorsChange: (Boolean) -> Unit = {},
-    verticalIndicatorsSize: Int = 32,
+    verticalIndicatorsSize: Int = 8,
     onVerticalIndicatorsSizeChange: (Int) -> Unit = {},
     showHorizontalBars: Boolean = true,
     onShowHorizontalBarsChange: (Boolean) -> Unit = {},
@@ -189,23 +188,14 @@ fun LazyListScope.SpeedReadingSubcategory(
 
         // Vertical Indicators
         item {
-            SpeedReadingVerticalIndicatorsOption(
-                selected = showVerticalIndicators,
-                onSelectionChange = onShowVerticalIndicatorsChange
+            SpeedReadingVerticalIndicatorsCombinedOption(
+                showVerticalIndicators = showVerticalIndicators,
+                verticalIndicatorsSize = verticalIndicatorsSize,
+                onVerticalIndicatorsChange = { enabled, size ->
+                    onShowVerticalIndicatorsChange(enabled)
+                    onVerticalIndicatorsSizeChange(size)
+                }
             )
-        }
-
-        item {
-            AnimatedVisibility(
-                visible = showVerticalIndicators,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                SpeedReadingVerticalIndicatorsSizeOption(
-                    size = verticalIndicatorsSize,
-                    onSizeChange = onVerticalIndicatorsSizeChange
-                )
-            }
         }
 
         // Horizontal Bars
