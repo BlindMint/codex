@@ -157,7 +157,7 @@ fun ColorPickerWithTitle(
         ) {
             SliderWithTitle(
                 modifier = Modifier.weight(1f),
-                value = color.red to ((color.red * 255).toInt().toString()),
+                value = color.red to "",
                 title = stringResource(id = R.string.red_color),
                 toValue = 255,
                 enabled = !isLocked,
@@ -191,7 +191,7 @@ fun ColorPickerWithTitle(
         ) {
             SliderWithTitle(
                 modifier = Modifier.weight(1f),
-                value = color.green to ((color.green * 255).toInt().toString()),
+                value = color.green to "",
                 title = stringResource(id = R.string.green_color),
                 toValue = 255,
                 enabled = !isLocked,
@@ -225,7 +225,7 @@ fun ColorPickerWithTitle(
         ) {
             SliderWithTitle(
                 modifier = Modifier.weight(1f),
-                value = color.blue to ((color.blue * 255).toInt().toString()),
+                value = color.blue to "",
                 title = stringResource(id = R.string.blue_color),
                 toValue = 255,
                 enabled = !isLocked,
