@@ -7,6 +7,7 @@
 package us.blindmint.codex.presentation.settings.reader.speed_reading.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,12 +31,17 @@ import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
 
 @Composable
-fun SpeedReadingSentencePauseOption() {
-    var pauseDuration by remember { mutableIntStateOf(2000) }
+fun SpeedReadingSentencePauseOption(
+    sentencePauseDuration: Int = 350,
+    onSentencePauseDurationChange: (Int) -> Unit = {}
+) {
+    var pauseDuration by remember(sentencePauseDuration) { mutableIntStateOf(sentencePauseDuration) }
 
     Text(
         text = stringResource(id = R.string.speed_reading_sentence_pause),
-        style = MaterialTheme.typography.titleMedium,
+        style = MaterialTheme.typography.labelLarge.copy(
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
         modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
     )
 
@@ -49,23 +55,36 @@ fun SpeedReadingSentencePauseOption() {
         // Slider
         Slider(
             value = pauseDuration.toFloat(),
-            onValueChange = { pauseDuration = it.toInt() },
-            valueRange = 0f..5000f,
+            onValueChange = {
+                val newValue = (it / 5).toInt() * 5
+                pauseDuration = newValue
+                onSentencePauseDurationChange(newValue)
+            },
+            valueRange = 0f..1000f,
+            steps = 199, // (1000/5) - 1 = 199 steps
             modifier = Modifier.weight(1f)
         )
 
-        // Numeric input
-        OutlinedTextField(
-            value = pauseDuration.toString(),
-            onValueChange = { newValue ->
-                val intValue = newValue.toIntOrNull() ?: pauseDuration
-                pauseDuration = intValue.coerceIn(0, 5000)
-            },
-            label = { Text("ms") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        // Numeric input with vertical centering fix
+        androidx.compose.foundation.layout.Box(
             modifier = Modifier.width(80.dp),
-            textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
-            singleLine = true
-        )
+            contentAlignment = Alignment.Center
+        ) {
+            OutlinedTextField(
+                value = pauseDuration.toString(),
+                onValueChange = { newValue ->
+                    val intValue = newValue.toIntOrNull() ?: pauseDuration
+                    val coercedValue = intValue.coerceIn(0, 1000)
+                    pauseDuration = coercedValue
+                    onSentencePauseDurationChange(coercedValue)
+                },
+                label = { Text("ms") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    textAlign = TextAlign.Center
+                ),
+                singleLine = true
+            )
+        }
     }
 }

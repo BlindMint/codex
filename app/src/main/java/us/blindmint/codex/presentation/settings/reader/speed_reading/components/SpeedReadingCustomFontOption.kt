@@ -17,16 +17,14 @@ import us.blindmint.codex.presentation.core.components.settings.SwitchWithTitle
 
 @Composable
 fun SpeedReadingCustomFontOption(
+    customFontEnabled: Boolean = false,
     onCustomFontChanged: (Boolean) -> Unit
 ) {
-    var isCustomFontEnabled by remember { mutableStateOf(false) }
-
     SwitchWithTitle(
-        selected = isCustomFontEnabled,
+        selected = customFontEnabled,
         title = stringResource(id = R.string.speed_reading_custom_font),
         onClick = {
-            isCustomFontEnabled = !isCustomFontEnabled
-            onCustomFontChanged(isCustomFontEnabled)
+            onCustomFontChanged(!customFontEnabled)
         }
     )
 }

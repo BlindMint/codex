@@ -28,10 +28,8 @@ fun BookInfoLayout(
     listState: LazyListState,
     paddingValues: PaddingValues,
     showChangeCoverBottomSheet: (BookInfoEvent.OnShowChangeCoverBottomSheet) -> Unit,
-    showTitleDialog: (BookInfoEvent.OnShowTitleDialog) -> Unit,
-    showAuthorDialog: (BookInfoEvent.OnShowAuthorDialog) -> Unit,
-    showDescriptionDialog: (BookInfoEvent.OnShowDescriptionDialog) -> Unit,
-    navigateToReader: () -> Unit
+    navigateToReader: () -> Unit,
+    navigateToSpeedReading: (() -> Unit)? = null
 ) {
     LazyColumnWithScrollbar(
         modifier = Modifier.fillMaxSize(),
@@ -52,8 +50,6 @@ fun BookInfoLayout(
                     Spacer(modifier = Modifier.height(paddingValues.calculateTopPadding() + 12.dp))
                     BookInfoLayoutInfo(
                         book = book,
-                        showTitleDialog = showTitleDialog,
-                        showAuthorDialog = showAuthorDialog,
                         showChangeCoverBottomSheet = showChangeCoverBottomSheet
                     )
                 }
@@ -65,8 +61,7 @@ fun BookInfoLayout(
         item {
             Spacer(Modifier.height(18.dp))
             BookInfoLayoutDescription(
-                book = book,
-                showDescriptionDialog = showDescriptionDialog
+                book = book
             )
         }
 
@@ -74,7 +69,8 @@ fun BookInfoLayout(
             Spacer(Modifier.height(18.dp))
             BookInfoLayoutButton(
                 book = book,
-                navigateToReader = navigateToReader
+                navigateToReader = navigateToReader,
+                navigateToSpeedReading = navigateToSpeedReading
             )
         }
     }

@@ -59,6 +59,7 @@ fun ColorPickerWithTitle(
     horizontalPadding: Dp = 18.dp,
     verticalPadding: Dp = 8.dp,
     isLocked: Boolean = false,
+    showRgbInputs: Boolean = false,
     onValueChange: (Color) -> Unit
 ) {
     val initialValue = rememberSaveable(presetId) { value.value.toString() }
@@ -147,33 +148,107 @@ fun ColorPickerWithTitle(
         }
         Spacer(modifier = Modifier.height(12.dp))
 
-        RevertibleSlider(
-            value = color.red to ((color.red * 255).toInt().toString()),
-            initialValue = Color(initialValue.toULong()).red,
-            title = stringResource(id = R.string.red_color),
-            isLocked = isLocked,
-            onValueChange = {
-                color = color.copy(red = it)
+        // Red slider with optional input
+        androidx.compose.foundation.layout.Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            SliderWithTitle(
+                modifier = Modifier.weight(1f),
+                value = color.red to ((color.red * 255).toInt().toString()),
+                title = stringResource(id = R.string.red_color),
+                toValue = 255,
+                enabled = !isLocked,
+                onValueChange = {
+                    color = color.copy(red = it)
+                }
+            )
+            if (showRgbInputs) {
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedTextField(
+                    value = (color.red * 255).toInt().toString(),
+                    onValueChange = { newValue ->
+                        val intValue = newValue.toIntOrNull() ?: (color.red * 255).toInt()
+                        val coercedValue = intValue.coerceIn(0, 255)
+                        color = color.copy(red = coercedValue / 255f)
+                    },
+                    label = { androidx.compose.material3.Text("R") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.width(60.dp),
+                    enabled = !isLocked,
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                    singleLine = true
+                )
             }
-        )
-        RevertibleSlider(
-            value = color.green to ((color.green * 255).toInt().toString()),
-            initialValue = Color(initialValue.toULong()).green,
-            title = stringResource(id = R.string.green_color),
-            isLocked = isLocked,
-            onValueChange = {
-                color = color.copy(green = it)
+        }
+
+        // Green slider with optional input
+        androidx.compose.foundation.layout.Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            SliderWithTitle(
+                modifier = Modifier.weight(1f),
+                value = color.green to ((color.green * 255).toInt().toString()),
+                title = stringResource(id = R.string.green_color),
+                toValue = 255,
+                enabled = !isLocked,
+                onValueChange = {
+                    color = color.copy(green = it)
+                }
+            )
+            if (showRgbInputs) {
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedTextField(
+                    value = (color.green * 255).toInt().toString(),
+                    onValueChange = { newValue ->
+                        val intValue = newValue.toIntOrNull() ?: (color.green * 255).toInt()
+                        val coercedValue = intValue.coerceIn(0, 255)
+                        color = color.copy(green = coercedValue / 255f)
+                    },
+                    label = { androidx.compose.material3.Text("G") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.width(60.dp),
+                    enabled = !isLocked,
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                    singleLine = true
+                )
             }
-        )
-        RevertibleSlider(
-            value = color.blue to ((color.blue * 255).toInt().toString()),
-            initialValue = Color(initialValue.toULong()).blue,
-            title = stringResource(id = R.string.blue_color),
-            isLocked = isLocked,
-            onValueChange = {
-                color = color.copy(blue = it)
+        }
+
+        // Blue slider with optional input
+        androidx.compose.foundation.layout.Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            SliderWithTitle(
+                modifier = Modifier.weight(1f),
+                value = color.blue to ((color.blue * 255).toInt().toString()),
+                title = stringResource(id = R.string.blue_color),
+                toValue = 255,
+                enabled = !isLocked,
+                onValueChange = {
+                    color = color.copy(blue = it)
+                }
+            )
+            if (showRgbInputs) {
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedTextField(
+                    value = (color.blue * 255).toInt().toString(),
+                    onValueChange = { newValue ->
+                        val intValue = newValue.toIntOrNull() ?: (color.blue * 255).toInt()
+                        val coercedValue = intValue.coerceIn(0, 255)
+                        color = color.copy(blue = coercedValue / 255f)
+                    },
+                    label = { androidx.compose.material3.Text("B") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.width(60.dp),
+                    enabled = !isLocked,
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                    singleLine = true
+                )
             }
-        )
+        }
     }
 }
 

@@ -34,15 +34,28 @@ import us.blindmint.codex.presentation.core.components.settings.SliderWithTitle
 @Composable
 fun SpeedReadingAccentCharacterOpacityOption(
     opacity: Float = 1.0f,
-    onOpacityChange: (Float) -> Unit = {}
+    onOpacityChange: (Float) -> Unit = {},
+    showTitle: Boolean = true
 ) {
     var localOpacity by remember(opacity) { mutableStateOf<Float>(opacity) }
 
-    Text(
-        text = stringResource(id = R.string.speed_reading_accent_opacity),
-        style = MaterialTheme.typography.titleMedium,
-        modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
-    )
+    if (showTitle) {
+        Text(
+            text = stringResource(id = R.string.speed_reading_accent_opacity),
+            style = MaterialTheme.typography.labelLarge.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
+        )
+    } else {
+        Text(
+            text = "Opacity",
+            style = MaterialTheme.typography.labelLarge.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
+        )
+    }
 
     Row(
         modifier = Modifier

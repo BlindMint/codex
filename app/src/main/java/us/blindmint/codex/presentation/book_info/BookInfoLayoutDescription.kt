@@ -42,12 +42,10 @@ import us.blindmint.codex.R
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.util.noRippleClickable
-import us.blindmint.codex.ui.book_info.BookInfoEvent
 
 @Composable
 fun BookInfoLayoutDescription(
-    book: Book,
-    showDescriptionDialog: (BookInfoEvent.OnShowDescriptionDialog) -> Unit
+    book: Book
 ) {
     val expand = remember { mutableStateOf(false) }
     val expandable = remember(book.description) { (book.description?.length ?: 0) > 50 }
@@ -74,9 +72,6 @@ fun BookInfoLayoutDescription(
             .noRippleClickable(
                 onClick = {
                     if (expandable) expand.value = !expand.value
-                },
-                onLongClick = {
-                    showDescriptionDialog(BookInfoEvent.OnShowDescriptionDialog)
                 }
             )
             .padding(horizontal = 18.dp),

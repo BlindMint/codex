@@ -25,6 +25,7 @@ fun SpeedReadingHorizontalBarsColorOption(
         title = stringResource(id = R.string.speed_reading_horizontal_bars_color),
         value = color,
         presetId = 0, // TODO: Use proper preset ID for speed reading
+        showRgbInputs = true,
         onValueChange = onColorChange
     )
 }

@@ -77,6 +77,7 @@ class SettingsModel @Inject constructor(
     private var updateTitleColorPresetJob: Job? = null
     private var shuffleColorPresetJob: Job? = null
     private var restoreColorPresetJob: Job? = null
+    private var resetColorPresetJob: Job? = null
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -232,7 +233,9 @@ class SettingsModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 selectedColorPreset = colorPresets.selected(),
-                                colorPresets = colorPresets
+                                colorPresets = colorPresets,
+                                initialBackgroundColor = colorPreset.backgroundColor,
+                                initialFontColor = colorPreset.fontColor
                             )
                         }
                     }
@@ -517,6 +520,36 @@ class SettingsModel @Inject constructor(
                 }
             }
 
+            is SettingsEvent.OnResetColorPresetToInitial -> {
+                viewModelScope.launch {
+                    cancelColorPresetJobs()
+                    resetColorPresetJob = launch {
+                        val colorPreset = event.id.getColorPresetById() ?: return@launch
+                        val initialBackgroundColor = _state.value.initialBackgroundColor ?: return@launch
+                        val initialFontColor = _state.value.initialFontColor ?: return@launch
+
+                        yield()
+
+                        val resetColorPreset = colorPreset.copy(
+                            backgroundColor = initialBackgroundColor,
+                            fontColor = initialFontColor
+                        )
+
+                        yield()
+
+                        updateColorPreset.execute(resetColorPreset)
+                        _state.update {
+                            it.copy(
+                                selectedColorPreset = resetColorPreset,
+                                colorPresets = it.colorPresets.updateColorPreset(
+                                    resetColorPreset
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
             is SettingsEvent.OnAddColorPreset -> {
                 viewModelScope.launch {
                     cancelColorPresetJobs()
@@ -733,6 +766,7 @@ class SettingsModel @Inject constructor(
         updateTitleColorPresetJob?.cancel()
         shuffleColorPresetJob?.cancel()
         restoreColorPresetJob?.cancel()
+        resetColorPresetJob?.cancel()
         updateColorColorPresetJob?.cancel()
         deleteColorPresetJob?.cancel()
     }

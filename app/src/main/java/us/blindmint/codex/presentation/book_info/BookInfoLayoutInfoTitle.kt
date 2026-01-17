@@ -12,24 +12,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.presentation.core.components.common.StyledText
-import us.blindmint.codex.presentation.core.util.noRippleClickable
-import us.blindmint.codex.ui.book_info.BookInfoEvent
 
 @Composable
 fun BookInfoLayoutInfoTitle(
-    book: Book,
-    showTitleDialog: (BookInfoEvent.OnShowTitleDialog) -> Unit
+    book: Book
 ) {
     StyledText(
         text = book.title,
-        modifier = Modifier
-            .fillMaxWidth()
-            .noRippleClickable(
-                onClick = {},
-                onLongClick = {
-                    showTitleDialog(BookInfoEvent.OnShowTitleDialog)
-                }
-            ),
+        modifier = Modifier.fillMaxWidth(),
         style = MaterialTheme.typography.headlineSmall.copy(
             color = MaterialTheme.colorScheme.onSurface
         ),

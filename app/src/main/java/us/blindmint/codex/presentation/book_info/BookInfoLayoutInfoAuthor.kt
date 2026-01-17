@@ -22,13 +22,10 @@ import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.presentation.core.components.common.StyledText
-import us.blindmint.codex.presentation.core.util.noRippleClickable
-import us.blindmint.codex.ui.book_info.BookInfoEvent
 
 @Composable
 fun BookInfoLayoutInfoAuthor(
-    book: Book,
-    showAuthorDialog: (BookInfoEvent.OnShowAuthorDialog) -> Unit
+    book: Book
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -43,14 +40,7 @@ fun BookInfoLayoutInfoAuthor(
 
         StyledText(
             text = book.author.asString(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .noRippleClickable(
-                    onClick = {},
-                    onLongClick = {
-                        showAuthorDialog(BookInfoEvent.OnShowAuthorDialog)
-                    }
-                ),
+            modifier = Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.bodyLarge.copy(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             ),

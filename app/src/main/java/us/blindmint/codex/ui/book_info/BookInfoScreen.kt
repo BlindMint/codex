@@ -96,7 +96,7 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 dismissBottomSheet = screenModel::onEvent,
                 dismissDialog = screenModel::onEvent,
                 showChangeCoverBottomSheet = screenModel::onEvent,
-                showDetailsBottomSheet = screenModel::onEvent,
+                showEditBottomSheet = screenModel::onEvent,
                 showDeleteDialog = screenModel::onEvent,
                 actionDeleteDialog = screenModel::onEvent,
                 toggleFavorite = { screenModel.onEvent(BookInfoEvent.OnToggleFavorite) },
@@ -104,6 +104,12 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                     if (state.value.book.id != -1) {
                         HistoryScreen.insertHistoryChannel.trySend(state.value.book.id)
                         navigator.push(ReaderScreen(state.value.book.id))
+                    }
+                },
+                navigateToSpeedReading = {
+                    if (state.value.book.id != -1 && !state.value.book.isComic) {
+                        HistoryScreen.insertHistoryChannel.trySend(state.value.book.id)
+                        navigator.push(ReaderScreen(state.value.book.id, startInSpeedReading = true))
                     }
                 },
                 navigateToLibrary = {

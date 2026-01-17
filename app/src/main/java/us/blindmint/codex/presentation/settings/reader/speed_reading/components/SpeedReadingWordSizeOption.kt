@@ -7,6 +7,7 @@
 package us.blindmint.codex.presentation.settings.reader.speed_reading.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -38,7 +39,9 @@ fun SpeedReadingWordSizeOption(
 
     Text(
         text = stringResource(id = R.string.speed_reading_word_size),
-        style = MaterialTheme.typography.titleMedium,
+        style = MaterialTheme.typography.labelLarge.copy(
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
         modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
     )
 
@@ -60,20 +63,24 @@ fun SpeedReadingWordSizeOption(
             modifier = Modifier.weight(1f)
         )
 
-        // Numeric input
-        OutlinedTextField(
-            value = localWordSize.toString(),
-            onValueChange = { newValue ->
-                val intValue = newValue.toIntOrNull() ?: localWordSize
-                val coercedValue = intValue.coerceIn(24, 96)
-                localWordSize = coercedValue
-                onWordSizeChange(coercedValue)
-            },
-            label = { Text("sp") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        // Numeric input with vertical centering fix
+        Box(
             modifier = Modifier.width(60.dp),
-            textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
-            singleLine = true
-        )
+            contentAlignment = Alignment.Center
+        ) {
+            OutlinedTextField(
+                value = localWordSize.toString(),
+                onValueChange = { newValue ->
+                    val intValue = newValue.toIntOrNull() ?: localWordSize
+                    val coercedValue = intValue.coerceIn(24, 96)
+                    localWordSize = coercedValue
+                    onWordSizeChange(coercedValue)
+                },
+                label = { Text("sp") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                singleLine = true
+            )
+        }
     }
 }

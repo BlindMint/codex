@@ -8,11 +8,25 @@
 
 package us.blindmint.codex.presentation.settings.reader.speed_reading
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingWpmOption
@@ -30,6 +44,7 @@ import us.blindmint.codex.presentation.settings.reader.speed_reading.components.
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsThicknessOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsColorOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingAccentCharacterOpacityOption
+import us.blindmint.codex.presentation.core.components.settings.SwitchWithTitle
 
 fun LazyListScope.SpeedReadingSubcategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary },
@@ -38,10 +53,15 @@ fun LazyListScope.SpeedReadingSubcategory(
     showDivider: Boolean = true,
     wpm: Int = 300,
     onWpmChange: (Int) -> Unit = {},
+    manualSentencePauseEnabled: Boolean = false,
+    onManualSentencePauseEnabledChange: (Boolean) -> Unit = {},
+    sentencePauseDuration: Int = 350,
+    onSentencePauseDurationChange: (Int) -> Unit = {},
     wordSize: Int = 48,
     onWordSizeChange: (Int) -> Unit = {},
     accentCharacterEnabled: Boolean = true,
     onAccentCharacterEnabledChange: (Boolean) -> Unit = {},
+    accentCharacterEnabledParam: Boolean = accentCharacterEnabled,
     accentColor: Color = Color.Red,
     onAccentColorChange: (Color) -> Unit = {},
     accentOpacity: Float = 1.0f,
@@ -55,7 +75,11 @@ fun LazyListScope.SpeedReadingSubcategory(
     horizontalBarsThickness: Int = 2,
     onHorizontalBarsThicknessChange: (Int) -> Unit = {},
     horizontalBarsColor: Color = Color.Gray,
-    onHorizontalBarsColorChange: (Color) -> Unit = {}
+    onHorizontalBarsColorChange: (Color) -> Unit = {},
+    customFontEnabled: Boolean = false,
+    selectedFontFamily: String = "default",
+    onCustomFontChanged: (Boolean) -> Unit = {},
+    onFontFamilyChanged: (String) -> Unit = {}
 ) {
     SettingsSubcategory(
         titleColor = titleColor,
@@ -72,7 +96,75 @@ fun LazyListScope.SpeedReadingSubcategory(
         }
 
         item {
-            SpeedReadingSentencePauseOption()
+            val localManualPauseEnabled = remember { androidx.compose.runtime.mutableStateOf(manualSentencePauseEnabled) }
+
+            androidx.compose.runtime.LaunchedEffect(manualSentencePauseEnabled) {
+                localManualPauseEnabled.value = manualSentencePauseEnabled
+            }
+
+            SwitchWithTitle(
+                selected = localManualPauseEnabled.value,
+                title = stringResource(id = R.string.manual_sentence_pause_duration),
+                onClick = {
+                    val newValue = !localManualPauseEnabled.value
+                    localManualPauseEnabled.value = newValue
+                    onManualSentencePauseEnabledChange(newValue)
+                }
+            )
+        }
+
+        // Show automatic pause duration when manual mode is disabled
+        item {
+            AnimatedVisibility(
+                visible = !manualSentencePauseEnabled,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                val automaticPause = remember(wpm) {
+                    val baseWpm = 300f
+                    val basePause = 350f
+                    val minPause = 50f
+                    (basePause * (baseWpm / wpm) + minPause).toInt().coerceIn(50, 1000)
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp, vertical = 8.dp)
+                ) {
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${stringResource(id = R.string.speed_reading_sentence_pause)} (automatic)",
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        )
+                        Text(
+                            text = "$automaticPause ms",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        // Animated sentence pause duration slider (only shown when manual mode is enabled)
+        item {
+            AnimatedVisibility(
+                visible = manualSentencePauseEnabled,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                SpeedReadingSentencePauseOption(
+                    sentencePauseDuration = sentencePauseDuration,
+                    onSentencePauseDurationChange = onSentencePauseDurationChange
+                )
+            }
         }
 
         item {
@@ -101,31 +193,20 @@ fun LazyListScope.SpeedReadingSubcategory(
             )
         }
 
+        // Accent color section (only shown when accent character is enabled)
         item {
-            SpeedReadingColorsOption( // Accent color with RGB sliders
-                color = accentColor,
-                onColorChange = onAccentColorChange
-            )
-        }
-
-        item {
-            SpeedReadingAccentCharacterOpacityOption(
-                opacity = accentOpacity,
-                onOpacityChange = onAccentOpacityChange
-            )
-        }
-
-        // Horizontal Bars
-        item {
-            SpeedReadingHorizontalBarsOption()
-        }
-
-        item {
-            SpeedReadingHorizontalBarsThicknessOption()
-        }
-
-        item {
-            SpeedReadingHorizontalBarsColorOption()
+            AnimatedVisibility(
+                visible = accentCharacterEnabled,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                SpeedReadingColorsOption( // Accent color with RGB sliders and opacity
+                    color = accentColor,
+                    opacity = accentOpacity,
+                    onColorChange = onAccentColorChange,
+                    onOpacityChange = onAccentOpacityChange
+                )
+            }
         }
 
         // Vertical Indicators
@@ -172,14 +253,15 @@ fun LazyListScope.SpeedReadingSubcategory(
         // Font Settings
         item {
             SpeedReadingCustomFontOption(
-                onCustomFontChanged = { /* TODO: Implement state management */ }
+                onCustomFontChanged = onCustomFontChanged
             )
         }
 
         item {
             SpeedReadingFontFamilyOption(
-                enabled = true, // TODO: Connect to custom font toggle state
-                onFontChanged = { /* TODO: Implement font selection */ }
+                enabled = customFontEnabled,
+                selectedFontId = selectedFontFamily,
+                onFontChanged = onFontFamilyChanged
             )
         }
     }

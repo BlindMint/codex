@@ -6,6 +6,7 @@
 
 package us.blindmint.codex.presentation.reader
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -59,6 +60,7 @@ fun SpeedReadingScaffold(
     var showMenu by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
 
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     Scaffold(
         topBar = {
             AnimatedVisibility(
@@ -94,7 +96,7 @@ fun SpeedReadingScaffold(
             }
         },
         containerColor = backgroundColor
-    ) { _ ->
+    ) {
         // Don't use paddingValues to avoid content shifting when menu shows/hides
         Box(
             modifier = Modifier

@@ -45,6 +45,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import kotlinx.coroutines.delay
 import us.blindmint.codex.domain.reader.ReaderText
 import kotlin.math.roundToInt
@@ -213,7 +215,7 @@ fun SpeedReadingContent(
 
                         // Top vertical indicator (points down to accent position)
                         drawLine(
-                            color = accentColor.copy(alpha = accentOpacity),
+                            color = horizontalBarsColor,
                             start = Offset(centerX, horizontalLineY - 40.dp.toPx()),
                             end = Offset(centerX, horizontalLineY - 40.dp.toPx() + verticalIndicatorHeight),
                             strokeWidth = verticalIndicatorWidth
@@ -221,7 +223,7 @@ fun SpeedReadingContent(
 
                         // Bottom vertical indicator (points up to accent position)
                         drawLine(
-                            color = accentColor.copy(alpha = accentOpacity),
+                            color = horizontalBarsColor,
                             start = Offset(centerX, horizontalLineY + 40.dp.toPx() - verticalIndicatorHeight),
                             end = Offset(centerX, horizontalLineY + 40.dp.toPx()),
                             strokeWidth = verticalIndicatorWidth
@@ -255,9 +257,13 @@ fun SpeedReadingContent(
                             }
                         },
                         style = textStyle,
-                        modifier = Modifier.offset {
-                            IntOffset(wordOffsetX.roundToInt(), 0)
-                        }
+                        modifier = Modifier
+                            .offset {
+                                IntOffset(wordOffsetX.roundToInt(), 0)
+                            }
+                            .semantics {
+                                contentDescription = "Speed reading word: $currentWord at $wpm words per minute"
+                            }
                     )
                 }
             }
@@ -302,6 +308,11 @@ fun SpeedReadingContent(
  * The ORP is typically around 25-35% into the word, often on a vowel.
  * This follows standard RSVP guidelines where the eye fixation point
  * should be slightly left of center for most words.
+ *
+ * Enhanced to handle:
+ * - Accented vowels for multiple languages
+ * - Better ORP calculation for very long words
+ * - Numbers and special characters
  */
 fun findAccentCharIndex(word: String): Int {
     if (word.isEmpty()) return -1
@@ -310,19 +321,36 @@ fun findAccentCharIndex(word: String): Int {
     val cleanWord = word.trimEnd { it in ".,!?;:'\"-" }
     if (cleanWord.isEmpty()) return 0
 
-    val vowels = setOf('a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U')
+    // Extended vowel set for multiple languages including accented characters
+    val vowels = setOf(
+        'a', 'e', 'i', 'o', 'u', 'y', // Basic English
+        'A', 'E', 'I', 'O', 'U', 'Y', // Uppercase
+        'à', 'á', 'â', 'ä', 'æ', 'ã', 'å', 'ā', // Accented a
+        'À', 'Á', 'Â', 'Ä', 'Æ', 'Ã', 'Å', 'Ā',
+        'è', 'é', 'ê', 'ë', 'ē', 'ė', 'ę', // Accented e
+        'È', 'É', 'Ê', 'Ë', 'Ē', 'Ė', 'Ę',
+        'ì', 'í', 'î', 'ï', 'ī', 'į', // Accented i
+        'Ì', 'Í', 'Î', 'Ï', 'Ī', 'Į',
+        'ò', 'ó', 'ô', 'ö', 'õ', 'ø', 'ō', 'œ', // Accented o
+        'Ò', 'Ó', 'Ô', 'Ö', 'Õ', 'Ø', 'Ō', 'Œ',
+        'ù', 'ú', 'û', 'ü', 'ū', // Accented u
+        'Ù', 'Ú', 'Û', 'Ü', 'Ū',
+        'ÿ', 'Ÿ', // Accented y
+        // Additional language vowels
+        'ı', 'İ', // Turkish dotless i
+        'ø', 'Ø', // Danish/Norwegian
+        'å', 'Å', 'ä', 'Ä', 'ö', 'Ö' // Swedish/German
+    )
 
-    // ORP position based on word length (roughly 25-35% into the word)
-    // For short words (1-3 chars): first char
-    // For medium words (4-6 chars): 2nd char preferred
-    // For longer words: around 25-30% position
+    // ORP position based on word length (refined for better long word handling)
     val optimalPosition = when {
         cleanWord.length <= 1 -> 0
         cleanWord.length <= 3 -> 0
         cleanWord.length <= 5 -> 1
         cleanWord.length <= 9 -> 2
         cleanWord.length <= 13 -> 3
-        else -> (cleanWord.length * 0.25).toInt().coerceAtMost(4)
+        cleanWord.length <= 17 -> 4
+        else -> (cleanWord.length * 0.3).toInt().coerceAtMost(6) // Allow further for very long words
     }
 
     // Check optimal position first, then nearby positions
@@ -330,7 +358,8 @@ fun findAccentCharIndex(word: String): Int {
         optimalPosition,
         optimalPosition + 1,
         optimalPosition - 1,
-        optimalPosition + 2
+        optimalPosition + 2,
+        optimalPosition - 2
     ).filter { it in cleanWord.indices }
 
     // Prefer vowels at or near the optimal position
@@ -340,6 +369,19 @@ fun findAccentCharIndex(word: String): Int {
         }
     }
 
-    // If no vowel found near optimal, use the optimal position anyway
+    // For words with numbers or symbols, find first letter-like character
+    val letterIndices = cleanWord.indices.filter { cleanWord[it].isLetter() }
+    if (letterIndices.isNotEmpty()) {
+        // Use ORP among letters
+        val letterOptimal = when {
+            letterIndices.size <= 1 -> 0
+            letterIndices.size <= 3 -> 0
+            letterIndices.size <= 5 -> 1
+            else -> (letterIndices.size * 0.3).toInt()
+        }
+        return letterIndices[letterOptimal.coerceIn(0, letterIndices.size - 1)]
+    }
+
+    // If no suitable position found, use the optimal position anyway
     return optimalPosition.coerceIn(0, cleanWord.length - 1)
 }

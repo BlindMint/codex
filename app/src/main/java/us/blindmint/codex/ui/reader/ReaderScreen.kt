@@ -73,7 +73,7 @@ import us.blindmint.codex.ui.settings.SettingsModel
 import kotlin.math.roundToInt
 
 @Parcelize
-data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
+data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = false) : Screen, Parcelable {
 
     companion object {
         const val CHAPTERS_DRAWER = "chapters_drawer"
@@ -442,6 +442,13 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
                     navigator.pop()
                 }
             )
+        }
+
+        // Enable speed reading mode if requested
+        LaunchedEffect(state.value.isLoading, startInSpeedReading) {
+            if (!state.value.isLoading && startInSpeedReading && !state.value.speedReadingMode) {
+                screenModel.onEvent(ReaderEvent.OnShowSpeedReading)
+            }
         }
         LaunchedEffect(mainState.value.fullscreen) {
             screenModel.onEvent(

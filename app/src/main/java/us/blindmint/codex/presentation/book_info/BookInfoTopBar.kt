@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +34,7 @@ import us.blindmint.codex.ui.theme.DefaultTransition
 fun BookInfoTopBar(
     book: Book,
     listState: LazyListState,
-    showDetailsBottomSheet: (BookInfoEvent.OnShowDetailsBottomSheet) -> Unit,
+    showEditBottomSheet: (BookInfoEvent.OnShowEditBottomSheet) -> Unit,
     showDeleteDialog: (BookInfoEvent.OnShowDeleteDialog) -> Unit,
     clearProgressHistory: (BookInfoEvent.OnClearProgressHistory) -> Unit,
     toggleFavorite: () -> Unit,
@@ -81,11 +80,11 @@ fun BookInfoTopBar(
                         onClick = toggleFavorite
                     )
                     IconButton(
-                        icon = Icons.Outlined.Info,
-                        contentDescription = R.string.file_details,
+                        icon = Icons.Outlined.Edit,
+                        contentDescription = R.string.edit_metadata,
                         disableOnClick = false,
                         onClick = {
-                            showDetailsBottomSheet(BookInfoEvent.OnShowDetailsBottomSheet)
+                            showEditBottomSheet(BookInfoEvent.OnShowEditBottomSheet)
                         }
                     )
                     IconButton(

@@ -230,39 +230,47 @@ fun ColorPresetOption(backgroundColor: Color) {
                             )
                         )
                     },
-                     onDelete = {
-                         settingsModel.onEvent(
-                             SettingsEvent.OnDeleteColorPreset(
-                                 id = selectedPreset.id
-                             )
-                         )
-                     },
-                     onToggleLock = {
-                         settingsModel.onEvent(
-                             SettingsEvent.OnToggleColorPresetLock(
-                                 id = selectedPreset.id
-                             )
-                         )
-                     }
+                      onDelete = {
+                          settingsModel.onEvent(
+                              SettingsEvent.OnDeleteColorPreset(
+                                  id = selectedPreset.id
+                              )
+                          )
+                      },
+                      onToggleLock = {
+                          settingsModel.onEvent(
+                              SettingsEvent.OnToggleColorPresetLock(
+                                  id = selectedPreset.id
+                              )
+                          )
+                      },
+                      onResetToInitial = {
+                          settingsModel.onEvent(
+                              SettingsEvent.OnResetColorPresetToInitial(
+                                  id = selectedPreset.id
+                              )
+                          )
+                      }
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                 ColorPickerWithTitle(
-                     value = selectedPreset.backgroundColor,
-                     presetId = selectedPreset.id,
-                     title = stringResource(id = R.string.background_color_option),
-                     isLocked = selectedPreset.isLocked,
-                     onValueChange = {
-                        settingsModel.onEvent(
-                            SettingsEvent.OnUpdateColorPresetColor(
-                                id = selectedPreset.id,
-                                backgroundColor = it,
-                                fontColor = null
-                            )
-                        )
-                     }
-                 )
+                  ColorPickerWithTitle(
+                      value = selectedPreset.backgroundColor,
+                      presetId = selectedPreset.id,
+                      title = stringResource(id = R.string.background_color_option),
+                      isLocked = selectedPreset.isLocked,
+                      showRgbInputs = true,
+                      onValueChange = {
+                         settingsModel.onEvent(
+                             SettingsEvent.OnUpdateColorPresetColor(
+                                 id = selectedPreset.id,
+                                 backgroundColor = it,
+                                 fontColor = null
+                             )
+                         )
+                      }
+                  )
 
                  Spacer(modifier = Modifier.height(16.dp))
                  HorizontalDivider()
@@ -395,7 +403,8 @@ private fun ColorPresetOptionConfigurationItem(
     onTitleChange: (String) -> Unit,
     onRestore: () -> Unit,
     onDelete: () -> Unit,
-    onToggleLock: () -> Unit
+    onToggleLock: () -> Unit,
+    onResetToInitial: () -> Unit
 ) {
     val showDeleteDialog = remember { mutableStateOf(false) }
     val title = remember(selectedColorPreset.id) {
@@ -411,7 +420,6 @@ private fun ColorPresetOptionConfigurationItem(
     }
 
     val isDefaultPreset = selectedColorPreset.name == "Light" || selectedColorPreset.name == "Dark"
-    val hasBeenCustomized = selectedColorPreset.name?.isNotEmpty() == true
 
     Row(
         Modifier.padding(horizontal = 18.dp),
@@ -470,8 +478,21 @@ private fun ColorPresetOptionConfigurationItem(
             ) {
                 onRestore()
             }
-        } else if (hasBeenCustomized) {
-            // Lock/Unlock button
+        } else {
+            // Reset to initial button (top-right)
+            IconButton(
+                modifier = Modifier.size(24.dp),
+                icon = Icons.Default.Restore,
+                contentDescription = R.string.reset_color_preset_content_desc,
+                disableOnClick = false,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            ) {
+                onResetToInitial()
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Lock/Unlock button (left of delete)
             IconButton(
                 modifier = Modifier.size(24.dp),
                 icon = if (selectedColorPreset.isLocked) Icons.Default.Lock else Icons.Default.LockOpen,
@@ -488,17 +509,21 @@ private fun ColorPresetOptionConfigurationItem(
                 onToggleLock()
             }
 
-            // Delete button (only if not locked)
-            if (canDelete && !selectedColorPreset.isLocked) {
+            // Delete button (always shown for custom presets, rightmost, but disabled when locked)
+            if (canDelete) {
                 Spacer(modifier = Modifier.width(4.dp))
                 IconButton(
-                    modifier = Modifier.size(24.dp),
                     icon = Icons.Default.DeleteOutline,
                     contentDescription = R.string.delete_color_preset_content_desc,
-                    disableOnClick = false,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    disableOnClick = selectedColorPreset.isLocked,
+                    color = if (selectedColorPreset.isLocked)
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
                 ) {
-                    showDeleteDialog.value = true
+                    if (!selectedColorPreset.isLocked) {
+                        showDeleteDialog.value = true
+                    }
                 }
             }
         }

@@ -37,6 +37,7 @@ data class ReaderState(
     val lockMenu: Boolean = false,
 
     val speedReadingMode: Boolean = false,
+    val speedReadingFromBookInfo: Boolean = false,
 
     val bottomSheet: BottomSheet? = null,
     val drawer: Drawer? = null,

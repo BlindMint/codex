@@ -55,6 +55,12 @@ android {
     buildTypes {
         getByName("debug") {
             applicationIdSuffix = ".debug"
+            // Disable ABI splits for debug builds to ensure single APK
+            splits {
+                abi {
+                    isEnable = false
+                }
+            }
         }
 
         getByName("release") {

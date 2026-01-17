@@ -21,7 +21,7 @@ fun BookInfoContent(
     listState: LazyListState,
     canResetCover: Boolean,
     showChangeCoverBottomSheet: (BookInfoEvent.OnShowChangeCoverBottomSheet) -> Unit,
-    showDetailsBottomSheet: (BookInfoEvent.OnShowDetailsBottomSheet) -> Unit,
+    showEditBottomSheet: (BookInfoEvent.OnShowEditBottomSheet) -> Unit,
     showTitleDialog: (BookInfoEvent.OnShowTitleDialog) -> Unit,
     actionTitleDialog: (BookInfoEvent.OnActionTitleDialog) -> Unit,
     showAuthorDialog: (BookInfoEvent.OnShowAuthorDialog) -> Unit,
@@ -44,6 +44,7 @@ fun BookInfoContent(
     dismissBottomSheet: (BookInfoEvent.OnDismissBottomSheet) -> Unit,
     toggleFavorite: () -> Unit,
     navigateToReader: () -> Unit,
+    navigateToSpeedReading: (() -> Unit)? = null,
     navigateToLibrary: () -> Unit,
     navigateBack: () -> Unit
 ) {
@@ -82,15 +83,13 @@ fun BookInfoContent(
     BookInfoScaffold(
         book = book,
         listState = listState,
-        showTitleDialog = showTitleDialog,
-        showAuthorDialog = showAuthorDialog,
-        showDescriptionDialog = showDescriptionDialog,
         showChangeCoverBottomSheet = showChangeCoverBottomSheet,
-        showDetailsBottomSheet = showDetailsBottomSheet,
+        showEditBottomSheet = showEditBottomSheet,
         showDeleteDialog = showDeleteDialog,
         clearProgressHistory = clearProgressHistory,
         toggleFavorite = toggleFavorite,
         navigateToReader = navigateToReader,
+        navigateToSpeedReading = navigateToSpeedReading,
         navigateBack = navigateBack
     )
 

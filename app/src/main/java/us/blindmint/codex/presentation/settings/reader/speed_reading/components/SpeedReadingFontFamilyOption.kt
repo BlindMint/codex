@@ -17,6 +17,7 @@ import us.blindmint.codex.presentation.core.constants.provideFonts
 @Composable
 fun SpeedReadingFontFamilyOption(
     enabled: Boolean = true,
+    selectedFontId: String = "default",
     onFontChanged: (String) -> Unit
 ) {
     ChipsWithTitle(
@@ -29,7 +30,7 @@ fun SpeedReadingFontFamilyOption(
                     textStyle = MaterialTheme.typography.labelLarge.copy(
                         fontFamily = it.font
                     ),
-                    selected = it.id == "default" // TODO: Use actual selected font
+                    selected = it.id == selectedFontId
                 )
             },
         onClick = { buttonItem ->

@@ -21,8 +21,6 @@ import us.blindmint.codex.ui.book_info.BookInfoEvent
 @Composable
 fun BookInfoLayoutInfo(
     book: Book,
-    showTitleDialog: (BookInfoEvent.OnShowTitleDialog) -> Unit,
-    showAuthorDialog: (BookInfoEvent.OnShowAuthorDialog) -> Unit,
     showChangeCoverBottomSheet: (BookInfoEvent.OnShowChangeCoverBottomSheet) -> Unit
 ) {
     Row(
@@ -41,13 +39,11 @@ fun BookInfoLayoutInfo(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             BookInfoLayoutInfoTitle(
-                book = book,
-                showTitleDialog = showTitleDialog
+                book = book
             )
 
             BookInfoLayoutInfoAuthor(
-                book = book,
-                showAuthorDialog = showAuthorDialog
+                book = book
             )
 
             BookInfoLayoutInfoProgress(

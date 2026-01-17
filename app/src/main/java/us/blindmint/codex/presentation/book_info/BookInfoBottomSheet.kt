@@ -65,6 +65,7 @@ fun BookInfoBottomSheet(
                 showTitleDialog = showTitleDialog,
                 showAuthorDialog = showAuthorDialog,
                 showDescriptionDialog = showDescriptionDialog,
+                showPathDialog = showPathDialog,
                 resetTitle = resetTitle,
                 resetAuthor = resetAuthor,
                 resetDescription = resetDescription,

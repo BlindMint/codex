@@ -8,6 +8,7 @@ package us.blindmint.codex.ui.settings
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.graphics.Color
 import us.blindmint.codex.domain.reader.ColorPreset
 import us.blindmint.codex.presentation.core.constants.provideDefaultColorPreset
 
@@ -19,4 +20,6 @@ data class SettingsState(
     val colorPresetListState: LazyListState = LazyListState(),
     val codexRootDisplayPath: String? = null,
     val codexRootUri: android.net.Uri? = null,
+    val initialBackgroundColor: Color? = null,
+    val initialFontColor: Color? = null,
 )
