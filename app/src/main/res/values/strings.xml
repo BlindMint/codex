@@ -796,6 +796,7 @@
     <string name="speed_reading_wpm">Words per minute</string>
     <string name="speed_reading_accent_character">Accent character</string>
     <string name="speed_reading_vertical_indicators">Vertical indicators</string>
+    <string name="speed_reading_vertical_indicators_length">Vertical indicators length</string>
     <string name="speed_reading_horizontal_bars">Horizontal bars</string>
     <string name="speed_reading_accent_color">Accent color</string>
     <string name="speed_reading_sentence_pause">Sentence pause duration</string>
@@ -809,7 +810,13 @@
     <string name="speed_reading_vertical_indicators_size">Vertical indicators size</string>
     <string name="speed_reading_horizontal_bars_color">Horizontal bars color</string>
     <string name="speed_reading_horizontal_bars_distance">Bar distance from word</string>
+    <string name="speed_reading_horizontal_bars_length">Horizontal bar length</string>
     <string name="speed_reading_focal_point_position">Focal point position</string>
+    <string name="speed_reading_focal_point">Focal point</string>
+    <string name="speed_reading_vertical_indicator_type">Vertical indicator type</string>
+    <string name="speed_reading_vertical_indicator_type_line">Line</string>
+    <string name="speed_reading_vertical_indicator_type_arrows">Arrows</string>
+    <string name="speed_reading_vertical_indicator_type_arrows_filled">Arrows (filled)</string>
     <string name="speed_reading_osd">OSD</string>
 
     <string name="delete_bookmark_content_desc">Delete bookmark</string>

@@ -71,6 +71,7 @@ fun ComicReaderLayout(
     comicTapZone: Int,
     showPageIndicator: Boolean = true,
     onLoadingComplete: () -> Unit = {},
+    onMenuToggle: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -226,7 +227,8 @@ fun ComicReaderLayout(
                                         pagerState.animateScrollToPage(pagerState.currentPage + 1)
                                     }
                                 }
-                            }
+                            },
+                            onMenuToggle = onMenuToggle
                         )
                     } else {
                         // Show loading placeholder for pages that haven't loaded yet
@@ -258,7 +260,8 @@ private fun ComicPage(
     comicReadingDirection: String,
     comicTapZone: Int,
     onPreviousPage: () -> Unit,
-    onNextPage: () -> Unit
+    onNextPage: () -> Unit,
+    onMenuToggle: () -> Unit = {}
 ) {
     val isRTL = comicReadingDirection == "RTL"
 
@@ -272,33 +275,43 @@ private fun ComicPage(
                     val x = offset.x
                     val y = offset.y
 
+                    var handledNavigation = false
+
                     when (comicTapZone) {
                         0 -> { // Default
                             if (x < width * 0.2f) {
                                 if (isRTL) onNextPage() else onPreviousPage()
+                                handledNavigation = true
                             } else if (x > width * 0.8f) {
                                 if (isRTL) onPreviousPage() else onNextPage()
+                                handledNavigation = true
                             }
                         }
                         1 -> { // L-shaped navigation
                             if (x < width * 0.3f || (x < width * 0.5f && y > height * 0.7f)) {
                                 if (isRTL) onNextPage() else onPreviousPage()
+                                handledNavigation = true
                             } else if (x > width * 0.7f || (x > width * 0.5f && y > height * 0.7f)) {
                                 if (isRTL) onPreviousPage() else onNextPage()
+                                handledNavigation = true
                             }
                         }
                         2 -> { // Kindle-ish
                             if (x < width * 0.2f) {
                                 if (isRTL) onNextPage() else onPreviousPage()
+                                handledNavigation = true
                             } else if (x > width * 0.8f) {
                                 if (isRTL) onPreviousPage() else onNextPage()
+                                handledNavigation = true
                             }
                         }
                         3 -> { // Edge
                             if (x < width * 0.1f) {
                                 if (isRTL) onNextPage() else onPreviousPage()
+                                handledNavigation = true
                             } else if (x > width * 0.9f) {
                                 if (isRTL) onPreviousPage() else onNextPage()
+                                handledNavigation = true
                             }
                         }
                         4 -> { // Right and left
@@ -307,8 +320,14 @@ private fun ComicPage(
                             } else {
                                 if (isRTL) onPreviousPage() else onNextPage()
                             }
+                            handledNavigation = true
                         }
-                        // 5 = Disabled, no action
+                        // 5 = Disabled, no navigation
+                    }
+
+                    // If tap wasn't handled by navigation zones, toggle menu
+                    if (!handledNavigation) {
+                        onMenuToggle()
                     }
                 }
             }

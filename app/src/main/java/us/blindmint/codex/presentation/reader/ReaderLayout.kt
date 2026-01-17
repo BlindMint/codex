@@ -123,6 +123,16 @@ fun ReaderLayout(
                 // Signal that comic loading is complete
                 onReaderEvent(ReaderEvent.OnComicLoadingComplete)
             },
+            onMenuToggle = {
+                menuVisibility(
+                    ReaderEvent.OnMenuVisibility(
+                        show = !showMenu,
+                        fullscreenMode = fullscreenMode,
+                        saveCheckpoint = true,
+                        activity = activity
+                    )
+                )
+            },
             modifier = Modifier.fillMaxSize()
         )
         return

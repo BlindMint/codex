@@ -16,9 +16,9 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
+import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingWpmOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingAccentCharacterOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsCombinedOption
@@ -43,7 +44,11 @@ import us.blindmint.codex.presentation.settings.appearance.colors.components.Col
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsThicknessOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsColorOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsDistanceOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarLengthOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingFocalPointPositionOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorTypeOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsLengthOption
+import us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType
 
 import us.blindmint.codex.presentation.core.components.settings.SwitchWithTitle
 
@@ -69,16 +74,20 @@ fun LazyListScope.SpeedReadingSubcategory(
     onAccentColorChange: (Color) -> Unit = {},
     accentOpacity: Float = 1.0f,
     onAccentOpacityChange: (Float) -> Unit = {},
-    showVerticalIndicators: Boolean = true,
-    onShowVerticalIndicatorsChange: (Boolean) -> Unit = {},
-    verticalIndicatorsSize: Int = 8,
-    onVerticalIndicatorsSizeChange: (Int) -> Unit = {},
-    showHorizontalBars: Boolean = true,
+     showVerticalIndicators: Boolean = true,
+     onShowVerticalIndicatorsChange: (Boolean) -> Unit = {},
+     verticalIndicatorsSize: Int = 8,
+     onVerticalIndicatorsSizeChange: (Int) -> Unit = {},
+     verticalIndicatorType: us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType = us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType.LINE,
+     onVerticalIndicatorTypeChange: (us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType) -> Unit = {},
+     showHorizontalBars: Boolean = true,
     onShowHorizontalBarsChange: (Boolean) -> Unit = {},
-    horizontalBarsThickness: Int = 2,
-    onHorizontalBarsThicknessChange: (Int) -> Unit = {},
-    horizontalBarsDistance: Int = 8,
-    onHorizontalBarsDistanceChange: (Int) -> Unit = {},
+     horizontalBarsThickness: Int = 2,
+     onHorizontalBarsThicknessChange: (Int) -> Unit = {},
+     horizontalBarsLength: Float = 0.9f,
+     onHorizontalBarsLengthChange: (Float) -> Unit = {},
+     horizontalBarsDistance: Int = 8,
+     onHorizontalBarsDistanceChange: (Int) -> Unit = {},
     horizontalBarsColor: Color = Color.Gray,
     onHorizontalBarsColorChange: (Color) -> Unit = {},
     horizontalBarsOpacity: Float = 1.0f,
@@ -162,6 +171,10 @@ fun LazyListScope.SpeedReadingSubcategory(
             BackgroundImageOption()
         }
 
+        item {
+            HorizontalDivider()
+        }
+
         // Accent & Indicators
         item {
             SpeedReadingAccentCharacterOption(
@@ -186,16 +199,8 @@ fun LazyListScope.SpeedReadingSubcategory(
             }
         }
 
-        // Vertical Indicators
         item {
-            SpeedReadingVerticalIndicatorsCombinedOption(
-                showVerticalIndicators = showVerticalIndicators,
-                verticalIndicatorsSize = verticalIndicatorsSize,
-                onVerticalIndicatorsChange = { enabled, size ->
-                    onShowVerticalIndicatorsChange(enabled)
-                    onVerticalIndicatorsSizeChange(size)
-                }
-            )
+            HorizontalDivider()
         }
 
         // Horizontal Bars
@@ -215,6 +220,19 @@ fun LazyListScope.SpeedReadingSubcategory(
                 SpeedReadingHorizontalBarsThicknessOption(
                     thickness = horizontalBarsThickness,
                     onThicknessChange = onHorizontalBarsThicknessChange
+                )
+            }
+        }
+
+        item {
+            AnimatedVisibility(
+                visible = showHorizontalBars,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                SpeedReadingHorizontalBarLengthOption(
+                    length = horizontalBarsLength,
+                    onLengthChange = onHorizontalBarsLengthChange
                 )
             }
         }
@@ -247,7 +265,25 @@ fun LazyListScope.SpeedReadingSubcategory(
             }
         }
 
-        // Focal Point Position
+        // Focal Point
+        item {
+            SettingsSubcategoryTitle(title = stringResource(id = R.string.speed_reading_focal_point))
+        }
+
+        item {
+            SpeedReadingVerticalIndicatorTypeOption(
+                selectedType = verticalIndicatorType,
+                onTypeChange = onVerticalIndicatorTypeChange
+            )
+        }
+
+        item {
+            SpeedReadingVerticalIndicatorsLengthOption(
+                verticalIndicatorsSize = verticalIndicatorsSize,
+                onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange
+            )
+        }
+
         item {
             SpeedReadingFocalPointPositionOption(
                 position = focalPointPosition,

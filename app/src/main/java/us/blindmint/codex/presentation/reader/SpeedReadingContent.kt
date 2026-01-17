@@ -24,6 +24,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -74,8 +79,10 @@ fun SpeedReadingContent(
     accentOpacity: Float,
     showVerticalIndicators: Boolean,
     verticalIndicatorsSize: Int,
+    verticalIndicatorType: us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType,
     showHorizontalBars: Boolean,
     horizontalBarsThickness: Int,
+    horizontalBarsLength: Float,
     horizontalBarsDistance: Int,
     horizontalBarsColor: Color,
     horizontalBarsOpacity: Float,
@@ -208,63 +215,120 @@ fun SpeedReadingContent(
                 val wordAreaHeight = 60.dp // Height reserved for word display
                 val barToWordGap = horizontalBarsDistance.dp // Configurable gap between horizontal bar and word area
 
+                val barColorWithOpacity = horizontalBarsColor.copy(alpha = horizontalBarsOpacity)
+
+                // Calculate bar positions
+                val barPositions = remember(frameHeight, wordAreaHeight, barToWordGap, density) {
+                    with(density) {
+                        val centerY = frameHeight.toPx() / 2f
+                        val wordAreaTop = centerY - (wordAreaHeight.toPx() / 2f)
+                        val wordAreaBottom = centerY + (wordAreaHeight.toPx() / 2f)
+                        val topBarY = wordAreaTop - barToWordGap.toPx()
+                        val bottomBarY = wordAreaBottom + barToWordGap.toPx()
+                        Triple(topBarY, bottomBarY, centerY)
+                    }
+                }
+                val (topBarY, bottomBarY, centerY) = barPositions
+
                 // Draw the RSVP frame - horizontal bars above and below the word
-                Canvas(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(frameHeight)
                 ) {
-                    val centerY = size.height / 2f
-                    val wordAreaTop = centerY - (wordAreaHeight.toPx() / 2f)
-                    val wordAreaBottom = centerY + (wordAreaHeight.toPx() / 2f)
+                    Canvas(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(frameHeight)
+                    ) {
+                        // Horizontal bars (only if enabled) - TOP and BOTTOM borders
+                        if (showHorizontalBars) {
+                            val lineThickness = horizontalBarsThickness.dp.toPx()
+                            val barWidth = size.width * horizontalBarsLength
+                            val barStartX = (size.width - barWidth) / 2f
+                            val barEndX = barStartX + barWidth
 
-                    // Position for horizontal bars (above and below word area)
-                    val topBarY = wordAreaTop - barToWordGap.toPx()
-                    val bottomBarY = wordAreaBottom + barToWordGap.toPx()
+                            // Top horizontal bar - variable width, centered
+                            drawLine(
+                                color = barColorWithOpacity,
+                                start = Offset(barStartX, topBarY),
+                                end = Offset(barEndX, topBarY),
+                                strokeWidth = lineThickness
+                            )
 
-                    // Apply opacity to horizontal bars color
-                    val barColorWithOpacity = horizontalBarsColor.copy(alpha = horizontalBarsOpacity)
+                            // Bottom horizontal bar - variable width, centered
+                            drawLine(
+                                color = barColorWithOpacity,
+                                start = Offset(barStartX, bottomBarY),
+                                end = Offset(barEndX, bottomBarY),
+                                strokeWidth = lineThickness
+                            )
+                        }
 
-                    // Horizontal bars (only if enabled) - TOP and BOTTOM borders
-                    if (showHorizontalBars) {
-                        val lineThickness = horizontalBarsThickness.dp.toPx()
+                        // For LINE type, draw vertical indicators in canvas
+                        if (showVerticalIndicators && verticalIndicatorType == SpeedReadingVerticalIndicatorType.LINE) {
+                            val verticalIndicatorHeight = verticalIndicatorsSize.dp.toPx()
+                            val verticalIndicatorWidth = 1.5.dp.toPx()
 
-                        // Top horizontal bar - full width
-                        drawLine(
-                            color = barColorWithOpacity,
-                            start = Offset(0f, topBarY),
-                            end = Offset(size.width, topBarY),
-                            strokeWidth = lineThickness
-                        )
+                            // Top vertical indicator - starts at top bar, points DOWN toward word
+                            drawLine(
+                                color = barColorWithOpacity,
+                                start = Offset(focalPointX, topBarY),
+                                end = Offset(focalPointX, topBarY + verticalIndicatorHeight),
+                                strokeWidth = verticalIndicatorWidth
+                            )
 
-                        // Bottom horizontal bar - full width
-                        drawLine(
-                            color = barColorWithOpacity,
-                            start = Offset(0f, bottomBarY),
-                            end = Offset(size.width, bottomBarY),
-                            strokeWidth = lineThickness
-                        )
+                            // Bottom vertical indicator - starts at bottom bar, points UP toward word
+                            drawLine(
+                                color = barColorWithOpacity,
+                                start = Offset(focalPointX, bottomBarY),
+                                end = Offset(focalPointX, bottomBarY - verticalIndicatorHeight),
+                                strokeWidth = verticalIndicatorWidth
+                            )
+                        }
                     }
 
-                    // Vertical indicators (only if enabled) - form T shapes with horizontal bars
-                    if (showVerticalIndicators) {
-                        val verticalIndicatorHeight = verticalIndicatorsSize.dp.toPx()
-                        val verticalIndicatorWidth = 1.5.dp.toPx()
+                    // Vertical indicators as icons (for ARROWS and ARROWS_FILLED types)
+                    if (showVerticalIndicators && verticalIndicatorType != SpeedReadingVerticalIndicatorType.LINE) {
+                        val verticalIndicatorHeight = verticalIndicatorsSize.dp
+                        val iconSize = verticalIndicatorHeight * 3.5f // Much larger than the indicator height (3-4x)
 
-                        // Top vertical indicator - starts at top bar, points DOWN toward word
-                        drawLine(
-                            color = barColorWithOpacity,
-                            start = Offset(focalPointX, topBarY),
-                            end = Offset(focalPointX, topBarY + verticalIndicatorHeight),
-                            strokeWidth = verticalIndicatorWidth
+                        // Top arrow (pointing down from top bar)
+                        val topIcon = when (verticalIndicatorType) {
+                            SpeedReadingVerticalIndicatorType.ARROWS -> Icons.Filled.KeyboardArrowDown
+                            SpeedReadingVerticalIndicatorType.ARROWS_FILLED -> Icons.Filled.ArrowDropDown
+                            else -> Icons.Filled.KeyboardArrowDown
+                        }
+
+                        Icon(
+                            imageVector = topIcon,
+                            contentDescription = null,
+                            tint = barColorWithOpacity,
+                            modifier = Modifier
+                                .size(iconSize)
+                                .offset(
+                                    x = with(density) { (focalPointX - iconSize.toPx() / 2).toDp() },
+                                    y = with(density) { topBarY.toDp() }
+                                )
                         )
 
-                        // Bottom vertical indicator - starts at bottom bar, points UP toward word
-                        drawLine(
-                            color = barColorWithOpacity,
-                            start = Offset(focalPointX, bottomBarY),
-                            end = Offset(focalPointX, bottomBarY - verticalIndicatorHeight),
-                            strokeWidth = verticalIndicatorWidth
+                        // Bottom arrow (pointing up from bottom bar)
+                        val bottomIcon = when (verticalIndicatorType) {
+                            SpeedReadingVerticalIndicatorType.ARROWS -> Icons.Filled.KeyboardArrowUp
+                            SpeedReadingVerticalIndicatorType.ARROWS_FILLED -> Icons.Filled.ArrowDropUp
+                            else -> Icons.Filled.KeyboardArrowUp
+                        }
+
+                        Icon(
+                            imageVector = bottomIcon,
+                            contentDescription = null,
+                            tint = barColorWithOpacity,
+                            modifier = Modifier
+                                .size(iconSize)
+                                .offset(
+                                    x = with(density) { (focalPointX - iconSize.toPx() / 2).toDp() },
+                                    y = with(density) { (bottomBarY - iconSize.toPx()).toDp() }
+                                )
                         )
                     }
                 }

@@ -72,6 +72,12 @@ import us.blindmint.codex.ui.settings.SettingsModel
 import kotlin.math.roundToInt
 import androidx.core.net.toUri
 
+enum class SpeedReadingVerticalIndicatorType {
+    LINE,
+    ARROWS,
+    ARROWS_FILLED
+}
+
 @Parcelize
 data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = false) : Screen, Parcelable {
 
@@ -173,8 +179,10 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
     val speedReadingAccentOpacity = remember { mutableFloatStateOf(1.0f) }
     val speedReadingShowVerticalIndicators = remember { mutableStateOf(true) }
     val speedReadingVerticalIndicatorsSize = remember { mutableIntStateOf(8) }
+    val speedReadingVerticalIndicatorType = remember { mutableStateOf(SpeedReadingVerticalIndicatorType.LINE) }
     val speedReadingShowHorizontalBars = remember { mutableStateOf(true) }
     val speedReadingHorizontalBarsThickness = remember { mutableIntStateOf(2) }
+    val speedReadingHorizontalBarsLength = remember { mutableFloatStateOf(0.9f) }
     val speedReadingHorizontalBarsDistance = remember { mutableIntStateOf(8) }
     val speedReadingHorizontalBarsColor = remember { mutableStateOf(Color.Gray) }
     val speedReadingHorizontalBarsOpacity = remember { mutableFloatStateOf(1.0f) }
@@ -701,6 +709,8 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             onShowHorizontalBarsChange = { speedReadingShowHorizontalBars.value = it },
             horizontalBarsThickness = speedReadingHorizontalBarsThickness.intValue,
             onHorizontalBarsThicknessChange = { speedReadingHorizontalBarsThickness.intValue = it },
+            horizontalBarsLength = speedReadingHorizontalBarsLength.floatValue,
+            onHorizontalBarsLengthChange = { speedReadingHorizontalBarsLength.floatValue = it },
             horizontalBarsDistance = speedReadingHorizontalBarsDistance.intValue,
             onHorizontalBarsDistanceChange = { speedReadingHorizontalBarsDistance.intValue = it },
             horizontalBarsColor = speedReadingHorizontalBarsColor.value,
@@ -709,6 +719,8 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             onHorizontalBarsOpacityChange = { speedReadingHorizontalBarsOpacity.floatValue = it },
             focalPointPosition = speedReadingFocalPointPosition.floatValue,
             onFocalPointPositionChange = { speedReadingFocalPointPosition.floatValue = it },
+            verticalIndicatorType = speedReadingVerticalIndicatorType.value,
+            onVerticalIndicatorTypeChange = { speedReadingVerticalIndicatorType.value = it },
             customFontEnabled = speedReadingCustomFontEnabled.value,
             onCustomFontEnabledChange = { speedReadingCustomFontEnabled.value = it },
             selectedFontFamily = speedReadingSelectedFontFamily.value,
@@ -740,8 +752,10 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 accentOpacity = speedReadingAccentOpacity.floatValue,
                 showVerticalIndicators = speedReadingShowVerticalIndicators.value,
                 verticalIndicatorsSize = speedReadingVerticalIndicatorsSize.intValue,
+                verticalIndicatorType = speedReadingVerticalIndicatorType.value,
                 showHorizontalBars = speedReadingShowHorizontalBars.value,
                 horizontalBarsThickness = speedReadingHorizontalBarsThickness.intValue,
+                horizontalBarsLength = speedReadingHorizontalBarsLength.floatValue,
                 horizontalBarsDistance = speedReadingHorizontalBarsDistance.intValue,
                 horizontalBarsColor = speedReadingHorizontalBarsColor.value,
                 horizontalBarsOpacity = speedReadingHorizontalBarsOpacity.floatValue,
