@@ -39,6 +39,13 @@ fun SpeedReadingScaffold(
     accentColor: Color,
     fontFamily: FontFamily,
     sentencePauseMs: Int,
+    wordSize: Int,
+    accentOpacity: Float,
+    showVerticalIndicators: Boolean,
+    verticalIndicatorsSize: Int,
+    showHorizontalBars: Boolean,
+    horizontalBarsThickness: Int,
+    horizontalBarsColor: Color,
     progress: String,
     bottomBarPadding: Dp,
     showWpmIndicator: Boolean,
@@ -47,6 +54,7 @@ fun SpeedReadingScaffold(
     onExitSpeedReading: () -> Unit,
     onShowSpeedReadingSettings: () -> Unit
 ) {
+    var alwaysShowPlayPause by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
 
@@ -97,13 +105,23 @@ fun SpeedReadingScaffold(
                 text = text,
                 currentProgress = currentProgress,
                 backgroundColor = backgroundColor,
-                fontColor = fontColor,
+                fontColor = Color.Black, // TODO: Pass actual font color
                 fontFamily = fontFamily,
                 sentencePauseMs = sentencePauseMs,
+                wordSize = wordSize,
+                accentColor = accentColor,
+                accentOpacity = accentOpacity,
+                showVerticalIndicators = showVerticalIndicators,
+                verticalIndicatorsSize = verticalIndicatorsSize,
+                showHorizontalBars = showHorizontalBars,
+                horizontalBarsThickness = horizontalBarsThickness,
+                horizontalBarsColor = horizontalBarsColor,
                 wpm = wpm,
                 isPlaying = isPlaying,
-                showWpmIndicator = showWpmIndicator && !showMenu,
-                accentColor = accentColor
+                onWpmChange = onWpmChange,
+                onPlayPause = { isPlaying = !isPlaying },
+                alwaysShowPlayPause = alwaysShowPlayPause,
+                showWpmIndicator = showWpmIndicator
             )
         }
     }

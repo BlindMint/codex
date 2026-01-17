@@ -17,14 +17,14 @@ import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
 
 @Composable
-fun SpeedReadingHorizontalBarsColorOption() {
-    val mainModel = hiltViewModel<MainModel>()
-    val state = mainModel.state.collectAsStateWithLifecycle()
-
+fun SpeedReadingHorizontalBarsColorOption(
+    color: Color = Color.Gray,
+    onColorChange: (Color) -> Unit = {}
+) {
     ColorPickerWithTitle(
         title = stringResource(id = R.string.speed_reading_horizontal_bars_color),
-        value = Color.Gray, // TODO: Add to MainState
+        value = color,
         presetId = 0, // TODO: Use proper preset ID for speed reading
-        onValueChange = { /* TODO: Save to settings */ }
+        onValueChange = onColorChange
     )
 }

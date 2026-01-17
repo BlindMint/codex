@@ -37,7 +37,21 @@ fun LazyListScope.SpeedReadingSubcategory(
     showTitle: Boolean = true,
     showDivider: Boolean = true,
     wpm: Int = 300,
-    onWpmChange: (Int) -> Unit = {}
+    onWpmChange: (Int) -> Unit = {},
+    wordSize: Int = 48,
+    onWordSizeChange: (Int) -> Unit = {},
+    accentOpacity: Float = 1.0f,
+    onAccentOpacityChange: (Float) -> Unit = {},
+    showVerticalIndicators: Boolean = true,
+    onShowVerticalIndicatorsChange: (Boolean) -> Unit = {},
+    verticalIndicatorsSize: Int = 32,
+    onVerticalIndicatorsSizeChange: (Int) -> Unit = {},
+    showHorizontalBars: Boolean = true,
+    onShowHorizontalBarsChange: (Boolean) -> Unit = {},
+    horizontalBarsThickness: Int = 2,
+    onHorizontalBarsThicknessChange: (Int) -> Unit = {},
+    horizontalBarsColor: Color = Color.Gray,
+    onHorizontalBarsColorChange: (Color) -> Unit = {}
 ) {
     SettingsSubcategory(
         titleColor = titleColor,
@@ -58,7 +72,10 @@ fun LazyListScope.SpeedReadingSubcategory(
         }
 
         item {
-            SpeedReadingWordSizeOption()
+            SpeedReadingWordSizeOption(
+                wordSize = wordSize,
+                onWordSizeChange = onWordSizeChange
+            )
         }
 
         // Colors section
@@ -84,15 +101,10 @@ fun LazyListScope.SpeedReadingSubcategory(
         }
 
         item {
-            SpeedReadingAccentCharacterOpacityOption()
-        }
-
-        item {
-            SpeedReadingVerticalIndicatorsOption()
-        }
-
-        item {
-            SpeedReadingVerticalIndicatorsSizeOption()
+            SpeedReadingAccentCharacterOpacityOption(
+                opacity = accentOpacity,
+                onOpacityChange = onAccentOpacityChange
+            )
         }
 
         // Horizontal Bars
@@ -106,6 +118,47 @@ fun LazyListScope.SpeedReadingSubcategory(
 
         item {
             SpeedReadingHorizontalBarsColorOption()
+        }
+
+        // Vertical Indicators
+        item {
+            SpeedReadingVerticalIndicatorsOption(
+                selected = showVerticalIndicators,
+                onSelectionChange = onShowVerticalIndicatorsChange
+            )
+        }
+
+        item {
+            SpeedReadingVerticalIndicatorsSizeOption(
+                size = verticalIndicatorsSize,
+                onSizeChange = onVerticalIndicatorsSizeChange
+            )
+        }
+
+        // Horizontal Bars
+        item {
+            SpeedReadingHorizontalBarsOption(
+                selected = showHorizontalBars,
+                onSelectionChange = onShowHorizontalBarsChange
+            )
+        }
+
+        item {
+            SpeedReadingHorizontalBarsThicknessOption(
+                thickness = horizontalBarsThickness,
+                onThicknessChange = onHorizontalBarsThicknessChange
+            )
+        }
+
+        item {
+            SpeedReadingHorizontalBarsColorOption(
+                color = horizontalBarsColor,
+                onColorChange = onHorizontalBarsColorChange
+            )
+        }
+
+        item {
+            SpeedReadingVerticalIndicatorsSizeOption()
         }
 
         // Font Settings

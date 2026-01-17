@@ -16,13 +16,13 @@ import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
 
 @Composable
-fun SpeedReadingHorizontalBarsOption() {
-    val mainModel = hiltViewModel<MainModel>()
-    val state = mainModel.state.collectAsStateWithLifecycle()
-
+fun SpeedReadingHorizontalBarsOption(
+    selected: Boolean = true,
+    onSelectionChange: (Boolean) -> Unit = {}
+) {
     SwitchWithTitle(
-        selected = true, // TODO: Add to MainState
+        selected = selected,
         title = stringResource(id = R.string.speed_reading_horizontal_bars),
-        onClick = { /* TODO: Save to settings */ }
+        onClick = { onSelectionChange(!selected) }
     )
 }

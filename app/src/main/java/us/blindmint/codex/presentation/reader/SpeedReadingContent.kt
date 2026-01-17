@@ -38,6 +38,11 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -52,10 +57,20 @@ fun SpeedReadingContent(
     fontColor: Color,
     fontFamily: FontFamily,
     sentencePauseMs: Int,
+    wordSize: Int,
+    accentColor: Color,
+    accentOpacity: Float,
+    showVerticalIndicators: Boolean,
+    verticalIndicatorsSize: Int,
+    showHorizontalBars: Boolean,
+    horizontalBarsThickness: Int,
+    horizontalBarsColor: Color,
     wpm: Int,
     isPlaying: Boolean,
-    showWpmIndicator: Boolean,
-    accentColor: Color,
+    onWpmChange: (Int) -> Unit,
+    onPlayPause: () -> Unit,
+    alwaysShowPlayPause: Boolean,
+    showWpmIndicator: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     // Extract words from text starting from current position
@@ -70,7 +85,7 @@ fun SpeedReadingContent(
     var currentWordIndex by remember { mutableIntStateOf(0) }
     var showCountdown by remember { mutableStateOf(false) }
     var countdownValue by remember { mutableIntStateOf(3) }
-    val wordFontSize = 48.sp
+    val wordFontSize = wordSize.sp
     val density = LocalDensity.current
     val textMeasurer = rememberTextMeasurer()
 
@@ -166,44 +181,51 @@ fun SpeedReadingContent(
                         .fillMaxWidth()
                         .height(120.dp)
                 ) {
-                    val frameColor = fontColor.copy(alpha = 0.3f)
-                    val lineThickness = 1.dp.toPx()
-                    val verticalIndicatorHeight = 12.dp.toPx()
-                    val verticalIndicatorWidth = 1.5.dp.toPx()
                     val horizontalLineY = size.height / 2f
                     val gapHalfWidth = 120.dp.toPx() // Gap around the word
 
-                    // Left horizontal line
-                    drawLine(
-                        color = frameColor,
-                        start = Offset(0f, horizontalLineY),
-                        end = Offset(centerX - gapHalfWidth, horizontalLineY),
-                        strokeWidth = lineThickness
-                    )
+                    // Horizontal bars (only if enabled)
+                    if (showHorizontalBars) {
+                        val lineThickness = horizontalBarsThickness.dp.toPx()
 
-                    // Right horizontal line
-                    drawLine(
-                        color = frameColor,
-                        start = Offset(centerX + gapHalfWidth, horizontalLineY),
-                        end = Offset(size.width, horizontalLineY),
-                        strokeWidth = lineThickness
-                    )
+                        // Left horizontal line
+                        drawLine(
+                            color = horizontalBarsColor,
+                            start = Offset(0f, horizontalLineY),
+                            end = Offset(centerX - gapHalfWidth, horizontalLineY),
+                            strokeWidth = lineThickness
+                        )
 
-                    // Top vertical indicator (points down to accent position)
-                    drawLine(
-                        color = accentColor.copy(alpha = 0.7f),
-                        start = Offset(centerX, horizontalLineY - 40.dp.toPx()),
-                        end = Offset(centerX, horizontalLineY - 40.dp.toPx() + verticalIndicatorHeight),
-                        strokeWidth = verticalIndicatorWidth
-                    )
+                        // Right horizontal line
+                        drawLine(
+                            color = horizontalBarsColor,
+                            start = Offset(centerX + gapHalfWidth, horizontalLineY),
+                            end = Offset(size.width, horizontalLineY),
+                            strokeWidth = lineThickness
+                        )
+                    }
 
-                    // Bottom vertical indicator (points up to accent position)
-                    drawLine(
-                        color = accentColor.copy(alpha = 0.7f),
-                        start = Offset(centerX, horizontalLineY + 40.dp.toPx() - verticalIndicatorHeight),
-                        end = Offset(centerX, horizontalLineY + 40.dp.toPx()),
-                        strokeWidth = verticalIndicatorWidth
-                    )
+                    // Vertical indicators (only if enabled)
+                    if (showVerticalIndicators) {
+                        val verticalIndicatorHeight = verticalIndicatorsSize.dp.toPx()
+                        val verticalIndicatorWidth = 1.5.dp.toPx()
+
+                        // Top vertical indicator (points down to accent position)
+                        drawLine(
+                            color = accentColor.copy(alpha = accentOpacity),
+                            start = Offset(centerX, horizontalLineY - 40.dp.toPx()),
+                            end = Offset(centerX, horizontalLineY - 40.dp.toPx() + verticalIndicatorHeight),
+                            strokeWidth = verticalIndicatorWidth
+                        )
+
+                        // Bottom vertical indicator (points up to accent position)
+                        drawLine(
+                            color = accentColor.copy(alpha = accentOpacity),
+                            start = Offset(centerX, horizontalLineY + 40.dp.toPx() - verticalIndicatorHeight),
+                            end = Offset(centerX, horizontalLineY + 40.dp.toPx()),
+                            strokeWidth = verticalIndicatorWidth
+                        )
+                    }
                 }
 
                 // Word display with accent character highlighted and properly offset
@@ -219,7 +241,7 @@ fun SpeedReadingContent(
                                 append(currentWord.substring(0, accentIndex))
                             }
                             if (accentIndex >= 0 && accentIndex < currentWord.length) {
-                                withStyle(style = SpanStyle(color = accentColor)) {
+                                withStyle(style = SpanStyle(color = accentColor.copy(alpha = accentOpacity))) {
                                     append(currentWord[accentIndex])
                                 }
                             }

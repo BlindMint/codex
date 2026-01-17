@@ -16,15 +16,15 @@ import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
 
 @Composable
-fun SpeedReadingVerticalIndicatorsSizeOption() {
-    val mainModel = hiltViewModel<MainModel>()
-    val state = mainModel.state.collectAsStateWithLifecycle()
-
+fun SpeedReadingVerticalIndicatorsSizeOption(
+    size: Int = 32,
+    onSizeChange: (Int) -> Unit = {}
+) {
     SliderWithTitle(
         title = stringResource(id = R.string.speed_reading_vertical_indicators_size),
-        value = Pair(32, "px"), // TODO: Add to MainState, default 32px
+        value = Pair(size, "px"),
         fromValue = 8,
         toValue = 64,
-        onValueChange = { /* TODO: Save to settings */ }
+        onValueChange = onSizeChange
     )
 }

@@ -16,15 +16,15 @@ import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
 
 @Composable
-fun SpeedReadingHorizontalBarsThicknessOption() {
-    val mainModel = hiltViewModel<MainModel>()
-    val state = mainModel.state.collectAsStateWithLifecycle()
-
+fun SpeedReadingHorizontalBarsThicknessOption(
+    thickness: Int = 2,
+    onThicknessChange: (Int) -> Unit = {}
+) {
     SliderWithTitle(
         title = stringResource(id = R.string.speed_reading_horizontal_bars_thickness),
-        value = Pair(2, "px"), // TODO: Add to MainState, default 2px
+        value = Pair(thickness, "px"),
         fromValue = 1,
         toValue = 8,
-        onValueChange = { /* TODO: Save to settings */ }
+        onValueChange = onThicknessChange
     )
 }

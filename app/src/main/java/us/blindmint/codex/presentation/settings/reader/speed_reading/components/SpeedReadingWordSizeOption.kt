@@ -30,8 +30,11 @@ import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
 
 @Composable
-fun SpeedReadingWordSizeOption() {
-    var wordSize by remember { mutableIntStateOf(48) }
+fun SpeedReadingWordSizeOption(
+    wordSize: Int = 48,
+    onWordSizeChange: (Int) -> Unit = {}
+) {
+    var localWordSize by remember(wordSize) { mutableIntStateOf(wordSize) }
 
     Text(
         text = stringResource(id = R.string.speed_reading_word_size),
@@ -48,18 +51,23 @@ fun SpeedReadingWordSizeOption() {
     ) {
         // Slider
         Slider(
-            value = wordSize.toFloat(),
-            onValueChange = { wordSize = it.toInt() },
+            value = localWordSize.toFloat(),
+            onValueChange = {
+                localWordSize = it.toInt()
+                onWordSizeChange(it.toInt())
+            },
             valueRange = 24f..96f,
             modifier = Modifier.weight(1f)
         )
 
         // Numeric input
         OutlinedTextField(
-            value = wordSize.toString(),
+            value = localWordSize.toString(),
             onValueChange = { newValue ->
-                val intValue = newValue.toIntOrNull() ?: wordSize
-                wordSize = intValue.coerceIn(24, 96)
+                val intValue = newValue.toIntOrNull() ?: localWordSize
+                val coercedValue = intValue.coerceIn(24, 96)
+                localWordSize = coercedValue
+                onWordSizeChange(coercedValue)
             },
             label = { Text("sp") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

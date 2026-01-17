@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
@@ -32,7 +33,21 @@ fun SpeedReadingSettingsBottomSheet(
     show: Boolean,
     onDismiss: () -> Unit,
     wpm: Int = 300,
-    onWpmChange: (Int) -> Unit = {}
+    onWpmChange: (Int) -> Unit = {},
+    wordSize: Int = 48,
+    onWordSizeChange: (Int) -> Unit = {},
+    accentOpacity: Float = 1.0f,
+    onAccentOpacityChange: (Float) -> Unit = {},
+    showVerticalIndicators: Boolean = true,
+    onShowVerticalIndicatorsChange: (Boolean) -> Unit = {},
+    verticalIndicatorsSize: Int = 32,
+    onVerticalIndicatorsSizeChange: (Int) -> Unit = {},
+    showHorizontalBars: Boolean = true,
+    onShowHorizontalBarsChange: (Boolean) -> Unit = {},
+    horizontalBarsThickness: Int = 2,
+    onHorizontalBarsThicknessChange: (Int) -> Unit = {},
+    horizontalBarsColor: Color = Color.Gray,
+    onHorizontalBarsColorChange: (Color) -> Unit = {}
 ) {
     if (show) {
         ModalBottomSheet(
@@ -77,7 +92,21 @@ fun SpeedReadingSettingsBottomSheet(
                             showTitle = false,
                             showDivider = false,
                             wpm = wpm,
-                            onWpmChange = onWpmChange
+                            onWpmChange = onWpmChange,
+                            wordSize = wordSize,
+                            onWordSizeChange = onWordSizeChange,
+                            accentOpacity = accentOpacity,
+                            onAccentOpacityChange = onAccentOpacityChange,
+                            showVerticalIndicators = showVerticalIndicators,
+                            onShowVerticalIndicatorsChange = onShowVerticalIndicatorsChange,
+                            verticalIndicatorsSize = verticalIndicatorsSize,
+                            onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange,
+                            showHorizontalBars = showHorizontalBars,
+                            onShowHorizontalBarsChange = onShowHorizontalBarsChange,
+                            horizontalBarsThickness = horizontalBarsThickness,
+                            onHorizontalBarsThicknessChange = onHorizontalBarsThicknessChange,
+                            horizontalBarsColor = horizontalBarsColor,
+                            onHorizontalBarsColorChange = onHorizontalBarsColorChange
                         )
 
                         item {

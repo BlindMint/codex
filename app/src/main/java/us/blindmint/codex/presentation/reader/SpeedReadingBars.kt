@@ -151,10 +151,27 @@ fun SpeedReadingBottomBar(
         // WPM slider with play/pause
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Play/Pause button on the left
+            // WPM indicator on the left (matching spacing)
+            Text(
+                text = "$wpm WPM",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+
+            // WPM slider in the middle
+            Slider(
+                value = wpm.toFloat(),
+                onValueChange = { onWpmChange((it / 5).toInt() * 5) }, // Snap to 5 increments
+                valueRange = 100f..1500f,
+                steps = 280, // (1500-100)/5 - 1 = 280 steps
+                modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
+            )
+
+            // Play/Pause button on the right
             IconButton(
                 icon = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                 contentDescription = if (isPlaying) R.string.pause else R.string.play,
@@ -163,24 +180,6 @@ fun SpeedReadingBottomBar(
             ) {
                 onPlayPause()
             }
-
-            // WPM slider
-            Slider(
-                value = wpm.toFloat(),
-                onValueChange = { onWpmChange((it / 5).toInt() * 5) }, // Snap to 5 increments
-                valueRange = 100f..1500f,
-                steps = 280, // (1500-100)/5 - 1 = 280 steps
-                modifier = Modifier.weight(1f)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // WPM indicator
-            Text(
-                text = "$wpm",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
 
         Spacer(Modifier.height(8.dp + bottomBarPadding))
