@@ -58,8 +58,8 @@ fun LazyListScope.SpeedReadingSubcategory(
     onManualSentencePauseEnabledChange: (Boolean) -> Unit = {},
     sentencePauseDuration: Int = 350,
     onSentencePauseDurationChange: (Int) -> Unit = {},
-    odsEnabled: Boolean = false,
-    onOdsEnabledChange: (Boolean) -> Unit = {},
+    osdEnabled: Boolean = true,
+    onOsdEnabledChange: (Boolean) -> Unit = {},
     wordSize: Int = 48,
     onWordSizeChange: (Int) -> Unit = {},
     accentCharacterEnabled: Boolean = true,
@@ -140,9 +140,9 @@ fun LazyListScope.SpeedReadingSubcategory(
 
         item {
             SwitchWithTitle(
-                selected = odsEnabled,
-                title = stringResource(id = R.string.speed_reading_ods),
-                onClick = { onOdsEnabledChange(!odsEnabled) }
+                selected = osdEnabled,
+                title = stringResource(id = R.string.speed_reading_osd),
+                onClick = { onOsdEnabledChange(!osdEnabled) }
             )
         }
 

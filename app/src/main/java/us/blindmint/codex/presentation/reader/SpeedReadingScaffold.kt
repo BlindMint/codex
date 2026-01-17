@@ -57,7 +57,7 @@ fun SpeedReadingScaffold(
     showWpmIndicator: Boolean,
     wpm: Int,
     onWpmChange: (Int) -> Unit,
-    odsEnabled: Boolean,
+    osdEnabled: Boolean,
     onExitSpeedReading: () -> Unit,
     onShowSpeedReadingSettings: () -> Unit,
     onMenuVisibilityChanged: (Boolean) -> Unit = {}
@@ -140,7 +140,7 @@ fun SpeedReadingScaffold(
                 onPlayPause = { isPlaying = !isPlaying },
                 alwaysShowPlayPause = alwaysShowPlayPause,
                 showWpmIndicator = showWpmIndicator,
-                odsEnabled = odsEnabled
+                osdEnabled = osdEnabled
             )
         }
     }

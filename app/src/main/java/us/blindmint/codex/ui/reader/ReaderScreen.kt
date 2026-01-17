@@ -165,7 +165,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
     val speedReadingWpm = remember { mutableIntStateOf(300) }
     val speedReadingManualSentencePauseEnabled = remember { mutableStateOf(false) }
     val speedReadingSentencePauseDuration = remember { mutableIntStateOf(350) }
-    val speedReadingOdsEnabled = remember { mutableStateOf(false) }
+    val speedReadingOsdEnabled = remember { mutableStateOf(true) }
 
     val speedReadingWordSize = remember { mutableIntStateOf(48) }
     val speedReadingAccentCharacterEnabled = remember { mutableStateOf(true) }
@@ -683,8 +683,8 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             onManualSentencePauseEnabledChange = { speedReadingManualSentencePauseEnabled.value = it },
             sentencePauseDuration = speedReadingSentencePauseDuration.intValue,
             onSentencePauseDurationChange = { speedReadingSentencePauseDuration.intValue = it },
-            odsEnabled = speedReadingOdsEnabled.value,
-            onOdsEnabledChange = { speedReadingOdsEnabled.value = it },
+            osdEnabled = speedReadingOsdEnabled.value,
+            onOsdEnabledChange = { speedReadingOsdEnabled.value = it },
             wordSize = speedReadingWordSize.intValue,
             onWordSizeChange = { speedReadingWordSize.intValue = it },
             accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
@@ -751,7 +751,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 showWpmIndicator = true,
                 wpm = speedReadingWpm.intValue,
                 onWpmChange = { speedReadingWpm.intValue = it },
-                odsEnabled = speedReadingOdsEnabled.value,
+                osdEnabled = speedReadingOsdEnabled.value,
                 onExitSpeedReading = {
                     screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
                     // Reset menu visibility to normal state when exiting speed reading

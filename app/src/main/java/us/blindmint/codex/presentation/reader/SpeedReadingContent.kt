@@ -86,7 +86,7 @@ fun SpeedReadingContent(
     onPlayPause: () -> Unit,
     alwaysShowPlayPause: Boolean,
     showWpmIndicator: Boolean = true,
-    odsEnabled: Boolean = false,
+    osdEnabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     // Extract words from text starting from current position
@@ -310,7 +310,7 @@ fun SpeedReadingContent(
         }
 
         // OSD controls centered at bottom
-        if (odsEnabled) {
+        if (osdEnabled) {
             val configuration = LocalConfiguration.current
             val screenHeight = configuration.screenHeightDp.dp
             val bottomPadding = screenHeight * 0.2f // 20% from bottom
