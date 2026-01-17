@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.core.components.settings.SliderWithTitle
+import kotlin.math.roundToInt
 
 @Composable
 fun SpeedReadingHorizontalBarsDistanceOption(
@@ -22,6 +23,10 @@ fun SpeedReadingHorizontalBarsDistanceOption(
         fromValue = 0,
         toValue = 64,
         steps = 8,
-        onValueChange = onDistanceChange
+        onValueChange = { newValue ->
+            // Snap to multiples of 8
+            val snappedValue = ((newValue + 4) / 8) * 8 // Round to nearest multiple of 8
+            onDistanceChange(snappedValue.coerceIn(0, 64))
+        }
     )
 }
