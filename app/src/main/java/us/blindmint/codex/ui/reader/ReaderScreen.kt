@@ -24,6 +24,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -162,23 +164,23 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
         )
 
         // Speed reading state
-    val speedReadingWpm = remember { mutableStateOf(300) }
+    val speedReadingWpm = remember { mutableIntStateOf(300) }
     val speedReadingManualSentencePauseEnabled = remember { mutableStateOf(false) }
-    val speedReadingSentencePauseDuration = remember { mutableStateOf(350) }
+    val speedReadingSentencePauseDuration = remember { mutableIntStateOf(350) }
     val speedReadingOdsEnabled = remember { mutableStateOf(false) }
 
-    val speedReadingWordSize = remember { mutableStateOf(48) }
+    val speedReadingWordSize = remember { mutableIntStateOf(48) }
     val speedReadingAccentCharacterEnabled = remember { mutableStateOf(true) }
     val speedReadingAccentColor = remember { mutableStateOf(Color.Red) }
-    val speedReadingAccentOpacity = remember { mutableStateOf(1.0f) }
+    val speedReadingAccentOpacity = remember { mutableFloatStateOf(1.0f) }
     val speedReadingShowVerticalIndicators = remember { mutableStateOf(true) }
-    val speedReadingVerticalIndicatorsSize = remember { mutableStateOf(32) }
+    val speedReadingVerticalIndicatorsSize = remember { mutableIntStateOf(32) }
     val speedReadingShowHorizontalBars = remember { mutableStateOf(true) }
-    val speedReadingHorizontalBarsThickness = remember { mutableStateOf(2) }
-    val speedReadingHorizontalBarsDistance = remember { mutableStateOf(8) }
+    val speedReadingHorizontalBarsThickness = remember { mutableIntStateOf(2) }
+    val speedReadingHorizontalBarsDistance = remember { mutableIntStateOf(8) }
     val speedReadingHorizontalBarsColor = remember { mutableStateOf(Color.Gray) }
-    val speedReadingHorizontalBarsOpacity = remember { mutableStateOf(1.0f) }
-    val speedReadingFocalPointPosition = remember { mutableStateOf(0.38f) }
+    val speedReadingHorizontalBarsOpacity = remember { mutableFloatStateOf(1.0f) }
+    val speedReadingFocalPointPosition = remember { mutableFloatStateOf(0.38f) }
     val speedReadingCustomFontEnabled = remember { mutableStateOf(false) }
     val speedReadingSelectedFontFamily = remember { mutableStateOf("default") }
 
@@ -677,38 +679,38 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             onDismiss = {
                 screenModel.onEvent(ReaderEvent.OnDismissSpeedReadingSettings)
             },
-            wpm = speedReadingWpm.value,
-            onWpmChange = { speedReadingWpm.value = it },
+            wpm = speedReadingWpm.intValue,
+            onWpmChange = { speedReadingWpm.intValue = it },
             manualSentencePauseEnabled = speedReadingManualSentencePauseEnabled.value,
             onManualSentencePauseEnabledChange = { speedReadingManualSentencePauseEnabled.value = it },
-            sentencePauseDuration = speedReadingSentencePauseDuration.value,
-            onSentencePauseDurationChange = { speedReadingSentencePauseDuration.value = it },
+            sentencePauseDuration = speedReadingSentencePauseDuration.intValue,
+            onSentencePauseDurationChange = { speedReadingSentencePauseDuration.intValue = it },
             odsEnabled = speedReadingOdsEnabled.value,
             onOdsEnabledChange = { speedReadingOdsEnabled.value = it },
-            wordSize = speedReadingWordSize.value,
-            onWordSizeChange = { speedReadingWordSize.value = it },
+            wordSize = speedReadingWordSize.intValue,
+            onWordSizeChange = { speedReadingWordSize.intValue = it },
             accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
             onAccentCharacterEnabledChange = { speedReadingAccentCharacterEnabled.value = it },
             accentColor = speedReadingAccentColor.value,
             onAccentColorChange = { speedReadingAccentColor.value = it },
-            accentOpacity = speedReadingAccentOpacity.value,
-            onAccentOpacityChange = { speedReadingAccentOpacity.value = it },
+            accentOpacity = speedReadingAccentOpacity.floatValue,
+            onAccentOpacityChange = { speedReadingAccentOpacity.floatValue = it },
             showVerticalIndicators = speedReadingShowVerticalIndicators.value,
             onShowVerticalIndicatorsChange = { speedReadingShowVerticalIndicators.value = it },
-            verticalIndicatorsSize = speedReadingVerticalIndicatorsSize.value,
-            onVerticalIndicatorsSizeChange = { speedReadingVerticalIndicatorsSize.value = it },
+            verticalIndicatorsSize = speedReadingVerticalIndicatorsSize.intValue,
+            onVerticalIndicatorsSizeChange = { speedReadingVerticalIndicatorsSize.intValue = it },
             showHorizontalBars = speedReadingShowHorizontalBars.value,
             onShowHorizontalBarsChange = { speedReadingShowHorizontalBars.value = it },
-            horizontalBarsThickness = speedReadingHorizontalBarsThickness.value,
-            onHorizontalBarsThicknessChange = { speedReadingHorizontalBarsThickness.value = it },
-            horizontalBarsDistance = speedReadingHorizontalBarsDistance.value,
-            onHorizontalBarsDistanceChange = { speedReadingHorizontalBarsDistance.value = it },
+            horizontalBarsThickness = speedReadingHorizontalBarsThickness.intValue,
+            onHorizontalBarsThicknessChange = { speedReadingHorizontalBarsThickness.intValue = it },
+            horizontalBarsDistance = speedReadingHorizontalBarsDistance.intValue,
+            onHorizontalBarsDistanceChange = { speedReadingHorizontalBarsDistance.intValue = it },
             horizontalBarsColor = speedReadingHorizontalBarsColor.value,
             onHorizontalBarsColorChange = { speedReadingHorizontalBarsColor.value = it },
-            horizontalBarsOpacity = speedReadingHorizontalBarsOpacity.value,
-            onHorizontalBarsOpacityChange = { speedReadingHorizontalBarsOpacity.value = it },
-            focalPointPosition = speedReadingFocalPointPosition.value,
-            onFocalPointPositionChange = { speedReadingFocalPointPosition.value = it },
+            horizontalBarsOpacity = speedReadingHorizontalBarsOpacity.floatValue,
+            onHorizontalBarsOpacityChange = { speedReadingHorizontalBarsOpacity.floatValue = it },
+            focalPointPosition = speedReadingFocalPointPosition.floatValue,
+            onFocalPointPositionChange = { speedReadingFocalPointPosition.floatValue = it },
             customFontEnabled = speedReadingCustomFontEnabled.value,
             onCustomFontEnabledChange = { speedReadingCustomFontEnabled.value = it },
             selectedFontFamily = speedReadingSelectedFontFamily.value,
@@ -728,29 +730,29 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 accentColor = speedReadingAccentColor.value,
                 fontFamily = speedReadingFontFamily,
                 sentencePauseMs = if (speedReadingManualSentencePauseEnabled.value) {
-                    speedReadingSentencePauseDuration.value
+                    speedReadingSentencePauseDuration.intValue
                 } else {
                     // Automatic pause calculation based on WPM
                     val baseWpm = 300f
                     val basePause = 350f
                     val minPause = 50f
-                    (basePause * (baseWpm / speedReadingWpm.value) + minPause).toInt().coerceIn(50, 1000)
+                    (basePause * (baseWpm / speedReadingWpm.intValue) + minPause).toInt().coerceIn(50, 1000)
                 },
-                wordSize = speedReadingWordSize.value,
-                accentOpacity = speedReadingAccentOpacity.value,
+                wordSize = speedReadingWordSize.intValue,
+                accentOpacity = speedReadingAccentOpacity.floatValue,
                 showVerticalIndicators = speedReadingShowVerticalIndicators.value,
-                verticalIndicatorsSize = speedReadingVerticalIndicatorsSize.value,
+                verticalIndicatorsSize = speedReadingVerticalIndicatorsSize.intValue,
                 showHorizontalBars = speedReadingShowHorizontalBars.value,
-                horizontalBarsThickness = speedReadingHorizontalBarsThickness.value,
-                horizontalBarsDistance = speedReadingHorizontalBarsDistance.value,
+                horizontalBarsThickness = speedReadingHorizontalBarsThickness.intValue,
+                horizontalBarsDistance = speedReadingHorizontalBarsDistance.intValue,
                 horizontalBarsColor = speedReadingHorizontalBarsColor.value,
-                horizontalBarsOpacity = speedReadingHorizontalBarsOpacity.value,
-                focalPointPosition = speedReadingFocalPointPosition.value,
+                horizontalBarsOpacity = speedReadingHorizontalBarsOpacity.floatValue,
+                focalPointPosition = speedReadingFocalPointPosition.floatValue,
                 progress = progress,
                 bottomBarPadding = bottomBarPadding,
                 showWpmIndicator = true,
-                wpm = speedReadingWpm.value,
-                onWpmChange = { speedReadingWpm.value = it },
+                wpm = speedReadingWpm.intValue,
+                onWpmChange = { speedReadingWpm.intValue = it },
                 odsEnabled = speedReadingOdsEnabled.value,
                 onExitSpeedReading = {
                     screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
