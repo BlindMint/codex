@@ -461,14 +461,26 @@ fun findAccentCharIndex(word: String): Int {
         return 1
     }
 
-    // Rule: Medium-long words (7-9 chars) - 3rd letter preferred
+    // Rule: Medium-long words (7-9 chars) - Center with vowel preference
     if (len in 7..9) {
-        // Prefer 3rd position if vowel
-        if (cleanWord[2] in vowels) return 2
-        if (cleanWord[1] in vowels) return 1
-        if (len > 3 && cleanWord[3] in vowels) return 3
-        // Fallback to 3rd char
-        return 2
+        val centerPos = len / 2
+        val scanPositions = listOf(
+            centerPos,
+            centerPos - 1,
+            centerPos + 1,
+            centerPos - 2,
+            centerPos + 2,
+            2, // fallback to 2nd
+            3  // fallback to 3rd
+        ).filter { it in cleanWord.indices }
+
+        for (pos in scanPositions) {
+            if (cleanWord[pos] in vowels) {
+                return pos
+            }
+        }
+        // No vowel found, use center
+        return centerPos
     }
 
     // Rule: Long words (10+ chars) - Center (len/2) with vowel scan
