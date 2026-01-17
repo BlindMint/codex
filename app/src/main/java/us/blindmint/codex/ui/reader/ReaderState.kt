@@ -42,6 +42,7 @@ data class ReaderState(
     val bottomSheet: BottomSheet? = null,
     val drawer: Drawer? = null,
     val speedReadingSettingsVisible: Boolean = false,
+    val showComicSettingsInMenu: Boolean = false,
 
     val showSearch: Boolean = false,
     val searchBarPersistent: Boolean = false,

@@ -52,6 +52,7 @@ import us.blindmint.codex.presentation.settings.reader.dictionary.DictionarySubc
 import us.blindmint.codex.presentation.settings.reader.search.SearchSubcategory
 import us.blindmint.codex.presentation.settings.reader.system.SystemSubcategory
 import us.blindmint.codex.presentation.settings.reader.text.TextSubcategory
+import us.blindmint.codex.presentation.settings.reader.ComicsReaderSettingsCategory
 import us.blindmint.codex.ui.reader.ReaderEvent
 
 private var initialPage = 0
@@ -59,13 +60,16 @@ private var initialPage = 0
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReaderSettingsBottomSheet(
+    showComicSettings: Boolean = false,
     fullscreenMode: Boolean,
     menuVisibility: (ReaderEvent.OnMenuVisibility) -> Unit,
     dismissBottomSheet: (ReaderEvent.OnDismissBottomSheet) -> Unit
 ) {
     val activity = LocalActivity.current
     val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(initialPage) { 3 }
+    // Comics have 1 "tab" (just show comic settings), books have 3 tabs
+    val pageCount = if (showComicSettings) 1 else 3
+    val pagerState = rememberPagerState(initialPage) { pageCount }
 
     // Track scroll states for each tab
     val generalScrollState = rememberLazyListState()
@@ -76,9 +80,9 @@ fun ReaderSettingsBottomSheet(
     val canScrollUp by remember {
         derivedStateOf {
             when (pagerState.currentPage) {
-                0 -> generalScrollState.canScrollBackward
-                1 -> readerScrollState.canScrollBackward
-                else -> colorsScrollState.canScrollBackward
+                0 -> if (showComicSettings) generalScrollState.canScrollBackward else generalScrollState.canScrollBackward
+                1 -> if (showComicSettings) false else readerScrollState.canScrollBackward
+                else -> if (showComicSettings) false else colorsScrollState.canScrollBackward
             }
         }
     }
@@ -86,8 +90,8 @@ fun ReaderSettingsBottomSheet(
     DisposableEffect(Unit) { onDispose { initialPage = pagerState.currentPage } }
 
     val animatedScrimColor by animateColorAsState(
-        targetValue = if (pagerState.currentPage == 2) Color.Transparent
-        else BottomSheetDefaults.ScrimColor,
+        targetValue = if (showComicSettings || pagerState.currentPage < 2) BottomSheetDefaults.ScrimColor
+        else Color.Transparent,
         animationSpec = tween(300)
     )
     val animatedHeight by animateFloatAsState(
@@ -96,14 +100,18 @@ fun ReaderSettingsBottomSheet(
     )
 
     LaunchedEffect(pagerState.currentPage) {
-        menuVisibility(
-            ReaderEvent.OnMenuVisibility(
-                show = pagerState.currentPage != 2,
-                fullscreenMode = fullscreenMode,
-                saveCheckpoint = false,
-                activity = activity
+        if (!showComicSettings) {
+            // For books, show menu on all tabs except Colors (page 2)
+            menuVisibility(
+                ReaderEvent.OnMenuVisibility(
+                    show = pagerState.currentPage != 2,
+                    fullscreenMode = fullscreenMode,
+                    saveCheckpoint = false,
+                    activity = activity
+                )
             )
-        )
+        }
+        // For comics, keep menu visible since there's only one page
     }
 
     ModalBottomSheet(
@@ -131,78 +139,90 @@ fun ReaderSettingsBottomSheet(
         },
         sheetGesturesEnabled = false
     ) {
-        ReaderSettingsBottomSheetTabRow(
-            currentPage = pagerState.currentPage,
-            scrollToPage = {
-                scope.launch {
-                    pagerState.animateScrollToPage(it)
+        if (!showComicSettings) {
+            ReaderSettingsBottomSheetTabRow(
+                currentPage = pagerState.currentPage,
+                scrollToPage = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(it)
+                    }
                 }
-            }
-        )
+            )
+        }
 
         HorizontalPager(state = pagerState) { page ->
-            when (page) {
-                0 -> {
-                    LazyColumnWithScrollbar(Modifier.fillMaxSize(), state = generalScrollState) {
-                        ReadingModeSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        PaddingSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        SystemSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                         ReadingSpeedSubcategory(
-                             titleColor = { MaterialTheme.colorScheme.onSurface }
-                         )
-                         SearchSubcategory(
-                             titleColor = { MaterialTheme.colorScheme.onSurface }
-                         )
-                        DictionarySubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        MiscSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface },
-                            showDivider = false
-                        )
-                    }
+            if (showComicSettings) {
+                // Comic settings - single page view
+                LazyColumnWithScrollbar(Modifier.fillMaxSize(), state = generalScrollState) {
+                    ComicsReaderSettingsCategory(
+                        titleColor = { MaterialTheme.colorScheme.onSurface }
+                    )
                 }
-
-                1 -> {
-                    LazyColumnWithScrollbar(Modifier.fillMaxSize(), state = readerScrollState) {
-                        FontSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        TextSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        ImagesSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                        ChaptersSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.onSurface }
-                        )
-                         ProgressSubcategory(
-                             titleColor = { MaterialTheme.colorScheme.onSurface }
-                         )
-                         SpeedReadingSubcategory(
-                             titleColor = { MaterialTheme.colorScheme.onSurface },
-                             showDivider = false
-                         )
-                    }
-                }
-
-                2 -> {
-                    LazyColumnWithScrollbar(Modifier.fillMaxSize(), state = colorsScrollState) {
-                        item {
-                            Spacer(modifier = Modifier.height(16.dp))
+            } else {
+                // Book settings
+                when (page) {
+                    0 -> {
+                        LazyColumnWithScrollbar(Modifier.fillMaxSize(), state = generalScrollState) {
+                            ReadingModeSubcategory(
+                                titleColor = { MaterialTheme.colorScheme.onSurface }
+                            )
+                            PaddingSubcategory(
+                                titleColor = { MaterialTheme.colorScheme.onSurface }
+                            )
+                            SystemSubcategory(
+                                titleColor = { MaterialTheme.colorScheme.onSurface }
+                            )
+                             ReadingSpeedSubcategory(
+                                 titleColor = { MaterialTheme.colorScheme.onSurface }
+                             )
+                             SearchSubcategory(
+                                 titleColor = { MaterialTheme.colorScheme.onSurface }
+                             )
+                            DictionarySubcategory(
+                                titleColor = { MaterialTheme.colorScheme.onSurface }
+                            )
+                            MiscSubcategory(
+                                titleColor = { MaterialTheme.colorScheme.onSurface },
+                                showDivider = false
+                            )
                         }
-                        ColorsSubcategory(
-                            showTitle = false,
-                            showDivider = false,
-                            backgroundColor = { MaterialTheme.colorScheme.surfaceContainer }
-                        )
+                    }
+
+                    1 -> {
+                        LazyColumnWithScrollbar(Modifier.fillMaxSize(), state = readerScrollState) {
+                            FontSubcategory(
+                                titleColor = { MaterialTheme.colorScheme.onSurface }
+                            )
+                            TextSubcategory(
+                                titleColor = { MaterialTheme.colorScheme.onSurface }
+                            )
+                            ImagesSubcategory(
+                                titleColor = { MaterialTheme.colorScheme.onSurface }
+                            )
+                            ChaptersSubcategory(
+                                titleColor = { MaterialTheme.colorScheme.onSurface }
+                            )
+                             ProgressSubcategory(
+                                 titleColor = { MaterialTheme.colorScheme.onSurface }
+                             )
+                             SpeedReadingSubcategory(
+                                 titleColor = { MaterialTheme.colorScheme.onSurface },
+                                 showDivider = false
+                             )
+                        }
+                    }
+
+                    2 -> {
+                        LazyColumnWithScrollbar(Modifier.fillMaxSize(), state = colorsScrollState) {
+                            item {
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+                            ColorsSubcategory(
+                                showTitle = false,
+                                showDivider = false,
+                                backgroundColor = { MaterialTheme.colorScheme.surfaceContainer }
+                            )
+                        }
                     }
                 }
             }

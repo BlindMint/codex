@@ -14,6 +14,7 @@ import us.blindmint.codex.ui.reader.ReaderScreen
 @Composable
 fun ReaderBottomSheet(
     bottomSheet: BottomSheet?,
+    showComicSettingsInMenu: Boolean = false,
     fullscreenMode: Boolean,
     menuVisibility: (ReaderEvent.OnMenuVisibility) -> Unit,
     dismissBottomSheet: (ReaderEvent.OnDismissBottomSheet) -> Unit
@@ -21,6 +22,7 @@ fun ReaderBottomSheet(
     when (bottomSheet) {
         ReaderScreen.SETTINGS_BOTTOM_SHEET -> {
             ReaderSettingsBottomSheet(
+                showComicSettings = showComicSettingsInMenu,
                 fullscreenMode = fullscreenMode,
                 menuVisibility = menuVisibility,
                 dismissBottomSheet = dismissBottomSheet

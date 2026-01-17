@@ -51,6 +51,7 @@ fun ReaderContent(
     text: List<ReaderText>,
     bottomSheet: BottomSheet?,
     drawer: Drawer?,
+    showComicSettingsInMenu: Boolean = false,
     bookmarks: List<us.blindmint.codex.domain.bookmark.Bookmark>,
     listState: LazyListState,
     currentChapter: Chapter?,
@@ -153,6 +154,7 @@ fun ReaderContent(
     val activity = LocalActivity.current
     ReaderBottomSheet(
         bottomSheet = bottomSheet,
+        showComicSettingsInMenu = showComicSettingsInMenu,
         fullscreenMode = fullscreenMode,
         menuVisibility = menuVisibility,
         dismissBottomSheet = dismissBottomSheet

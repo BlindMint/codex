@@ -492,7 +492,8 @@ class ReaderModel @Inject constructor(
                     _state.update {
                         it.copy(
                             bottomSheet = ReaderScreen.SETTINGS_BOTTOM_SHEET,
-                            drawer = null
+                            drawer = null,
+                            showComicSettingsInMenu = event.showComicSettings
                         )
                     }
                 }

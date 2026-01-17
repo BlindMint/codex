@@ -559,6 +559,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             text = state.value.text,
             bottomSheet = state.value.bottomSheet,
             drawer = state.value.drawer,
+            showComicSettingsInMenu = state.value.showComicSettingsInMenu,
             bookmarks = state.value.bookmarks,
             listState = listState,
             currentChapter = state.value.currentChapter,
