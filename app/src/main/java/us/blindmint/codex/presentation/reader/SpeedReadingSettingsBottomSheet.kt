@@ -6,25 +6,24 @@
 
 package us.blindmint.codex.presentation.reader
 
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
+import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
 import us.blindmint.codex.presentation.core.components.modal_bottom_sheet.ModalBottomSheet
+import us.blindmint.codex.presentation.core.components.modal_bottom_sheet.ModalBottomSheetTabRow
 import us.blindmint.codex.presentation.settings.reader.speed_reading.SpeedReadingSubcategory
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,6 +53,8 @@ fun SpeedReadingSettingsBottomSheet(
     onHorizontalBarsColorChange: (Color) -> Unit = {}
 ) {
     if (show) {
+        val scrollState = rememberLazyListState()
+
         ModalBottomSheet(
             hasFixedHeight = true,
             scrimColor = BottomSheetDefaults.ScrimColor,
@@ -62,67 +63,54 @@ fun SpeedReadingSettingsBottomSheet(
                 .fillMaxHeight(0.7f),
             onDismissRequest = onDismiss,
             sheetGesturesEnabled = true,
-            dragHandle = { BottomSheetDefaults.DragHandle() },
-            content = {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top
-                ) {
-                    androidx.compose.material3.Text(
-                        text = stringResource(id = R.string.speed_reading_reader_settings),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 18.dp, vertical = 16.dp)
-                    )
+            dragHandle = { BottomSheetDefaults.DragHandle() }
+        ) {
+            // Single tab row for Speed Reading
+            ModalBottomSheetTabRow(
+                selectedTabIndex = 0,
+                tabs = listOf(stringResource(id = R.string.speed_reading_tab))
+            ) {
+                // Only one tab, no navigation needed
+            }
 
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f), // Use weight to take remaining space
-                        horizontalAlignment = Alignment.Start
-                    ) {
-                        item {
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
+            LazyColumnWithScrollbar(
+                modifier = Modifier.fillMaxSize(),
+                state = scrollState
+            ) {
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
 
-                        SpeedReadingSubcategory(
-                            titleColor = { MaterialTheme.colorScheme.primary },
-                            showTitle = false,
-                            showDivider = false,
-                            wpm = wpm,
-                            onWpmChange = onWpmChange,
-                            wordSize = wordSize,
-                            onWordSizeChange = onWordSizeChange,
-                            accentCharacterEnabled = accentCharacterEnabled,
-                            onAccentCharacterEnabledChange = onAccentCharacterEnabledChange,
-                            accentColor = accentColor,
-                            onAccentColorChange = onAccentColorChange,
-                            accentOpacity = accentOpacity,
-                            onAccentOpacityChange = onAccentOpacityChange,
-                            showVerticalIndicators = showVerticalIndicators,
-                            onShowVerticalIndicatorsChange = onShowVerticalIndicatorsChange,
-                            verticalIndicatorsSize = verticalIndicatorsSize,
-                            onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange,
-                            showHorizontalBars = showHorizontalBars,
-                            onShowHorizontalBarsChange = onShowHorizontalBarsChange,
-                            horizontalBarsThickness = horizontalBarsThickness,
-                            onHorizontalBarsThicknessChange = onHorizontalBarsThicknessChange,
-                            horizontalBarsColor = horizontalBarsColor,
-                            onHorizontalBarsColorChange = onHorizontalBarsColorChange
-                        )
+                SpeedReadingSubcategory(
+                    titleColor = { MaterialTheme.colorScheme.onSurface },
+                    showTitle = false,
+                    showDivider = false,
+                    wpm = wpm,
+                    onWpmChange = onWpmChange,
+                    wordSize = wordSize,
+                    onWordSizeChange = onWordSizeChange,
+                    accentCharacterEnabled = accentCharacterEnabled,
+                    onAccentCharacterEnabledChange = onAccentCharacterEnabledChange,
+                    accentColor = accentColor,
+                    onAccentColorChange = onAccentColorChange,
+                    accentOpacity = accentOpacity,
+                    onAccentOpacityChange = onAccentOpacityChange,
+                    showVerticalIndicators = showVerticalIndicators,
+                    onShowVerticalIndicatorsChange = onShowVerticalIndicatorsChange,
+                    verticalIndicatorsSize = verticalIndicatorsSize,
+                    onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange,
+                    showHorizontalBars = showHorizontalBars,
+                    onShowHorizontalBarsChange = onShowHorizontalBarsChange,
+                    horizontalBarsThickness = horizontalBarsThickness,
+                    onHorizontalBarsThicknessChange = onHorizontalBarsThicknessChange,
+                    horizontalBarsColor = horizontalBarsColor,
+                    onHorizontalBarsColorChange = onHorizontalBarsColorChange
+                )
 
-                        item {
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
-                    }
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
-        )
+        }
     }
 }

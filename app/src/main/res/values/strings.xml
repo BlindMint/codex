@@ -792,6 +792,7 @@
     <string name="play">Play</string>
     <string name="pause">Pause</string>
     <string name="speed_reading_reader_settings">Speed reading</string>
+    <string name="speed_reading_tab">Speed reading</string>
     <string name="speed_reading_wpm">Words per minute</string>
     <string name="speed_reading_accent_character">Accent character</string>
     <string name="speed_reading_vertical_indicators">Vertical indicators</string>
