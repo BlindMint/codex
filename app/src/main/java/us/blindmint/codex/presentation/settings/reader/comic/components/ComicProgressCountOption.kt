@@ -25,7 +25,7 @@ fun ComicProgressCountOption() {
 
     SegmentedButtonWithTitle(
         title = stringResource(id = R.string.progress_count_option),
-        buttons = ReaderProgressCount.entries.map {
+        buttons = ReaderProgressCount.entries.filter { it != ReaderProgressCount.QUANTITY }.map {
             ButtonItem(
                 id = it.toString(),
                 title = when (it) {
