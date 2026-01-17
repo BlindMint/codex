@@ -266,10 +266,28 @@ fun ColorPickerWithTitle(
                         fromValue = 0,
                         toValue = 100,
                         enabled = !isLocked,
+                        steps = 0,
                         onValueChange = { intValue ->
                             opacityCallback(intValue / 100f)
                         }
                     )
+                    if (showRgbInputs) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        OutlinedTextField(
+                            value = (currentOpacity * 100).toInt().toString(),
+                            onValueChange = { newValue ->
+                                val intValue = newValue.toIntOrNull() ?: (currentOpacity * 100).toInt()
+                                val coercedValue = intValue.coerceIn(0, 100)
+                                opacityCallback(coercedValue / 100f)
+                            },
+                            label = { androidx.compose.material3.Text("%") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.width(60.dp),
+                            enabled = !isLocked,
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                            singleLine = true
+                        )
+                    }
                 }
             }
         }

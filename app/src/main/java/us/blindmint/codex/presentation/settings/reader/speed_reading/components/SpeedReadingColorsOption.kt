@@ -9,6 +9,7 @@ package us.blindmint.codex.presentation.settings.reader.speed_reading.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.core.components.settings.ColorPickerWithTitle
 
@@ -23,14 +24,10 @@ fun SpeedReadingColorsOption(
         title = stringResource(id = R.string.speed_reading_accent_color),
         value = color,
         presetId = 0, // TODO: Use proper preset ID for speed reading
+        horizontalPadding = 0.dp,
         showRgbInputs = true,
-        onValueChange = onColorChange
-    )
-
-    // Opacity slider as part of the color picker
-    SpeedReadingAccentCharacterOpacityOption(
         opacity = opacity,
         onOpacityChange = onOpacityChange,
-        showTitle = false // Don't show the title since it's now part of the color section
+        onValueChange = onColorChange
     )
 }

@@ -43,7 +43,7 @@ import us.blindmint.codex.presentation.settings.appearance.colors.components.Col
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsSizeOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsThicknessOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsColorOption
-import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingAccentCharacterOpacityOption
+
 import us.blindmint.codex.presentation.core.components.settings.SwitchWithTitle
 
 fun LazyListScope.SpeedReadingSubcategory(
@@ -218,10 +218,16 @@ fun LazyListScope.SpeedReadingSubcategory(
         }
 
         item {
-            SpeedReadingVerticalIndicatorsSizeOption(
-                size = verticalIndicatorsSize,
-                onSizeChange = onVerticalIndicatorsSizeChange
-            )
+            AnimatedVisibility(
+                visible = showVerticalIndicators,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                SpeedReadingVerticalIndicatorsSizeOption(
+                    size = verticalIndicatorsSize,
+                    onSizeChange = onVerticalIndicatorsSizeChange
+                )
+            }
         }
 
         // Horizontal Bars
@@ -233,17 +239,29 @@ fun LazyListScope.SpeedReadingSubcategory(
         }
 
         item {
-            SpeedReadingHorizontalBarsThicknessOption(
-                thickness = horizontalBarsThickness,
-                onThicknessChange = onHorizontalBarsThicknessChange
-            )
+            AnimatedVisibility(
+                visible = showHorizontalBars,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                SpeedReadingHorizontalBarsThicknessOption(
+                    thickness = horizontalBarsThickness,
+                    onThicknessChange = onHorizontalBarsThicknessChange
+                )
+            }
         }
 
         item {
-            SpeedReadingHorizontalBarsColorOption(
-                color = horizontalBarsColor,
-                onColorChange = onHorizontalBarsColorChange
-            )
+            AnimatedVisibility(
+                visible = showHorizontalBars,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                SpeedReadingHorizontalBarsColorOption(
+                    color = horizontalBarsColor,
+                    onColorChange = onHorizontalBarsColorChange
+                )
+            }
         }
 
         // Font Settings
@@ -254,11 +272,16 @@ fun LazyListScope.SpeedReadingSubcategory(
         }
 
         item {
-            SpeedReadingFontFamilyOption(
-                enabled = customFontEnabled,
-                selectedFontId = selectedFontFamily,
-                onFontChanged = onFontFamilyChanged
-            )
+            AnimatedVisibility(
+                visible = customFontEnabled,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                SpeedReadingFontFamilyOption(
+                    selectedFontId = selectedFontFamily,
+                    onFontChanged = onFontFamilyChanged
+                )
+            }
         }
     }
 }

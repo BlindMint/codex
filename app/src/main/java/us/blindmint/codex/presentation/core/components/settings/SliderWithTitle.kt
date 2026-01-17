@@ -58,6 +58,7 @@ fun SliderWithTitle(
     horizontalPadding: Dp = SettingsHorizontalPadding,
     verticalPadding: Dp = 8.dp,
     enabled: Boolean = true,
+    steps: Int = toValue - fromValue - 1,
     onValueChange: (Int) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -105,7 +106,7 @@ fun SliderWithTitle(
                     )
                 }
             },
-            steps = toValue - fromValue - 1,
+            steps = steps,
             colors = SliderDefaults.colors(
                 activeTrackColor = MaterialTheme.colorScheme.secondary,
                 thumbColor = MaterialTheme.colorScheme.secondary,
