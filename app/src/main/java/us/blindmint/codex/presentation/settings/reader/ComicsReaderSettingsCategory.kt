@@ -52,15 +52,6 @@ fun LazyListScope.ComicsReaderSettingsCategory(
         item {
             ComicImageScaleOption()
         }
-        item {
-            ComicZoomStartOption()
-        }
-        item {
-            ComicCropBordersOption()
-        }
-        item {
-            ComicLandscapeZoomOption()
-        }
     }
 
     // Progress subsection

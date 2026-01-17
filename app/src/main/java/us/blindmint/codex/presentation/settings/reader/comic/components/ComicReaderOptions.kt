@@ -55,14 +55,6 @@ enum class ComicImageScale(val displayName: Int, val value: Int) {
     SMART_FIT(R.string.scale_smart_fit, 6)
 }
 
-// Zoom start position options
-enum class ComicZoomStart(val displayName: Int, val value: Int) {
-    AUTOMATIC(R.string.zoom_automatic, 1),
-    LEFT(R.string.zoom_left, 2),
-    RIGHT(R.string.zoom_right, 3),
-    CENTER(R.string.zoom_center, 4)
-}
-
 @Composable
 fun ComicReadingDirectionOption() {
     val mainModel = hiltViewModel<MainModel>()
@@ -182,53 +174,3 @@ fun ComicImageScaleOption() {
     )
 }
 
-@Composable
-fun ComicZoomStartOption() {
-    val mainModel = hiltViewModel<MainModel>()
-    val state = mainModel.state.collectAsStateWithLifecycle()
-
-    ChipsWithTitle(
-        title = stringResource(R.string.zoom_start),
-        chips = ComicZoomStart.entries.map { zoom ->
-            ButtonItem(
-                id = zoom.value.toString(),
-                title = stringResource(zoom.displayName),
-                textStyle = MaterialTheme.typography.labelLarge,
-                selected = zoom.value == state.value.comicZoomStart
-            )
-        },
-        onClick = { item ->
-            mainModel.onEvent(MainEvent.OnChangeComicZoomStart(item.id.toIntOrNull() ?: 1))
-        }
-    )
-}
-
-@Composable
-fun ComicCropBordersOption() {
-    val mainModel = hiltViewModel<MainModel>()
-    val state = mainModel.state.collectAsStateWithLifecycle()
-
-    SwitchWithTitle(
-        selected = state.value.comicCropBorders,
-        title = stringResource(R.string.crop_borders),
-        description = stringResource(R.string.crop_borders_desc),
-        onClick = {
-            mainModel.onEvent(MainEvent.OnChangeComicCropBorders(!state.value.comicCropBorders))
-        }
-    )
-}
-
-@Composable
-fun ComicLandscapeZoomOption() {
-    val mainModel = hiltViewModel<MainModel>()
-    val state = mainModel.state.collectAsStateWithLifecycle()
-
-    SwitchWithTitle(
-        selected = state.value.comicLandscapeZoom,
-        title = stringResource(R.string.landscape_zoom),
-        description = stringResource(R.string.landscape_zoom_desc),
-        onClick = {
-            mainModel.onEvent(MainEvent.OnChangeComicLandscapeZoom(!state.value.comicLandscapeZoom))
-        }
-    )
-}

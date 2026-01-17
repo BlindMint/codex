@@ -138,9 +138,6 @@ data class MainState(
     val comicTapZone: Int = provideDefaultValue { 0 },
     val comicInvertTaps: String = provideDefaultValue { "NONE" },
     val comicScaleType: Int = provideDefaultValue { 1 },
-    val comicZoomStart: Int = provideDefaultValue { 1 },
-    val comicCropBorders: Boolean = provideDefaultValue { false },
-    val comicLandscapeZoom: Boolean = provideDefaultValue { true },
     val comicProgressBar: Boolean = provideDefaultValue { true },
     val comicProgressBarPadding: Int = provideDefaultValue { 4 },
     val comicProgressBarAlignment: HorizontalAlignment = provideDefaultValue { HorizontalAlignment.CENTER },
@@ -532,18 +529,6 @@ data class MainState(
                     comicScaleType = provideValue(
                         COMIC_SCALE_TYPE
                     ) { comicScaleType },
-
-                    comicZoomStart = provideValue(
-                        COMIC_ZOOM_START
-                    ) { comicZoomStart },
-
-                    comicCropBorders = provideValue(
-                        COMIC_CROP_BORDERS
-                    ) { comicCropBorders },
-
-                    comicLandscapeZoom = provideValue(
-                        COMIC_LANDSCAPE_ZOOM
-                    ) { comicLandscapeZoom },
 
                     comicProgressBar = provideValue(
                         COMIC_PROGRESS_BAR

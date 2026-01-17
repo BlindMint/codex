@@ -777,30 +777,6 @@ class MainModel @Inject constructor(
                 }
             )
 
-            is MainEvent.OnChangeComicZoomStart -> handleDatastoreUpdate(
-                key = DataStoreConstants.COMIC_ZOOM_START,
-                value = event.value,
-                updateState = {
-                    it.copy(comicZoomStart = this)
-                }
-            )
-
-            is MainEvent.OnChangeComicCropBorders -> handleDatastoreUpdate(
-                key = DataStoreConstants.COMIC_CROP_BORDERS,
-                value = event.value,
-                updateState = {
-                    it.copy(comicCropBorders = this)
-                }
-            )
-
-            is MainEvent.OnChangeComicLandscapeZoom -> handleDatastoreUpdate(
-                key = DataStoreConstants.COMIC_LANDSCAPE_ZOOM,
-                value = event.value,
-                updateState = {
-                    it.copy(comicLandscapeZoom = this)
-                }
-            )
-
             is MainEvent.OnChangeComicProgressBar -> handleDatastoreUpdate(
                 key = DataStoreConstants.COMIC_PROGRESS_BAR,
                 value = event.value,
