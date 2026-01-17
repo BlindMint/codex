@@ -38,7 +38,7 @@ fun SpeedReadingSentencePauseOption(
     var pauseDuration by remember(sentencePauseDuration) { mutableIntStateOf(sentencePauseDuration) }
 
     Text(
-        text = stringResource(id = R.string.speed_reading_sentence_pause),
+        text = "Manual sentence pause duration",
         style = MaterialTheme.typography.labelLarge.copy(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         ),
@@ -60,8 +60,8 @@ fun SpeedReadingSentencePauseOption(
                 pauseDuration = newValue
                 onSentencePauseDurationChange(newValue)
             },
-            valueRange = 0f..1000f,
-            steps = 199, // (1000/5) - 1 = 199 steps
+            valueRange = 150f..700f,
+            steps = 109, // (700-150)/5 - 1 = 109 steps
             modifier = Modifier.weight(1f)
         )
 
@@ -74,7 +74,7 @@ fun SpeedReadingSentencePauseOption(
                 value = pauseDuration.toString(),
                 onValueChange = { newValue ->
                     val intValue = newValue.toIntOrNull() ?: pauseDuration
-                    val coercedValue = intValue.coerceIn(0, 1000)
+                    val coercedValue = intValue.coerceIn(150, 700)
                     pauseDuration = coercedValue
                     onSentencePauseDurationChange(coercedValue)
                 },

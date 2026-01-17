@@ -112,7 +112,7 @@ fun LazyListScope.SpeedReadingSubcategory(
 
             SwitchWithTitle(
                 selected = localManualPauseEnabled.value,
-                title = stringResource(id = R.string.manual_sentence_pause_duration),
+                title = stringResource(id = R.string.manual_sentence_pause),
                 onClick = {
                     val newValue = !localManualPauseEnabled.value
                     localManualPauseEnabled.value = newValue
@@ -121,45 +121,7 @@ fun LazyListScope.SpeedReadingSubcategory(
             )
         }
 
-        // Show automatic pause duration when manual mode is disabled
-        item {
-            AnimatedVisibility(
-                visible = !manualSentencePauseEnabled,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                val automaticPause = remember(wpm) {
-                    val baseWpm = 300f
-                    val basePause = 350f
-                    val minPause = 50f
-                    (basePause * (baseWpm / wpm) + minPause).toInt().coerceIn(50, 1000)
-                }
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 18.dp, vertical = 8.dp)
-                ) {
-                    androidx.compose.foundation.layout.Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "${stringResource(id = R.string.speed_reading_sentence_pause)} (automatic)",
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        )
-                        Text(
-                            text = "$automaticPause ms",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
 
         // Animated sentence pause duration slider (only shown when manual mode is enabled)
         item {

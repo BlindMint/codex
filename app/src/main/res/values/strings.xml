@@ -799,7 +799,7 @@
     <string name="speed_reading_horizontal_bars">Horizontal bars</string>
     <string name="speed_reading_accent_color">Accent color</string>
     <string name="speed_reading_sentence_pause">Sentence pause duration</string>
-    <string name="manual_sentence_pause_duration">Manual sentence pause duration</string>
+    <string name="manual_sentence_pause">Manual sentence pause</string>
     <string name="speed_reading_custom_font">Speed reading custom font</string>
     <string name="speed_reading_font_family">Speed reading font family</string>
     <string name="speed_reading_word_size">Word size</string>
