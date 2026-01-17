@@ -28,7 +28,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.reader.Checkpoint
@@ -55,7 +57,12 @@ fun ReaderBottomBar(
     changeProgress: (ReaderEvent.OnChangeProgress) -> Unit,
     currentComicPage: Int = 0,
     totalComicPages: Int = 0,
-    onComicPageSelected: (Int) -> Unit = {}
+    onComicPageSelected: (Int) -> Unit = {},
+    comicProgressBar: Boolean = true,
+    comicProgressCount: us.blindmint.codex.domain.reader.ReaderProgressCount = us.blindmint.codex.domain.reader.ReaderProgressCount.PAGE,
+    comicProgressBarPadding: Dp = 4.dp,
+    comicProgressBarAlignment: us.blindmint.codex.domain.util.HorizontalAlignment = us.blindmint.codex.domain.util.HorizontalAlignment.CENTER,
+    comicProgressBarFontSize: androidx.compose.ui.unit.TextUnit = 8.sp
 ) {
     val firstVisibleItemIndex = remember {
         derivedStateOf {
@@ -130,7 +137,12 @@ fun ReaderBottomBar(
                         currentPage = currentComicPage,
                         totalPages = totalComicPages,
                         lockMenu = lockMenu,
-                        onPageSelected = onComicPageSelected
+                        onPageSelected = onComicPageSelected,
+                        showProgressBar = comicProgressBar,
+                        progressCount = comicProgressCount,
+                        progressBarPadding = comicProgressBarPadding,
+                        progressBarAlignment = comicProgressBarAlignment,
+                        progressBarFontSize = comicProgressBarFontSize
                     )
                 } else {
                     ReaderBottomBarSlider(

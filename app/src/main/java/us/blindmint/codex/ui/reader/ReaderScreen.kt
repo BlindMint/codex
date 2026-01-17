@@ -323,6 +323,12 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
         val progressBarFontSize = remember(mainState.value.progressBarFontSize) {
             (mainState.value.progressBarFontSize * 2).sp
         }
+        val comicProgressBarPadding = remember(mainState.value.comicProgressBarPadding) {
+            (mainState.value.comicProgressBarPadding * 3).dp
+        }
+        val comicProgressBarFontSize = remember(mainState.value.comicProgressBarFontSize) {
+            (mainState.value.comicProgressBarFontSize * 2).sp
+        }
         val searchHighlightColor = remember(mainState.value.searchHighlightColor) {
             Color(mainState.value.searchHighlightColor)
         }
@@ -695,7 +701,12 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
              totalComicPages = state.value.totalComicPages,
              onComicPageSelected = { page ->
                  screenModel.onEvent(ReaderEvent.OnComicPageSelected(page))
-             }
+             },
+             comicProgressBar = mainState.value.comicProgressBar,
+             comicProgressCount = mainState.value.comicProgressCount,
+             comicProgressBarPadding = comicProgressBarPadding,
+             comicProgressBarAlignment = mainState.value.comicProgressBarAlignment,
+             comicProgressBarFontSize = comicProgressBarFontSize
          )
 
         // Speed reading settings bottom sheet

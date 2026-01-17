@@ -18,6 +18,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -152,7 +154,12 @@ fun ReaderContent(
     navigateBack: () -> Unit,
     currentComicPage: Int = 0,
     totalComicPages: Int = 0,
-    onComicPageSelected: (Int) -> Unit = {}
+    onComicPageSelected: (Int) -> Unit = {},
+    comicProgressBar: Boolean = true,
+    comicProgressCount: ReaderProgressCount = ReaderProgressCount.PAGE,
+    comicProgressBarPadding: Dp = 4.dp,
+    comicProgressBarAlignment: HorizontalAlignment = HorizontalAlignment.CENTER,
+    comicProgressBarFontSize: TextUnit = 8.sp
 ) {
     val activity = LocalActivity.current
     ReaderBottomSheet(
@@ -249,7 +256,12 @@ fun ReaderContent(
              navigateToBookInfo = navigateToBookInfo,
              currentComicPage = currentComicPage,
              totalComicPages = totalComicPages,
-             onComicPageSelected = onComicPageSelected
+             onComicPageSelected = onComicPageSelected,
+             comicProgressBar = comicProgressBar,
+             comicProgressCount = comicProgressCount,
+             comicProgressBarPadding = comicProgressBarPadding,
+             comicProgressBarAlignment = comicProgressBarAlignment,
+             comicProgressBarFontSize = comicProgressBarFontSize
          )
     } else {
         ReaderErrorPlaceholder(

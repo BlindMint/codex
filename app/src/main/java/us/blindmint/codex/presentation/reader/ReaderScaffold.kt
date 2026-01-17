@@ -36,6 +36,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.reader.Checkpoint
 import us.blindmint.codex.domain.reader.FontWithName
@@ -138,7 +140,12 @@ fun ReaderScaffold(
     navigateBack: () -> Unit,
     currentComicPage: Int = 0,
     totalComicPages: Int = 0,
-    onComicPageSelected: (Int) -> Unit = {}
+    onComicPageSelected: (Int) -> Unit = {},
+    comicProgressBar: Boolean = true,
+    comicProgressCount: ReaderProgressCount = ReaderProgressCount.PAGE,
+    comicProgressBarPadding: Dp = 4.dp,
+    comicProgressBarAlignment: HorizontalAlignment = HorizontalAlignment.CENTER,
+    comicProgressBarFontSize: TextUnit = 8.sp
 ) {
     // State to track actual bar heights
     var topBarHeight by remember { mutableStateOf(0) }
@@ -224,7 +231,12 @@ fun ReaderScaffold(
                     changeProgress = changeProgress,
                     currentComicPage = currentComicPage,
                     totalComicPages = totalComicPages,
-                    onComicPageSelected = onComicPageSelected
+                    onComicPageSelected = onComicPageSelected,
+                    comicProgressBar = comicProgressBar,
+                    comicProgressCount = comicProgressCount,
+                    comicProgressBarPadding = comicProgressBarPadding,
+                    comicProgressBarAlignment = comicProgressBarAlignment,
+                    comicProgressBarFontSize = comicProgressBarFontSize
                 )
             }
         }
