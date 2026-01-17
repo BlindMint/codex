@@ -110,27 +110,32 @@ fun ComicTapZoneOption() {
     val mainModel = hiltViewModel<MainModel>()
     val state = mainModel.state.collectAsStateWithLifecycle()
 
-    val tapZones = listOf(
-        0 to stringResource(R.string.tap_zone_default),
-        1 to stringResource(R.string.tap_zone_l_navigation),
-        2 to stringResource(R.string.tap_zone_kindlish),
-        3 to stringResource(R.string.tap_zone_edge),
-        4 to stringResource(R.string.tap_zone_right_left),
-        5 to stringResource(R.string.tap_zone_disabled)
+    // Simple Enable/Disable for tap navigation
+    // Enabled = zone 0 (default), Disabled = zone 5
+    val isEnabled = state.value.comicTapZone != 5
+
+    val tapZoneOptions = listOf(
+        ButtonItem(
+            id = "enabled",
+            title = stringResource(R.string.enabled),
+            textStyle = MaterialTheme.typography.labelLarge,
+            selected = isEnabled
+        ),
+        ButtonItem(
+            id = "disabled",
+            title = stringResource(R.string.disabled),
+            textStyle = MaterialTheme.typography.labelLarge,
+            selected = !isEnabled
+        )
     )
 
     ChipsWithTitle(
         title = stringResource(R.string.tap_zones),
-        chips = tapZones.map { (value, name) ->
-            ButtonItem(
-                id = value.toString(),
-                title = name,
-                textStyle = MaterialTheme.typography.labelLarge,
-                selected = value == state.value.comicTapZone
-            )
-        },
+        chips = tapZoneOptions,
         onClick = { item ->
-            mainModel.onEvent(MainEvent.OnChangeComicTapZone(item.id.toIntOrNull() ?: 0))
+            // Set tap zone to 0 (default with all zones) or 5 (disabled)
+            val tapZone = if (item.id == "enabled") 0 else 5
+            mainModel.onEvent(MainEvent.OnChangeComicTapZone(tapZone))
         }
     )
 }

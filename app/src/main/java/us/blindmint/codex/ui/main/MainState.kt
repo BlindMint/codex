@@ -133,7 +133,7 @@ data class MainState(
     val showSearchScrollbar: Boolean = provideDefaultValue { false },
 
     // Comic Reader Settings
-    val comicReadingDirection: String = provideDefaultValue { "RTL" },
+    val comicReadingDirection: String = provideDefaultValue { "LTR" },
     val comicReaderMode: String = provideDefaultValue { "PAGED" },
     val comicTapZone: Int = provideDefaultValue { 0 },
     val comicInvertTaps: String = provideDefaultValue { "NONE" },

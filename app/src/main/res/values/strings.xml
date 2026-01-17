@@ -867,6 +867,8 @@
     <string name="tap_zone_edge">Edge</string>
     <string name="tap_zone_right_left">Right and left</string>
     <string name="tap_zone_disabled">Disabled</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
     <string name="invert_taps">Invert taps</string>
     <string name="tap_invert_none">None</string>
     <string name="tap_invert_horizontal">Horizontal</string>
