@@ -247,7 +247,10 @@ fun LazyListScope.SpeedReadingSubcategory(
         }
 
         item {
-            SpeedReadingVerticalIndicatorsSizeOption()
+            SpeedReadingHorizontalBarsColorOption(
+                color = horizontalBarsColor,
+                onColorChange = onHorizontalBarsColorChange
+            )
         }
 
         // Font Settings
