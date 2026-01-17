@@ -35,11 +35,12 @@ import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
 
 @Composable
-fun SpeedReadingWpmOption() {
+fun SpeedReadingWpmOption(
+    wpm: Int,
+    onWpmChange: (Int) -> Unit
+) {
     val mainModel = hiltViewModel<MainModel>()
     val state = mainModel.state.collectAsStateWithLifecycle()
-
-    var wpm by remember { mutableIntStateOf(300) }
 
     Column(
         modifier = Modifier
@@ -84,9 +85,9 @@ fun SpeedReadingWpmOption() {
 
             Slider(
                 value = wpm.toFloat(),
-                onValueChange = { wpm = it.toInt() },
-                valueRange = 100f..1000f,
-                steps = 9, // 100 WPM increments
+                onValueChange = { onWpmChange((it / 5).toInt() * 5) }, // Snap to 5 increments
+                valueRange = 100f..1500f,
+                steps = 280, // (1500-100)/5 - 1 = 280 steps
                 modifier = Modifier.weight(1f)
             )
 

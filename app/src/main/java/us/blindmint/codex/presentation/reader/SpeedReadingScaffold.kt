@@ -42,11 +42,12 @@ fun SpeedReadingScaffold(
     progress: String,
     bottomBarPadding: Dp,
     showWpmIndicator: Boolean,
+    wpm: Int,
+    onWpmChange: (Int) -> Unit,
     onExitSpeedReading: () -> Unit,
     onShowSpeedReadingSettings: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    var wpm by remember { mutableIntStateOf(300) }
     var isPlaying by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -76,7 +77,7 @@ fun SpeedReadingScaffold(
                 SpeedReadingBottomBar(
                     progress = progress,
                     wpm = wpm,
-                    onWpmChange = { wpm = it },
+                    onWpmChange = onWpmChange,
                     isPlaying = isPlaying,
                     onPlayPause = { isPlaying = !isPlaying },
                     bottomBarPadding = bottomBarPadding

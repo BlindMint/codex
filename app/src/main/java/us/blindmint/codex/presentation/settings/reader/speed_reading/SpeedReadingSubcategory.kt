@@ -8,7 +8,6 @@
 
 package us.blindmint.codex.presentation.settings.reader.speed_reading
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -25,9 +24,8 @@ import us.blindmint.codex.presentation.settings.reader.speed_reading.components.
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingCustomFontOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingFontFamilyOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingWordSizeOption
-import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingBackgroundColorOption
-import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingFontColorOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingBackgroundImageOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingColorsSection
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsSizeOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsThicknessOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsColorOption
@@ -37,7 +35,9 @@ fun LazyListScope.SpeedReadingSubcategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary },
     title: @Composable () -> String = { stringResource(id = R.string.speed_reading_reader_settings) },
     showTitle: Boolean = true,
-    showDivider: Boolean = true
+    showDivider: Boolean = true,
+    wpm: Int = 300,
+    onWpmChange: (Int) -> Unit = {}
 ) {
     SettingsSubcategory(
         titleColor = titleColor,
@@ -47,20 +47,27 @@ fun LazyListScope.SpeedReadingSubcategory(
     ) {
         // Performance
         item {
-            SpeedReadingWpmOption()
-}
+            SpeedReadingWpmOption(
+                wpm = wpm,
+                onWpmChange = onWpmChange
+            )
+        }
+
+        item {
+            SpeedReadingSentencePauseOption()
+        }
 
         item {
             SpeedReadingWordSizeOption()
         }
 
-        // Colors
+        // Colors section
         item {
-            SpeedReadingBackgroundColorOption()
-        }
-
-        item {
-            SpeedReadingFontColorOption()
+            SpeedReadingColorsSection(
+                onResetToNormalColors = {
+                    // TODO: Reset colors to normal reading colors
+                }
+            )
         }
 
         item {
@@ -101,7 +108,7 @@ fun LazyListScope.SpeedReadingSubcategory(
             SpeedReadingHorizontalBarsColorOption()
         }
 
-        // Font Settings - TODO: Implement proper state sharing between items
+        // Font Settings
         item {
             SpeedReadingCustomFontOption(
                 onCustomFontChanged = { /* TODO: Implement state management */ }
@@ -113,66 +120,6 @@ fun LazyListScope.SpeedReadingSubcategory(
                 enabled = true, // TODO: Connect to custom font toggle state
                 onFontChanged = { /* TODO: Implement font selection */ }
             )
-        }
-    }
-}
-
-        item {
-            SpeedReadingWordSizeOption()
-        }
-
-        // Appearance - Colors
-        item {
-            SpeedReadingBackgroundColorOption()
-        }
-
-        item {
-            SpeedReadingFontColorOption()
-        }
-
-        item {
-            SpeedReadingBackgroundImageOption()
-        }
-
-        // Accent & Indicators
-        item {
-            SpeedReadingAccentCharacterOption()
-        }
-
-        item {
-            SpeedReadingColorsOption() // Accent color with RGB sliders
-        }
-
-        item {
-            SpeedReadingVerticalIndicatorsOption()
-        }
-
-        item {
-            SpeedReadingVerticalIndicatorsSizeOption()
-        }
-
-        // Horizontal Bars
-        item {
-            SpeedReadingHorizontalBarsOption()
-        }
-
-        item {
-            SpeedReadingHorizontalBarsThicknessOption()
-        }
-
-        item {
-            SpeedReadingHorizontalBarsColorOption()
-        }
-
-        // Font Settings
-        item {
-            SpeedReadingCustomFontOption()
-        }
-
-        // TODO: Conditionally show font family selector when custom font is enabled
-        // For now, always show it
-        item {
-            SpeedReadingFontFamilyOption()
         }
     }
 }

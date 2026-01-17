@@ -167,8 +167,9 @@ fun SpeedReadingBottomBar(
             // WPM slider
             Slider(
                 value = wpm.toFloat(),
-                onValueChange = { onWpmChange(it.toInt()) },
-                valueRange = 100f..800f,
+                onValueChange = { onWpmChange((it / 5).toInt() * 5) }, // Snap to 5 increments
+                valueRange = 100f..1500f,
+                steps = 280, // (1500-100)/5 - 1 = 280 steps
                 modifier = Modifier.weight(1f)
             )
 

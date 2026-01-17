@@ -30,7 +30,9 @@ import us.blindmint.codex.presentation.settings.reader.speed_reading.SpeedReadin
 @Composable
 fun SpeedReadingSettingsBottomSheet(
     show: Boolean,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    wpm: Int = 300,
+    onWpmChange: (Int) -> Unit = {}
 ) {
     if (show) {
         ModalBottomSheet(
@@ -73,7 +75,9 @@ fun SpeedReadingSettingsBottomSheet(
                         SpeedReadingSubcategory(
                             titleColor = { MaterialTheme.colorScheme.primary },
                             showTitle = false,
-                            showDivider = false
+                            showDivider = false,
+                            wpm = wpm,
+                            onWpmChange = onWpmChange
                         )
 
                         item {

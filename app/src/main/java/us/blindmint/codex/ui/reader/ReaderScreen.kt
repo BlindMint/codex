@@ -20,9 +20,9 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.systemBarsIgnoringVisibility
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -152,12 +152,14 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
                 }
             }
         }
-        val backgroundColor = animateColorAsState(
-            targetValue = settingsState.value.selectedColorPreset.backgroundColor
-        )
-        val fontColor = animateColorAsState(
-            targetValue = settingsState.value.selectedColorPreset.fontColor
-        )
+    val backgroundColor = animateColorAsState(
+        targetValue = settingsState.value.selectedColorPreset.backgroundColor
+    )
+    val fontColor = animateColorAsState(
+        targetValue = settingsState.value.selectedColorPreset.fontColor
+    )
+
+    var speedReadingWpm by remember { mutableIntStateOf(300) }
         val lineHeight = remember(
             mainState.value.fontSize,
             mainState.value.lineHeight
@@ -610,7 +612,9 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             show = state.value.speedReadingSettingsVisible,
             onDismiss = {
                 screenModel.onEvent(ReaderEvent.OnDismissSpeedReadingSettings)
-            }
+            },
+            wpm = speedReadingWpm,
+            onWpmChange = { speedReadingWpm = it }
         )
 
         // Speed reading overlay
@@ -628,6 +632,8 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
                 progress = progress,
                 bottomBarPadding = bottomBarPadding,
                 showWpmIndicator = true,
+                wpm = speedReadingWpm,
+                onWpmChange = { speedReadingWpm = it },
                 onExitSpeedReading = {
                     screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
                 },

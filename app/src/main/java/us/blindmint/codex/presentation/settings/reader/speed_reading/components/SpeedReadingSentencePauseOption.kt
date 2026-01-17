@@ -6,25 +6,85 @@
 
 package us.blindmint.codex.presentation.settings.reader.speed_reading.components
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
-import us.blindmint.codex.presentation.core.components.settings.SliderWithTitle
-import us.blindmint.codex.ui.main.MainEvent
-import us.blindmint.codex.ui.main.MainModel
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import us.blindmint.codex.R
 
 @Composable
 fun SpeedReadingSentencePauseOption() {
-    val mainModel = hiltViewModel<MainModel>()
-    val state = mainModel.state.collectAsStateWithLifecycle()
+    var pauseDuration by remember { mutableIntStateOf(2000) }
 
-    SliderWithTitle(
-        title = stringResource(id = R.string.speed_reading_sentence_pause),
-        value = Pair(2000, " ms"), // TODO: Add to MainState, default 2000ms
-        fromValue = 0,
-        toValue = 5000,
-        onValueChange = { /* TODO: Save to settings */ }
+    Text(
+        text = stringResource(id = R.string.speed_reading_sentence_pause),
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
     )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Slider
+        Slider(
+            value = pauseDuration.toFloat(),
+            onValueChange = { pauseDuration = it.toInt() },
+            valueRange = 0f..5000f,
+            modifier = Modifier.weight(1f)
+        )
+
+        // Numeric input
+        OutlinedTextField(
+            value = pauseDuration.toString(),
+            onValueChange = { newValue ->
+                val intValue = newValue.toIntOrNull() ?: pauseDuration
+                pauseDuration = intValue.coerceIn(0, 5000)
+            },
+            label = { Text("ms") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.width(80.dp),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+            singleLine = true
+        )
+    }
 }
