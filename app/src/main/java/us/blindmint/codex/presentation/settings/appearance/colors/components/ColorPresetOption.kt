@@ -257,6 +257,7 @@ fun ColorPresetOption() {
                       value = selectedPreset.backgroundColor,
                       presetId = selectedPreset.id,
                       title = stringResource(id = R.string.background_color_option),
+                      horizontalPadding = 0.dp,
                       isLocked = selectedPreset.isLocked,
                       showRgbInputs = true,
                       onValueChange = {
@@ -274,13 +275,14 @@ fun ColorPresetOption() {
                  HorizontalDivider()
                  Spacer(modifier = Modifier.height(16.dp))
 
-                  ColorPickerWithTitle(
-                      value = selectedPreset.fontColor,
-                      presetId = selectedPreset.id,
-                      title = stringResource(id = R.string.font_color_option),
-                      isLocked = selectedPreset.isLocked,
-                      showRgbInputs = true,
-                      onValueChange = {
+                   ColorPickerWithTitle(
+                       value = selectedPreset.fontColor,
+                       presetId = selectedPreset.id,
+                       title = stringResource(id = R.string.font_color_option),
+                       horizontalPadding = 0.dp,
+                       isLocked = selectedPreset.isLocked,
+                       showRgbInputs = true,
+                       onValueChange = {
                         settingsModel.onEvent(
                             SettingsEvent.OnUpdateColorPresetColor(
                                 id = selectedPreset.id,
