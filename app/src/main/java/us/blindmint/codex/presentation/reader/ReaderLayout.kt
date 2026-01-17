@@ -14,6 +14,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
@@ -156,14 +157,22 @@ fun ReaderLayout(
                 enter = slideInVertically { it } + expandVertically(),
                 exit = slideOutVertically { it } + shrinkVertically()
             ) {
-                ReaderProgressBar(
-                    progress = "${((currentComicPage + 1).toFloat() / totalComicPages * 100).toInt()}% (${currentComicPage + 1}/$totalComicPages)",
-                    progressBarPadding = progressBarPadding,
-                    progressBarAlignment = progressBarAlignment,
-                    progressBarFontSize = progressBarFontSize,
-                    fontColor = fontColor,
-                    sidePadding = sidePadding
-                )
+                Column {
+                    // Visual progress bar
+                    androidx.compose.material3.LinearProgressIndicator(
+                        progress = { (currentComicPage + 1).toFloat() / totalComicPages },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    // Text progress label
+                    ReaderProgressBar(
+                        progress = "${((currentComicPage + 1).toFloat() / totalComicPages * 100).toInt()}% (${currentComicPage + 1}/$totalComicPages)",
+                        progressBarPadding = progressBarPadding,
+                        progressBarAlignment = progressBarAlignment,
+                        progressBarFontSize = progressBarFontSize,
+                        fontColor = fontColor,
+                        sidePadding = sidePadding
+                    )
+                }
             }
         }
         return

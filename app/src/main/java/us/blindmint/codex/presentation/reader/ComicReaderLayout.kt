@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -200,6 +201,11 @@ fun ComicReaderLayout(
             // Error state - could add error UI here
             Box(modifier = Modifier.fillMaxSize())
                 } else if (totalPages > 0) {
+            // Track pager state changes and notify parent
+            LaunchedEffect(pagerState.currentPage) {
+                onPageChanged(pagerState.currentPage)
+            }
+
             Box(modifier = Modifier.fillMaxSize()) {
                 HorizontalPager(
                     state = pagerState,
