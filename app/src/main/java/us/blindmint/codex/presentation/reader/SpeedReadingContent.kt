@@ -409,7 +409,7 @@ fun SpeedReadingContent(
  *
  * Rules based on eye-tracking research (Rayner saccades, ~14px fovea):
  * - Primary: 2nd letter if vowel (3-6 char words) - OVP center, 28% faster reading
- * - Fallback: 3rd letter for 7+ char words - word center (~50% length)
+ * - Medium-long: Center with vowel scan for 7-9 char words - prevents left cutoff
  * - Short: 2nd char for 1-3 char words - avoid predictable first char
  * - Long: Center (len/2) for 10+ chars with vowel scan
  * - No vowel: 2nd/3rd consonant as fallback
