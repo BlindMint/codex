@@ -126,6 +126,10 @@ fun SpeedReadingContent(
         }
     }
 
+    // Fixed position for accent character - offset slightly left of center
+    // This creates a consistent focal point that words align to
+    val accentOffsetRatio = 0.38f // 38% from left edge (slightly left of center)
+
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -144,11 +148,12 @@ fun SpeedReadingContent(
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                    .padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 val containerWidth = constraints.maxWidth.toFloat()
-                val centerX = containerWidth / 2f
+                // Fixed focal point - offset to the left of center
+                val focalPointX = containerWidth * accentOffsetRatio
 
                 // Measure text before accent to calculate offset
                 val beforeAccent = if (accentIndex > 0) currentWord.substring(0, accentIndex) else ""
@@ -173,59 +178,68 @@ fun SpeedReadingContent(
                     }
                 } else 0f
 
-                // Calculate offset to center the accent character
-                // The accent char center should be at the screen center
+                // Calculate offset to position the accent character at the focal point
                 val accentCenterOffset = beforeAccentWidth + (accentCharWidth / 2f)
-                val wordOffsetX = centerX - accentCenterOffset
+                val wordOffsetX = focalPointX - accentCenterOffset
 
-                // Draw the RSVP frame
+                // Frame dimensions
+                val frameHeight = 120.dp
+                val wordAreaHeight = 60.dp // Height reserved for word display
+                val barToWordGap = 8.dp // Gap between horizontal bar and word area
+
+                // Draw the RSVP frame - horizontal bars above and below the word
                 Canvas(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(120.dp)
+                        .height(frameHeight)
                 ) {
-                    val horizontalLineY = size.height / 2f
-                    val gapHalfWidth = 120.dp.toPx() // Gap around the word
+                    val centerY = size.height / 2f
+                    val wordAreaTop = centerY - (wordAreaHeight.toPx() / 2f)
+                    val wordAreaBottom = centerY + (wordAreaHeight.toPx() / 2f)
 
-                    // Horizontal bars (only if enabled)
+                    // Position for horizontal bars (above and below word area)
+                    val topBarY = wordAreaTop - barToWordGap.toPx()
+                    val bottomBarY = wordAreaBottom + barToWordGap.toPx()
+
+                    // Horizontal bars (only if enabled) - TOP and BOTTOM borders
                     if (showHorizontalBars) {
                         val lineThickness = horizontalBarsThickness.dp.toPx()
 
-                        // Left horizontal line
+                        // Top horizontal bar - full width
                         drawLine(
                             color = horizontalBarsColor,
-                            start = Offset(0f, horizontalLineY),
-                            end = Offset(centerX - gapHalfWidth, horizontalLineY),
+                            start = Offset(0f, topBarY),
+                            end = Offset(size.width, topBarY),
                             strokeWidth = lineThickness
                         )
 
-                        // Right horizontal line
+                        // Bottom horizontal bar - full width
                         drawLine(
                             color = horizontalBarsColor,
-                            start = Offset(centerX + gapHalfWidth, horizontalLineY),
-                            end = Offset(size.width, horizontalLineY),
+                            start = Offset(0f, bottomBarY),
+                            end = Offset(size.width, bottomBarY),
                             strokeWidth = lineThickness
                         )
                     }
 
-                    // Vertical indicators (only if enabled)
+                    // Vertical indicators (only if enabled) - form T shapes with horizontal bars
                     if (showVerticalIndicators) {
                         val verticalIndicatorHeight = verticalIndicatorsSize.dp.toPx()
                         val verticalIndicatorWidth = 1.5.dp.toPx()
 
-                        // Top vertical indicator (points down to accent position)
+                        // Top vertical indicator - starts at top bar, points DOWN toward word
                         drawLine(
                             color = horizontalBarsColor,
-                            start = Offset(centerX, horizontalLineY - 40.dp.toPx()),
-                            end = Offset(centerX, horizontalLineY - 40.dp.toPx() + verticalIndicatorHeight),
+                            start = Offset(focalPointX, topBarY),
+                            end = Offset(focalPointX, topBarY + verticalIndicatorHeight),
                             strokeWidth = verticalIndicatorWidth
                         )
 
-                        // Bottom vertical indicator (points up to accent position)
+                        // Bottom vertical indicator - starts at bottom bar, points UP toward word
                         drawLine(
                             color = horizontalBarsColor,
-                            start = Offset(centerX, horizontalLineY + 40.dp.toPx() - verticalIndicatorHeight),
-                            end = Offset(centerX, horizontalLineY + 40.dp.toPx()),
+                            start = Offset(focalPointX, bottomBarY),
+                            end = Offset(focalPointX, bottomBarY - verticalIndicatorHeight),
                             strokeWidth = verticalIndicatorWidth
                         )
                     }
@@ -235,7 +249,7 @@ fun SpeedReadingContent(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(120.dp),
+                        .height(frameHeight),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Text(
@@ -305,16 +319,14 @@ fun SpeedReadingContent(
 }
 
 /**
- * Find the Optimal Recognition Point (ORP) for RSVP.
+ * Find the Optimal Viewing Position (OVP) for RSVP accent highlight.
  *
- * The ORP is typically around 25-35% into the word, often on a vowel.
- * This follows standard RSVP guidelines where the eye fixation point
- * should be slightly left of center for most words.
- *
- * Enhanced to handle:
- * - Accented vowels for multiple languages
- * - Better ORP calculation for very long words
- * - Numbers and special characters
+ * Rules based on eye-tracking research (Rayner saccades, ~14px fovea):
+ * - Primary: 2nd letter if vowel (3-6 char words) - OVP center, 28% faster reading
+ * - Fallback: 3rd letter for 7+ char words - word center (~50% length)
+ * - Short: 2nd char for 1-3 char words - avoid predictable first char
+ * - Long: Center (len/2) for 10+ chars with vowel scan
+ * - No vowel: 2nd/3rd consonant as fallback
  */
 fun findAccentCharIndex(word: String): Int {
     if (word.isEmpty()) return -1
@@ -338,52 +350,64 @@ fun findAccentCharIndex(word: String): Int {
         'ù', 'ú', 'û', 'ü', 'ū', // Accented u
         'Ù', 'Ú', 'Û', 'Ü', 'Ū',
         'ÿ', 'Ÿ', // Accented y
-        // Additional language vowels
         'ı', 'İ', // Turkish dotless i
         'ø', 'Ø', // Danish/Norwegian
         'å', 'Å', 'ä', 'Ä', 'ö', 'Ö' // Swedish/German
     )
 
-    // ORP position based on word length (refined for better long word handling)
-    val optimalPosition = when {
-        cleanWord.length <= 1 -> 0
-        cleanWord.length <= 3 -> 0
-        cleanWord.length <= 5 -> 1
-        cleanWord.length <= 9 -> 2
-        cleanWord.length <= 13 -> 3
-        cleanWord.length <= 17 -> 4
-        else -> (cleanWord.length * 0.3).toInt().coerceAtMost(6) // Allow further for very long words
+    val len = cleanWord.length
+
+    // Rule: Short words (1-3 chars) - use 2nd char, prefer consonant if no vowel
+    if (len <= 3) {
+        if (len == 1) return 0
+        // Check 2nd position (index 1) for vowel first
+        if (len >= 2 && cleanWord[1] in vowels) return 1
+        // Fallback to 2nd char even if consonant
+        return if (len >= 2) 1 else 0
     }
 
-    // Check optimal position first, then nearby positions
-    val positionsToCheck = listOf(
-        optimalPosition,
-        optimalPosition + 1,
-        optimalPosition - 1,
-        optimalPosition + 2,
-        optimalPosition - 2
+    // Rule: Medium words (3-6 chars) - Primary: 2nd letter if vowel
+    if (len in 3..6) {
+        // Scan after 1st letter for 1st/2nd vowel, prefer 2nd position
+        if (cleanWord[1] in vowels) return 1
+        if (len > 2 && cleanWord[2] in vowels) return 2
+        // Fallback: 2nd or 3rd char
+        return 1
+    }
+
+    // Rule: Medium-long words (7-9 chars) - 3rd letter preferred
+    if (len in 7..9) {
+        // Prefer 3rd position if vowel
+        if (cleanWord[2] in vowels) return 2
+        if (cleanWord[1] in vowels) return 1
+        if (len > 3 && cleanWord[3] in vowels) return 3
+        // Fallback to 3rd char
+        return 2
+    }
+
+    // Rule: Long words (10+ chars) - Center (len/2) with vowel scan
+    val centerPos = len / 2
+
+    // Scan for first available vowel near center
+    val scanPositions = listOf(
+        centerPos,
+        centerPos - 1,
+        centerPos + 1,
+        centerPos - 2,
+        centerPos + 2
     ).filter { it in cleanWord.indices }
 
-    // Prefer vowels at or near the optimal position
-    for (pos in positionsToCheck) {
+    for (pos in scanPositions) {
         if (cleanWord[pos] in vowels) {
             return pos
         }
     }
 
-    // For words with numbers or symbols, find first letter-like character
-    val letterIndices = cleanWord.indices.filter { cleanWord[it].isLetter() }
-    if (letterIndices.isNotEmpty()) {
-        // Use ORP among letters
-        val letterOptimal = when {
-            letterIndices.size <= 1 -> 0
-            letterIndices.size <= 3 -> 0
-            letterIndices.size <= 5 -> 1
-            else -> (letterIndices.size * 0.3).toInt()
-        }
-        return letterIndices[letterOptimal.coerceIn(0, letterIndices.size - 1)]
+    // Rule: No vowel found - use 2nd/3rd consonant
+    // For longer words, prefer position closer to center
+    return when {
+        len >= 10 -> centerPos.coerceIn(0, len - 1)
+        len >= 7 -> 2.coerceIn(0, len - 1)
+        else -> 1.coerceIn(0, len - 1)
     }
-
-    // If no suitable position found, use the optimal position anyway
-    return optimalPosition.coerceIn(0, cleanWord.length - 1)
 }

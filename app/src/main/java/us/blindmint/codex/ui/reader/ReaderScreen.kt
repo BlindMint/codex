@@ -174,6 +174,8 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
     val speedReadingShowHorizontalBars = remember { mutableStateOf(true) }
     val speedReadingHorizontalBarsThickness = remember { mutableStateOf(2) }
     val speedReadingHorizontalBarsColor = remember { mutableStateOf(Color.Gray) }
+    val speedReadingCustomFontEnabled = remember { mutableStateOf(false) }
+    val speedReadingSelectedFontFamily = remember { mutableStateOf("default") }
         val lineHeight = remember(
             mainState.value.fontSize,
             mainState.value.lineHeight
@@ -662,7 +664,11 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             horizontalBarsThickness = speedReadingHorizontalBarsThickness.value,
             onHorizontalBarsThicknessChange = { speedReadingHorizontalBarsThickness.value = it },
             horizontalBarsColor = speedReadingHorizontalBarsColor.value,
-            onHorizontalBarsColorChange = { speedReadingHorizontalBarsColor.value = it }
+            onHorizontalBarsColorChange = { speedReadingHorizontalBarsColor.value = it },
+            customFontEnabled = speedReadingCustomFontEnabled.value,
+            onCustomFontEnabledChange = { speedReadingCustomFontEnabled.value = it },
+            selectedFontFamily = speedReadingSelectedFontFamily.value,
+            onFontFamilyChange = { speedReadingSelectedFontFamily.value = it }
         )
 
         // Speed reading overlay

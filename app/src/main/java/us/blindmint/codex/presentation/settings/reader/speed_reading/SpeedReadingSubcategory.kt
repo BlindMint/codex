@@ -267,6 +267,7 @@ fun LazyListScope.SpeedReadingSubcategory(
         // Font Settings
         item {
             SpeedReadingCustomFontOption(
+                customFontEnabled = customFontEnabled,
                 onCustomFontChanged = onCustomFontChanged
             )
         }

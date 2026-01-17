@@ -50,7 +50,11 @@ fun SpeedReadingSettingsBottomSheet(
     horizontalBarsThickness: Int = 2,
     onHorizontalBarsThicknessChange: (Int) -> Unit = {},
     horizontalBarsColor: Color = Color.Gray,
-    onHorizontalBarsColorChange: (Color) -> Unit = {}
+    onHorizontalBarsColorChange: (Color) -> Unit = {},
+    customFontEnabled: Boolean = false,
+    onCustomFontEnabledChange: (Boolean) -> Unit = {},
+    selectedFontFamily: String = "default",
+    onFontFamilyChange: (String) -> Unit = {}
 ) {
     if (show) {
         val scrollState = rememberLazyListState()
@@ -104,7 +108,11 @@ fun SpeedReadingSettingsBottomSheet(
                     horizontalBarsThickness = horizontalBarsThickness,
                     onHorizontalBarsThicknessChange = onHorizontalBarsThicknessChange,
                     horizontalBarsColor = horizontalBarsColor,
-                    onHorizontalBarsColorChange = onHorizontalBarsColorChange
+                    onHorizontalBarsColorChange = onHorizontalBarsColorChange,
+                    customFontEnabled = customFontEnabled,
+                    onCustomFontChanged = onCustomFontEnabledChange,
+                    selectedFontFamily = selectedFontFamily,
+                    onFontFamilyChanged = onFontFamilyChange
                 )
 
                 item {

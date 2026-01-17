@@ -9,7 +9,6 @@ package us.blindmint.codex.presentation.settings.reader.speed_reading.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.R
@@ -26,7 +25,6 @@ fun SpeedReadingHorizontalBarsColorOption(
         title = stringResource(id = R.string.speed_reading_horizontal_bars_color),
         value = color,
         presetId = 0, // TODO: Use proper preset ID for speed reading
-        horizontalPadding = 0.dp,
         showRgbInputs = true,
         onValueChange = onColorChange
     )

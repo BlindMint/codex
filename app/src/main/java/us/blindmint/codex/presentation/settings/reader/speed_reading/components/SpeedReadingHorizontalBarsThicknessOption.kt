@@ -8,7 +8,6 @@ package us.blindmint.codex.presentation.settings.reader.speed_reading.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.R
@@ -26,7 +25,6 @@ fun SpeedReadingHorizontalBarsThicknessOption(
         value = Pair(thickness, "px"),
         fromValue = 1,
         toValue = 8,
-        horizontalPadding = 0.dp,
         onValueChange = onThicknessChange
     )
 }

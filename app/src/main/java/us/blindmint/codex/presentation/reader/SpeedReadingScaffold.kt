@@ -115,7 +115,7 @@ fun SpeedReadingScaffold(
                 text = text,
                 currentProgress = currentProgress,
                 backgroundColor = backgroundColor,
-                fontColor = Color.Black, // TODO: Pass actual font color
+                fontColor = fontColor,
                 fontFamily = fontFamily,
                 sentencePauseMs = sentencePauseMs,
                 wordSize = wordSize,
