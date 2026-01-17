@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,11 +55,17 @@ fun SpeedReadingScaffold(
     wpm: Int,
     onWpmChange: (Int) -> Unit,
     onExitSpeedReading: () -> Unit,
-    onShowSpeedReadingSettings: () -> Unit
+    onShowSpeedReadingSettings: () -> Unit,
+    onMenuVisibilityChanged: (Boolean) -> Unit = {}
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
-    var showMenu by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(true) } // Start with menu visible
     var isPlaying by remember { mutableStateOf(false) }
+
+    // Notify parent of menu visibility changes
+    LaunchedEffect(showMenu) {
+        onMenuVisibilityChanged(showMenu)
+    }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     Scaffold(

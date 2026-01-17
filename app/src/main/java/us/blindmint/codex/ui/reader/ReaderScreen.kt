@@ -704,6 +704,17 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 },
                 onShowSpeedReadingSettings = {
                     screenModel.onEvent(ReaderEvent.OnShowSpeedReadingSettings)
+                },
+                onMenuVisibilityChanged = { showMenu ->
+                    // Control system UI based on speed reading menu state
+                    screenModel.onEvent(
+                        ReaderEvent.OnMenuVisibility(
+                            show = showMenu,
+                            fullscreenMode = mainState.value.fullscreen,
+                            saveCheckpoint = false,
+                            activity = activity
+                        )
+                    )
                 }
             )
         }
