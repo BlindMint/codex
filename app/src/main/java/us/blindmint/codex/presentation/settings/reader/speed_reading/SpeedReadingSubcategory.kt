@@ -24,7 +24,7 @@ import us.blindmint.codex.presentation.settings.reader.speed_reading.components.
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingCustomFontOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingFontFamilyOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingWordSizeOption
-import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingBackgroundImageOption
+import us.blindmint.codex.presentation.settings.appearance.colors.components.BackgroundImageOption
 import us.blindmint.codex.presentation.settings.appearance.colors.components.ColorPresetOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsSizeOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsThicknessOption
@@ -40,6 +40,10 @@ fun LazyListScope.SpeedReadingSubcategory(
     onWpmChange: (Int) -> Unit = {},
     wordSize: Int = 48,
     onWordSizeChange: (Int) -> Unit = {},
+    accentCharacterEnabled: Boolean = true,
+    onAccentCharacterEnabledChange: (Boolean) -> Unit = {},
+    accentColor: Color = Color.Red,
+    onAccentColorChange: (Color) -> Unit = {},
     accentOpacity: Float = 1.0f,
     onAccentOpacityChange: (Float) -> Unit = {},
     showVerticalIndicators: Boolean = true,
@@ -86,16 +90,22 @@ fun LazyListScope.SpeedReadingSubcategory(
         }
 
         item {
-            SpeedReadingBackgroundImageOption()
+            BackgroundImageOption()
         }
 
         // Accent & Indicators
         item {
-            SpeedReadingAccentCharacterOption()
+            SpeedReadingAccentCharacterOption(
+                selected = accentCharacterEnabled,
+                onSelectionChange = onAccentCharacterEnabledChange
+            )
         }
 
         item {
-            SpeedReadingColorsOption() // Accent color with RGB sliders
+            SpeedReadingColorsOption( // Accent color with RGB sliders
+                color = accentColor,
+                onColorChange = onAccentColorChange
+            )
         }
 
         item {

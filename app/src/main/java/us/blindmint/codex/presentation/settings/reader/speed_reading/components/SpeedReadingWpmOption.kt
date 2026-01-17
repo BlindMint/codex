@@ -49,40 +49,17 @@ fun SpeedReadingWpmOption(
     ) {
         Text(
             text = stringResource(id = R.string.speed_reading_wpm),
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // WPM Visualization
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "${wpm} WPM",
-                style = MaterialTheme.typography.displaySmall,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // WPM Slider
+        // WPM Slider with value on the right
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "100",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
             Slider(
                 value = wpm.toFloat(),
                 onValueChange = { onWpmChange((it / 5).toInt() * 5) }, // Snap to 5 increments
@@ -91,11 +68,11 @@ fun SpeedReadingWpmOption(
                 modifier = Modifier.weight(1f)
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             Text(
-                text = "1000",
-                style = MaterialTheme.typography.bodySmall,
+                text = "${wpm} wpm",
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

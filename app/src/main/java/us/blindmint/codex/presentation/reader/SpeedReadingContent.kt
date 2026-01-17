@@ -58,6 +58,7 @@ fun SpeedReadingContent(
     fontFamily: FontFamily,
     sentencePauseMs: Int,
     wordSize: Int,
+    accentCharacterEnabled: Boolean,
     accentColor: Color,
     accentOpacity: Float,
     showVerticalIndicators: Boolean,
@@ -237,18 +238,19 @@ fun SpeedReadingContent(
                 ) {
                     Text(
                         text = buildAnnotatedString {
-                            if (accentIndex > 0) {
-                                append(currentWord.substring(0, accentIndex))
-                            }
-                            if (accentIndex >= 0 && accentIndex < currentWord.length) {
-                                withStyle(style = SpanStyle(color = accentColor.copy(alpha = accentOpacity))) {
-                                    append(currentWord[accentIndex])
+                            if (accentCharacterEnabled && accentIndex >= 0) {
+                                if (accentIndex > 0) {
+                                    append(currentWord.substring(0, accentIndex))
                                 }
-                            }
-                            if (accentIndex >= 0 && accentIndex < currentWord.length - 1) {
-                                append(currentWord.substring(accentIndex + 1))
-                            } else if (accentIndex < 0) {
-                                // No accent found, show whole word
+                                if (accentIndex < currentWord.length) {
+                                    withStyle(style = SpanStyle(color = accentColor.copy(alpha = accentOpacity))) {
+                                        append(currentWord[accentIndex])
+                                    }
+                                }
+                                if (accentIndex < currentWord.length - 1) {
+                                    append(currentWord.substring(accentIndex + 1))
+                                }
+                            } else {
                                 append(currentWord)
                             }
                         },

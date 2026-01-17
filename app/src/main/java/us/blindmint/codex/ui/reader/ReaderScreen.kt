@@ -164,14 +164,16 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
         // Speed reading state
         val speedReadingWpm = remember { mutableStateOf(300) }
 
-        // Speed reading settings state
-        val speedReadingWordSize = remember { mutableStateOf(48) }
-        val speedReadingAccentOpacity = remember { mutableStateOf(1.0f) }
-        val speedReadingShowVerticalIndicators = remember { mutableStateOf(true) }
-        val speedReadingVerticalIndicatorsSize = remember { mutableStateOf(32) }
-        val speedReadingShowHorizontalBars = remember { mutableStateOf(true) }
-        val speedReadingHorizontalBarsThickness = remember { mutableStateOf(2) }
-        val speedReadingHorizontalBarsColor = remember { mutableStateOf(Color.Gray) }
+    // Speed reading settings state
+    val speedReadingWordSize = remember { mutableStateOf(48) }
+    val speedReadingAccentCharacterEnabled = remember { mutableStateOf(true) }
+    val speedReadingAccentColor = remember { mutableStateOf(Color.Red) }
+    val speedReadingAccentOpacity = remember { mutableStateOf(1.0f) }
+    val speedReadingShowVerticalIndicators = remember { mutableStateOf(true) }
+    val speedReadingVerticalIndicatorsSize = remember { mutableStateOf(32) }
+    val speedReadingShowHorizontalBars = remember { mutableStateOf(true) }
+    val speedReadingHorizontalBarsThickness = remember { mutableStateOf(2) }
+    val speedReadingHorizontalBarsColor = remember { mutableStateOf(Color.Gray) }
         val lineHeight = remember(
             mainState.value.fontSize,
             mainState.value.lineHeight
@@ -629,6 +631,10 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
             onWpmChange = { speedReadingWpm.value = it },
             wordSize = speedReadingWordSize.value,
             onWordSizeChange = { speedReadingWordSize.value = it },
+            accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
+            onAccentCharacterEnabledChange = { speedReadingAccentCharacterEnabled.value = it },
+            accentColor = speedReadingAccentColor.value,
+            onAccentColorChange = { speedReadingAccentColor.value = it },
             accentOpacity = speedReadingAccentOpacity.value,
             onAccentOpacityChange = { speedReadingAccentOpacity.value = it },
             showVerticalIndicators = speedReadingShowVerticalIndicators.value,
@@ -652,7 +658,8 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
                 currentProgress = state.value.book.progress,
                 backgroundColor = settingsState.value.selectedColorPreset.backgroundColor,
                 fontColor = settingsState.value.selectedColorPreset.fontColor,
-                accentColor = Color.Red, // TODO: Make configurable
+                accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
+                accentColor = speedReadingAccentColor.value,
                 fontFamily = fontFamily.font,
                 sentencePauseMs = 2000, // TODO: Make configurable
                 wordSize = speedReadingWordSize.value,

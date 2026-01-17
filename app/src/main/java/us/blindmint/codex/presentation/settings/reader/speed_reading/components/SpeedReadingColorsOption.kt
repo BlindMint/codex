@@ -17,14 +17,14 @@ import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
 
 @Composable
-fun SpeedReadingColorsOption() {
-    val mainModel = hiltViewModel<MainModel>()
-    val state = mainModel.state.collectAsStateWithLifecycle()
-
+fun SpeedReadingColorsOption(
+    color: Color = Color.Red,
+    onColorChange: (Color) -> Unit = {}
+) {
     ColorPickerWithTitle(
         title = stringResource(id = R.string.speed_reading_accent_color),
-        value = Color.Red, // TODO: Add to MainState
+        value = color,
         presetId = 0, // TODO: Use proper preset ID
-        onValueChange = { /* TODO: Save to settings */ }
+        onValueChange = onColorChange
     )
 }
