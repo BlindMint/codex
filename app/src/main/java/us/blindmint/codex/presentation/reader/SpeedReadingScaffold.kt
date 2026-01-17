@@ -102,8 +102,7 @@ fun SpeedReadingScaffold(
                     onWpmChange = onWpmChange,
                     isPlaying = isPlaying,
                     onPlayPause = { isPlaying = !isPlaying },
-                    bottomBarPadding = bottomBarPadding,
-                    odsEnabled = odsEnabled
+                    bottomBarPadding = bottomBarPadding
                 )
             }
         },
@@ -140,7 +139,8 @@ fun SpeedReadingScaffold(
                 onWpmChange = onWpmChange,
                 onPlayPause = { isPlaying = !isPlaying },
                 alwaysShowPlayPause = alwaysShowPlayPause,
-                showWpmIndicator = showWpmIndicator
+                showWpmIndicator = showWpmIndicator,
+                odsEnabled = odsEnabled
             )
         }
     }

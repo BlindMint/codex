@@ -125,8 +125,7 @@ fun SpeedReadingBottomBar(
     onWpmChange: (Int) -> Unit,
     isPlaying: Boolean,
     onPlayPause: () -> Unit,
-    bottomBarPadding: Dp,
-    odsEnabled: Boolean = false
+    bottomBarPadding: Dp
 ) {
     Column(
         Modifier
@@ -150,81 +149,35 @@ fun SpeedReadingBottomBar(
 
         Spacer(Modifier.height(6.dp))
 
-        if (odsEnabled) {
-            // ODS layout: Left arrow | Play/Pause | Right arrow
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // WPM indicator on the left (matching spacing)
+            Text(
+                text = "$wpm WPM",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+
+            // WPM slider in the middle
+            Slider(
+                value = wpm.toFloat(),
+                onValueChange = { onWpmChange((it / 5).toInt() * 5) }, // Snap to 5 increments
+                valueRange = 200f..1200f,
+                modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
+            )
+
+            // Play/Pause button on the right
+            IconButton(
+                icon = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                contentDescription = if (isPlaying) R.string.pause else R.string.play,
+                disableOnClick = false,
+                color = MaterialTheme.colorScheme.onSurface
             ) {
-                // Left arrow (decrease WPM)
-                IconButton(
-                    icon = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = R.string.speed_reading_wpm, // Reuse existing string
-                    disableOnClick = false,
-                    color = MaterialTheme.colorScheme.onSurface
-                ) {
-                    val newWpm = (wpm - 50).coerceAtLeast(200)
-                    onWpmChange(newWpm)
-                }
-
-                Spacer(Modifier.width(24.dp))
-
-                // Play/Pause button in the center
-                IconButton(
-                    icon = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                    contentDescription = if (isPlaying) R.string.pause else R.string.play,
-                    disableOnClick = false,
-                    color = MaterialTheme.colorScheme.onSurface
-                ) {
-                    onPlayPause()
-                }
-
-                Spacer(Modifier.width(24.dp))
-
-                // Right arrow (increase WPM)
-                IconButton(
-                    icon = Icons.AutoMirrored.Outlined.ArrowForward,
-                    contentDescription = R.string.speed_reading_wpm, // Reuse existing string
-                    disableOnClick = false,
-                    color = MaterialTheme.colorScheme.onSurface
-                ) {
-                    val newWpm = (wpm + 50).coerceAtMost(1200)
-                    onWpmChange(newWpm)
-                }
-            }
-        } else {
-            // Normal layout: WPM slider with play/pause
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // WPM indicator on the left (matching spacing)
-                Text(
-                    text = "$wpm WPM",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-
-                // WPM slider in the middle
-                Slider(
-                    value = wpm.toFloat(),
-                    onValueChange = { onWpmChange((it / 5).toInt() * 5) }, // Snap to 5 increments
-                    valueRange = 200f..1200f,
-                    modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
-                )
-
-                // Play/Pause button on the right
-                IconButton(
-                    icon = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                    contentDescription = if (isPlaying) R.string.pause else R.string.play,
-                    disableOnClick = false,
-                    color = MaterialTheme.colorScheme.onSurface
-                ) {
-                    onPlayPause()
-                }
+                onPlayPause()
             }
         }
 

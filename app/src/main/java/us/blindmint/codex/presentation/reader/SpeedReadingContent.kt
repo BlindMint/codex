@@ -6,6 +6,8 @@
 
 package us.blindmint.codex.presentation.reader
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -49,6 +51,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import kotlinx.coroutines.delay
 import us.blindmint.codex.domain.reader.ReaderText
+import us.blindmint.codex.presentation.core.util.noRippleClickable
 import kotlin.math.roundToInt
 
 @Composable
@@ -77,6 +80,7 @@ fun SpeedReadingContent(
     onPlayPause: () -> Unit,
     alwaysShowPlayPause: Boolean,
     showWpmIndicator: Boolean = true,
+    odsEnabled: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     // Extract words from text starting from current position
@@ -291,17 +295,68 @@ fun SpeedReadingContent(
             }
         }
 
-        // WPM indicator in bottom right
-        if (showWpmIndicator) {
-            Text(
-                text = "$wpm wpm",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = fontColor.copy(alpha = 0.5f)
-                ),
+        // WPM indicator and OSD controls in bottom area
+        if (showWpmIndicator || odsEnabled) {
+            Row(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
-            )
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 24.dp), // Material 3 standard spacing from bottom
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // OSD controls (if enabled) - positioned to the left
+                if (odsEnabled) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Left arrow (<) - decrease WPM
+                        Text(
+                            text = "<",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                color = fontColor.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier.noRippleClickable {
+                                val newWpm = (wpm - 50).coerceAtLeast(200)
+                                onWpmChange(newWpm)
+                            }
+                        )
+
+                        // Play/Pause button - centered and larger
+                        Text(
+                            text = if (isPlaying) "⏸️" else "▶️",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontSize = 32.sp // Slightly larger than default
+                            ),
+                            modifier = Modifier.noRippleClickable {
+                                onPlayPause()
+                            }
+                        )
+
+                        // Right arrow (>) - increase WPM
+                        Text(
+                            text = ">",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                color = fontColor.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier.noRippleClickable {
+                                val newWpm = (wpm + 50).coerceAtMost(1200)
+                                onWpmChange(newWpm)
+                            }
+                        )
+                    }
+                }
+
+                // WPM indicator on the right
+                if (showWpmIndicator) {
+                    Text(
+                        text = "$wpm wpm",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = fontColor.copy(alpha = 0.5f)
+                        )
+                    )
+                }
+            }
         }
 
         // Countdown overlay
