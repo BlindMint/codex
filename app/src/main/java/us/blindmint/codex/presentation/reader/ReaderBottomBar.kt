@@ -103,14 +103,17 @@ fun ReaderBottomBar(
     ) {
         Spacer(Modifier.height(16.dp))
 
-        StyledText(
-            text = progress,
-            style = MaterialTheme.typography.titleLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface
+        // For books, show the progress text. For comics, progress is handled by ReaderBottomBarComicSlider
+        if (!book.isComic) {
+            StyledText(
+                text = progress,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             )
-        )
 
-        Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(6.dp))
+        }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             HorizontalExpandingTransition(
@@ -128,33 +131,38 @@ fun ReaderBottomBar(
                 }
             }
 
-            Box(
-                modifier = Modifier.weight(1f),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                if (book.isComic) {
-                    ReaderBottomBarComicSlider(
-                        currentPage = currentComicPage,
-                        totalPages = totalComicPages,
-                        lockMenu = lockMenu,
-                        onPageSelected = onComicPageSelected,
-                        showProgressBar = comicProgressBar,
-                        progressCount = comicProgressCount,
-                        progressBarPadding = comicProgressBarPadding,
-                        progressBarAlignment = comicProgressBarAlignment,
-                        progressBarFontSize = comicProgressBarFontSize
-                    )
-                } else {
-                    ReaderBottomBarSlider(
-                        book = book,
-                        lockMenu = lockMenu,
-                        listState = listState,
-                        scroll = scroll,
-                        changeProgress = changeProgress
-                    )
+            // Only show the progress slider/controls if:
+            // - For books: always show
+            // - For comics: only show if comicProgressBar is enabled
+            if (!book.isComic || comicProgressBar) {
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    if (book.isComic) {
+                        ReaderBottomBarComicSlider(
+                            currentPage = currentComicPage,
+                            totalPages = totalComicPages,
+                            lockMenu = lockMenu,
+                            onPageSelected = onComicPageSelected,
+                            showProgressBar = comicProgressBar,
+                            progressCount = comicProgressCount,
+                            progressBarPadding = comicProgressBarPadding,
+                            progressBarAlignment = comicProgressBarAlignment,
+                            progressBarFontSize = comicProgressBarFontSize
+                        )
+                    } else {
+                        ReaderBottomBarSlider(
+                            book = book,
+                            lockMenu = lockMenu,
+                            listState = listState,
+                            scroll = scroll,
+                            changeProgress = changeProgress
+                        )
 
-                    if (arrowDirection.value != Direction.NEUTRAL) {
-                        ReaderBottomBarSliderIndicator(progress = checkpointProgress.value)
+                        if (arrowDirection.value != Direction.NEUTRAL) {
+                            ReaderBottomBarSliderIndicator(progress = checkpointProgress.value)
+                        }
                     }
                 }
             }
