@@ -25,7 +25,7 @@ import us.blindmint.codex.presentation.settings.reader.speed_reading.components.
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingFontFamilyOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingWordSizeOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingBackgroundImageOption
-import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingColorsSection
+import us.blindmint.codex.presentation.settings.appearance.colors.components.ColorPresetOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsSizeOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsThicknessOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsColorOption
@@ -78,12 +78,10 @@ fun LazyListScope.SpeedReadingSubcategory(
             )
         }
 
-        // Colors section
+        // Color presets (shared with normal reading)
         item {
-            SpeedReadingColorsSection(
-                onResetToNormalColors = {
-                    // TODO: Reset colors to normal reading colors
-                }
+            ColorPresetOption(
+                backgroundColor = MaterialTheme.colorScheme.surface
             )
         }
 

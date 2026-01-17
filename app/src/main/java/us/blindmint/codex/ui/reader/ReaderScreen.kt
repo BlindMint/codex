@@ -650,8 +650,8 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
                 bookTitle = state.value.book.title,
                 chapterTitle = state.value.currentChapter?.title,
                 currentProgress = state.value.book.progress,
-                backgroundColor = backgroundColor.value,
-                fontColor = fontColor.value,
+                backgroundColor = settingsState.value.selectedColorPreset.backgroundColor,
+                fontColor = settingsState.value.selectedColorPreset.fontColor,
                 accentColor = Color.Red, // TODO: Make configurable
                 fontFamily = fontFamily.font,
                 sentencePauseMs = 2000, // TODO: Make configurable

@@ -800,15 +800,12 @@
     <string name="speed_reading_custom_font">Use Custom Font for Speed Reading</string>
     <string name="speed_reading_font_family">Speed Reading Font Family</string>
     <string name="speed_reading_word_size">Word Size</string>
-    <string name="speed_reading_background_color">Background Color</string>
-    <string name="speed_reading_font_color">Font Color</string>
-    <string name="speed_reading_background_image">Use Background Image</string>
-    <string name="speed_reading_vertical_indicators_size">Vertical Indicators Size</string>
-    <string name="speed_reading_horizontal_bars_thickness">Horizontal Bars Thickness</string>
-    <string name="speed_reading_horizontal_bars_color">Horizontal Bars Color</string>
     <string name="speed_reading_accent_opacity">Accent Character Opacity</string>
-    <string name="speed_reading_colors_section">Colors</string>
-    <string name="reset_colors">Reset to normal reading colors</string>
+    <string name="speed_reading_background_image">Use Background Image</string>
+    <string name="speed_reading_horizontal_bars_thickness">Horizontal Bars Thickness</string>
+    <string name="speed_reading_vertical_indicators_size">Vertical Indicators Size</string>
+    <string name="speed_reading_horizontal_bars_color">Horizontal Bars Color</string>
+
     <string name="delete_bookmark_content_desc">Delete bookmark</string>
     <string name="more_content_desc">More</string>
     <string name="pin_content_desc">Pin</string>
