@@ -692,6 +692,15 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 onWpmChange = { speedReadingWpm.value = it },
                 onExitSpeedReading = {
                     screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
+                    // Reset menu visibility to normal state when exiting speed reading
+                    screenModel.onEvent(
+                        ReaderEvent.OnMenuVisibility(
+                            show = !mainState.value.fullscreen, // Show menu if not in fullscreen
+                            fullscreenMode = mainState.value.fullscreen,
+                            saveCheckpoint = false,
+                            activity = activity
+                        )
+                    )
                 },
                 onShowSpeedReadingSettings = {
                     screenModel.onEvent(ReaderEvent.OnShowSpeedReadingSettings)
