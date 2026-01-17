@@ -62,7 +62,6 @@ fun SpeedReadingWordSizeOption(
                 onWordSizeChange(localWordSize)
             },
             valueRange = 24f..96f,
-            steps = 36, // (96-24)/2 - 1 = 36 steps for 2-unit increments
             modifier = Modifier.weight(1f)
         )
 
