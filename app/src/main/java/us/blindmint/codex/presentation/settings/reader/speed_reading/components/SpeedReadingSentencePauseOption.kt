@@ -9,7 +9,9 @@ package us.blindmint.codex.presentation.settings.reader.speed_reading.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
@@ -44,6 +46,8 @@ fun SpeedReadingSentencePauseOption(
         ),
         modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
     )
+
+    Spacer(modifier = Modifier.height(8.dp))
 
     Row(
         modifier = Modifier

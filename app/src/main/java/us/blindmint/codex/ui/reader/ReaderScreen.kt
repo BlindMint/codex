@@ -165,6 +165,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
     val speedReadingWpm = remember { mutableStateOf(300) }
     val speedReadingManualSentencePauseEnabled = remember { mutableStateOf(false) }
     val speedReadingSentencePauseDuration = remember { mutableStateOf(350) }
+    val speedReadingOdsEnabled = remember { mutableStateOf(false) }
 
     val speedReadingWordSize = remember { mutableStateOf(48) }
     val speedReadingAccentCharacterEnabled = remember { mutableStateOf(true) }
@@ -682,6 +683,8 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             onManualSentencePauseEnabledChange = { speedReadingManualSentencePauseEnabled.value = it },
             sentencePauseDuration = speedReadingSentencePauseDuration.value,
             onSentencePauseDurationChange = { speedReadingSentencePauseDuration.value = it },
+            odsEnabled = speedReadingOdsEnabled.value,
+            onOdsEnabledChange = { speedReadingOdsEnabled.value = it },
             wordSize = speedReadingWordSize.value,
             onWordSizeChange = { speedReadingWordSize.value = it },
             accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
@@ -748,6 +751,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 showWpmIndicator = true,
                 wpm = speedReadingWpm.value,
                 onWpmChange = { speedReadingWpm.value = it },
+                odsEnabled = speedReadingOdsEnabled.value,
                 onExitSpeedReading = {
                     screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
                     // Reset menu visibility to normal state when exiting speed reading
