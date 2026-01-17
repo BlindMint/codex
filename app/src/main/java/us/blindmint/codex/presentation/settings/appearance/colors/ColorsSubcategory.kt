@@ -33,9 +33,7 @@ fun LazyListScope.ColorsSubcategory(
         showDivider = showDivider
     ) {
         item {
-            ColorPresetOption(
-                backgroundColor = backgroundColor.invoke()
-            )
+            ColorPresetOption()
         }
 
         item {
@@ -43,9 +41,7 @@ fun LazyListScope.ColorsSubcategory(
         }
 
         item {
-            BackgroundImageOption(
-                backgroundColor = backgroundColor.invoke()
-            )
+            BackgroundImageOption()
         }
     }
 }

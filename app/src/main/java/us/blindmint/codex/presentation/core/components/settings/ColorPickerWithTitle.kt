@@ -161,6 +161,7 @@ fun ColorPickerWithTitle(
                 title = stringResource(id = R.string.red_color),
                 toValue = 255,
                 enabled = !isLocked,
+                horizontalPadding = 0.dp,
                 onValueChange = {
                     color = color.copy(red = it)
                 }
@@ -195,6 +196,7 @@ fun ColorPickerWithTitle(
                 title = stringResource(id = R.string.green_color),
                 toValue = 255,
                 enabled = !isLocked,
+                horizontalPadding = 0.dp,
                 onValueChange = {
                     color = color.copy(green = it)
                 }
@@ -229,6 +231,7 @@ fun ColorPickerWithTitle(
                 title = stringResource(id = R.string.blue_color),
                 toValue = 255,
                 enabled = !isLocked,
+                horizontalPadding = 0.dp,
                 onValueChange = {
                     color = color.copy(blue = it)
                 }
@@ -266,6 +269,7 @@ fun ColorPickerWithTitle(
                         fromValue = 0,
                         toValue = 100,
                         enabled = !isLocked,
+                        horizontalPadding = 0.dp,
                         steps = 0,
                         onValueChange = { intValue ->
                             opacityCallback(intValue / 100f)

@@ -86,7 +86,7 @@ import us.blindmint.codex.ui.theme.FadeTransitionPreservingSpace
 import us.blindmint.codex.ui.theme.Transitions
 
 @Composable
-fun ColorPresetOption(backgroundColor: Color) {
+fun ColorPresetOption() {
     val settingsModel = hiltViewModel<SettingsModel>()
     val state = settingsModel.state.collectAsStateWithLifecycle()
 
@@ -205,8 +205,6 @@ fun ColorPresetOption(backgroundColor: Color) {
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 18.dp)
-                .clip(MaterialTheme.shapes.large)
-                .background(backgroundColor)
         ) {
             Spacer(modifier = Modifier.height(18.dp))
 

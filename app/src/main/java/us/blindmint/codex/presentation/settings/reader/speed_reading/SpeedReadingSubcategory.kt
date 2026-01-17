@@ -156,9 +156,7 @@ fun LazyListScope.SpeedReadingSubcategory(
 
         // Color presets (shared with normal reading)
         item {
-            ColorPresetOption(
-                backgroundColor = MaterialTheme.colorScheme.surface
-            )
+            ColorPresetOption()
         }
 
         item {
