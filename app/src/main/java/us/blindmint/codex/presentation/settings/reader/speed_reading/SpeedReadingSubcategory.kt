@@ -33,62 +33,6 @@ import us.blindmint.codex.presentation.settings.reader.speed_reading.components.
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsColorOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingAccentCharacterOpacityOption
 
-@Composable
-private fun SpeedReadingSettingsContent() {
-    val fontState = rememberSpeedReadingFontState()
-
-    androidx.compose.foundation.layout.Column {
-        // Performance
-        SpeedReadingWpmOption()
-
-        SpeedReadingSentencePauseOption()
-
-        SpeedReadingWordSizeOption()
-
-        // Colors
-        SpeedReadingBackgroundColorOption()
-
-        SpeedReadingFontColorOption()
-
-        SpeedReadingBackgroundImageOption()
-
-        // Accent & Indicators
-        SpeedReadingAccentCharacterOption()
-
-        SpeedReadingColorsOption() // Accent color with RGB sliders
-
-        SpeedReadingAccentCharacterOpacityOption()
-
-        SpeedReadingVerticalIndicatorsOption()
-
-        SpeedReadingVerticalIndicatorsSizeOption()
-
-        // Horizontal Bars
-        SpeedReadingHorizontalBarsOption()
-
-        SpeedReadingHorizontalBarsThicknessOption()
-
-        SpeedReadingHorizontalBarsColorOption()
-
-        // Font Settings
-        SpeedReadingCustomFontOption(
-            onCustomFontChanged = { enabled ->
-                fontState.isCustomFontEnabled = enabled
-                if (!enabled) {
-                    fontState.selectedFontId = "default"
-                }
-            }
-        )
-
-        SpeedReadingFontFamilyOption(
-            enabled = fontState.isCustomFontEnabled,
-            onFontChanged = { fontId ->
-                fontState.selectedFontId = fontId
-            }
-        )
-    }
-}
-
 fun LazyListScope.SpeedReadingSubcategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary },
     title: @Composable () -> String = { stringResource(id = R.string.speed_reading_reader_settings) },
@@ -101,15 +45,77 @@ fun LazyListScope.SpeedReadingSubcategory(
         showTitle = showTitle,
         showDivider = showDivider
     ) {
+        // Performance
         item {
-            SpeedReadingSettingsContent()
-        }
-    }
+            SpeedReadingWpmOption()
 }
 
         item {
-            SpeedReadingSentencePauseOption()
+            SpeedReadingWordSizeOption()
         }
+
+        // Colors
+        item {
+            SpeedReadingBackgroundColorOption()
+        }
+
+        item {
+            SpeedReadingFontColorOption()
+        }
+
+        item {
+            SpeedReadingBackgroundImageOption()
+        }
+
+        // Accent & Indicators
+        item {
+            SpeedReadingAccentCharacterOption()
+        }
+
+        item {
+            SpeedReadingColorsOption() // Accent color with RGB sliders
+        }
+
+        item {
+            SpeedReadingAccentCharacterOpacityOption()
+        }
+
+        item {
+            SpeedReadingVerticalIndicatorsOption()
+        }
+
+        item {
+            SpeedReadingVerticalIndicatorsSizeOption()
+        }
+
+        // Horizontal Bars
+        item {
+            SpeedReadingHorizontalBarsOption()
+        }
+
+        item {
+            SpeedReadingHorizontalBarsThicknessOption()
+        }
+
+        item {
+            SpeedReadingHorizontalBarsColorOption()
+        }
+
+        // Font Settings - TODO: Implement proper state sharing between items
+        item {
+            SpeedReadingCustomFontOption(
+                onCustomFontChanged = { /* TODO: Implement state management */ }
+            )
+        }
+
+        item {
+            SpeedReadingFontFamilyOption(
+                enabled = true, // TODO: Connect to custom font toggle state
+                onFontChanged = { /* TODO: Implement font selection */ }
+            )
+        }
+    }
+}
 
         item {
             SpeedReadingWordSizeOption()
