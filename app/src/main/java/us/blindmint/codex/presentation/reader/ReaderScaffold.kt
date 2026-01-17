@@ -135,7 +135,10 @@ fun ReaderScaffold(
     onPrevSearchResult: (ReaderEvent.OnPrevSearchResult) -> Unit,
     onScrollToSearchResult: (ReaderEvent.OnScrollToSearchResult) -> Unit,
     navigateToBookInfo: (changePath: Boolean) -> Unit,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    currentComicPage: Int = 0,
+    totalComicPages: Int = 0,
+    onComicPageSelected: (Int) -> Unit = {}
 ) {
     // State to track actual bar heights
     var topBarHeight by remember { mutableStateOf(0) }
@@ -218,7 +221,10 @@ fun ReaderScaffold(
                     bottomBarPadding = bottomBarPadding,
                     restoreCheckpoint = restoreCheckpoint,
                     scroll = scroll,
-                    changeProgress = changeProgress
+                    changeProgress = changeProgress,
+                    currentComicPage = currentComicPage,
+                    totalComicPages = totalComicPages,
+                    onComicPageSelected = onComicPageSelected
                 )
             }
         }

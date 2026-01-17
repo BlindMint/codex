@@ -55,5 +55,9 @@ data class ReaderState(
     val webViewUrl: String? = null,
 
     // Bookmarks
-    val bookmarks: List<Bookmark> = emptyList()
+    val bookmarks: List<Bookmark> = emptyList(),
+
+    // Comic navigation
+    val currentComicPage: Int = 0,
+    val totalComicPages: Int = 0
 )

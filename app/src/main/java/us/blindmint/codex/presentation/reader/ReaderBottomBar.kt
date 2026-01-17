@@ -52,7 +52,10 @@ fun ReaderBottomBar(
     bottomBarPadding: Dp,
     restoreCheckpoint: (ReaderEvent.OnRestoreCheckpoint) -> Unit,
     scroll: (ReaderEvent.OnScroll) -> Unit,
-    changeProgress: (ReaderEvent.OnChangeProgress) -> Unit
+    changeProgress: (ReaderEvent.OnChangeProgress) -> Unit,
+    currentComicPage: Int = 0,
+    totalComicPages: Int = 0,
+    onComicPageSelected: (Int) -> Unit = {}
 ) {
     val firstVisibleItemIndex = remember {
         derivedStateOf {
@@ -122,7 +125,14 @@ fun ReaderBottomBar(
                 modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.CenterStart
             ) {
-                if (!book.isComic) {
+                if (book.isComic) {
+                    ReaderBottomBarComicSlider(
+                        currentPage = currentComicPage,
+                        totalPages = totalComicPages,
+                        lockMenu = lockMenu,
+                        onPageSelected = onComicPageSelected
+                    )
+                } else {
                     ReaderBottomBarSlider(
                         book = book,
                         lockMenu = lockMenu,

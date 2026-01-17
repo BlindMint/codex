@@ -149,7 +149,10 @@ fun ReaderContent(
     onOpenExternalBrowser: (String) -> Unit,
     openLookupsInApp: Boolean,
     navigateToBookInfo: (changePath: Boolean) -> Unit,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    currentComicPage: Int = 0,
+    totalComicPages: Int = 0,
+    onComicPageSelected: (Int) -> Unit = {}
 ) {
     val activity = LocalActivity.current
     ReaderBottomSheet(
@@ -243,7 +246,10 @@ fun ReaderContent(
              onScrollToSearchResult = onScrollToSearchResult,
              onReaderEvent = onReaderEvent,
              navigateBack = navigateBack,
-             navigateToBookInfo = navigateToBookInfo
+             navigateToBookInfo = navigateToBookInfo,
+             currentComicPage = currentComicPage,
+             totalComicPages = totalComicPages,
+             onComicPageSelected = onComicPageSelected
          )
     } else {
         ReaderErrorPlaceholder(

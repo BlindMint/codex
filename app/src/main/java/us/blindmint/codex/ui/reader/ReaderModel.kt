@@ -824,6 +824,30 @@ class ReaderModel @Inject constructor(
                         )
                     }
                 }
+
+                is ReaderEvent.OnComicTotalPagesLoaded -> {
+                    _state.update {
+                        it.copy(
+                            totalComicPages = event.totalPages
+                        )
+                    }
+                }
+
+                is ReaderEvent.OnComicPageChanged -> {
+                    _state.update {
+                        it.copy(
+                            currentComicPage = event.currentPage
+                        )
+                    }
+                }
+
+                is ReaderEvent.OnComicPageSelected -> {
+                    _state.update {
+                        it.copy(
+                            currentComicPage = event.page
+                        )
+                    }
+                }
             }
         }
     }

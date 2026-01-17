@@ -124,6 +124,7 @@ fun ReaderLayout(
                 currentPage = currentComicPage,
                 onPageChanged = { page ->
                     currentComicPage = page
+                    onReaderEvent(ReaderEvent.OnComicPageChanged(page))
                 },
                 contentPadding = contentPadding,
                 backgroundColor = backgroundColor,
@@ -147,32 +148,15 @@ fun ReaderLayout(
                 },
                 onTotalPagesLoaded = { pages ->
                     totalComicPages = pages
+                    onReaderEvent(ReaderEvent.OnComicTotalPagesLoaded(pages))
                 },
                 onPageSelected = { page ->
                     currentComicPage = page
+                    onReaderEvent(ReaderEvent.OnComicPageSelected(page))
                 },
                 modifier = Modifier.weight(1f)
             )
 
-            // Comic progress bar at bottom (shown when menu is visible)
-            AnimatedVisibility(
-                visible = showMenu && progressBar && totalComicPages > 0,
-                enter = slideInVertically { it } + expandVertically(),
-                exit = slideOutVertically { it } + shrinkVertically()
-            ) {
-                ComicReaderBottomBar(
-                    currentPage = currentComicPage,
-                    totalPages = totalComicPages,
-                    progressBarPadding = progressBarPadding,
-                    progressBarAlignment = progressBarAlignment,
-                    progressBarFontSize = progressBarFontSize,
-                    fontColor = fontColor,
-                    sidePadding = sidePadding,
-                    onPageSelected = { page ->
-                        currentComicPage = page
-                    }
-                )
-            }
         }
         return
     }

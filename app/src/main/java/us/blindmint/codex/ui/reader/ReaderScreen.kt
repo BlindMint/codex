@@ -390,23 +390,36 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             state.value.book.progress,
             state.value.book.isComic,
             state.value.text,
-            mainState.value.progressCount
+            mainState.value.progressCount,
+            state.value.currentComicPage,
+            state.value.totalComicPages
         ) {
             if (state.value.book.isComic) {
                 // For comics, show page-based progress
                 when (mainState.value.progressCount) {
                     ReaderProgressCount.PERCENTAGE -> {
-                        "${state.value.book.progress.calculateProgress(2)}%"
+                        if (state.value.totalComicPages > 0) {
+                            val percentage = ((state.value.currentComicPage + 1).toFloat() / state.value.totalComicPages * 100).roundToInt()
+                            "$percentage%"
+                        } else {
+                            "0%"
+                        }
                     }
                     ReaderProgressCount.QUANTITY -> {
-                        // For comics, we don't have item count, so show page estimate
-                        val estimatedPage = (state.value.book.progress * 100).roundToInt() + 1
-                        "Page $estimatedPage"
+                        // For comics, show current page / total pages
+                        if (state.value.totalComicPages > 0) {
+                            "Page ${state.value.currentComicPage + 1}/${state.value.totalComicPages}"
+                        } else {
+                            "Page 1"
+                        }
                     }
                     ReaderProgressCount.PAGE -> {
                         // For comics, page count is the same as quantity
-                        val estimatedPage = (state.value.book.progress * 100).roundToInt() + 1
-                        "Page $estimatedPage"
+                        if (state.value.totalComicPages > 0) {
+                            "Page ${state.value.currentComicPage + 1}/${state.value.totalComicPages}"
+                        } else {
+                            "Page 1"
+                        }
                     }
                 }
             } else {
@@ -677,7 +690,12 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                      saveInBackStack = false
                  )
              },
-             onReaderEvent = screenModel::onEvent
+             onReaderEvent = screenModel::onEvent,
+             currentComicPage = state.value.currentComicPage,
+             totalComicPages = state.value.totalComicPages,
+             onComicPageSelected = { page ->
+                 screenModel.onEvent(ReaderEvent.OnComicPageSelected(page))
+             }
          )
 
         // Speed reading settings bottom sheet

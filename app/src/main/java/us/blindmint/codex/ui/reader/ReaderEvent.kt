@@ -160,4 +160,16 @@ sealed class ReaderEvent {
 
     // Comic events
     data object OnComicLoadingComplete : ReaderEvent()
+
+    data class OnComicTotalPagesLoaded(
+        val totalPages: Int
+    ) : ReaderEvent()
+
+    data class OnComicPageChanged(
+        val currentPage: Int
+    ) : ReaderEvent()
+
+    data class OnComicPageSelected(
+        val page: Int
+    ) : ReaderEvent()
 }
