@@ -23,6 +23,9 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.LinearProgressIndicator
@@ -141,16 +144,32 @@ fun ComicReaderLayout(
         return null
     }
 
-    // Pager state
+    // Pager state for paged mode
     val pagerState = rememberPagerState(
         initialPage = currentPage.coerceIn(0, (totalPages - 1).coerceAtLeast(0)),
         pageCount = { totalPages }
     )
 
+    // Lazy list state for webtoon mode
+    val lazyListState = rememberLazyListState(
+        initialFirstVisibleItemIndex = currentPage.coerceIn(0, (totalPages - 1).coerceAtLeast(0))
+    )
+
     // Update current page when pager changes
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
-            onPageChanged(page)
+            if (comicReaderMode == "PAGED") {
+                onPageChanged(page)
+            }
+        }
+    }
+
+    // Update current page when lazy list changes (webtoon mode)
+    LaunchedEffect(lazyListState) {
+        snapshotFlow { lazyListState.firstVisibleItemIndex }.collect { index ->
+            if (comicReaderMode == "WEBTOON") {
+                onPageChanged(index)
+            }
         }
     }
 
@@ -227,48 +246,98 @@ fun ComicReaderLayout(
             }
 
             Box(modifier = Modifier.fillMaxSize()) {
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        top = (WindowInsets.displayCutout.asPaddingValues()
-                            .calculateTopPadding())
-                            .coerceAtLeast(18.dp),
-                        bottom = (WindowInsets.displayCutout.asPaddingValues()
-                            .calculateBottomPadding())
-                            .coerceAtLeast(18.dp),
-                    )
-                ) { page ->
-                    val pageImage = loadPage(page)
-                    if (pageImage != null) {
-                        ComicPage(
-                            imageBitmap = pageImage,
-                            comicReadingDirection = comicReadingDirection,
-                            comicTapZone = comicTapZone,
-                            showMenu = showMenu,
-                            onPreviousPage = {
-                                scope.launch {
-                                    if (pagerState.currentPage > 0) {
-                                        pagerState.animateScrollToPage(pagerState.currentPage - 1)
-                                    }
-                                }
-                            },
-                            onNextPage = {
-                                scope.launch {
-                                    if (pagerState.currentPage < totalPages - 1) {
-                                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                                    }
-                                }
-                            },
-                            onMenuToggle = onMenuToggle
+                if (comicReaderMode == "PAGED") {
+                    // Paged mode - horizontal pager
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            top = (WindowInsets.displayCutout.asPaddingValues()
+                                .calculateTopPadding())
+                                .coerceAtLeast(18.dp),
+                            bottom = (WindowInsets.displayCutout.asPaddingValues()
+                                .calculateBottomPadding())
+                                .coerceAtLeast(18.dp),
                         )
-                    } else {
-                        // Show loading placeholder for pages that haven't loaded yet
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            // Could add a loading indicator here if needed
+                    ) { page ->
+                        val pageImage = loadPage(page)
+                        if (pageImage != null) {
+                            ComicPage(
+                                imageBitmap = pageImage,
+                                comicReadingDirection = comicReadingDirection,
+                                comicTapZone = comicTapZone,
+                                showMenu = showMenu,
+                                onPreviousPage = {
+                                    scope.launch {
+                                        if (pagerState.currentPage > 0) {
+                                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                                        }
+                                    }
+                                },
+                                onNextPage = {
+                                    scope.launch {
+                                        if (pagerState.currentPage < totalPages - 1) {
+                                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                        }
+                                    }
+                                },
+                                onMenuToggle = onMenuToggle
+                            )
+                        } else {
+                            // Show loading placeholder for pages that haven't loaded yet
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                // Could add a loading indicator here if needed
+                            }
+                        }
+                    }
+                } else {
+                    // Webtoon mode - vertical scrolling
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            top = (WindowInsets.displayCutout.asPaddingValues()
+                                .calculateTopPadding())
+                                .coerceAtLeast(18.dp),
+                            bottom = (WindowInsets.displayCutout.asPaddingValues()
+                                .calculateBottomPadding())
+                                .coerceAtLeast(18.dp),
+                        )
+                    ) {
+                        itemsIndexed(
+                            (0 until totalPages).toList(),
+                            key = { _, page -> page }
+                        ) { _, page ->
+                            val pageImage = loadPage(page)
+                            if (pageImage != null) {
+                                Image(
+                                    bitmap = pageImage,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.FillWidth,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .pointerInput(comicTapZone, showMenu) {
+                                            detectTapGestures { offset ->
+                                                // For webtoon, just handle menu toggle on tap
+                                                if (!showMenu) {
+                                                    onMenuToggle()
+                                                }
+                                            }
+                                        }
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    // Loading placeholder
+                                }
+                            }
                         }
                     }
                 }
