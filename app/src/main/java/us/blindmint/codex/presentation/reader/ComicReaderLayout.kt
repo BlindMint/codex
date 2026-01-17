@@ -281,7 +281,8 @@ fun ComicReaderLayout(
                                         }
                                     }
                                 },
-                                onMenuToggle = onMenuToggle
+                                onMenuToggle = onMenuToggle,
+                                comicInvertTaps = comicInvertTaps
                             )
                         } else {
                             // Show loading placeholder for pages that haven't loaded yet
@@ -390,9 +391,17 @@ private fun ComicPage(
     showMenu: Boolean = false,
     onPreviousPage: () -> Unit,
     onNextPage: () -> Unit,
-    onMenuToggle: () -> Unit = {}
+    onMenuToggle: () -> Unit = {},
+    comicInvertTaps: String = "NONE"
 ) {
     val isRTL = comicReadingDirection == "RTL"
+
+    // Apply tap inversion logic
+    val shouldInvertHorizontal = comicInvertTaps == "HORIZONTAL" || comicInvertTaps == "BOTH"
+
+    // Create adjusted callbacks based on inversion setting
+    val adjustedOnPreviousPage: () -> Unit = if (shouldInvertHorizontal) onNextPage else onPreviousPage
+    val adjustedOnNextPage: () -> Unit = if (shouldInvertHorizontal) onPreviousPage else onNextPage
 
     Box(
         modifier = Modifier
@@ -411,45 +420,45 @@ private fun ComicPage(
                         when (comicTapZone) {
                             0 -> { // Default
                                 if (x < width * 0.2f) {
-                                    if (isRTL) onNextPage() else onPreviousPage()
+                                    if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
                                     handledNavigation = true
                                 } else if (x > width * 0.8f) {
-                                    if (isRTL) onPreviousPage() else onNextPage()
+                                    if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
                                     handledNavigation = true
                                 }
                             }
                             1 -> { // L-shaped navigation
                                 if (x < width * 0.3f || (x < width * 0.5f && y > height * 0.7f)) {
-                                    if (isRTL) onNextPage() else onPreviousPage()
+                                    if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
                                     handledNavigation = true
                                 } else if (x > width * 0.7f || (x > width * 0.5f && y > height * 0.7f)) {
-                                    if (isRTL) onPreviousPage() else onNextPage()
+                                    if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
                                     handledNavigation = true
                                 }
                             }
                             2 -> { // Kindle-ish
                                 if (x < width * 0.2f) {
-                                    if (isRTL) onNextPage() else onPreviousPage()
+                                    if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
                                     handledNavigation = true
                                 } else if (x > width * 0.8f) {
-                                    if (isRTL) onPreviousPage() else onNextPage()
+                                    if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
                                     handledNavigation = true
                                 }
                             }
                             3 -> { // Edge
                                 if (x < width * 0.1f) {
-                                    if (isRTL) onNextPage() else onPreviousPage()
+                                    if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
                                     handledNavigation = true
                                 } else if (x > width * 0.9f) {
-                                    if (isRTL) onPreviousPage() else onNextPage()
+                                    if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
                                     handledNavigation = true
                                 }
                             }
                             4 -> { // Right and left
                                 if (x < width * 0.5f) {
-                                    if (isRTL) onNextPage() else onPreviousPage()
+                                    if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
                                 } else {
-                                    if (isRTL) onPreviousPage() else onNextPage()
+                                    if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
                                 }
                                 handledNavigation = true
                             }
