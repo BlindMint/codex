@@ -14,6 +14,10 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
@@ -110,32 +114,58 @@ fun ReaderLayout(
     // Conditional rendering based on whether it's a comic or text book
     if (book.isComic) {
         // Comic reader layout
-        ComicReaderLayout(
-            book = book,
-            currentPage = 0, // TODO: Implement page tracking
-            onPageChanged = { /* TODO: Handle page changes */ },
-            contentPadding = contentPadding,
-            backgroundColor = backgroundColor,
-            comicReadingDirection = mainState.value.comicReadingDirection,
-            comicTapZone = mainState.value.comicTapZone,
-            showMenu = showMenu,
-            showPageIndicator = !fullscreenMode,
-            onLoadingComplete = {
-                // Signal that comic loading is complete
-                onReaderEvent(ReaderEvent.OnComicLoadingComplete)
-            },
-            onMenuToggle = {
-                menuVisibility(
-                    ReaderEvent.OnMenuVisibility(
-                        show = !showMenu,
-                        fullscreenMode = fullscreenMode,
-                        saveCheckpoint = true,
-                        activity = activity
+        var currentComicPage by remember { mutableIntStateOf(0) }
+        var totalComicPages by remember { mutableIntStateOf(0) }
+
+        Column(Modifier.fillMaxSize()) {
+            ComicReaderLayout(
+                book = book,
+                currentPage = currentComicPage,
+                onPageChanged = { page ->
+                    currentComicPage = page
+                },
+                contentPadding = contentPadding,
+                backgroundColor = backgroundColor,
+                comicReadingDirection = mainState.value.comicReadingDirection,
+                comicTapZone = mainState.value.comicTapZone,
+                showMenu = showMenu,
+                showPageIndicator = !fullscreenMode,
+                onLoadingComplete = {
+                    // Signal that comic loading is complete
+                    onReaderEvent(ReaderEvent.OnComicLoadingComplete)
+                },
+                onMenuToggle = {
+                    menuVisibility(
+                        ReaderEvent.OnMenuVisibility(
+                            show = !showMenu,
+                            fullscreenMode = fullscreenMode,
+                            saveCheckpoint = true,
+                            activity = activity
+                        )
                     )
+                },
+                onTotalPagesLoaded = { pages ->
+                    totalComicPages = pages
+                },
+                modifier = Modifier.weight(1f)
+            )
+
+            // Progress bar at bottom (shown when menu is visible)
+            AnimatedVisibility(
+                visible = showMenu && progressBar && totalComicPages > 0,
+                enter = slideInVertically { it } + expandVertically(),
+                exit = slideOutVertically { it } + shrinkVertically()
+            ) {
+                ReaderProgressBar(
+                    progress = "${((currentComicPage + 1).toFloat() / totalComicPages * 100).toInt()}% (${currentComicPage + 1}/$totalComicPages)",
+                    progressBarPadding = progressBarPadding,
+                    progressBarAlignment = progressBarAlignment,
+                    progressBarFontSize = progressBarFontSize,
+                    fontColor = fontColor,
+                    sidePadding = sidePadding
                 )
-            },
-            modifier = Modifier.fillMaxSize()
-        )
+            }
+        }
         return
     }
 

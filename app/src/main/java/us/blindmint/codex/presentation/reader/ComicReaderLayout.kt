@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
@@ -57,6 +58,7 @@ import us.blindmint.codex.data.parser.comic.ArchiveReader
 import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.presentation.core.util.LocalActivity
+import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.reader.ReaderEvent
 
@@ -73,6 +75,7 @@ fun ComicReaderLayout(
     showPageIndicator: Boolean = true,
     onLoadingComplete: () -> Unit = {},
     onMenuToggle: () -> Unit = {},
+    onTotalPagesLoaded: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -168,6 +171,7 @@ fun ComicReaderLayout(
                 android.util.Log.d("CodexComic", "Found ${imageEntries.size} image pages")
                 archiveHandle = archive
                 totalPages = imageEntries.size
+                onTotalPagesLoaded(imageEntries.size)
 
                 // Pre-load the first few pages for smooth UX
                 for (i in 0 until min(3, imageEntries.size)) {
@@ -252,6 +256,33 @@ fun ComicReaderLayout(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ComicProgressBar(
+    currentPage: Int,
+    totalPages: Int,
+    modifier: Modifier = Modifier
+) {
+    if (totalPages > 0) {
+        val percentage = ((currentPage + 1).toFloat() / totalPages * 100).toInt()
+        val progressText = "$percentage% (${currentPage + 1}/$totalPages)"
+
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            StyledText(
+                text = progressText,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                maxLines = 1
+            )
         }
     }
 }
