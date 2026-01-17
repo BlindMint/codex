@@ -77,6 +77,7 @@ fun ComicReaderLayout(
     onLoadingComplete: () -> Unit = {},
     onMenuToggle: () -> Unit = {},
     onTotalPagesLoaded: (Int) -> Unit = {},
+    onPageSelected: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -204,6 +205,13 @@ fun ComicReaderLayout(
             // Track pager state changes and notify parent
             LaunchedEffect(pagerState.currentPage) {
                 onPageChanged(pagerState.currentPage)
+            }
+
+            // When parent requests a specific page, scroll to it
+            LaunchedEffect(currentPage) {
+                if (currentPage != pagerState.currentPage && currentPage >= 0 && currentPage < totalPages) {
+                    pagerState.animateScrollToPage(currentPage)
+                }
             }
 
             Box(modifier = Modifier.fillMaxSize()) {

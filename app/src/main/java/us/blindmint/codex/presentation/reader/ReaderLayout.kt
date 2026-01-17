@@ -148,31 +148,30 @@ fun ReaderLayout(
                 onTotalPagesLoaded = { pages ->
                     totalComicPages = pages
                 },
+                onPageSelected = { page ->
+                    currentComicPage = page
+                },
                 modifier = Modifier.weight(1f)
             )
 
-            // Progress bar at bottom (shown when menu is visible)
+            // Comic progress bar at bottom (shown when menu is visible)
             AnimatedVisibility(
                 visible = showMenu && progressBar && totalComicPages > 0,
                 enter = slideInVertically { it } + expandVertically(),
                 exit = slideOutVertically { it } + shrinkVertically()
             ) {
-                Column {
-                    // Visual progress bar
-                    androidx.compose.material3.LinearProgressIndicator(
-                        progress = { (currentComicPage + 1).toFloat() / totalComicPages },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    // Text progress label
-                    ReaderProgressBar(
-                        progress = "${((currentComicPage + 1).toFloat() / totalComicPages * 100).toInt()}% (${currentComicPage + 1}/$totalComicPages)",
-                        progressBarPadding = progressBarPadding,
-                        progressBarAlignment = progressBarAlignment,
-                        progressBarFontSize = progressBarFontSize,
-                        fontColor = fontColor,
-                        sidePadding = sidePadding
-                    )
-                }
+                ComicReaderBottomBar(
+                    currentPage = currentComicPage,
+                    totalPages = totalComicPages,
+                    progressBarPadding = progressBarPadding,
+                    progressBarAlignment = progressBarAlignment,
+                    progressBarFontSize = progressBarFontSize,
+                    fontColor = fontColor,
+                    sidePadding = sidePadding,
+                    onPageSelected = { page ->
+                        currentComicPage = page
+                    }
+                )
             }
         }
         return
