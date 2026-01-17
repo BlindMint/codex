@@ -19,13 +19,17 @@ import us.blindmint.codex.ui.main.MainModel
 @Composable
 fun SpeedReadingHorizontalBarsColorOption(
     color: Color = Color.Gray,
-    onColorChange: (Color) -> Unit = {}
+    opacity: Float = 1.0f,
+    onColorChange: (Color) -> Unit = {},
+    onOpacityChange: (Float) -> Unit = {}
 ) {
     ColorPickerWithTitle(
         title = stringResource(id = R.string.speed_reading_horizontal_bars_color),
         value = color,
         presetId = 0, // TODO: Use proper preset ID for speed reading
         showRgbInputs = true,
+        opacity = opacity,
+        onOpacityChange = onOpacityChange,
         onValueChange = onColorChange
     )
 }

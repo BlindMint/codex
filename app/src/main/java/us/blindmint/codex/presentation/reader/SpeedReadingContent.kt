@@ -67,7 +67,10 @@ fun SpeedReadingContent(
     verticalIndicatorsSize: Int,
     showHorizontalBars: Boolean,
     horizontalBarsThickness: Int,
+    horizontalBarsDistance: Int,
     horizontalBarsColor: Color,
+    horizontalBarsOpacity: Float,
+    focalPointPosition: Float,
     wpm: Int,
     isPlaying: Boolean,
     onWpmChange: (Int) -> Unit,
@@ -126,9 +129,9 @@ fun SpeedReadingContent(
         }
     }
 
-    // Fixed position for accent character - offset slightly left of center
+    // Focal point position - configurable via settings
     // This creates a consistent focal point that words align to
-    val accentOffsetRatio = 0.38f // 38% from left edge (slightly left of center)
+    val accentOffsetRatio = focalPointPosition
 
     Box(
         modifier = modifier.fillMaxSize(),
@@ -185,7 +188,7 @@ fun SpeedReadingContent(
                 // Frame dimensions
                 val frameHeight = 120.dp
                 val wordAreaHeight = 60.dp // Height reserved for word display
-                val barToWordGap = 8.dp // Gap between horizontal bar and word area
+                val barToWordGap = horizontalBarsDistance.dp // Configurable gap between horizontal bar and word area
 
                 // Draw the RSVP frame - horizontal bars above and below the word
                 Canvas(
@@ -201,13 +204,16 @@ fun SpeedReadingContent(
                     val topBarY = wordAreaTop - barToWordGap.toPx()
                     val bottomBarY = wordAreaBottom + barToWordGap.toPx()
 
+                    // Apply opacity to horizontal bars color
+                    val barColorWithOpacity = horizontalBarsColor.copy(alpha = horizontalBarsOpacity)
+
                     // Horizontal bars (only if enabled) - TOP and BOTTOM borders
                     if (showHorizontalBars) {
                         val lineThickness = horizontalBarsThickness.dp.toPx()
 
                         // Top horizontal bar - full width
                         drawLine(
-                            color = horizontalBarsColor,
+                            color = barColorWithOpacity,
                             start = Offset(0f, topBarY),
                             end = Offset(size.width, topBarY),
                             strokeWidth = lineThickness
@@ -215,7 +221,7 @@ fun SpeedReadingContent(
 
                         // Bottom horizontal bar - full width
                         drawLine(
-                            color = horizontalBarsColor,
+                            color = barColorWithOpacity,
                             start = Offset(0f, bottomBarY),
                             end = Offset(size.width, bottomBarY),
                             strokeWidth = lineThickness
@@ -229,7 +235,7 @@ fun SpeedReadingContent(
 
                         // Top vertical indicator - starts at top bar, points DOWN toward word
                         drawLine(
-                            color = horizontalBarsColor,
+                            color = barColorWithOpacity,
                             start = Offset(focalPointX, topBarY),
                             end = Offset(focalPointX, topBarY + verticalIndicatorHeight),
                             strokeWidth = verticalIndicatorWidth
@@ -237,7 +243,7 @@ fun SpeedReadingContent(
 
                         // Bottom vertical indicator - starts at bottom bar, points UP toward word
                         drawLine(
-                            color = horizontalBarsColor,
+                            color = barColorWithOpacity,
                             start = Offset(focalPointX, bottomBarY),
                             end = Offset(focalPointX, bottomBarY - verticalIndicatorHeight),
                             strokeWidth = verticalIndicatorWidth

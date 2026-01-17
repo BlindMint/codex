@@ -173,9 +173,39 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
     val speedReadingVerticalIndicatorsSize = remember { mutableStateOf(32) }
     val speedReadingShowHorizontalBars = remember { mutableStateOf(true) }
     val speedReadingHorizontalBarsThickness = remember { mutableStateOf(2) }
+    val speedReadingHorizontalBarsDistance = remember { mutableStateOf(8) }
     val speedReadingHorizontalBarsColor = remember { mutableStateOf(Color.Gray) }
+    val speedReadingHorizontalBarsOpacity = remember { mutableStateOf(1.0f) }
+    val speedReadingFocalPointPosition = remember { mutableStateOf(0.38f) }
     val speedReadingCustomFontEnabled = remember { mutableStateOf(false) }
     val speedReadingSelectedFontFamily = remember { mutableStateOf("default") }
+
+    // Resolve speed reading font based on custom font setting
+    val speedReadingFontFamily = remember(
+        speedReadingCustomFontEnabled.value,
+        speedReadingSelectedFontFamily.value,
+        mainState.value.customFonts,
+        fontFamily
+    ) {
+        if (speedReadingCustomFontEnabled.value) {
+            val selectedId = speedReadingSelectedFontFamily.value
+            if (selectedId.startsWith("custom_")) {
+                val customFontName = selectedId.removePrefix("custom_")
+                val customFont = mainState.value.customFonts.find { it.name == customFontName }
+                customFont?.let {
+                    try {
+                        FontFamily(Font(java.io.File(it.filePath)))
+                    } catch (e: Exception) {
+                        fontFamily.font
+                    }
+                } ?: fontFamily.font
+            } else {
+                provideFonts().find { it.id == selectedId }?.font ?: fontFamily.font
+            }
+        } else {
+            fontFamily.font
+        }
+    }
         val lineHeight = remember(
             mainState.value.fontSize,
             mainState.value.lineHeight
@@ -663,8 +693,14 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             onShowHorizontalBarsChange = { speedReadingShowHorizontalBars.value = it },
             horizontalBarsThickness = speedReadingHorizontalBarsThickness.value,
             onHorizontalBarsThicknessChange = { speedReadingHorizontalBarsThickness.value = it },
+            horizontalBarsDistance = speedReadingHorizontalBarsDistance.value,
+            onHorizontalBarsDistanceChange = { speedReadingHorizontalBarsDistance.value = it },
             horizontalBarsColor = speedReadingHorizontalBarsColor.value,
             onHorizontalBarsColorChange = { speedReadingHorizontalBarsColor.value = it },
+            horizontalBarsOpacity = speedReadingHorizontalBarsOpacity.value,
+            onHorizontalBarsOpacityChange = { speedReadingHorizontalBarsOpacity.value = it },
+            focalPointPosition = speedReadingFocalPointPosition.value,
+            onFocalPointPositionChange = { speedReadingFocalPointPosition.value = it },
             customFontEnabled = speedReadingCustomFontEnabled.value,
             onCustomFontEnabledChange = { speedReadingCustomFontEnabled.value = it },
             selectedFontFamily = speedReadingSelectedFontFamily.value,
@@ -682,7 +718,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 fontColor = settingsState.value.selectedColorPreset.fontColor,
                 accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
                 accentColor = speedReadingAccentColor.value,
-                fontFamily = fontFamily.font,
+                fontFamily = speedReadingFontFamily,
                 sentencePauseMs = 2000, // TODO: Make configurable
                 wordSize = speedReadingWordSize.value,
                 accentOpacity = speedReadingAccentOpacity.value,
@@ -690,7 +726,10 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 verticalIndicatorsSize = speedReadingVerticalIndicatorsSize.value,
                 showHorizontalBars = speedReadingShowHorizontalBars.value,
                 horizontalBarsThickness = speedReadingHorizontalBarsThickness.value,
+                horizontalBarsDistance = speedReadingHorizontalBarsDistance.value,
                 horizontalBarsColor = speedReadingHorizontalBarsColor.value,
+                horizontalBarsOpacity = speedReadingHorizontalBarsOpacity.value,
+                focalPointPosition = speedReadingFocalPointPosition.value,
                 progress = progress,
                 bottomBarPadding = bottomBarPadding,
                 showWpmIndicator = true,

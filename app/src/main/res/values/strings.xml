@@ -808,6 +808,8 @@
     <string name="speed_reading_horizontal_bars_thickness">Horizontal bars thickness</string>
     <string name="speed_reading_vertical_indicators_size">Vertical indicators size</string>
     <string name="speed_reading_horizontal_bars_color">Horizontal bars color</string>
+    <string name="speed_reading_horizontal_bars_distance">Bar distance from word</string>
+    <string name="speed_reading_focal_point_position">Focal point position</string>
 
     <string name="delete_bookmark_content_desc">Delete bookmark</string>
     <string name="more_content_desc">More</string>

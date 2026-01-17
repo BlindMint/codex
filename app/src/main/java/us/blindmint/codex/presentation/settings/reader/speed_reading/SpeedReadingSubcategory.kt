@@ -43,6 +43,8 @@ import us.blindmint.codex.presentation.settings.appearance.colors.components.Col
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsSizeOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsThicknessOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsColorOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingHorizontalBarsDistanceOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingFocalPointPositionOption
 
 import us.blindmint.codex.presentation.core.components.settings.SwitchWithTitle
 
@@ -74,8 +76,14 @@ fun LazyListScope.SpeedReadingSubcategory(
     onShowHorizontalBarsChange: (Boolean) -> Unit = {},
     horizontalBarsThickness: Int = 2,
     onHorizontalBarsThicknessChange: (Int) -> Unit = {},
+    horizontalBarsDistance: Int = 8,
+    onHorizontalBarsDistanceChange: (Int) -> Unit = {},
     horizontalBarsColor: Color = Color.Gray,
     onHorizontalBarsColorChange: (Color) -> Unit = {},
+    horizontalBarsOpacity: Float = 1.0f,
+    onHorizontalBarsOpacityChange: (Float) -> Unit = {},
+    focalPointPosition: Float = 0.38f,
+    onFocalPointPositionChange: (Float) -> Unit = {},
     customFontEnabled: Boolean = false,
     selectedFontFamily: String = "default",
     onCustomFontChanged: (Boolean) -> Unit = {},
@@ -257,11 +265,34 @@ fun LazyListScope.SpeedReadingSubcategory(
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
-                SpeedReadingHorizontalBarsColorOption(
-                    color = horizontalBarsColor,
-                    onColorChange = onHorizontalBarsColorChange
+                SpeedReadingHorizontalBarsDistanceOption(
+                    distance = horizontalBarsDistance,
+                    onDistanceChange = onHorizontalBarsDistanceChange
                 )
             }
+        }
+
+        item {
+            AnimatedVisibility(
+                visible = showHorizontalBars,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                SpeedReadingHorizontalBarsColorOption(
+                    color = horizontalBarsColor,
+                    opacity = horizontalBarsOpacity,
+                    onColorChange = onHorizontalBarsColorChange,
+                    onOpacityChange = onHorizontalBarsOpacityChange
+                )
+            }
+        }
+
+        // Focal Point Position
+        item {
+            SpeedReadingFocalPointPositionOption(
+                position = focalPointPosition,
+                onPositionChange = onFocalPointPositionChange
+            )
         }
 
         // Font Settings
