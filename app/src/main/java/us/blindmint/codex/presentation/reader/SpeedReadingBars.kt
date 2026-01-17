@@ -158,7 +158,8 @@ fun SpeedReadingBottomBar(
             IconButton(
                 icon = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                 contentDescription = if (isPlaying) R.string.pause else R.string.play,
-                disableOnClick = false
+                disableOnClick = false,
+                color = MaterialTheme.colorScheme.onSurface
             ) {
                 onPlayPause()
             }

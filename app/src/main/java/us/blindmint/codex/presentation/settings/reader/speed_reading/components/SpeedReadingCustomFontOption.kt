@@ -7,22 +7,26 @@
 package us.blindmint.codex.presentation.settings.reader.speed_reading.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.core.components.settings.SwitchWithTitle
-import us.blindmint.codex.ui.main.MainEvent
-import us.blindmint.codex.ui.main.MainModel
 
 @Composable
-fun SpeedReadingCustomFontOption() {
-    val mainModel = hiltViewModel<MainModel>()
-    val state = mainModel.state.collectAsStateWithLifecycle()
+fun SpeedReadingCustomFontOption(
+    onCustomFontChanged: (Boolean) -> Unit
+) {
+    var isCustomFontEnabled by remember { mutableStateOf(false) }
 
     SwitchWithTitle(
-        selected = false, // TODO: Add to MainState - enable custom speed reading font
+        selected = isCustomFontEnabled,
         title = stringResource(id = R.string.speed_reading_custom_font),
-        onClick = { /* TODO: Save to settings */ }
+        onClick = {
+            isCustomFontEnabled = !isCustomFontEnabled
+            onCustomFontChanged(isCustomFontEnabled)
+        }
     )
 }
