@@ -8,6 +8,7 @@ package us.blindmint.codex.presentation.settings.reader.speed_reading.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +32,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
+import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 
 @Composable
 fun SpeedReadingSentencePauseOption(
@@ -39,23 +41,23 @@ fun SpeedReadingSentencePauseOption(
 ) {
     var pauseDuration by remember(sentencePauseDuration) { mutableIntStateOf(sentencePauseDuration) }
 
-    Text(
-        text = "Manual sentence pause duration",
-        style = MaterialTheme.typography.labelLarge.copy(
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        ),
-        modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
-    )
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 18.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 18.dp, vertical = 8.dp)
     ) {
+        SettingsSubcategoryTitle(
+            title = "Manual sentence pause duration",
+            padding = 0.dp
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
         // Slider
         Slider(
             value = pauseDuration.toFloat(),
@@ -65,7 +67,7 @@ fun SpeedReadingSentencePauseOption(
                 onSentencePauseDurationChange(newValue)
             },
             valueRange = 150f..700f,
-            steps = 109, // (700-150)/5 - 1 = 109 steps
+            steps = 0,
             modifier = Modifier.weight(1f)
         )
 
@@ -91,4 +93,5 @@ fun SpeedReadingSentencePauseOption(
             )
         }
     }
+}
 }
