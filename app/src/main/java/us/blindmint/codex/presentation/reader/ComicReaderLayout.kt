@@ -155,6 +155,19 @@ fun ComicReaderLayout(
         initialFirstVisibleItemIndex = currentPage.coerceIn(0, (totalPages - 1).coerceAtLeast(0))
     )
 
+    // Map comic scale type to ContentScale
+    val contentScale = remember(comicScaleType) {
+        when (comicScaleType) {
+            1 -> ContentScale.Fit  // FIT_SCREEN
+            2 -> ContentScale.Crop  // STRETCH (crop to fit)
+            3 -> ContentScale.FillWidth  // FIT_WIDTH
+            4 -> ContentScale.FillHeight  // FIT_HEIGHT
+            5 -> ContentScale.None  // ORIGINAL (no scaling)
+            6 -> ContentScale.Fit  // SMART_FIT (same as fit for now)
+            else -> ContentScale.Fit
+        }
+    }
+
     // Update current page when pager changes
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
@@ -282,7 +295,8 @@ fun ComicReaderLayout(
                                     }
                                 },
                                 onMenuToggle = onMenuToggle,
-                                comicInvertTaps = comicInvertTaps
+                                comicInvertTaps = comicInvertTaps,
+                                contentScale = contentScale
                             )
                         } else {
                             // Show loading placeholder for pages that haven't loaded yet
@@ -314,10 +328,12 @@ fun ComicReaderLayout(
                         ) { _, page ->
                             val pageImage = loadPage(page)
                             if (pageImage != null) {
+                                // For webtoon, prefer FillWidth but respect user's contentScale choice
+                                val webtoonContentScale = if (contentScale == ContentScale.Fit) ContentScale.FillWidth else contentScale
                                 Image(
                                     bitmap = pageImage,
                                     contentDescription = null,
-                                    contentScale = ContentScale.FillWidth,
+                                    contentScale = webtoonContentScale,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .pointerInput(comicTapZone, showMenu) {
@@ -392,7 +408,8 @@ private fun ComicPage(
     onPreviousPage: () -> Unit,
     onNextPage: () -> Unit,
     onMenuToggle: () -> Unit = {},
-    comicInvertTaps: String = "NONE"
+    comicInvertTaps: String = "NONE",
+    contentScale: ContentScale = ContentScale.Fit
 ) {
     val isRTL = comicReadingDirection == "RTL"
 
@@ -476,7 +493,7 @@ private fun ComicPage(
         Image(
             bitmap = imageBitmap,
             contentDescription = null,
-            contentScale = ContentScale.Fit,
+            contentScale = contentScale,
             modifier = Modifier.fillMaxSize()
         )
     }
