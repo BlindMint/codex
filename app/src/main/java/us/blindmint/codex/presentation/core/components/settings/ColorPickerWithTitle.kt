@@ -60,7 +60,9 @@ fun ColorPickerWithTitle(
     verticalPadding: Dp = 8.dp,
     isLocked: Boolean = false,
     showRgbInputs: Boolean = false,
-    onValueChange: (Color) -> Unit
+    opacity: Float? = null,
+    onValueChange: (Color) -> Unit,
+    onOpacityChange: ((Float) -> Unit)? = null
 ) {
     val initialValue = rememberSaveable(presetId) { value.value.toString() }
     var color by remember(value) { mutableStateOf(value) }
@@ -247,6 +249,28 @@ fun ColorPickerWithTitle(
                     textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
                     singleLine = true
                 )
+            }
+        }
+
+        // Opacity slider (if provided)
+        opacity?.let { currentOpacity ->
+            onOpacityChange?.let { opacityCallback ->
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SliderWithTitle(
+                        modifier = Modifier.weight(1f),
+                        value = (currentOpacity * 100).toInt() to "${(currentOpacity * 100).toInt()}%",
+                        title = "Opacity",
+                        fromValue = 0,
+                        toValue = 100,
+                        enabled = !isLocked,
+                        onValueChange = { intValue ->
+                            opacityCallback(intValue / 100f)
+                        }
+                    )
+                }
             }
         }
     }
