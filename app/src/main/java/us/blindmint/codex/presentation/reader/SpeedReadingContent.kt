@@ -407,12 +407,15 @@ fun SpeedReadingContent(
 /**
  * Find the Optimal Viewing Position (OVP) for RSVP accent highlight.
  *
- * Rules based on eye-tracking research (Rayner saccades, ~14px fovea):
- * - Primary: 2nd letter if vowel (3-6 char words) - OVP center, 28% faster reading
- * - Medium-long: Center with vowel scan for 7-9 char words - prevents left cutoff
- * - Short: 2nd char for 1-3 char words - avoid predictable first char
- * - Long: Center (len/2) for 10+ chars with vowel scan
- * - No vowel: 2nd/3rd consonant as fallback
+ * Hybrid strategy: Post-1st vowel priority with center-leftward scan for long words.
+ * Balances saccade minimization (Rayner: 2nd/3rd position, 28% faster) with phonics
+ * comprehension (vowel boost: +20%, Spreeder research).
+ *
+ * Rules:
+ * - Short (1-3 chars): 2nd character (position 1)
+ * - Medium (4-6 chars): 1st available vowel after position 0
+ * - Long (7+ chars): Scan from center leftward (descending) for vowel
+ * - Fallback: 2nd character (position 1)
  */
 fun findAccentCharIndex(word: String): Int {
     if (word.isEmpty()) return -1
@@ -443,69 +446,31 @@ fun findAccentCharIndex(word: String): Int {
 
     val len = cleanWord.length
 
-    // Rule: Short words (1-3 chars) - use 2nd char, prefer consonant if no vowel
+    // Rule: Short words (1-3 chars) - always 2nd character
     if (len <= 3) {
-        if (len == 1) return 0
-        // Check 2nd position (index 1) for vowel first
-        if (len >= 2 && cleanWord[1] in vowels) return 1
-        // Fallback to 2nd char even if consonant
         return if (len >= 2) 1 else 0
     }
 
-    // Rule: Medium words (3-6 chars) - Primary: 2nd letter if vowel
-    if (len in 3..6) {
-        // Scan after 1st letter for 1st/2nd vowel, prefer 2nd position
-        if (cleanWord[1] in vowels) return 1
-        if (len > 2 && cleanWord[2] in vowels) return 2
-        // Fallback: 2nd or 3rd char
+    // Rule: Long words (7+ chars) - center leftward scan
+    if (len >= 7) {
+        val center = len / 2
+        // Scan from center leftward (descending) for first vowel
+        for (i in center downTo 1) {
+            if (cleanWord[i] in vowels) {
+                return i
+            }
+        }
+        // Fallback: 2nd character
         return 1
     }
 
-    // Rule: Medium-long words (7-9 chars) - Center with vowel preference
-    if (len in 7..9) {
-        val centerPos = len / 2
-        val scanPositions = listOf(
-            centerPos,
-            centerPos - 1,
-            centerPos + 1,
-            centerPos - 2,
-            centerPos + 2,
-            2, // fallback to 2nd
-            3  // fallback to 3rd
-        ).filter { it in cleanWord.indices }
-
-        for (pos in scanPositions) {
-            if (cleanWord[pos] in vowels) {
-                return pos
-            }
-        }
-        // No vowel found, use center
-        return centerPos
-    }
-
-    // Rule: Long words (10+ chars) - Center (len/2) with vowel scan
-    val centerPos = len / 2
-
-    // Scan for first available vowel near center
-    val scanPositions = listOf(
-        centerPos,
-        centerPos - 1,
-        centerPos + 1,
-        centerPos - 2,
-        centerPos + 2
-    ).filter { it in cleanWord.indices }
-
-    for (pos in scanPositions) {
-        if (cleanWord[pos] in vowels) {
-            return pos
+    // Rule: Medium words (4-6 chars) - post-1st vowel priority
+    for (i in 1..<len) {
+        if (cleanWord[i] in vowels) {
+            return i
         }
     }
 
-    // Rule: No vowel found - use 2nd/3rd consonant
-    // For longer words, prefer position closer to center
-    return when {
-        len >= 10 -> centerPos.coerceIn(0, len - 1)
-        len >= 7 -> 2.coerceIn(0, len - 1)
-        else -> 1.coerceIn(0, len - 1)
-    }
+    // Fallback: 2nd character (position 1)
+    return 1
 }
