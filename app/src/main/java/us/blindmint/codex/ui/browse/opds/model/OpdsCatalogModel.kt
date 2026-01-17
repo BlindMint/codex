@@ -72,6 +72,7 @@ class OpdsCatalogModel @Inject constructor(
             try {
                 val nextFeed = opdsRepository.loadMore(nextUrl, source.username, source.password)
                 val currentFeed = state.value.feed
+                @Suppress("KotlinConstantConditions")
                 if (currentFeed != null && nextFeed != null) {
                     // Combine current entries with new entries
                     val combinedEntries = currentFeed.entries + nextFeed.entries
