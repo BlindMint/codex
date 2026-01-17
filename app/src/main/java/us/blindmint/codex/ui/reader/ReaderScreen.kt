@@ -8,6 +8,26 @@ package us.blindmint.codex.ui.reader
 
 import android.content.pm.ActivityInfo
 import android.os.Parcelable
+import androidx.activity.compose.LocalActivity
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsStateWithLifecycle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.em
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.activity.ComponentActivity
+import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.parcelize.Parcelize
+import us.blindmint.codex.data.local.data_store.DataStoreKeys
+import us.blindmint.codex.domain.navigator.LocalNavigator
+import us.blindmint.codex.domain.navigator.Screen
+import us.blindmint.codex.domain.reader.ReaderVerticalGesture
+import us.blindmint.codex.domain.reader.ReaderColorEffects
+import us.blindmint.codex.presentation.core.constants.provideFonts
+import us.blindmint.codex.presentation.core.constants.CHARACTERS_PER_PAGE
 import android.view.WindowManager
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -30,6 +50,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -37,40 +58,39 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.parcelize.Parcelize
-import us.blindmint.codex.domain.navigator.Screen
-import us.blindmint.codex.domain.reader.CustomFont
+import us.blindmint.codex.R
+import us.blindmint.codex.data.local.data_store.DataStoreKeys
+import us.blindmint.codex.domain.library.book.Book
+import us.blindmint.codex.domain.reader.Checkpoint
 import us.blindmint.codex.domain.reader.FontWithName
-import us.blindmint.codex.domain.reader.ReaderColorEffects
+import us.blindmint.codex.domain.reader.ReaderFontThickness
+import us.blindmint.codex.domain.reader.ReaderHorizontalGesture
 import us.blindmint.codex.domain.reader.ReaderProgressCount
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.ReaderTextAlignment
-import us.blindmint.codex.domain.ui.UIText
-import us.blindmint.codex.presentation.core.constants.provideFonts
-import us.blindmint.codex.presentation.core.constants.CHARACTERS_PER_PAGE
-import us.blindmint.codex.presentation.core.util.LocalActivity
-import us.blindmint.codex.presentation.core.util.calculateProgress
-import us.blindmint.codex.presentation.core.util.setBrightness
-import us.blindmint.codex.presentation.navigator.LocalNavigator
+import us.blindmint.codex.domain.reader.ReaderVerticalGesture
+import us.blindmint.codex.domain.util.Direction
+import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
+import us.blindmint.codex.presentation.core.components.common.IconButton
+import us.blindmint.codex.presentation.core.components.common.StyledText
+import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.reader.ReaderContent
 import us.blindmint.codex.presentation.reader.SpeedReadingScaffold
 import us.blindmint.codex.presentation.reader.SpeedReadingSettingsBottomSheet
 import us.blindmint.codex.ui.book_info.BookInfoScreen
 import us.blindmint.codex.ui.main.MainModel
+import us.blindmint.codex.ui.reader.ReaderEvent
+import us.blindmint.codex.ui.reader.ReaderModel
+import us.blindmint.codex.ui.reader.ReaderState
 import us.blindmint.codex.ui.settings.SettingsModel
 import kotlin.math.roundToInt
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.graphics.Color
 
 @Parcelize
 data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
@@ -162,6 +182,15 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
     )
 
     val speedReadingWpm = remember { mutableStateOf(300) }
+
+    // Speed reading settings state
+    val speedReadingWordSize = remember { mutableStateOf(48) }
+    val speedReadingAccentOpacity = remember { mutableStateOf(1.0f) }
+    val speedReadingShowVerticalIndicators = remember { mutableStateOf(true) }
+    val speedReadingVerticalIndicatorsSize = remember { mutableStateOf(32) }
+    val speedReadingShowHorizontalBars = remember { mutableStateOf(true) }
+    val speedReadingHorizontalBarsThickness = remember { mutableStateOf(2) }
+    val speedReadingHorizontalBarsColor = remember { mutableStateOf(Color.Gray) }
         val lineHeight = remember(
             mainState.value.fontSize,
             mainState.value.lineHeight
@@ -616,7 +645,21 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
                 screenModel.onEvent(ReaderEvent.OnDismissSpeedReadingSettings)
             },
             wpm = speedReadingWpm.value,
-            onWpmChange = { speedReadingWpm.value = it }
+            onWpmChange = { speedReadingWpm.value = it },
+            wordSize = speedReadingWordSize.value,
+            onWordSizeChange = { speedReadingWordSize.value = it },
+            accentOpacity = speedReadingAccentOpacity.value,
+            onAccentOpacityChange = { speedReadingAccentOpacity.value = it },
+            showVerticalIndicators = speedReadingShowVerticalIndicators.value,
+            onShowVerticalIndicatorsChange = { speedReadingShowVerticalIndicators.value = it },
+            verticalIndicatorsSize = speedReadingVerticalIndicatorsSize.value,
+            onVerticalIndicatorsSizeChange = { speedReadingVerticalIndicatorsSize.value = it },
+            showHorizontalBars = speedReadingShowHorizontalBars.value,
+            onShowHorizontalBarsChange = { speedReadingShowHorizontalBars.value = it },
+            horizontalBarsThickness = speedReadingHorizontalBarsThickness.value,
+            onHorizontalBarsThicknessChange = { speedReadingHorizontalBarsThickness.value = it },
+            horizontalBarsColor = speedReadingHorizontalBarsColor.value,
+            onHorizontalBarsColorChange = { speedReadingHorizontalBarsColor.value = it }
         )
 
         // Speed reading overlay
@@ -631,6 +674,13 @@ data class ReaderScreen(val bookId: Int) : Screen, Parcelable {
                 accentColor = MaterialTheme.colorScheme.error,
                 fontFamily = fontFamily.font,
                 sentencePauseMs = 2000, // TODO: Get from MainState when implemented
+                wordSize = speedReadingWordSize.value,
+                accentOpacity = speedReadingAccentOpacity.value,
+                showVerticalIndicators = speedReadingShowVerticalIndicators.value,
+                verticalIndicatorsSize = speedReadingVerticalIndicatorsSize.value,
+                showHorizontalBars = speedReadingShowHorizontalBars.value,
+                horizontalBarsThickness = speedReadingHorizontalBarsThickness.value,
+                horizontalBarsColor = speedReadingHorizontalBarsColor.value,
                 progress = progress,
                 bottomBarPadding = bottomBarPadding,
                 showWpmIndicator = true,
