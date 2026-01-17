@@ -162,9 +162,10 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
         )
 
         // Speed reading state
-        val speedReadingWpm = remember { mutableStateOf(300) }
+    val speedReadingWpm = remember { mutableStateOf(300) }
+    val speedReadingManualSentencePauseEnabled = remember { mutableStateOf(false) }
+    val speedReadingSentencePauseDuration = remember { mutableStateOf(350) }
 
-    // Speed reading settings state
     val speedReadingWordSize = remember { mutableStateOf(48) }
     val speedReadingAccentCharacterEnabled = remember { mutableStateOf(true) }
     val speedReadingAccentColor = remember { mutableStateOf(Color.Red) }
@@ -677,6 +678,10 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             },
             wpm = speedReadingWpm.value,
             onWpmChange = { speedReadingWpm.value = it },
+            manualSentencePauseEnabled = speedReadingManualSentencePauseEnabled.value,
+            onManualSentencePauseEnabledChange = { speedReadingManualSentencePauseEnabled.value = it },
+            sentencePauseDuration = speedReadingSentencePauseDuration.value,
+            onSentencePauseDurationChange = { speedReadingSentencePauseDuration.value = it },
             wordSize = speedReadingWordSize.value,
             onWordSizeChange = { speedReadingWordSize.value = it },
             accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
@@ -719,7 +724,15 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
                 accentColor = speedReadingAccentColor.value,
                 fontFamily = speedReadingFontFamily,
-                sentencePauseMs = 2000, // TODO: Make configurable
+                sentencePauseMs = if (speedReadingManualSentencePauseEnabled.value) {
+                    speedReadingSentencePauseDuration.value
+                } else {
+                    // Automatic pause calculation based on WPM
+                    val baseWpm = 300f
+                    val basePause = 350f
+                    val minPause = 50f
+                    (basePause * (baseWpm / speedReadingWpm.value) + minPause).toInt().coerceIn(50, 1000)
+                },
                 wordSize = speedReadingWordSize.value,
                 accentOpacity = speedReadingAccentOpacity.value,
                 showVerticalIndicators = speedReadingShowVerticalIndicators.value,
