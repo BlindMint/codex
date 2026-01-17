@@ -788,6 +788,7 @@
     <string name="checkpoint_back_content_desc">Checkpoint back</string>
     <string name="checkpoint_forward_content_desc">Checkpoint forward</string>
     <string name="chapters_content_desc">Chapters</string>
+    <string name="bookmarks_content_desc">Bookmarks</string>
     <string name="speed_reading_content_desc">Speed reading</string>
     <string name="play">Play</string>
     <string name="pause">Pause</string>

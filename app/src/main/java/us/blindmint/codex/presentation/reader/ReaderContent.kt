@@ -222,6 +222,7 @@ fun ReaderContent(
              onTextSelected = onTextSelected,
              showSettingsBottomSheet = showSettingsBottomSheet,
              showChaptersDrawer = showChaptersDrawer,
+             showBookmarksDrawer = { onReaderEvent(it) },
               showSpeedReading = showSpeedReading,
              showSearch = showSearch,
              hideSearch = hideSearch,

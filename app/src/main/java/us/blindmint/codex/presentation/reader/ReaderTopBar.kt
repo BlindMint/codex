@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.rounded.Bolt
+import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -56,6 +57,7 @@ fun ReaderTopBar(
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
     showSpeedReading: (ReaderEvent.OnShowSpeedReading) -> Unit,
+    showBookmarksDrawer: (ReaderEvent.OnShowBookmarksDrawer) -> Unit = { },
     isSearchVisible: Boolean,
     showSearch: (ReaderEvent.OnShowSearchPersistent) -> Unit,
     hideSearch: (ReaderEvent.OnHideSearch) -> Unit,
@@ -66,6 +68,22 @@ fun ReaderTopBar(
     val animatedChapterProgress = animateFloatAsState(
         targetValue = currentChapterProgress
     )
+
+    val subtitleComposable: (@Composable () -> Unit) = if (!book.isComic) {
+        {
+            StyledText(
+                text = currentChapter?.title
+                    ?: activity.getString(R.string.no_chapters),
+                modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                maxLines = 1
+            )
+        }
+    } else {
+        { /* Empty for comics */ }
+    }
 
     Column(
         Modifier
@@ -121,32 +139,26 @@ fun ReaderTopBar(
                     maxLines = 1
                 )
             },
-            subtitle = {
-                StyledText(
-                    text = currentChapter?.title
-                        ?: activity.getString(R.string.no_chapters),
-                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    ),
-                    maxLines = 1
-                )
-            },
+            subtitle = subtitleComposable,
             actions = {
-                IconButton(
-                    icon = Icons.Rounded.Search,
-                    contentDescription = R.string.search_in_book_content_desc,
-                    disableOnClick = false,
-                    enabled = !lockMenu
-                ) {
-                    if (isSearchVisible) {
-                        hideSearch(ReaderEvent.OnHideSearch)
-                    } else {
-                        showSearch(ReaderEvent.OnShowSearchPersistent)
+                // Search icon - only for books
+                if (!book.isComic) {
+                    IconButton(
+                        icon = Icons.Rounded.Search,
+                        contentDescription = R.string.search_in_book_content_desc,
+                        disableOnClick = false,
+                        enabled = !lockMenu
+                    ) {
+                        if (isSearchVisible) {
+                            hideSearch(ReaderEvent.OnHideSearch)
+                        } else {
+                            showSearch(ReaderEvent.OnShowSearchPersistent)
+                        }
                     }
                 }
 
-                if (currentChapter != null) {
+                // Chapters icon - only for books with chapters
+                if (!book.isComic && currentChapter != null) {
                     IconButton(
                         icon = Icons.Rounded.Menu,
                         contentDescription = R.string.chapters_content_desc,
@@ -157,13 +169,28 @@ fun ReaderTopBar(
                     }
                 }
 
-                IconButton(
-                    icon = Icons.Rounded.Bolt,
-                    contentDescription = R.string.speed_reading_content_desc,
-                    disableOnClick = false,
-                    enabled = !lockMenu
-                ) {
-                    showSpeedReading(ReaderEvent.OnShowSpeedReading)
+                // Bookmarks icon - only for comics
+                if (book.isComic) {
+                    IconButton(
+                        icon = Icons.Rounded.Bookmark,
+                        contentDescription = R.string.bookmarks_content_desc,
+                        disableOnClick = false,
+                        enabled = !lockMenu
+                    ) {
+                        showBookmarksDrawer(ReaderEvent.OnShowBookmarksDrawer)
+                    }
+                }
+
+                // Speed reading icon - only for books
+                if (!book.isComic) {
+                    IconButton(
+                        icon = Icons.Rounded.Bolt,
+                        contentDescription = R.string.speed_reading_content_desc,
+                        disableOnClick = false,
+                        enabled = !lockMenu
+                    ) {
+                        showSpeedReading(ReaderEvent.OnShowSpeedReading)
+                    }
                 }
 
                 IconButton(
@@ -172,7 +199,7 @@ fun ReaderTopBar(
                     disableOnClick = false,
                     enabled = !lockMenu
                 ) {
-                    showSettingsBottomSheet(ReaderEvent.OnShowSettingsBottomSheet)
+                    showSettingsBottomSheet(ReaderEvent.OnShowSettingsBottomSheet(showComicSettings = book.isComic))
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(

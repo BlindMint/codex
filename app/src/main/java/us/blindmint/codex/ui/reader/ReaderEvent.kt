@@ -118,7 +118,9 @@ sealed class ReaderEvent {
 
     data object OnDismissWebView : ReaderEvent()
 
-    data object OnShowSettingsBottomSheet : ReaderEvent()
+    data class OnShowSettingsBottomSheet(
+        val showComicSettings: Boolean = false
+    ) : ReaderEvent()
 
     data object OnDismissBottomSheet : ReaderEvent()
 

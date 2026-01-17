@@ -69,6 +69,7 @@ fun ComicReaderLayout(
     backgroundColor: Color,
     comicReadingDirection: String,
     comicTapZone: Int,
+    showMenu: Boolean = false,
     showPageIndicator: Boolean = true,
     onLoadingComplete: () -> Unit = {},
     onMenuToggle: () -> Unit = {},
@@ -214,6 +215,7 @@ fun ComicReaderLayout(
                             imageBitmap = pageImage,
                             comicReadingDirection = comicReadingDirection,
                             comicTapZone = comicTapZone,
+                            showMenu = showMenu,
                             onPreviousPage = {
                                 scope.launch {
                                     if (pagerState.currentPage > 0) {
@@ -259,6 +261,7 @@ private fun ComicPage(
     imageBitmap: ImageBitmap,
     comicReadingDirection: String,
     comicTapZone: Int,
+    showMenu: Boolean = false,
     onPreviousPage: () -> Unit,
     onNextPage: () -> Unit,
     onMenuToggle: () -> Unit = {}
@@ -268,7 +271,7 @@ private fun ComicPage(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .pointerInput(comicTapZone, isRTL) {
+            .pointerInput(comicTapZone, isRTL, showMenu) {
                 detectTapGestures { offset ->
                     val width = size.width.toFloat()
                     val height = size.height.toFloat()
@@ -277,52 +280,55 @@ private fun ComicPage(
 
                     var handledNavigation = false
 
-                    when (comicTapZone) {
-                        0 -> { // Default
-                            if (x < width * 0.2f) {
-                                if (isRTL) onNextPage() else onPreviousPage()
-                                handledNavigation = true
-                            } else if (x > width * 0.8f) {
-                                if (isRTL) onPreviousPage() else onNextPage()
+                    // Only allow navigation if menu is not open
+                    if (!showMenu) {
+                        when (comicTapZone) {
+                            0 -> { // Default
+                                if (x < width * 0.2f) {
+                                    if (isRTL) onNextPage() else onPreviousPage()
+                                    handledNavigation = true
+                                } else if (x > width * 0.8f) {
+                                    if (isRTL) onPreviousPage() else onNextPage()
+                                    handledNavigation = true
+                                }
+                            }
+                            1 -> { // L-shaped navigation
+                                if (x < width * 0.3f || (x < width * 0.5f && y > height * 0.7f)) {
+                                    if (isRTL) onNextPage() else onPreviousPage()
+                                    handledNavigation = true
+                                } else if (x > width * 0.7f || (x > width * 0.5f && y > height * 0.7f)) {
+                                    if (isRTL) onPreviousPage() else onNextPage()
+                                    handledNavigation = true
+                                }
+                            }
+                            2 -> { // Kindle-ish
+                                if (x < width * 0.2f) {
+                                    if (isRTL) onNextPage() else onPreviousPage()
+                                    handledNavigation = true
+                                } else if (x > width * 0.8f) {
+                                    if (isRTL) onPreviousPage() else onNextPage()
+                                    handledNavigation = true
+                                }
+                            }
+                            3 -> { // Edge
+                                if (x < width * 0.1f) {
+                                    if (isRTL) onNextPage() else onPreviousPage()
+                                    handledNavigation = true
+                                } else if (x > width * 0.9f) {
+                                    if (isRTL) onPreviousPage() else onNextPage()
+                                    handledNavigation = true
+                                }
+                            }
+                            4 -> { // Right and left
+                                if (x < width * 0.5f) {
+                                    if (isRTL) onNextPage() else onPreviousPage()
+                                } else {
+                                    if (isRTL) onPreviousPage() else onNextPage()
+                                }
                                 handledNavigation = true
                             }
+                            // 5 = Disabled, no navigation
                         }
-                        1 -> { // L-shaped navigation
-                            if (x < width * 0.3f || (x < width * 0.5f && y > height * 0.7f)) {
-                                if (isRTL) onNextPage() else onPreviousPage()
-                                handledNavigation = true
-                            } else if (x > width * 0.7f || (x > width * 0.5f && y > height * 0.7f)) {
-                                if (isRTL) onPreviousPage() else onNextPage()
-                                handledNavigation = true
-                            }
-                        }
-                        2 -> { // Kindle-ish
-                            if (x < width * 0.2f) {
-                                if (isRTL) onNextPage() else onPreviousPage()
-                                handledNavigation = true
-                            } else if (x > width * 0.8f) {
-                                if (isRTL) onPreviousPage() else onNextPage()
-                                handledNavigation = true
-                            }
-                        }
-                        3 -> { // Edge
-                            if (x < width * 0.1f) {
-                                if (isRTL) onNextPage() else onPreviousPage()
-                                handledNavigation = true
-                            } else if (x > width * 0.9f) {
-                                if (isRTL) onPreviousPage() else onNextPage()
-                                handledNavigation = true
-                            }
-                        }
-                        4 -> { // Right and left
-                            if (x < width * 0.5f) {
-                                if (isRTL) onNextPage() else onPreviousPage()
-                            } else {
-                                if (isRTL) onPreviousPage() else onNextPage()
-                            }
-                            handledNavigation = true
-                        }
-                        // 5 = Disabled, no navigation
                     }
 
                     // If tap wasn't handled by navigation zones, toggle menu

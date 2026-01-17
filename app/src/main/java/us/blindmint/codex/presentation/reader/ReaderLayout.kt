@@ -118,6 +118,7 @@ fun ReaderLayout(
             backgroundColor = backgroundColor,
             comicReadingDirection = mainState.value.comicReadingDirection,
             comicTapZone = mainState.value.comicTapZone,
+            showMenu = showMenu,
             showPageIndicator = !fullscreenMode,
             onLoadingComplete = {
                 // Signal that comic loading is complete
