@@ -32,7 +32,6 @@ fun SpeedReadingFontFamilyOption(
                     selected = it.id == "default" // TODO: Use actual selected font
                 )
             },
-        enabled = enabled,
         onClick = { buttonItem ->
             if (enabled) {
                 onFontChanged(buttonItem.id)
