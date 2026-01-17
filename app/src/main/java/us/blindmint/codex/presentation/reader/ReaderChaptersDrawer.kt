@@ -74,10 +74,17 @@ fun ReaderChaptersBookmarksDrawer(
     dismissDrawer: (ReaderEvent.OnDismissDrawer) -> Unit,
     deleteBookmark: (Bookmark) -> Unit,
     clearAllBookmarks: () -> Unit,
-    onQuickBookmark: (customName: String) -> Unit
+    onQuickBookmark: (customName: String) -> Unit,
+    isComic: Boolean = false
 ) {
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabs = listOf(stringResource(R.string.chapters), stringResource(R.string.bookmarks))
+    // For comics, start on bookmarks tab (index 1 if both tabs, or 0 if only bookmarks)
+    // For books, start on chapters tab (index 0)
+    var selectedTabIndex by remember { mutableIntStateOf(if (isComic) 1 else 0) }
+    val tabs = if (isComic) {
+        listOf(stringResource(R.string.bookmarks))
+    } else {
+        listOf(stringResource(R.string.chapters), stringResource(R.string.bookmarks))
+    }
 
     val expandableChapters = remember(show, chapters, currentChapter) {
         mutableStateListOf<ExpandableChapter>().apply {
@@ -187,47 +194,69 @@ fun ReaderChaptersBookmarksDrawer(
         onDismissRequest = { dismissDrawer(ReaderEvent.OnDismissDrawer) },
         header = {
             Column {
-                Box(Modifier.fillMaxWidth()) {
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.surfaceContainerHighest
-                    )
-                    TabRow(
-                        selectedTabIndex = selectedTabIndex,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 0.5.dp),
-                        containerColor = Color.Transparent,
-                        divider = {},
-                        indicator = { tabPositions ->
-                            if (selectedTabIndex < tabPositions.size) {
-                                val width by animateDpAsState(
-                                    targetValue = tabPositions[selectedTabIndex].contentWidth,
-                                    label = ""
-                                )
+                // Only show tab row if there are multiple tabs (for books, not comics)
+                if (!isComic) {
+                    Box(Modifier.fillMaxWidth()) {
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest
+                        )
+                        TabRow(
+                            selectedTabIndex = selectedTabIndex,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 0.5.dp),
+                            containerColor = Color.Transparent,
+                            divider = {},
+                            indicator = { tabPositions ->
+                                if (selectedTabIndex < tabPositions.size) {
+                                    val width by animateDpAsState(
+                                        targetValue = tabPositions[selectedTabIndex].contentWidth,
+                                        label = ""
+                                    )
 
-                                TabRowDefaults.PrimaryIndicator(
-                                    Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                                    width = width
+                                    TabRowDefaults.PrimaryIndicator(
+                                        Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                                        width = width
+                                    )
+                                }
+                            }
+                        ) {
+                            tabs.forEachIndexed { index, title ->
+                                Tab(
+                                    selected = selectedTabIndex == index,
+                                    onClick = { selectedTabIndex = index },
+                                    text = { Text(title) }
                                 )
                             }
                         }
-                    ) {
-                        tabs.forEachIndexed { index, title ->
-                            Tab(
-                                selected = selectedTabIndex == index,
-                                onClick = { selectedTabIndex = index },
-                                text = { Text(title) }
-                            )
-                        }
+                    }
+                } else {
+                    // For comics, show centered "Bookmarks" tab header without tab row
+                    Box(Modifier.fillMaxWidth()) {
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest
+                        )
+                        Text(
+                            text = stringResource(R.string.bookmarks),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(16.dp),
+                            style = MaterialTheme.typography.titleMedium
+                        )
                     }
                 }
             }
         },
         footer = {
-            if (selectedTabIndex == 1) { // Bookmarks tab
+            // Bookmarks footer: shown if on bookmarks tab (index 1 for books, 0 for comics)
+            val isBookmarksTab = if (isComic) selectedTabIndex == 0 else selectedTabIndex == 1
+            if (isBookmarksTab) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -253,8 +282,11 @@ fun ReaderChaptersBookmarksDrawer(
             }
         }
     ) {
-        when (selectedTabIndex) {
-            0 -> { // Chapters tab
+        // Adjust tab index for comics (they only have bookmarks, so always show bookmarks)
+        val displayTabIndex = if (isComic) 1 else selectedTabIndex
+
+        when (displayTabIndex) {
+            0 -> { // Chapters tab (only for books)
                 expandableChapters.forEach { expandableChapter ->
                     item {
                         ModalDrawerSelectableItem(

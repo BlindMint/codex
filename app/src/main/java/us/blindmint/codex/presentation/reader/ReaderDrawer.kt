@@ -25,7 +25,8 @@ fun ReaderDrawer(
     dismissDrawer: (ReaderEvent.OnDismissDrawer) -> Unit,
     deleteBookmark: (Bookmark) -> Unit,
     clearAllBookmarks: () -> Unit,
-    onQuickBookmark: (customName: String) -> Unit
+    onQuickBookmark: (customName: String) -> Unit,
+    isComic: Boolean = false
 ) {
     ReaderChaptersBookmarksDrawer(
         show = drawer == ReaderScreen.CHAPTERS_DRAWER || drawer == ReaderScreen.BOOKMARKS_DRAWER,
@@ -38,6 +39,7 @@ fun ReaderDrawer(
         dismissDrawer = dismissDrawer,
         deleteBookmark = deleteBookmark,
         clearAllBookmarks = clearAllBookmarks,
-        onQuickBookmark = onQuickBookmark
+        onQuickBookmark = onQuickBookmark,
+        isComic = isComic
     )
 }
