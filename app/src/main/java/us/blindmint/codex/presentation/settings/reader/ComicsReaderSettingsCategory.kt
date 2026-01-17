@@ -16,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
 import us.blindmint.codex.presentation.settings.reader.comic.components.*
+import us.blindmint.codex.presentation.settings.reader.comic.ComicProgressSubcategory
 
 fun LazyListScope.ComicsReaderSettingsCategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary }
@@ -46,7 +47,7 @@ fun LazyListScope.ComicsReaderSettingsCategory(
         titleColor = titleColor,
         title = { stringResource(R.string.display_tab) },
         showTitle = true,
-        showDivider = false
+        showDivider = true
     ) {
         item {
             ComicImageScaleOption()
@@ -61,4 +62,10 @@ fun LazyListScope.ComicsReaderSettingsCategory(
             ComicLandscapeZoomOption()
         }
     }
+
+    // Progress subsection
+    ComicProgressSubcategory(
+        titleColor = titleColor,
+        showDivider = false
+    )
 }

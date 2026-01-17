@@ -800,6 +800,46 @@ class MainModel @Inject constructor(
                     it.copy(comicLandscapeZoom = this)
                 }
             )
+
+            is MainEvent.OnChangeComicProgressBar -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_PROGRESS_BAR,
+                value = event.value,
+                updateState = {
+                    it.copy(comicProgressBar = this)
+                }
+            )
+
+            is MainEvent.OnChangeComicProgressBarPadding -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_PROGRESS_BAR_PADDING,
+                value = event.value,
+                updateState = {
+                    it.copy(comicProgressBarPadding = this)
+                }
+            )
+
+            is MainEvent.OnChangeComicProgressBarAlignment -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_PROGRESS_BAR_ALIGNMENT,
+                value = event.value,
+                updateState = {
+                    it.copy(comicProgressBarAlignment = this.toHorizontalAlignment())
+                }
+            )
+
+            is MainEvent.OnChangeComicProgressBarFontSize -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_PROGRESS_BAR_FONT_SIZE,
+                value = event.value,
+                updateState = {
+                    it.copy(comicProgressBarFontSize = this)
+                }
+            )
+
+            is MainEvent.OnChangeComicProgressCount -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_PROGRESS_COUNT,
+                value = event.value,
+                updateState = {
+                    it.copy(comicProgressCount = this.toProgressCount())
+                }
+            )
         }
     }
 

@@ -119,4 +119,9 @@ sealed class MainEvent {
     data class OnChangeComicZoomStart(val value: Int) : MainEvent()
     data class OnChangeComicCropBorders(val value: Boolean) : MainEvent()
     data class OnChangeComicLandscapeZoom(val value: Boolean) : MainEvent()
+    data class OnChangeComicProgressBar(val value: Boolean) : MainEvent()
+    data class OnChangeComicProgressBarPadding(val value: Int) : MainEvent()
+    data class OnChangeComicProgressBarAlignment(val value: String) : MainEvent()
+    data class OnChangeComicProgressBarFontSize(val value: Int) : MainEvent()
+    data class OnChangeComicProgressCount(val value: String) : MainEvent()
 }

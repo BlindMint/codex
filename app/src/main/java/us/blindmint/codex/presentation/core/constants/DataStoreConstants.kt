@@ -124,4 +124,9 @@ object DataStoreConstants {
     val COMIC_ZOOM_START = intPreferencesKey("comic_zoom_start")
     val COMIC_CROP_BORDERS = booleanPreferencesKey("comic_crop_borders")
     val COMIC_LANDSCAPE_ZOOM = booleanPreferencesKey("comic_landscape_zoom")
+    val COMIC_PROGRESS_BAR = booleanPreferencesKey("comic_progress_bar")
+    val COMIC_PROGRESS_BAR_PADDING = intPreferencesKey("comic_progress_bar_padding")
+    val COMIC_PROGRESS_BAR_ALIGNMENT = stringPreferencesKey("comic_progress_bar_alignment")
+    val COMIC_PROGRESS_BAR_FONT_SIZE = intPreferencesKey("comic_progress_bar_font_size")
+    val COMIC_PROGRESS_COUNT = stringPreferencesKey("comic_progress_count")
 }

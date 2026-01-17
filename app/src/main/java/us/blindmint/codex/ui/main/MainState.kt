@@ -141,6 +141,11 @@ data class MainState(
     val comicZoomStart: Int = provideDefaultValue { 1 },
     val comicCropBorders: Boolean = provideDefaultValue { false },
     val comicLandscapeZoom: Boolean = provideDefaultValue { true },
+    val comicProgressBar: Boolean = provideDefaultValue { true },
+    val comicProgressBarPadding: Int = provideDefaultValue { 4 },
+    val comicProgressBarAlignment: HorizontalAlignment = provideDefaultValue { HorizontalAlignment.CENTER },
+    val comicProgressBarFontSize: Int = provideDefaultValue { 8 },
+    val comicProgressCount: ReaderProgressCount = provideDefaultValue { ReaderProgressCount.PAGE },
 
     // Background Image Settings
     val backgroundImage: BackgroundImage? = provideDefaultValue { null },
@@ -539,6 +544,26 @@ data class MainState(
                     comicLandscapeZoom = provideValue(
                         COMIC_LANDSCAPE_ZOOM
                     ) { comicLandscapeZoom },
+
+                    comicProgressBar = provideValue(
+                        COMIC_PROGRESS_BAR
+                    ) { comicProgressBar },
+
+                    comicProgressBarPadding = provideValue(
+                        COMIC_PROGRESS_BAR_PADDING
+                    ) { comicProgressBarPadding },
+
+                    comicProgressBarAlignment = provideValue(
+                        COMIC_PROGRESS_BAR_ALIGNMENT, convert = { toHorizontalAlignment() }
+                    ) { comicProgressBarAlignment },
+
+                    comicProgressBarFontSize = provideValue(
+                        COMIC_PROGRESS_BAR_FONT_SIZE
+                    ) { comicProgressBarFontSize },
+
+                    comicProgressCount = provideValue(
+                        COMIC_PROGRESS_COUNT, convert = { toProgressCount() }
+                    ) { comicProgressCount },
 
                 )
             }
