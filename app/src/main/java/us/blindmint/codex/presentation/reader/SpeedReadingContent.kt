@@ -240,23 +240,25 @@ fun SpeedReadingContent(
                 ) {
                     Text(
                         text = buildAnnotatedString {
-                            if (accentCharacterEnabled && accentIndex >= 0) {
-                                if (accentIndex > 0) {
-                                    append(currentWord.substring(0, accentIndex))
-                                }
-                                if (accentIndex < currentWord.length) {
-                                    withStyle(style = SpanStyle(color = accentColor.copy(alpha = accentOpacity))) {
-                                        append(currentWord[accentIndex])
+                            withStyle(style = SpanStyle(color = fontColor)) {
+                                if (accentCharacterEnabled && accentIndex >= 0) {
+                                    if (accentIndex > 0) {
+                                        append(currentWord.substring(0, accentIndex))
                                     }
+                                    if (accentIndex < currentWord.length) {
+                                        withStyle(style = SpanStyle(color = accentColor.copy(alpha = accentOpacity))) {
+                                            append(currentWord[accentIndex])
+                                        }
+                                    }
+                                    if (accentIndex < currentWord.length - 1) {
+                                        append(currentWord.substring(accentIndex + 1))
+                                    }
+                                } else {
+                                    append(currentWord)
                                 }
-                                if (accentIndex < currentWord.length - 1) {
-                                    append(currentWord.substring(accentIndex + 1))
-                                }
-                            } else {
-                                append(currentWord)
                             }
                         },
-                        style = textStyle,
+                        style = textStyle.copy(color = fontColor),
                         modifier = Modifier
                             .offset {
                                 IntOffset(wordOffsetX.roundToInt(), 0)
