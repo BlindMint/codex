@@ -62,7 +62,7 @@ fun SpeedReadingWpmOption(
         ) {
             Slider(
                 value = wpm.toFloat(),
-                onValueChange = { onWpmChange(it.toInt()) },
+                onValueChange = { onWpmChange((it / 5).toInt() * 5) }, // Snap to 5 increments
                 valueRange = 200f..1200f,
                 modifier = Modifier.weight(1f)
             )
