@@ -24,8 +24,13 @@ fun SpeedReadingColorsOption(
         value = color,
         presetId = 0, // TODO: Use proper preset ID for speed reading
         showRgbInputs = true,
+        onValueChange = onColorChange
+    )
+
+    // Opacity slider as part of the color picker
+    SpeedReadingAccentCharacterOpacityOption(
         opacity = opacity,
-        onValueChange = onColorChange,
-        onOpacityChange = onOpacityChange
+        onOpacityChange = onOpacityChange,
+        showTitle = false // Don't show the title since it's now part of the color section
     )
 }
