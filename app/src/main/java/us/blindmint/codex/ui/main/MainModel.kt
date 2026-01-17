@@ -816,6 +816,14 @@ class MainModel @Inject constructor(
                     it.copy(comicProgressCount = this.toProgressCount())
                 }
             )
+
+            is MainEvent.OnChangeComicBackgroundColor -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_BACKGROUND_COLOR,
+                value = event.value,
+                updateState = {
+                    it.copy(comicBackgroundColor = this)
+                }
+            )
         }
     }
 

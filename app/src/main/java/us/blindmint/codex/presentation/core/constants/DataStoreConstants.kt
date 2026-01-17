@@ -126,4 +126,5 @@ object DataStoreConstants {
     val COMIC_PROGRESS_BAR_ALIGNMENT = stringPreferencesKey("comic_progress_bar_alignment")
     val COMIC_PROGRESS_BAR_FONT_SIZE = intPreferencesKey("comic_progress_bar_font_size")
     val COMIC_PROGRESS_COUNT = stringPreferencesKey("comic_progress_count")
+    val COMIC_BACKGROUND_COLOR = stringPreferencesKey("comic_background_color")
 }

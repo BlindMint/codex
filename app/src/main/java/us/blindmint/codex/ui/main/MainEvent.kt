@@ -121,4 +121,5 @@ sealed class MainEvent {
     data class OnChangeComicProgressBarAlignment(val value: String) : MainEvent()
     data class OnChangeComicProgressBarFontSize(val value: Int) : MainEvent()
     data class OnChangeComicProgressCount(val value: String) : MainEvent()
+    data class OnChangeComicBackgroundColor(val value: String) : MainEvent()
 }

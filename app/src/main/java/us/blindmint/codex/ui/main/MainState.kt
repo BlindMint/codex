@@ -143,6 +143,7 @@ data class MainState(
     val comicProgressBarAlignment: HorizontalAlignment = provideDefaultValue { HorizontalAlignment.CENTER },
     val comicProgressBarFontSize: Int = provideDefaultValue { 8 },
     val comicProgressCount: ReaderProgressCount = provideDefaultValue { ReaderProgressCount.PAGE },
+    val comicBackgroundColor: String = provideDefaultValue { "DEFAULT" },
 
     // Background Image Settings
     val backgroundImage: BackgroundImage? = provideDefaultValue { null },
@@ -549,6 +550,10 @@ data class MainState(
                     comicProgressCount = provideValue(
                         COMIC_PROGRESS_COUNT, convert = { toProgressCount() }
                     ) { comicProgressCount },
+
+                    comicBackgroundColor = provideValue(
+                        COMIC_BACKGROUND_COLOR
+                    ) { comicBackgroundColor },
 
                 )
             }

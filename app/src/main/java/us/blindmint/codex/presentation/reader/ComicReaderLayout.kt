@@ -256,10 +256,7 @@ fun ComicReaderLayout(
             }
 
             Box(modifier = Modifier.fillMaxSize()) {
-                // If reading direction is VERTICAL, use webtoon mode for vertical scrolling
-                val effectiveReaderMode = if (comicReadingDirection == "VERTICAL") "WEBTOON" else comicReaderMode
-
-                if (effectiveReaderMode == "PAGED") {
+                if (comicReaderMode == "PAGED") {
                     // Paged mode - horizontal pager
                     HorizontalPager(
                         state = pagerState,

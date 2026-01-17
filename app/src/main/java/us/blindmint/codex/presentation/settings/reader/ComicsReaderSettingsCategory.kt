@@ -52,6 +52,9 @@ fun LazyListScope.ComicsReaderSettingsCategory(
         item {
             ComicImageScaleOption()
         }
+        item {
+            ComicBackgroundColorOption()
+        }
     }
 
     // Progress subsection

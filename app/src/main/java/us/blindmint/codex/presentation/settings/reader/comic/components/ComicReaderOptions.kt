@@ -55,6 +55,15 @@ enum class ComicImageScale(val displayName: Int, val value: Int) {
     SMART_FIT(R.string.scale_smart_fit, 6)
 }
 
+// Background color options for comics
+enum class ComicBackgroundColor(val displayName: Int, val value: String) {
+    DEFAULT(R.string.background_color_default, "DEFAULT"),
+    GRAY(R.string.background_color_gray, "GRAY"),
+    WHITE(R.string.background_color_white, "WHITE"),
+    BLACK(R.string.background_color_black, "BLACK"),
+    AUTO(R.string.background_color_auto, "AUTO")
+}
+
 @Composable
 fun ComicReadingDirectionOption() {
     val mainModel = hiltViewModel<MainModel>()
@@ -170,6 +179,27 @@ fun ComicImageScaleOption() {
         },
         onClick = { item ->
             mainModel.onEvent(MainEvent.OnChangeComicScaleType(item.id.toIntOrNull() ?: 1))
+        }
+    )
+}
+
+@Composable
+fun ComicBackgroundColorOption() {
+    val mainModel = hiltViewModel<MainModel>()
+    val state = mainModel.state.collectAsStateWithLifecycle()
+
+    ChipsWithTitle(
+        title = stringResource(R.string.background_color),
+        chips = ComicBackgroundColor.entries.map { bgColor ->
+            ButtonItem(
+                id = bgColor.value,
+                title = stringResource(bgColor.displayName),
+                textStyle = MaterialTheme.typography.labelLarge,
+                selected = bgColor.value == state.value.comicBackgroundColor
+            )
+        },
+        onClick = { item ->
+            mainModel.onEvent(MainEvent.OnChangeComicBackgroundColor(item.id))
         }
     )
 }
