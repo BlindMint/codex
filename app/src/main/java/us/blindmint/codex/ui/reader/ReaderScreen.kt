@@ -448,6 +448,15 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
         LaunchedEffect(state.value.isLoading, startInSpeedReading) {
             if (!state.value.isLoading && startInSpeedReading && !state.value.speedReadingMode) {
                 screenModel.onEvent(ReaderEvent.OnShowSpeedReading)
+                // Ensure menu is visible when entering speed reading from book preview
+                screenModel.onEvent(
+                    ReaderEvent.OnMenuVisibility(
+                        show = true,
+                        fullscreenMode = mainState.value.fullscreen,
+                        saveCheckpoint = false,
+                        activity = activity
+                    )
+                )
             }
         }
         LaunchedEffect(mainState.value.fullscreen) {
