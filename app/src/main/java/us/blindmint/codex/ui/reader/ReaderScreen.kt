@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,7 +51,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.parcelize.Parcelize
 import us.blindmint.codex.domain.navigator.Screen
-import us.blindmint.codex.domain.reader.CustomFont
 import us.blindmint.codex.domain.reader.FontWithName
 import us.blindmint.codex.domain.reader.ReaderColorEffects
 import us.blindmint.codex.domain.reader.ReaderProgressCount
@@ -69,10 +67,10 @@ import us.blindmint.codex.presentation.reader.ReaderContent
 import us.blindmint.codex.presentation.reader.SpeedReadingScaffold
 import us.blindmint.codex.presentation.reader.SpeedReadingSettingsBottomSheet
 import us.blindmint.codex.ui.book_info.BookInfoScreen
-import us.blindmint.codex.ui.reader.ReaderEvent
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.settings.SettingsModel
 import kotlin.math.roundToInt
+import androidx.core.net.toUri
 
 @Parcelize
 data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = false) : Screen, Parcelable {
@@ -143,7 +141,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                             fontName = UIText.StringValue(it.name),
                             font = FontFamily(Font(java.io.File(it.filePath)))
                         )
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         // Fallback to default if font loading fails
                         provideFonts().first()
                     }
@@ -199,7 +197,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 customFont?.let {
                     try {
                         FontFamily(Font(java.io.File(it.filePath)))
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         fontFamily.font
                     }
                 } ?: fontFamily.font
@@ -418,14 +416,14 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                     ReaderProgressCount.PAGE -> {
                         val totalChars = state.value.text.sumOf { text ->
                             when (text) {
-                                is ReaderText.Text -> text.line.text.length.toInt()
+                                is ReaderText.Text -> text.line.text.length
                                 else -> 0
                             }
                         }
                         val currentIndex = (state.value.book.progress * state.value.text.lastIndex).roundToInt()
                         val currentChars = state.value.text.take(currentIndex + 1).sumOf { text ->
                             when (text) {
-                                is ReaderText.Text -> text.line.text.length.toInt()
+                                is ReaderText.Text -> text.line.text.length
                                 else -> 0
                             }
                         }
@@ -652,7 +650,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             showPageIndicator = !mainState.value.fullscreen,
             onOpenExternalBrowser = { url ->
                 val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
-                    data = android.net.Uri.parse(url)
+                    data = url.toUri()
                 }
                 activity.startActivity(intent)
             },
