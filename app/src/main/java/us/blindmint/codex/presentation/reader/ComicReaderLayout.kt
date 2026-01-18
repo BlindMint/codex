@@ -201,10 +201,13 @@ fun ComicReaderLayout(
 
     // Handle reading direction changes - keep current page in view
     var lastReadingDirection by remember { mutableStateOf(comicReadingDirection) }
+    var lastLogicalPage by remember { mutableIntStateOf(0) }
+
     LaunchedEffect(comicReadingDirection) {
         if (initialLoadComplete && comicLoaded && comicReadingDirection != lastReadingDirection) {
-            val newPhysicalPage = mapLogicalToPhysicalPage(currentPage)
-            android.util.Log.d("CodexComic", "Reading direction changed from $lastReadingDirection to $comicReadingDirection, repositioning to page $newPhysicalPage")
+            // Use the last known logical page to calculate new position
+            val newPhysicalPage = mapLogicalToPhysicalPage(lastLogicalPage)
+            android.util.Log.d("CodexComic", "Reading direction changed from $lastReadingDirection to $comicReadingDirection, repositioning logical page $lastLogicalPage to physical page $newPhysicalPage")
             if (comicReaderMode == "PAGED") {
                 pagerState.animateScrollToPage(newPhysicalPage)
             } else {
@@ -212,6 +215,11 @@ fun ComicReaderLayout(
             }
         }
         lastReadingDirection = comicReadingDirection
+    }
+
+    // Track the current logical page
+    LaunchedEffect(currentPage) {
+        lastLogicalPage = currentPage
     }
 
     // Load comic archive structure
@@ -283,8 +291,11 @@ fun ComicReaderLayout(
 
             // When parent requests a specific page, scroll to it (only after initial load)
             LaunchedEffect(currentPage, initialLoadComplete) {
-                if (initialLoadComplete && currentPage != pagerState.currentPage && currentPage >= 0 && currentPage < totalPages) {
-                    pagerState.animateScrollToPage(currentPage)
+                if (initialLoadComplete && currentPage >= 0 && currentPage < totalPages) {
+                    val targetPhysicalPage = mapLogicalToPhysicalPage(currentPage)
+                    if (targetPhysicalPage != pagerState.currentPage) {
+                        pagerState.animateScrollToPage(targetPhysicalPage)
+                    }
                 }
             }
 

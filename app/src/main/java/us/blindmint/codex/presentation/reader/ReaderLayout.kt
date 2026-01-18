@@ -115,7 +115,7 @@ fun ReaderLayout(
     // Conditional rendering based on whether it's a comic or text book
     if (book.isComic) {
         // Comic reader layout
-        var currentComicPage by remember { mutableIntStateOf(0) }
+        var currentComicPage by mutableIntStateOf(0)
         var totalComicPages by remember { mutableIntStateOf(0) }
 
         Column(Modifier.fillMaxSize()) {
