@@ -157,26 +157,31 @@ fun ComicReaderLayout(
         if (isRTL && totalPages > 0) totalPages - 1 - physicalPage else physicalPage
     }
 
-    // Pager state for paged mode
+    // Calculate initial positions based on reading direction
+    val pagerInitialPage = remember(comicReadingDirection, totalPages) {
+        if (totalPages > 0 && comicReadingDirection == "RTL") {
+            totalPages - 1  // Start at last physical page for RTL (shows first logical page)
+        } else {
+            0  // Start at first physical page for LTR
+        }
+    }
+
+    val lazyInitialIndex = remember(comicReadingDirection, totalPages) {
+        if (totalPages > 0 && comicReadingDirection == "RTL") {
+            totalPages - 1  // Start at last physical index for RTL
+        } else {
+            0  // Start at first physical index for LTR
+        }
+    }
+
+    // Pager state for paged mode - uses calculated initial page
     val pagerState = rememberPagerState(
-        initialPage = 0,
+        initialPage = pagerInitialPage,
         pageCount = { maxOf(1, totalPages) }
     )
 
-    // Lazy list state for webtoon mode
-    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = 0)
-
-    // Scroll to correct position when reading direction changes
-    LaunchedEffect(comicReadingDirection, totalPages) {
-        if (totalPages > 0) {
-            val targetPhysicalPage = if (comicReadingDirection == "RTL") totalPages - 1 else 0
-            if (comicReaderMode == "PAGED") {
-                pagerState.scrollToPage(targetPhysicalPage)
-            } else {
-                lazyListState.scrollToItem(targetPhysicalPage)
-            }
-        }
-    }
+    // Lazy list state for webtoon mode - uses calculated initial index
+    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = lazyInitialIndex)
 
     // Map comic scale type to ContentScale
     val contentScale = remember(comicScaleType) {
