@@ -10,6 +10,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +32,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.TopAppBar
@@ -125,6 +127,9 @@ fun SpeedReadingTopBar(
 fun SpeedReadingBottomBar(
     progress: String,
     progressValue: Float, // Add progress value for the bar
+    book: us.blindmint.codex.domain.library.book.Book,
+    lockMenu: Boolean,
+    onChangeProgress: (Float) -> Unit,
     wpm: Int,
     onWpmChange: (Int) -> Unit,
     isPlaying: Boolean,
@@ -147,11 +152,14 @@ fun SpeedReadingBottomBar(
         Spacer(Modifier.height(16.dp))
 
         // OSD Controls Bar (back, forward, play)
-        Row(
+        Box(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+            contentAlignment = Alignment.Center
         ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
             // Back button - matches OSD style
             Text(
                 text = "<",
@@ -187,10 +195,11 @@ fun SpeedReadingBottomBar(
                 ),
                 modifier = Modifier
                     .padding(12.dp)
-                    .noRippleClickable {
-                        navigateWord(1)
-                    }
-            )
+                     .noRippleClickable {
+                         navigateWord(1)
+                     }
+             )
+            }
         }
 
         Spacer(Modifier.height(16.dp))
@@ -205,7 +214,22 @@ fun SpeedReadingBottomBar(
 
         Spacer(Modifier.height(8.dp))
 
-        // Progress bar (matches normal reader style)
+        // Progress slider (matches main reader style)
+        Slider(
+            value = book.progress,
+            enabled = !lockMenu,
+            onValueChange = { progress ->
+                onChangeProgress(progress)
+            },
+            colors = SliderDefaults.colors(
+                inactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(0.15f),
+                disabledActiveTrackColor = MaterialTheme.colorScheme.primary,
+                disabledThumbColor = MaterialTheme.colorScheme.primary,
+                disabledInactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(0.15f),
+            )
+        )
+
+        // Progress bar indicator (matches normal reader style)
         ReaderBottomBarSliderIndicator(progress = progressValue)
 
         Spacer(Modifier.height(8.dp + bottomBarPadding))

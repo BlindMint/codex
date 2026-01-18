@@ -762,6 +762,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
         if (state.value.speedReadingMode) {
             SpeedReadingScaffold(
                 text = state.value.text,
+                book = state.value.book,
                 bookTitle = state.value.book.title,
                 chapterTitle = state.value.currentChapter?.title,
                 currentProgress = state.value.book.progress,
@@ -798,6 +799,13 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 wpm = speedReadingWpm.intValue,
                 onWpmChange = { speedReadingWpm.intValue = it },
                 osdEnabled = speedReadingOsdEnabled.value,
+                onChangeProgress = { progress ->
+                    screenModel.onEvent(ReaderEvent.OnChangeProgress(
+                        progress = progress,
+                        firstVisibleItemIndex = 0,
+                        firstVisibleItemOffset = 0
+                    ))
+                },
                 onExitSpeedReading = {
                     screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
                     // Reset menu visibility to normal state when exiting speed reading

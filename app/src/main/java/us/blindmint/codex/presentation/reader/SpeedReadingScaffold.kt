@@ -33,6 +33,7 @@ import us.blindmint.codex.presentation.core.util.noRippleClickable
 @Composable
 fun SpeedReadingScaffold(
     text: List<ReaderText>,
+    book: us.blindmint.codex.domain.library.book.Book,
     bookTitle: String,
     chapterTitle: String?,
     currentProgress: Float,
@@ -66,7 +67,8 @@ fun SpeedReadingScaffold(
     onMenuVisibilityChanged: (Boolean) -> Unit = {},
     onNavigateWord: (Int) -> Unit,
     onToggleMenu: () -> Unit = {},
-    navigateWord: (Int) -> Unit = {}
+    navigateWord: (Int) -> Unit = {},
+    onChangeProgress: (Float) -> Unit = {}
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) } // Start with menu hidden
@@ -106,6 +108,9 @@ fun SpeedReadingScaffold(
                 SpeedReadingBottomBar(
                     progress = progress,
                     progressValue = currentProgress,
+                    book = book, // Need to add book parameter
+                    lockMenu = false, // For speed reading, allow seeking
+                    onChangeProgress = onChangeProgress,
                     wpm = wpm,
                     onWpmChange = onWpmChange,
                     isPlaying = isPlaying,
