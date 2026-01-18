@@ -82,6 +82,7 @@ fun ReaderSettingsTabs(
                         StyledText(
                             text = when (tab) {
                                 ReaderSettingsTab.BOOKS -> stringResource(R.string.books_tab)
+                                ReaderSettingsTab.SPEED_READING -> stringResource(R.string.speed_reading_tab)
                                 ReaderSettingsTab.COMICS -> stringResource(R.string.comics_tab)
                             },
                             style = MaterialTheme.typography.bodyLarge,

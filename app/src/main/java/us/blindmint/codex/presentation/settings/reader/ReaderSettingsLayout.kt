@@ -39,6 +39,7 @@ fun ReaderSettingsLayout(
             ) {
                 when (ReaderSettingsTab.entries[page]) {
                     ReaderSettingsTab.BOOKS -> BooksReaderSettingsCategory()
+                    ReaderSettingsTab.SPEED_READING -> SpeedReadingReaderSettingsCategory()
                     ReaderSettingsTab.COMICS -> ComicsReaderSettingsCategory()
                 }
             }
