@@ -297,6 +297,9 @@
     <string name="sync_error">Failed to sync progress</string>
     <string name="clear_progress_history">Clear progress history</string>
     <string name="progress_history_cleared">Progress history cleared</string>
+    <string name="reading_progress_reset">Reading progress reset</string>
+    <string name="reset_reading_progress">Reset reading progress</string>
+    <string name="reset_reading_progress_description">This will reset your current reading position to the beginning. This action cannot be undone.</string>
 
     <!-- Reader -->
     <string name="font_family_option">Font family</string>

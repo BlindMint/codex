@@ -32,6 +32,7 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
     companion object {
         const val DELETE_DIALOG = "delete_dialog"
         const val MOVE_DIALOG = "move_dialog"
+        const val RESET_PROGRESS_DIALOG = "reset_progress_dialog"
         const val TITLE_DIALOG = "title_dialog"
         const val AUTHOR_DIALOG = "author_dialog"
         const val DESCRIPTION_DIALOG = "description_dialog"
@@ -96,9 +97,12 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 dismissBottomSheet = screenModel::onEvent,
                 dismissDialog = screenModel::onEvent,
                 showChangeCoverBottomSheet = screenModel::onEvent,
+                showDetailsBottomSheet = screenModel::onEvent,
                 showEditBottomSheet = screenModel::onEvent,
                 showDeleteDialog = screenModel::onEvent,
+                showResetProgressDialog = screenModel::onEvent,
                 actionDeleteDialog = screenModel::onEvent,
+                actionResetProgressDialog = screenModel::onEvent,
                 toggleFavorite = { screenModel.onEvent(BookInfoEvent.OnToggleFavorite) },
                 navigateToReader = {
                     if (state.value.book.id != -1) {

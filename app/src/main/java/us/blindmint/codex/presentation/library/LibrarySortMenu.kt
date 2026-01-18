@@ -32,7 +32,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -139,6 +141,16 @@ fun LibrarySortMenu(
         libraryModel.onEvent(LibraryEvent.OnUpdateFilterState(newFilterState))
     }
 
+    // Function to clear all filters
+    fun clearAllFilters() {
+        selectedStatuses = emptySet()
+        selectedTags = emptySet()
+        selectedAuthors = emptySet()
+        selectedSeries = emptySet()
+        selectedLanguages = emptySet()
+        updateFilterState()
+    }
+
     // Subpanel state
     var showTagsSubpanel by remember { mutableStateOf(false) }
     var showAuthorsSubpanel by remember { mutableStateOf(false) }
@@ -197,28 +209,29 @@ fun LibrarySortMenu(
             when (selectedTabIndex) {
                 0 -> LibrarySortTabContent(state, mainModel)
                 1 -> LibraryDisplayTabContent(state, mainModel)
-                2 -> LibraryFilterTabContent(
-                    selectedStatuses = selectedStatuses,
-                    selectedTags = selectedTags,
-                    selectedAuthors = selectedAuthors,
-                    selectedSeries = selectedSeries,
-                    selectedLanguages = selectedLanguages,
-                    sortedTags = sortedTags,
-                    sortedAuthors = sortedAuthors,
-                    sortedSeries = sortedSeries,
-                    sortedLanguages = sortedLanguages,
-                    onStatusToggle = { status, selected ->
-                        selectedStatuses = if (selected) selectedStatuses + status else selectedStatuses - status
-                        updateFilterState()
-                    },
-                    onShowTagsSubpanel = { showTagsSubpanel = true },
-                    onShowAuthorsSubpanel = { showAuthorsSubpanel = true },
-                    onShowSeriesSubpanel = { showSeriesSubpanel = true },
-                    onLanguageToggle = { language, selected ->
-                        selectedLanguages = if (selected) selectedLanguages + language else selectedLanguages - language
-                        updateFilterState()
-                    }
-                )
+                 2 -> LibraryFilterTabContent(
+                     selectedStatuses = selectedStatuses,
+                     selectedTags = selectedTags,
+                     selectedAuthors = selectedAuthors,
+                     selectedSeries = selectedSeries,
+                     selectedLanguages = selectedLanguages,
+                     sortedTags = sortedTags,
+                     sortedAuthors = sortedAuthors,
+                     sortedSeries = sortedSeries,
+                     sortedLanguages = sortedLanguages,
+                     onStatusToggle = { status, selected ->
+                         selectedStatuses = if (selected) selectedStatuses + status else selectedStatuses - status
+                         updateFilterState()
+                     },
+                     onClearAllFilters = { clearAllFilters() },
+                     onShowTagsSubpanel = { showTagsSubpanel = true },
+                     onShowAuthorsSubpanel = { showAuthorsSubpanel = true },
+                     onShowSeriesSubpanel = { showSeriesSubpanel = true },
+                     onLanguageToggle = { language, selected ->
+                         selectedLanguages = if (selected) selectedLanguages + language else selectedLanguages - language
+                         updateFilterState()
+                     }
+                 )
             }
         }
     }
@@ -381,6 +394,7 @@ private fun LibraryFilterTabContent(
     sortedSeries: List<String>,
     sortedLanguages: List<String>,
     onStatusToggle: (String, Boolean) -> Unit,
+    onClearAllFilters: () -> Unit,
     onShowTagsSubpanel: () -> Unit,
     onShowAuthorsSubpanel: () -> Unit,
     onShowSeriesSubpanel: () -> Unit,
@@ -392,10 +406,26 @@ private fun LibraryFilterTabContent(
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            "Status Presets",
-            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Status Presets",
+                style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
+            IconButton(
+                onClick = onClearAllFilters,
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Clear,
+                    contentDescription = "Clear all filters",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)

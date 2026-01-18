@@ -13,8 +13,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.domain.library.book.Book
@@ -31,42 +34,58 @@ fun BookInfoLayout(
     navigateToReader: () -> Unit,
     navigateToSpeedReading: (() -> Unit)? = null
 ) {
-    LazyColumnWithScrollbar(
-        modifier = Modifier.fillMaxSize(),
-        state = listState,
-        scrollbarSettings = providePrimaryScrollbar(false),
-        contentPadding = PaddingValues(bottom = 18.dp)
-    ) {
-        item {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                if (book.coverImage != null) {
-                    BookInfoLayoutBackground(
-                        height = paddingValues.calculateTopPadding() + 232.dp,
-                        image = book.coverImage
-                    )
-                }
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Fixed top section: Book cover and info
+        Box(modifier = Modifier.fillMaxWidth()) {
+            if (book.coverImage != null) {
+                BookInfoLayoutBackground(
+                    height = paddingValues.calculateTopPadding() + 232.dp,
+                    image = book.coverImage
+                )
+            }
 
-                Column(Modifier.fillMaxWidth()) {
-                    Spacer(modifier = Modifier.height(paddingValues.calculateTopPadding() + 12.dp))
-                    BookInfoLayoutInfo(
-                        book = book,
-                        showChangeCoverBottomSheet = showChangeCoverBottomSheet
+            Column(Modifier.fillMaxWidth()) {
+                Spacer(modifier = Modifier.height(paddingValues.calculateTopPadding() + 12.dp))
+                BookInfoLayoutInfo(
+                    book = book,
+                    showChangeCoverBottomSheet = showChangeCoverBottomSheet
+                )
+            }
+        }
+
+        // Scrollable middle section: Description (fills remaining space minus button height)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(bottom = 48.dp + 36.dp) // Button height + total padding
+        ) {
+            LazyColumnWithScrollbar(
+                modifier = Modifier.fillMaxSize(),
+                state = listState,
+                scrollbarSettings = providePrimaryScrollbar(false),
+                contentPadding = PaddingValues(
+                    start = 18.dp,
+                    end = 18.dp,
+                    top = 18.dp,
+                    bottom = 18.dp
+                )
+            ) {
+                item {
+                    BookInfoLayoutDescription(
+                        book = book
                     )
                 }
             }
         }
 
-
-
-        item {
-            Spacer(Modifier.height(18.dp))
-            BookInfoLayoutDescription(
-                book = book
-            )
-        }
-
-        item {
-            Spacer(Modifier.height(18.dp))
+        // Fixed bottom section: Button
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp)
+                .padding(bottom = 18.dp)
+        ) {
             BookInfoLayoutButton(
                 book = book,
                 navigateToReader = navigateToReader,

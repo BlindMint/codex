@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -34,9 +35,9 @@ import us.blindmint.codex.ui.theme.DefaultTransition
 fun BookInfoTopBar(
     book: Book,
     listState: LazyListState,
-    showEditBottomSheet: (BookInfoEvent.OnShowEditBottomSheet) -> Unit,
+    showDetailsBottomSheet: (BookInfoEvent.OnShowDetailsBottomSheet) -> Unit,
     showDeleteDialog: (BookInfoEvent.OnShowDeleteDialog) -> Unit,
-    clearProgressHistory: (BookInfoEvent.OnClearProgressHistory) -> Unit,
+    showResetProgressDialog: (BookInfoEvent.OnShowResetProgressDialog) -> Unit,
     toggleFavorite: () -> Unit,
     navigateBack: () -> Unit
 ) {
@@ -50,7 +51,7 @@ fun BookInfoTopBar(
     TopAppBar(
         containerColor = MaterialTheme.colorScheme.surface.copy(0f),
         scrollBehavior = null,
-        isTopBarScrolled = listState.canScrollBackward,
+        isTopBarScrolled = false,
 
         shownTopBar = 0,
         topBars = listOf(
@@ -79,22 +80,22 @@ fun BookInfoTopBar(
                         disableOnClick = false,
                         onClick = toggleFavorite
                     )
-                    IconButton(
-                        icon = Icons.Outlined.Edit,
-                        contentDescription = R.string.edit_metadata,
-                        disableOnClick = false,
-                        onClick = {
-                            showEditBottomSheet(BookInfoEvent.OnShowEditBottomSheet)
-                        }
-                    )
-                    IconButton(
-                        icon = Icons.Outlined.History,
-                        contentDescription = R.string.clear_progress_history,
-                        disableOnClick = false,
-                        onClick = {
-                            clearProgressHistory(BookInfoEvent.OnClearProgressHistory(context))
-                        }
-                    )
+                     IconButton(
+                         icon = Icons.Outlined.Info,
+                         contentDescription = R.string.file_details,
+                         disableOnClick = false,
+                         onClick = {
+                             showDetailsBottomSheet(BookInfoEvent.OnShowDetailsBottomSheet)
+                         }
+                     )
+                     IconButton(
+                         icon = Icons.Outlined.History,
+                         contentDescription = R.string.reset_reading_progress,
+                         disableOnClick = false,
+                         onClick = {
+                             showResetProgressDialog(BookInfoEvent.OnShowResetProgressDialog)
+                         }
+                     )
                     IconButton(
                         icon = Icons.Outlined.Delete,
                         contentDescription = R.string.delete,

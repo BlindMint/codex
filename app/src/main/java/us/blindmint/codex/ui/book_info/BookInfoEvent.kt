@@ -68,9 +68,15 @@ sealed class BookInfoEvent {
 
     data object OnShowDeleteDialog : BookInfoEvent()
 
+    data object OnShowResetProgressDialog : BookInfoEvent()
+
     data class OnActionDeleteDialog(
         val context: Context,
         val navigateBack: () -> Unit
+    ) : BookInfoEvent()
+
+    data class OnActionResetProgressDialog(
+        val context: Context
     ) : BookInfoEvent()
 
     data object OnShowMoveDialog : BookInfoEvent()
@@ -82,6 +88,10 @@ sealed class BookInfoEvent {
     ) : BookInfoEvent()
 
     data class OnClearProgressHistory(
+        val context: Context
+    ) : BookInfoEvent()
+
+    data class OnResetReadingProgress(
         val context: Context
     ) : BookInfoEvent()
 

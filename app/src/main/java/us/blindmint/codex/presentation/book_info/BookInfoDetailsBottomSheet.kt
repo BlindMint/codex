@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Restore
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
@@ -48,6 +49,7 @@ fun BookInfoDetailsBottomSheet(
     showTitleDialog: (BookInfoEvent.OnShowTitleDialog) -> Unit,
     showAuthorDialog: (BookInfoEvent.OnShowAuthorDialog) -> Unit,
     showDescriptionDialog: (BookInfoEvent.OnShowDescriptionDialog) -> Unit,
+    showEditBottomSheet: (BookInfoEvent.OnShowEditBottomSheet) -> Unit,
     resetTitle: (BookInfoEvent.OnResetTitle) -> Unit,
     resetAuthor: (BookInfoEvent.OnResetAuthor) -> Unit,
     resetDescription: (BookInfoEvent.OnResetDescription) -> Unit,
@@ -107,77 +109,79 @@ fun BookInfoDetailsBottomSheet(
             contentPadding = PaddingValues(bottom = 8.dp)
         ) {
             item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    SettingsSubcategoryTitle(
-                        title = stringResource(id = R.string.file_details),
-                        padding = 0.dp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    IconButton(
-                        icon = Icons.Default.Restore,
-                        contentDescription = R.string.reset_content_desc,
-                        disableOnClick = false,
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        resetTitle(BookInfoEvent.OnResetTitle(context))
-                        resetAuthor(BookInfoEvent.OnResetAuthor(context))
-                        resetDescription(BookInfoEvent.OnResetDescription(context))
-                    }
-                }
+                 Row(
+                     modifier = Modifier
+                         .fillMaxWidth()
+                         .padding(horizontal = 16.dp, vertical = 8.dp),
+                     horizontalArrangement = Arrangement.SpaceBetween,
+                     verticalAlignment = Alignment.CenterVertically
+                 ) {
+                     SettingsSubcategoryTitle(
+                         title = stringResource(id = R.string.file_details),
+                         padding = 0.dp,
+                         color = MaterialTheme.colorScheme.primary
+                     )
+                     Row(
+                         horizontalArrangement = Arrangement.spacedBy(8.dp),
+                         verticalAlignment = Alignment.CenterVertically
+                     ) {
+                         IconButton(
+                             icon = Icons.Outlined.Edit,
+                             contentDescription = R.string.edit_metadata,
+                             disableOnClick = false,
+                             color = MaterialTheme.colorScheme.secondary,
+                             modifier = Modifier.size(24.dp)
+                         ) {
+                             showEditBottomSheet(BookInfoEvent.OnShowEditBottomSheet)
+                         }
+                         IconButton(
+                             icon = Icons.Default.Restore,
+                             contentDescription = R.string.reset_content_desc,
+                             disableOnClick = false,
+                             color = MaterialTheme.colorScheme.secondary,
+                             modifier = Modifier.size(24.dp)
+                         ) {
+                             resetTitle(BookInfoEvent.OnResetTitle(context))
+                             resetAuthor(BookInfoEvent.OnResetAuthor(context))
+                             resetDescription(BookInfoEvent.OnResetDescription(context))
+                         }
+                     }
+                 }
             }
 
-            item {
-                BookInfoDetailsBottomSheetItem(
-                    label = stringResource(id = R.string.title),
-                    text = book.title,
-                    editable = true,
-                    onEdit = {
-                        showTitleDialog(BookInfoEvent.OnShowTitleDialog)
-                    }
-                )
-            }
+             item {
+                 BookInfoDetailsBottomSheetItem(
+                     label = stringResource(id = R.string.title),
+                     text = book.title,
+                     editable = false
+                 )
+             }
 
-            item {
-                BookInfoDetailsBottomSheetItem(
-                    label = stringResource(id = R.string.author),
-                    text = book.author.asString(),
-                    editable = true,
-                    onEdit = {
-                        showAuthorDialog(BookInfoEvent.OnShowAuthorDialog)
-                    }
-                )
-            }
+             item {
+                 BookInfoDetailsBottomSheetItem(
+                     label = stringResource(id = R.string.author),
+                     text = book.author.asString(),
+                     editable = false
+                 )
+             }
 
-            item {
-                BookInfoDetailsBottomSheetItem(
-                    label = stringResource(id = R.string.description),
-                    text = book.description ?: "",
-                    editable = true,
-                    onEdit = {
-                        showDescriptionDialog(BookInfoEvent.OnShowDescriptionDialog)
-                    }
-                )
-            }
+             item {
+                 BookInfoDetailsBottomSheetItem(
+                     label = stringResource(id = R.string.description),
+                     text = book.description ?: "",
+                     editable = false
+                 )
+             }
 
-            item {
-                BookInfoDetailsBottomSheetItem(
-                    label = stringResource(id = R.string.file_path),
-                    text = cachedFile?.path ?: book.filePath,
-                    editable = true,
-                    onEdit = {
-                        showPathDialog(BookInfoEvent.OnShowPathDialog)
-                    },
-                    showError = !fileExists,
-                    errorMessage = stringResource(id = R.string.error_no_file)
-                )
-            }
+             item {
+                 BookInfoDetailsBottomSheetItem(
+                     label = stringResource(id = R.string.file_path),
+                     text = cachedFile?.path ?: book.filePath,
+                     editable = false,
+                     showError = !fileExists,
+                     errorMessage = stringResource(id = R.string.error_no_file)
+                 )
+             }
 
             item {
                 BookInfoDetailsBottomSheetItem(

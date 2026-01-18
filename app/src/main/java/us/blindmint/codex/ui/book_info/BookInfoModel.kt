@@ -331,6 +331,14 @@ class BookInfoModel @Inject constructor(
                     }
                 }
 
+                is BookInfoEvent.OnShowResetProgressDialog -> {
+                    _state.update {
+                        it.copy(
+                            dialog = BookInfoScreen.RESET_PROGRESS_DIALOG
+                        )
+                    }
+                }
+
                 is BookInfoEvent.OnActionDeleteDialog -> {
                     launch {
                         _state.update {
@@ -352,6 +360,17 @@ class BookInfoModel @Inject constructor(
                         }
 
                         event.navigateBack()
+                    }
+                }
+
+                is BookInfoEvent.OnActionResetProgressDialog -> {
+                    launch {
+                        _state.update {
+                            it.copy(
+                                dialog = null
+                            )
+                        }
+                        onEvent(BookInfoEvent.OnResetReadingProgress(event.context))
                     }
                 }
 
@@ -404,6 +423,27 @@ class BookInfoModel @Inject constructor(
 
                         withContext(Dispatchers.Main) {
                             event.context.getString(R.string.progress_history_cleared)
+                                .showToast(context = event.context)
+                        }
+                    }
+                }
+
+                is BookInfoEvent.OnResetReadingProgress -> {
+                    launch {
+                        val updatedBook = _state.value.book.copy(
+                            scrollIndex = 0,
+                            scrollOffset = 0,
+                            progress = 0f,
+                            currentPage = 0,
+                            lastPageRead = 0
+                        )
+                        updateBook.execute(updatedBook)
+                        _state.update {
+                            it.copy(book = updatedBook)
+                        }
+
+                        withContext(Dispatchers.Main) {
+                            event.context.getString(R.string.reading_progress_reset)
                                 .showToast(context = event.context)
                         }
                     }
