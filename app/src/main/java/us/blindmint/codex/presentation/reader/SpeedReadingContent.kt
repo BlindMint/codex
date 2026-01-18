@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -538,28 +539,24 @@ fun SpeedReadingContent(
                     shape = MaterialTheme.shapes.small
                 )
                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                .pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            awaitPointerEvent()
-                            // Consume all pointer events to prevent bubbling
-                        }
-                    }
-                },
+                .clickable(
+                    onClick = {},
+                    enabled = true
+                ),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Progress bar (50% width)
+            // Progress bar (takes available space)
             LinearProgressIndicator(
                 progress = { totalProgress },
-                modifier = Modifier.weight(0.5f),
+                modifier = Modifier.weight(1f),
                 color = fontColor.copy(alpha = 0.7f),
                 trackColor = fontColor.copy(alpha = 0.2f)
             )
 
-            // Right side controls (50% width, evenly spaced)
+            // Right side controls (fixed spacing from right)
             Row(
-                modifier = Modifier.weight(0.5f),
-                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier,
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // WPM indicator (tappable for quick menu)
