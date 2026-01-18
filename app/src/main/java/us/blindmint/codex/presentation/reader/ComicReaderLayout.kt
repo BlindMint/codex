@@ -287,14 +287,12 @@ fun ComicReaderLayout(
         } else if (errorMessage != null) {
             // Error state - could add error UI here
             } else if (totalPages > 0) {
-            // When parent requests a specific page, scroll to it
-            // Depends on both currentPage AND totalPages so it fires when either changes
-            LaunchedEffect(currentPage, totalPages) {
-                if (currentPage >= 0 && currentPage < totalPages && totalPages > 0) {
-                    val targetPhysicalPage = mapLogicalToPhysicalPage(currentPage)
-                    if (targetPhysicalPage != pagerState.currentPage) {
-                        pagerState.animateScrollToPage(targetPhysicalPage)
-                    }
+            // When pages are first loaded, restore to the initial page
+            LaunchedEffect(totalPages) {
+                // Only scroll on initial load (when totalPages first becomes > 0)
+                if (initialPage > 0 && initialPage < totalPages) {
+                    val targetPhysicalPage = mapLogicalToPhysicalPage(initialPage)
+                    pagerState.animateScrollToPage(targetPhysicalPage)
                 }
             }
 
