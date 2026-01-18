@@ -47,6 +47,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType
@@ -109,6 +110,9 @@ fun SpeedReadingContent(
     onWpmChange: (Int) -> Unit,
     onPlayPause: () -> Unit,
     onNavigateWord: (Int) -> Unit = {}, // -1 for back, +1 for forward
+    onToggleMenu: () -> Unit = {},
+    navigateWord: (Int) -> Unit = {},
+    onRegisterNavigationCallback: ((Int) -> Unit) -> Unit = {},
     alwaysShowPlayPause: Boolean,
     showWpmIndicator: Boolean = true,
     osdEnabled: Boolean = true,
@@ -150,6 +154,21 @@ fun SpeedReadingContent(
             }
         }
     }
+
+    // Register navigation callback
+    LaunchedEffect(Unit) {
+        onRegisterNavigationCallback { direction ->
+            handleNavigateWord(direction)
+        }
+    }
+
+    // Register the navigation callback
+    LaunchedEffect(Unit) {
+        onRegisterNavigationCallback { direction ->
+            handleNavigateWord(direction)
+        }
+    }
+
 
     // Call the parent's onNavigateWord callback
     LaunchedEffect(currentWordIndex) {
@@ -207,18 +226,19 @@ fun SpeedReadingContent(
                             when {
                                 position.x < tapZoneWidth -> {
                                     // Left tap zone - navigate back
-                                    handleNavigateWord(-1)
+                                    navigateWord(-1)
                                 }
                                 position.x > width - tapZoneWidth -> {
                                     // Right tap zone - navigate forward
-                                    handleNavigateWord(1)
+                                    navigateWord(1)
                                 }
                                 else -> {
-                                    // Middle tap zone - pause if playing
+                                    // Middle tap zone - pause if playing, otherwise toggle menu
                                     if (isPlaying) {
                                         onPlayPause()
+                                    } else {
+                                        onToggleMenu()
                                     }
-                                    // Menu toggle is handled by parent
                                 }
                             }
                         }
@@ -472,7 +492,7 @@ fun SpeedReadingContent(
                          modifier = Modifier
                              .padding(12.dp) // Increased clickable area
                              .noRippleClickable {
-                                 handleNavigateWord(-1) // Navigate to previous word
+                                 navigateWord(-1) // Navigate to previous word
                              }
                      )
 
@@ -499,7 +519,7 @@ fun SpeedReadingContent(
                          modifier = Modifier
                              .padding(12.dp) // Increased clickable area
                              .noRippleClickable {
-                                 handleNavigateWord(1) // Navigate to next word
+                                 navigateWord(1) // Navigate to next word
                              }
                      )
                 }

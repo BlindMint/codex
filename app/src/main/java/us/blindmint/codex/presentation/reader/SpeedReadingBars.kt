@@ -128,6 +128,7 @@ fun SpeedReadingBottomBar(
     isPlaying: Boolean,
     onPlayPause: () -> Unit,
     onNavigateWord: (Int) -> Unit, // Add navigation callback
+    navigateWord: (Int) -> Unit = {}, // Add word navigation callback
     onCloseMenu: () -> Unit, // Add close menu callback
     bottomBarPadding: Dp
 ) {
@@ -155,7 +156,7 @@ fun SpeedReadingBottomBar(
                 contentDescription = R.string.previous_word,
                 disableOnClick = false
             ) {
-                onNavigateWord(-1)
+                navigateWord(-1)
             }
 
             // Play/Pause button (larger, centered)
@@ -175,7 +176,7 @@ fun SpeedReadingBottomBar(
                 contentDescription = R.string.next_word,
                 disableOnClick = false
             ) {
-                onNavigateWord(1)
+                navigateWord(1)
             }
         }
 

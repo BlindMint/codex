@@ -64,11 +64,14 @@ fun SpeedReadingScaffold(
     onExitSpeedReading: () -> Unit,
     onShowSpeedReadingSettings: () -> Unit,
     onMenuVisibilityChanged: (Boolean) -> Unit = {},
-    onNavigateWord: (Int) -> Unit
+    onNavigateWord: (Int) -> Unit,
+    onToggleMenu: () -> Unit = {},
+    navigateWord: (Int) -> Unit = {}
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
-    var showMenu by remember { mutableStateOf(true) } // Start with menu visible
+    var showMenu by remember { mutableStateOf(false) } // Start with menu hidden
     var isPlaying by remember { mutableStateOf(false) }
+    var navigateWordCallback: ((Int) -> Unit)? by remember { mutableStateOf(null) }
 
     // Notify parent of menu visibility changes
     LaunchedEffect(showMenu) {
@@ -108,6 +111,9 @@ fun SpeedReadingScaffold(
                     isPlaying = isPlaying,
                     onPlayPause = { isPlaying = !isPlaying },
                     onNavigateWord = onNavigateWord,
+                    navigateWord = { direction ->
+                        navigateWordCallback?.invoke(direction)
+                    },
                     onCloseMenu = { showMenu = false },
                     bottomBarPadding = bottomBarPadding
                 )
@@ -148,6 +154,11 @@ fun SpeedReadingScaffold(
                 onWpmChange = onWpmChange,
                 onPlayPause = { isPlaying = !isPlaying },
                 onNavigateWord = onNavigateWord,
+                onToggleMenu = { showMenu = !showMenu },
+                navigateWord = navigateWordCallback ?: {},
+                onRegisterNavigationCallback = { callback ->
+                    navigateWordCallback = callback
+                },
                 alwaysShowPlayPause = alwaysShowPlayPause,
                 showWpmIndicator = showWpmIndicator,
                 osdEnabled = osdEnabled
