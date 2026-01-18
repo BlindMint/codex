@@ -907,18 +907,12 @@ class ReaderModel @Inject constructor(
             resetJob?.join()
             eventJob = SupervisorJob()
 
-            _state.update {
-                ReaderState(
-                    book = book,
-                    currentComicPage = if (book.isComic) {
-                        // Restore last read page for comics
-                        book.lastPageRead.coerceIn(0, book.pageCount ?: 0)
-                    } else 0
-                )
-            }
-
             // Skip text loading for comics - they use image-based rendering
             if (!book.isComic) {
+                _state.update {
+                    ReaderState(book = book)
+                }
+
                 onEvent(
                     ReaderEvent.OnLoadText(
                         activity = activity,
@@ -934,13 +928,14 @@ class ReaderModel @Inject constructor(
 
                 val lastOpened = getLatestHistory.execute(book.id)
 
+                // Single state update to prevent triggering LaunchedEffect multiple times
                 _state.update {
-                    it.copy(
-                        showMenu = false,
-                        book = it.book.copy(
+                    ReaderState(
+                        book = book.copy(
                             lastOpened = lastOpened?.time
                         ),
-                        // Keep isLoading = true for comics until pages are loaded
+                        currentComicPage = book.lastPageRead.coerceIn(0, book.pageCount ?: 0),
+                        showMenu = false,
                         isLoading = true
                     )
                 }
