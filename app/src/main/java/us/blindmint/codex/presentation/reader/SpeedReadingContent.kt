@@ -497,11 +497,11 @@ fun SpeedReadingContent(
                              color = fontColor.copy(alpha = 0.7f),
                              fontSize = 28.sp // Larger size
                          ),
-                         modifier = Modifier
-                             .padding(12.dp) // Increased clickable area
-                             .noRippleClickable {
-                                 navigateWord(-1) // Navigate to previous word
-                             }
+                          modifier = Modifier
+                              .padding(12.dp) // Increased clickable area
+                              .clickable {
+                                  navigateWord(-1) // Navigate to previous word
+                              }
                      )
 
                     // Play/Pause button - centered and larger, minimal icon
@@ -512,7 +512,7 @@ fun SpeedReadingContent(
                         modifier = Modifier
                             .size(60.dp) // 2.5x larger than default 24.dp
                             .padding(8.dp)
-                            .noRippleClickable {
+                            .clickable {
                                 onPlayPause()
                             }
                     )
@@ -524,11 +524,11 @@ fun SpeedReadingContent(
                              color = fontColor.copy(alpha = 0.7f),
                              fontSize = 28.sp // Larger size
                          ),
-                         modifier = Modifier
-                             .padding(12.dp) // Increased clickable area
-                             .noRippleClickable {
-                                 navigateWord(1) // Navigate to next word
-                             }
+                          modifier = Modifier
+                              .padding(12.dp) // Increased clickable area
+                              .clickable {
+                                  navigateWord(1) // Navigate to next word
+                              }
                      )
                 }
             }
