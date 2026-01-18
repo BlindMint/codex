@@ -308,7 +308,7 @@ fun ColorPickerWithTitle(
                     SliderWithTitle(
                         modifier = Modifier.weight(1f),
                         value = (currentOpacity * 100).toInt() to "${(currentOpacity * 100).toInt()}%",
-                        title = "Opacity",
+                        title = "Alpha",
                         fromValue = 0,
                         toValue = 100,
                         enabled = !isLocked,

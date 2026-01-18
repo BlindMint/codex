@@ -49,7 +49,7 @@ fun SpeedReadingAccentCharacterOpacityOption(
         )
     } else {
         Text(
-            text = "Opacity",
+            text = "Alpha",
             style = MaterialTheme.typography.labelLarge.copy(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             ),

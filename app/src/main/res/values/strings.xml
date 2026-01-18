@@ -185,10 +185,10 @@
     <string name="misc_reader_settings">Misc</string>
     <string name="search_reader_settings">Search</string>
     <string name="search_highlight_color">Search highlight color</string>
-    <string name="search_scrollbar_opacity">Search scrollbar opacity</string>
+    <string name="search_scrollbar_opacity">Search scrollbar alpha</string>
     <string name="show_search_scrollbar">Show search scrollbar</string>
     <string name="search_scrollbar_settings">Search scrollbar</string>
-    <string name="alpha_opacity">Opacity</string>
+    <string name="alpha_opacity">Alpha</string>
     <string name="dictionary_settings">Dictionary</string>
     <string name="dictionary_source_option">Web Dictionary</string>
     <string name="dictionary_system_default">System Default</string>
@@ -316,7 +316,7 @@
     <string name="add_background_image">Add background image</string>
     <string name="remove_background_image">Remove background image</string>
     <string name="no_background_image">None</string>
-    <string name="background_opacity_option">Image opacity</string>
+    <string name="background_opacity_option">Image alpha</string>
     <string name="background_scale_mode_option">Image scaling</string>
     <string name="scale_mode_cover">Cover</string>
     <string name="scale_mode_fit">Fit</string>
@@ -807,7 +807,7 @@
     <string name="speed_reading_custom_font">Speed reading custom font</string>
     <string name="speed_reading_font_family">Speed reading font family</string>
     <string name="speed_reading_word_size">Word size</string>
-    <string name="speed_reading_accent_opacity">Accent character opacity</string>
+    <string name="speed_reading_accent_opacity">Accent character alpha</string>
     <string name="speed_reading_background_image">Use background image</string>
     <string name="speed_reading_horizontal_bars_thickness">Horizontal bars thickness</string>
     <string name="speed_reading_vertical_indicators_size">Vertical indicators size</string>
