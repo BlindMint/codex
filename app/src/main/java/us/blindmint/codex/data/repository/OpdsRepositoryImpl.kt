@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 
+@file:Suppress("DEPRECATION") // SimpleXmlConverterFactory is deprecated but still required for OPDS v1 XML parsing
+
 package us.blindmint.codex.data.repository
 
 import kotlinx.coroutines.Dispatchers

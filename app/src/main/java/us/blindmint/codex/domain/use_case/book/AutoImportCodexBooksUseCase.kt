@@ -81,11 +81,8 @@ class AutoImportCodexBooksUseCase @Inject constructor(
         }
         Log.d(AUTO_IMPORT, "Downloads directory contains ${allFiles?.size ?: 0} items")
 
-        @Suppress("KotlinConstantConditions")
-        if (allFiles != null) {
-            allFiles.forEach { file ->
-                Log.d(AUTO_IMPORT, "Found item: ${file.name} (isDirectory: ${file.isDirectory}, isFile: ${file.isFile}, canRead: ${file.canRead()})")
-            }
+        allFiles?.forEach { file ->
+            Log.d(AUTO_IMPORT, "Found item: ${file.name} (isDirectory: ${file.isDirectory}, isFile: ${file.isFile}, canRead: ${file.canRead()})")
         }
 
         val bookFolders = allFiles?.filter { it.isDirectory }?.toTypedArray() ?: emptyArray()
@@ -133,14 +130,8 @@ class AutoImportCodexBooksUseCase @Inject constructor(
         val folderFiles = folder.listFiles()
         Log.d(AUTO_IMPORT, "Folder contains ${folderFiles?.size ?: 0} files")
 
-        @Suppress("KotlinConstantConditions")
-        if (folderFiles == null || folderFiles.isEmpty()) {
-            Log.d(AUTO_IMPORT, "No files found in folder: ${folder.name}")
-            return null
-        }
-
         // Log all files in the folder
-        folderFiles.forEach { file ->
+        folderFiles?.forEach { file ->
             Log.d(AUTO_IMPORT, "File in folder: ${file.name} (isDirectory: ${file.isDirectory}, isFile: ${file.isFile})")
         }
 

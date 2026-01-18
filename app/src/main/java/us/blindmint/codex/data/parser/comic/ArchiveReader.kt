@@ -56,6 +56,7 @@ class ArchiveReader @Inject constructor() {
             loadArchive()
         }
 
+        @Suppress("DEPRECATION") // SevenZFile(File) constructor is deprecated but still required
         private fun loadArchive() {
             try {
                 android.util.Log.d("SevenZArchiveHandle", "Loading 7Z archive: ${cachedFile.name}")

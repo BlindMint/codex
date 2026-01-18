@@ -122,13 +122,9 @@ fun ComicReaderLayout(
         // Load the page
         try {
             archiveHandle?.let { archive ->
-                val imageEntries = archive.entries.filter { entry ->
-                    val entryPath = entry.getPath()
-                    entryPath != null && ArchiveReader.isImageFile(entryPath)
-                }
-
-                if (pageIndex < imageEntries.size) {
-                    val entry = imageEntries[pageIndex]
+                // archive.entries already only contains image files (filtered by ArchiveHandle)
+                if (pageIndex < archive.entries.size) {
+                    val entry = archive.entries[pageIndex]
                     android.util.Log.d("CodexComic", "Lazy loading page ${pageIndex + 1}")
 
                     archive.getInputStream(entry).use { input ->
@@ -261,20 +257,15 @@ fun ComicReaderLayout(
                 val archive = archiveReader.openArchive(cachedFile)
                 android.util.Log.d("CodexComic", "Archive opened, entries: ${archive.entries.size}")
 
-                // Count image entries for total pages
-                val imageEntries = archive.entries.filter { entry ->
-                    val entryPath = entry.getPath()
-                    entryPath != null && ArchiveReader.isImageFile(entryPath)
-                }
-
-                android.util.Log.d("CodexComic", "Found ${imageEntries.size} image pages")
+                // archive.entries already only contains image files (filtered by ArchiveHandle)
+                android.util.Log.d("CodexComic", "Found ${archive.entries.size} image pages")
                 archiveHandle = archive
-                totalPages = imageEntries.size
+                totalPages = archive.entries.size
                 comicLoaded = true
-                onTotalPagesLoaded(imageEntries.size)
+                onTotalPagesLoaded(archive.entries.size)
 
                 // Pre-load the first few pages for smooth UX
-                for (i in 0 until min(3, imageEntries.size)) {
+                for (i in 0 until min(3, archive.entries.size)) {
                     loadPage(i)
                 }
             }
