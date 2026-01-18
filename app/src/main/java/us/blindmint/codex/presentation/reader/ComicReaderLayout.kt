@@ -58,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import us.blindmint.codex.data.parser.comic.ArchiveReader
@@ -68,6 +70,7 @@ import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.reader.ReaderEvent
 
+@OptIn(FlowPreview::class)
 @Composable
 fun ComicReaderLayout(
     book: Book,
@@ -205,23 +208,29 @@ fun ComicReaderLayout(
     }
 
     // Update current page when pager changes
+    // Debounce to avoid updating during scroll animation
     LaunchedEffect(pagerState, isRTL) {
-        snapshotFlow { pagerState.currentPage }.collect { physicalPage ->
-            if (comicReaderMode == "PAGED" && totalPages > 0) {
-                val logicalPage = mapPhysicalToLogicalPage(physicalPage)
-                onPageChanged(logicalPage)
+        snapshotFlow { pagerState.currentPage to pagerState.isScrollInProgress }
+            .debounce(50)  // Wait 50ms after scroll stops
+            .collect { (physicalPage, _) ->
+                if (comicReaderMode == "PAGED" && totalPages > 0) {
+                    val logicalPage = mapPhysicalToLogicalPage(physicalPage)
+                    onPageChanged(logicalPage)
+                }
             }
-        }
     }
 
     // Update current page when lazy list changes (webtoon mode)
+    // Debounce to avoid updating during scroll animation
     LaunchedEffect(lazyListState, isRTL) {
-        snapshotFlow { lazyListState.firstVisibleItemIndex }.collect { physicalIndex ->
-            if (comicReaderMode == "WEBTOON" && totalPages > 0) {
-                val logicalPage = mapPhysicalToLogicalPage(physicalIndex)
-                onPageChanged(logicalPage)
+        snapshotFlow { lazyListState.firstVisibleItemIndex }
+            .debounce(50)  // Wait 50ms after scroll stops
+            .collect { physicalIndex ->
+                if (comicReaderMode == "WEBTOON" && totalPages > 0) {
+                    val logicalPage = mapPhysicalToLogicalPage(physicalIndex)
+                    onPageChanged(logicalPage)
+                }
             }
-        }
     }
 
 
