@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -121,10 +122,13 @@ fun SpeedReadingTopBar(
 @Composable
 fun SpeedReadingBottomBar(
     progress: String,
+    progressValue: Float, // Add progress value for the bar
     wpm: Int,
     onWpmChange: (Int) -> Unit,
     isPlaying: Boolean,
     onPlayPause: () -> Unit,
+    onNavigateWord: (Int) -> Unit, // Add navigation callback
+    onCloseMenu: () -> Unit, // Add close menu callback
     bottomBarPadding: Dp
 ) {
     Column(
@@ -139,6 +143,44 @@ fun SpeedReadingBottomBar(
     ) {
         Spacer(Modifier.height(16.dp))
 
+        // OSD Controls Bar (back, forward, play)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Back button
+            IconButton(
+                icon = Icons.AutoMirrored.Outlined.ArrowBack,
+                contentDescription = R.string.previous_word,
+                disableOnClick = false
+            ) {
+                onNavigateWord(-1)
+            }
+
+            // Play/Pause button (larger, centered)
+            IconButton(
+                modifier = Modifier.size(48.dp),
+                icon = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                contentDescription = if (isPlaying) R.string.pause else R.string.play,
+                disableOnClick = false
+            ) {
+                onPlayPause()
+                onCloseMenu() // Close menu when play is pressed
+            }
+
+            // Forward button
+            IconButton(
+                icon = Icons.AutoMirrored.Outlined.ArrowForward,
+                contentDescription = R.string.next_word,
+                disableOnClick = false
+            ) {
+                onNavigateWord(1)
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
         // Progress text
         StyledText(
             text = progress,
@@ -147,39 +189,15 @@ fun SpeedReadingBottomBar(
             )
         )
 
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(8.dp))
 
-        Row(
+        // Progress bar (same as speed reader)
+        LinearProgressIndicator(
+            progress = { progressValue },
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // WPM indicator on the left (matching spacing)
-            Text(
-                text = "$wpm WPM",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 8.dp)
-            )
-
-            // WPM slider in the middle
-            Slider(
-                value = wpm.toFloat(),
-                onValueChange = { onWpmChange((it / 5).toInt() * 5) }, // Snap to 5 increments
-                valueRange = 200f..1200f,
-                modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
-            )
-
-            // Play/Pause button on the right
-            IconButton(
-                icon = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                contentDescription = if (isPlaying) R.string.pause else R.string.play,
-                disableOnClick = false,
-                color = MaterialTheme.colorScheme.onSurface
-            ) {
-                onPlayPause()
-            }
-        }
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+        )
 
         Spacer(Modifier.height(8.dp + bottomBarPadding))
     }

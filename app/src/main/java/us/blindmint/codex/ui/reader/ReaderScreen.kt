@@ -765,6 +765,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 bookTitle = state.value.book.title,
                 chapterTitle = state.value.currentChapter?.title,
                 currentProgress = state.value.book.progress,
+                totalProgress = state.value.book.progress,
                 backgroundColor = settingsState.value.selectedColorPreset.backgroundColor,
                 fontColor = settingsState.value.selectedColorPreset.fontColor,
                 accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
@@ -808,6 +809,10 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                             activity = activity
                         )
                     )
+
+                },
+                onNavigateWord = { direction ->
+                    // For now, just log the navigation. Progress update will happen through normal mechanisms
                 },
                 onShowSpeedReadingSettings = {
                     screenModel.onEvent(ReaderEvent.OnShowSpeedReadingSettings)

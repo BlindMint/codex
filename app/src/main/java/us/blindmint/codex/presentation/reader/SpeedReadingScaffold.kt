@@ -36,6 +36,7 @@ fun SpeedReadingScaffold(
     bookTitle: String,
     chapterTitle: String?,
     currentProgress: Float,
+    totalProgress: Float,
     backgroundColor: Color,
     fontColor: Color,
     accentCharacterEnabled: Boolean,
@@ -62,7 +63,8 @@ fun SpeedReadingScaffold(
     osdEnabled: Boolean,
     onExitSpeedReading: () -> Unit,
     onShowSpeedReadingSettings: () -> Unit,
-    onMenuVisibilityChanged: (Boolean) -> Unit = {}
+    onMenuVisibilityChanged: (Boolean) -> Unit = {},
+    onNavigateWord: (Int) -> Unit
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(true) } // Start with menu visible
@@ -100,10 +102,13 @@ fun SpeedReadingScaffold(
             ) {
                 SpeedReadingBottomBar(
                     progress = progress,
+                    progressValue = currentProgress,
                     wpm = wpm,
                     onWpmChange = onWpmChange,
                     isPlaying = isPlaying,
                     onPlayPause = { isPlaying = !isPlaying },
+                    onNavigateWord = onNavigateWord,
+                    onCloseMenu = { showMenu = false },
                     bottomBarPadding = bottomBarPadding
                 )
             }
@@ -115,11 +120,11 @@ fun SpeedReadingScaffold(
             modifier = Modifier
                 .fillMaxSize()
                 .background(backgroundColor)
-                .noRippleClickable { showMenu = !showMenu }
         ) {
             SpeedReadingContent(
                 text = text,
                 currentProgress = currentProgress,
+                totalProgress = totalProgress,
                 backgroundColor = backgroundColor,
                 fontColor = fontColor,
                 fontFamily = fontFamily,
@@ -142,6 +147,7 @@ fun SpeedReadingScaffold(
                 isPlaying = isPlaying,
                 onWpmChange = onWpmChange,
                 onPlayPause = { isPlaying = !isPlaying },
+                onNavigateWord = onNavigateWord,
                 alwaysShowPlayPause = alwaysShowPlayPause,
                 showWpmIndicator = showWpmIndicator,
                 osdEnabled = osdEnabled

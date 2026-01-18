@@ -12,15 +12,27 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.Slider
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Pause
@@ -28,6 +40,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,15 +73,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import kotlinx.coroutines.delay
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpeedReadingContent(
     text: List<ReaderText>,
     currentProgress: Float,
+    totalProgress: Float, // Overall book progress
     backgroundColor: Color,
     fontColor: Color,
     fontFamily: FontFamily,
@@ -91,6 +108,7 @@ fun SpeedReadingContent(
     isPlaying: Boolean,
     onWpmChange: (Int) -> Unit,
     onPlayPause: () -> Unit,
+    onNavigateWord: (Int) -> Unit = {}, // -1 for back, +1 for forward
     alwaysShowPlayPause: Boolean,
     showWpmIndicator: Boolean = true,
     osdEnabled: Boolean = true,
@@ -106,6 +124,8 @@ fun SpeedReadingContent(
     }
 
     var currentWordIndex by remember { mutableIntStateOf(0) }
+    var lastNavigationDirection by remember { mutableIntStateOf(0) }
+    var showQuickWpmMenu by remember { mutableStateOf(false) }
     var showCountdown by remember { mutableStateOf(false) }
     var countdownValue by remember { mutableIntStateOf(3) }
     val wordFontSize = wordSize.sp
@@ -115,6 +135,25 @@ fun SpeedReadingContent(
     // Reset word index when words change
     LaunchedEffect(words) {
         currentWordIndex = 0
+        lastNavigationDirection = 0
+    }
+
+    // Handle word navigation
+    val handleNavigateWord: (Int) -> Unit = { direction ->
+        val newIndex = (currentWordIndex + direction).coerceIn(0, words.size - 1)
+        if (newIndex != currentWordIndex) {
+            currentWordIndex = newIndex
+            lastNavigationDirection = direction
+            // Pause auto-play when manually navigating
+            if (isPlaying) {
+                onPlayPause()
+            }
+        }
+    }
+
+    // Call the parent's onNavigateWord callback
+    LaunchedEffect(currentWordIndex) {
+        onNavigateWord(lastNavigationDirection)
     }
 
     // Countdown animation
@@ -150,8 +189,42 @@ fun SpeedReadingContent(
     // This creates a consistent focal point that words align to
     val accentOffsetRatio = focalPointPosition
 
+    var boxSize by remember { mutableStateOf(0 to 0) }
+
     Box(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .onSizeChanged { boxSize = it.width to it.height }
+            .pointerInput(isPlaying) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        if (event.type == androidx.compose.ui.input.pointer.PointerEventType.Press) {
+                            val position = event.changes.first().position
+                            val width = boxSize.first.toFloat()
+                            val tapZoneWidth = width * 0.2f // 20% edge zones
+
+                            when {
+                                position.x < tapZoneWidth -> {
+                                    // Left tap zone - navigate back
+                                    handleNavigateWord(-1)
+                                }
+                                position.x > width - tapZoneWidth -> {
+                                    // Right tap zone - navigate forward
+                                    handleNavigateWord(1)
+                                }
+                                else -> {
+                                    // Middle tap zone - pause if playing
+                                    if (isPlaying) {
+                                        onPlayPause()
+                                    }
+                                    // Menu toggle is handled by parent
+                                }
+                            }
+                        }
+                    }
+                }
+            },
         contentAlignment = Alignment.Center
     ) {
         if (words.isNotEmpty() && currentWordIndex < words.size) {
@@ -389,20 +462,19 @@ fun SpeedReadingContent(
                     horizontalArrangement = Arrangement.spacedBy(24.dp), // Increased spacing
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Left arrow (<) - decrease WPM
-                    Text(
-                        text = "<",
-                        style = MaterialTheme.typography.headlineMedium.copy( // Increased size
-                            color = fontColor.copy(alpha = 0.7f),
-                            fontSize = 28.sp // Larger size
-                        ),
-                        modifier = Modifier
-                            .padding(12.dp) // Increased clickable area
-                            .noRippleClickable {
-                                val newWpm = (wpm - 50).coerceAtLeast(200)
-                                onWpmChange(newWpm)
-                            }
-                    )
+                    // Left arrow (<) - navigate to previous word
+                     Text(
+                         text = "<",
+                         style = MaterialTheme.typography.headlineMedium.copy( // Increased size
+                             color = fontColor.copy(alpha = 0.7f),
+                             fontSize = 28.sp // Larger size
+                         ),
+                         modifier = Modifier
+                             .padding(12.dp) // Increased clickable area
+                             .noRippleClickable {
+                                 handleNavigateWord(-1) // Navigate to previous word
+                             }
+                     )
 
                     // Play/Pause button - centered and larger, minimal icon
                     Icon(
@@ -417,35 +489,70 @@ fun SpeedReadingContent(
                             }
                     )
 
-                    // Right arrow (>) - increase WPM
-                    Text(
-                        text = ">",
-                        style = MaterialTheme.typography.headlineMedium.copy( // Increased size
-                            color = fontColor.copy(alpha = 0.7f),
-                            fontSize = 28.sp // Larger size
-                        ),
-                        modifier = Modifier
-                            .padding(12.dp) // Increased clickable area
-                            .noRippleClickable {
-                                val newWpm = (wpm + 50).coerceAtMost(1200)
-                                onWpmChange(newWpm)
-                            }
-                    )
+                    // Right arrow (>) - navigate to next word
+                     Text(
+                         text = ">",
+                         style = MaterialTheme.typography.headlineMedium.copy( // Increased size
+                             color = fontColor.copy(alpha = 0.7f),
+                             fontSize = 28.sp // Larger size
+                         ),
+                         modifier = Modifier
+                             .padding(12.dp) // Increased clickable area
+                             .noRippleClickable {
+                                 handleNavigateWord(1) // Navigate to next word
+                             }
+                     )
                 }
             }
         }
 
-        // WPM indicator in bottom right corner
-        if (showWpmIndicator) {
-            Text(
-                text = "$wpm wpm",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = fontColor.copy(alpha = 0.5f)
-                ),
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(bottom = 24.dp, end = 24.dp)
+        // Bottom bar with progress bar and controls
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .background(
+                    color = backgroundColor.copy(alpha = 0.8f),
+                    shape = MaterialTheme.shapes.small
+                )
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Progress bar (50% width)
+            LinearProgressIndicator(
+                progress = { totalProgress },
+                modifier = Modifier.weight(0.5f),
+                color = fontColor.copy(alpha = 0.7f),
+                trackColor = fontColor.copy(alpha = 0.2f)
             )
+
+            // Right side controls (50% width, evenly spaced)
+            Row(
+                modifier = Modifier.weight(0.5f),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // WPM indicator (tappable for quick menu)
+                Text(
+                    text = "$wpm",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = fontColor.copy(alpha = 0.8f),
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier.noRippleClickable {
+                        showQuickWpmMenu = true
+                    }
+                )
+
+                // Book icon (placeholder for now)
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                    contentDescription = "Book info",
+                    tint = fontColor.copy(alpha = 0.7f),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
 
         // Countdown overlay
@@ -463,6 +570,135 @@ fun SpeedReadingContent(
                         color = Color.White
                     )
                 )
+            }
+        }
+
+        // Quick WPM Menu Bottom Sheet
+        if (showQuickWpmMenu) {
+            val sheetState = rememberModalBottomSheetState()
+
+            ModalBottomSheet(
+                onDismissRequest = { showQuickWpmMenu = false },
+                sheetState = sheetState,
+                containerColor = backgroundColor
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Header
+                    Text(
+                        text = "Words per minute",
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            color = fontColor
+                        ),
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    // Top row: -100, -50, current WPM, +50, +100
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "-100",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = fontColor.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .noRippleClickable {
+                                    onWpmChange((wpm - 100).coerceAtLeast(200))
+                                }
+                        )
+
+                        Text(
+                            text = "-50",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = fontColor.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .noRippleClickable {
+                                    onWpmChange((wpm - 50).coerceAtLeast(200))
+                                }
+                        )
+
+                        Text(
+                            text = "$wpm",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                color = fontColor,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+
+                        Text(
+                            text = "+50",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = fontColor.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .noRippleClickable {
+                                    onWpmChange((wpm + 50).coerceAtMost(1200))
+                                }
+                        )
+
+                        Text(
+                            text = "+100",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = fontColor.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .noRippleClickable {
+                                    onWpmChange((wpm + 100).coerceAtMost(1200))
+                                }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Bottom row: slider with - and + symbols
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "-",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = fontColor.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier.noRippleClickable {
+                                onWpmChange((wpm - 10).coerceAtLeast(200))
+                            }
+                        )
+
+                        Slider(
+                            value = wpm.toFloat(),
+                            onValueChange = { onWpmChange(it.toInt()) },
+                            valueRange = 200f..1200f,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        Text(
+                            text = "+",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = fontColor.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier.noRippleClickable {
+                                onWpmChange((wpm + 10).coerceAtMost(1200))
+                            }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
         }
     }
