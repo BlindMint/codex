@@ -60,7 +60,7 @@ fun SpeedReadingScaffold(
     bottomBarPadding: Dp,
     showWpmIndicator: Boolean,
     wpm: Int,
-    osdHeight: Float = 0.5f,
+    osdHeight: Float = 0.2f,
     osdSeparation: Float = 0.5f,
     centerWord: Boolean = false,
     onWpmChange: (Int) -> Unit,

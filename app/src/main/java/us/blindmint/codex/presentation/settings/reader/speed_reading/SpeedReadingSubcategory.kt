@@ -73,7 +73,7 @@ fun LazyListScope.SpeedReadingSubcategory(
     onSentencePauseDurationChange: (Int) -> Unit = {},
     osdEnabled: Boolean = true,
     onOsdEnabledChange: (Boolean) -> Unit = {},
-    osdHeight: Float = 0.5f, // 0.0 = top, 1.0 = bottom, 0.5 = middle
+    osdHeight: Float = 0.2f, // 0.0 = top, 1.0 = bottom, 0.2 = ~20% from top
     onOsdHeightChange: (Float) -> Unit = {},
     osdSeparation: Float = 0.5f, // 0.0 = close, 1.0 = far, 0.5 = current spacing
     onOsdSeparationChange: (Float) -> Unit = {},
@@ -441,6 +441,7 @@ fun LazyListScope.SpeedReadingSubcategory(
             item {
                 SwitchWithTitle(
                     selected = centerWord,
+                    enabled = true,
                     title = stringResource(id = R.string.speed_reading_center_word),
                     onClick = { onCenterWordChange(!centerWord) }
                 )
