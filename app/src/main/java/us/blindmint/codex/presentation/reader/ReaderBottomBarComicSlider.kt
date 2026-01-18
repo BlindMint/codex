@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -85,7 +86,10 @@ fun ReaderBottomBarComicSlider(
         }
 
         // Slider
-        val layoutDirection = if (comicReadingDirection == "RTL") LayoutDirection.Rtl else LayoutDirection.Ltr
+        // Use remember with reading direction as a key to force recomposition on direction changes
+        val layoutDirection = remember(comicReadingDirection) {
+            if (comicReadingDirection == "RTL") LayoutDirection.Rtl else LayoutDirection.Ltr
+        }
 
         CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
             Slider(
