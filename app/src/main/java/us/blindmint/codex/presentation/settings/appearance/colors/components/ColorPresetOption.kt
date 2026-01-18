@@ -423,7 +423,7 @@ private fun ColorPresetOptionConfigurationItem(
     val isDefaultPreset = selectedColorPreset.name == "Light" || selectedColorPreset.name == "Dark"
 
     Row(
-        Modifier.padding(horizontal = 18.dp),
+        Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         BasicTextField(
