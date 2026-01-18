@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -18,8 +19,9 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -83,27 +85,24 @@ fun ReaderBottomBarComicSlider(
         }
 
         // Slider
-        val isRTL = comicReadingDirection == "RTL"
-        val sliderValue = if (isRTL) {
-            1f - ((currentPage + 1).toFloat() / totalPages)
-        } else {
-            (currentPage + 1).toFloat() / totalPages
-        }
+        val layoutDirection = if (comicReadingDirection == "RTL") LayoutDirection.Rtl else LayoutDirection.Ltr
 
-        Slider(
-            value = sliderValue,
-            enabled = !lockMenu,
-            onValueChange = { newValue ->
-                val adjustedValue = if (isRTL) 1f - newValue else newValue
-                val newPage = (adjustedValue * totalPages).toInt().coerceIn(0, totalPages - 1)
-                onPageSelected(newPage)
-            },
-            colors = SliderDefaults.colors(
-                inactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(0.15f),
-                disabledActiveTrackColor = MaterialTheme.colorScheme.primary,
-                disabledThumbColor = MaterialTheme.colorScheme.primary,
-                disabledInactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(0.15f),
+        CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
+            Slider(
+                value = (currentPage + 1).toFloat(), // 1-based for display
+                valueRange = 1f..totalPages.toFloat(),
+                enabled = !lockMenu,
+                onValueChange = { newValue ->
+                    val newPage = newValue.toInt() - 1 // Convert back to 0-based
+                    onPageSelected(newPage)
+                },
+                colors = SliderDefaults.colors(
+                    inactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(0.15f),
+                    disabledActiveTrackColor = MaterialTheme.colorScheme.primary,
+                    disabledThumbColor = MaterialTheme.colorScheme.primary,
+                    disabledInactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(0.15f),
+                )
             )
-        )
+        }
     }
 }

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -22,7 +23,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.domain.util.HorizontalAlignment
@@ -67,33 +70,30 @@ fun ComicReaderBottomBar(
         Spacer(Modifier.height(12.dp))
 
         // Interactive slider
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val isRTL = comicReadingDirection == "RTL"
-            val sliderValue = if (isRTL) {
-                1f - (currentPage.toFloat() / (totalPages - 1).coerceAtLeast(1))
-            } else {
-                (currentPage.toFloat() / (totalPages - 1).coerceAtLeast(1))
-            }
+        val layoutDirection = if (comicReadingDirection == "RTL") LayoutDirection.Rtl else LayoutDirection.Ltr
 
-            Slider(
-                value = sliderValue,
-                onValueChange = { newValue ->
-                    val adjustedValue = if (isRTL) 1f - newValue else newValue
-                    val newPage = (adjustedValue * (totalPages - 1)).toInt().coerceIn(0, totalPages - 1)
-                    onPageSelected(newPage)
-                },
-                modifier = Modifier.weight(1f),
-                colors = SliderDefaults.colors(
-                    inactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(0.15f),
-                    activeTrackColor = MaterialTheme.colorScheme.primary,
-                    thumbColor = MaterialTheme.colorScheme.primary
+        CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Slider(
+                    value = (currentPage + 1).toFloat(), // 1-based for display
+                    valueRange = 1f..totalPages.toFloat(),
+                    onValueChange = { newValue ->
+                        val newPage = newValue.toInt() - 1 // Convert back to 0-based
+                        onPageSelected(newPage)
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = SliderDefaults.colors(
+                        inactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(0.15f),
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        thumbColor = MaterialTheme.colorScheme.primary
+                    )
                 )
-            )
+            }
         }
 
         Spacer(Modifier.height(8.dp + progressBarPadding))
