@@ -159,7 +159,8 @@ fun ReaderContent(
     comicProgressCount: ReaderProgressCount = ReaderProgressCount.PAGE,
     comicProgressBarPadding: Dp = 4.dp,
     comicProgressBarAlignment: HorizontalAlignment = HorizontalAlignment.CENTER,
-    comicProgressBarFontSize: TextUnit = 8.sp
+    comicProgressBarFontSize: TextUnit = 8.sp,
+    comicReadingDirection: String = "LTR"
 ) {
     val activity = LocalActivity.current
     ReaderBottomSheet(
@@ -258,11 +259,12 @@ fun ReaderContent(
              totalComicPages = totalComicPages,
              onComicPageSelected = onComicPageSelected,
              comicProgressBar = comicProgressBar,
-             comicProgressCount = comicProgressCount,
-             comicProgressBarPadding = comicProgressBarPadding,
-             comicProgressBarAlignment = comicProgressBarAlignment,
-             comicProgressBarFontSize = comicProgressBarFontSize
-         )
+              comicProgressCount = comicProgressCount,
+              comicProgressBarPadding = comicProgressBarPadding,
+              comicProgressBarAlignment = comicProgressBarAlignment,
+              comicProgressBarFontSize = comicProgressBarFontSize,
+              comicReadingDirection = comicReadingDirection
+          )
     } else {
         ReaderErrorPlaceholder(
             errorMessage = errorMessage,

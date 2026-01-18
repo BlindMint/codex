@@ -38,6 +38,7 @@ fun ComicReaderBottomBar(
     progressBarFontSize: TextUnit,
     fontColor: androidx.compose.ui.graphics.Color,
     sidePadding: Dp,
+    comicReadingDirection: String = "LTR",
     onPageSelected: (Int) -> Unit
 ) {
     if (totalPages <= 0) return
@@ -71,10 +72,18 @@ fun ComicReaderBottomBar(
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val isRTL = comicReadingDirection == "RTL"
+            val sliderValue = if (isRTL) {
+                1f - (currentPage.toFloat() / (totalPages - 1).coerceAtLeast(1))
+            } else {
+                (currentPage.toFloat() / (totalPages - 1).coerceAtLeast(1))
+            }
+
             Slider(
-                value = (currentPage + 1).toFloat() / totalPages,
+                value = sliderValue,
                 onValueChange = { newValue ->
-                    val newPage = (newValue * totalPages).toInt().coerceIn(0, totalPages - 1)
+                    val adjustedValue = if (isRTL) 1f - newValue else newValue
+                    val newPage = (adjustedValue * (totalPages - 1)).toInt().coerceIn(0, totalPages - 1)
                     onPageSelected(newPage)
                 },
                 modifier = Modifier

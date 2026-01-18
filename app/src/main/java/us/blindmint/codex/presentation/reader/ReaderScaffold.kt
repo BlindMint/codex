@@ -145,7 +145,8 @@ fun ReaderScaffold(
     comicProgressCount: ReaderProgressCount = ReaderProgressCount.PAGE,
     comicProgressBarPadding: Dp = 4.dp,
     comicProgressBarAlignment: HorizontalAlignment = HorizontalAlignment.CENTER,
-    comicProgressBarFontSize: TextUnit = 8.sp
+    comicProgressBarFontSize: TextUnit = 8.sp,
+    comicReadingDirection: String = "LTR"
 ) {
     // State to track actual bar heights
     var topBarHeight by remember { mutableStateOf(0) }
@@ -233,11 +234,12 @@ fun ReaderScaffold(
                     totalComicPages = totalComicPages,
                     onComicPageSelected = onComicPageSelected,
                     comicProgressBar = comicProgressBar,
-                    comicProgressCount = comicProgressCount,
-                    comicProgressBarPadding = comicProgressBarPadding,
-                    comicProgressBarAlignment = comicProgressBarAlignment,
-                    comicProgressBarFontSize = comicProgressBarFontSize
-                )
+                     comicProgressCount = comicProgressCount,
+                     comicProgressBarPadding = comicProgressBarPadding,
+                     comicProgressBarAlignment = comicProgressBarAlignment,
+                     comicProgressBarFontSize = comicProgressBarFontSize,
+                     comicReadingDirection = comicReadingDirection
+                 )
             }
         }
     ) {

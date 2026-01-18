@@ -24,9 +24,11 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -102,6 +104,8 @@ fun ComicReaderLayout(
     var totalPages by remember { mutableIntStateOf(0) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var comicLoaded by remember { mutableStateOf(false) }
+    var initialLoadComplete by remember { mutableStateOf(false) }
 
     // Lazy loading cache
     val loadedPages = remember { mutableMapOf<Int, ImageBitmap>() }
@@ -141,16 +145,26 @@ fun ComicReaderLayout(
         return null
     }
 
+    // Page index mapping for RTL support
+    val isRTL = comicReadingDirection == "RTL"
+
+    // For RTL, we reverse the page order so page 0 becomes the last physical page
+    val mapLogicalToPhysicalPage = { logicalPage: Int ->
+        if (isRTL && totalPages > 0) totalPages - 1 - logicalPage else logicalPage
+    }
+
+    val mapPhysicalToLogicalPage = { physicalPage: Int ->
+        if (isRTL && totalPages > 0) totalPages - 1 - physicalPage else physicalPage
+    }
+
     // Pager state for paged mode
     val pagerState = rememberPagerState(
-        initialPage = currentPage.coerceIn(0, (totalPages - 1).coerceAtLeast(0)),
-        pageCount = { totalPages }
+        initialPage = 0,
+        pageCount = { maxOf(1, totalPages) }
     )
 
     // Lazy list state for webtoon mode
-    val lazyListState = rememberLazyListState(
-        initialFirstVisibleItemIndex = currentPage.coerceIn(0, (totalPages - 1).coerceAtLeast(0))
-    )
+    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = 0)
 
     // Map comic scale type to ContentScale
     val contentScale = remember(comicScaleType) {
@@ -166,21 +180,38 @@ fun ComicReaderLayout(
     }
 
     // Update current page when pager changes
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }.collect { page ->
-            if (comicReaderMode == "PAGED") {
-                onPageChanged(page)
+    LaunchedEffect(pagerState, isRTL) {
+        snapshotFlow { pagerState.currentPage }.collect { physicalPage ->
+            if (comicReaderMode == "PAGED" && totalPages > 0) {
+                val logicalPage = mapPhysicalToLogicalPage(physicalPage)
+                onPageChanged(logicalPage)
             }
         }
     }
 
     // Update current page when lazy list changes (webtoon mode)
-    LaunchedEffect(lazyListState) {
-        snapshotFlow { lazyListState.firstVisibleItemIndex }.collect { index ->
-            if (comicReaderMode == "WEBTOON") {
-                onPageChanged(index)
+    LaunchedEffect(lazyListState, isRTL) {
+        snapshotFlow { lazyListState.firstVisibleItemIndex }.collect { physicalIndex ->
+            if (comicReaderMode == "WEBTOON" && totalPages > 0) {
+                val logicalPage = mapPhysicalToLogicalPage(physicalIndex)
+                onPageChanged(logicalPage)
             }
         }
+    }
+
+    // Handle reading direction changes - keep current page in view
+    var lastReadingDirection by remember { mutableStateOf(comicReadingDirection) }
+    LaunchedEffect(comicReadingDirection) {
+        if (initialLoadComplete && comicLoaded && comicReadingDirection != lastReadingDirection) {
+            val newPhysicalPage = mapLogicalToPhysicalPage(currentPage)
+            android.util.Log.d("CodexComic", "Reading direction changed from $lastReadingDirection to $comicReadingDirection, repositioning to page $newPhysicalPage")
+            if (comicReaderMode == "PAGED") {
+                pagerState.animateScrollToPage(newPhysicalPage)
+            } else {
+                lazyListState.animateScrollToItem(newPhysicalPage)
+            }
+        }
+        lastReadingDirection = comicReadingDirection
     }
 
     // Load comic archive structure
@@ -214,6 +245,7 @@ fun ComicReaderLayout(
                 android.util.Log.d("CodexComic", "Found ${imageEntries.size} image pages")
                 archiveHandle = archive
                 totalPages = imageEntries.size
+                comicLoaded = true
                 onTotalPagesLoaded(imageEntries.size)
 
                 // Pre-load the first few pages for smooth UX
@@ -227,6 +259,7 @@ fun ComicReaderLayout(
         } finally {
             android.util.Log.d("CodexComic", "Comic archive loading finished")
             isLoading = false
+            initialLoadComplete = true
             onLoadingComplete()
         }
     }
@@ -248,9 +281,9 @@ fun ComicReaderLayout(
                 onPageChanged(pagerState.currentPage)
             }
 
-            // When parent requests a specific page, scroll to it
-            LaunchedEffect(currentPage) {
-                if (currentPage != pagerState.currentPage && currentPage >= 0 && currentPage < totalPages) {
+            // When parent requests a specific page, scroll to it (only after initial load)
+            LaunchedEffect(currentPage, initialLoadComplete) {
+                if (initialLoadComplete && currentPage != pagerState.currentPage && currentPage >= 0 && currentPage < totalPages) {
                     pagerState.animateScrollToPage(currentPage)
                 }
             }
@@ -269,8 +302,10 @@ fun ComicReaderLayout(
                                 .calculateBottomPadding())
                                 .coerceAtLeast(18.dp),
                         )
-                    ) { page ->
-                        val pageImage = loadPage(page)
+                    ) { physicalPage ->
+                        // For RTL, we need to load the logical page corresponding to this physical position
+                        val logicalPage = mapPhysicalToLogicalPage(physicalPage)
+                        val pageImage = loadPage(logicalPage)
                         if (pageImage != null) {
                             ComicPage(
                                 imageBitmap = pageImage,
@@ -321,9 +356,11 @@ fun ComicReaderLayout(
                     ) {
                         itemsIndexed(
                             (0 until totalPages).toList(),
-                            key = { _, page -> page }
-                        ) { _, page ->
-                            val pageImage = loadPage(page)
+                            key = { _, physicalPage -> physicalPage }
+                        ) { _, physicalPage ->
+                            // For RTL, we need to load the logical page corresponding to this physical position
+                            val logicalPage = mapPhysicalToLogicalPage(physicalPage)
+                            val pageImage = loadPage(logicalPage)
                             if (pageImage != null) {
                                 // For webtoon, prefer FillWidth but respect user's contentScale choice
                                 val webtoonContentScale = if (contentScale == ContentScale.Fit) ContentScale.FillWidth else contentScale

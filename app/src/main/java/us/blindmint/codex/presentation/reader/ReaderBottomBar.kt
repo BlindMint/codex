@@ -62,7 +62,8 @@ fun ReaderBottomBar(
     comicProgressCount: us.blindmint.codex.domain.reader.ReaderProgressCount = us.blindmint.codex.domain.reader.ReaderProgressCount.PAGE,
     comicProgressBarPadding: Dp = 4.dp,
     comicProgressBarAlignment: us.blindmint.codex.domain.util.HorizontalAlignment = us.blindmint.codex.domain.util.HorizontalAlignment.CENTER,
-    comicProgressBarFontSize: androidx.compose.ui.unit.TextUnit = 8.sp
+    comicProgressBarFontSize: androidx.compose.ui.unit.TextUnit = 8.sp,
+    comicReadingDirection: String = "LTR"
 ) {
     val firstVisibleItemIndex = remember {
         derivedStateOf {
@@ -149,7 +150,8 @@ fun ReaderBottomBar(
                             progressCount = comicProgressCount,
                             progressBarPadding = comicProgressBarPadding,
                             progressBarAlignment = comicProgressBarAlignment,
-                            progressBarFontSize = comicProgressBarFontSize
+                            progressBarFontSize = comicProgressBarFontSize,
+                            comicReadingDirection = comicReadingDirection
                         )
                     } else {
                         ReaderBottomBarSlider(

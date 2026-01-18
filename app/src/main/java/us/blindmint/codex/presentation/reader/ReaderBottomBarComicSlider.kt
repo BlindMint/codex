@@ -40,6 +40,7 @@ fun ReaderBottomBarComicSlider(
     progressBarPadding: Dp = 4.dp,
     progressBarAlignment: HorizontalAlignment = HorizontalAlignment.CENTER,
     progressBarFontSize: TextUnit = 8.sp,
+    comicReadingDirection: String = "LTR",
     modifier: Modifier = Modifier
 ) {
     val mainModel = hiltViewModel<MainModel>()
@@ -81,11 +82,19 @@ fun ReaderBottomBarComicSlider(
         }
 
         // Slider
+        val isRTL = comicReadingDirection == "RTL"
+        val sliderValue = if (isRTL) {
+            1f - ((currentPage + 1).toFloat() / totalPages)
+        } else {
+            (currentPage + 1).toFloat() / totalPages
+        }
+
         Slider(
-            value = (currentPage + 1).toFloat() / totalPages,
+            value = sliderValue,
             enabled = !lockMenu,
             onValueChange = { newValue ->
-                val newPage = (newValue * totalPages).toInt().coerceIn(0, totalPages - 1)
+                val adjustedValue = if (isRTL) 1f - newValue else newValue
+                val newPage = (adjustedValue * totalPages).toInt().coerceIn(0, totalPages - 1)
                 onPageSelected(newPage)
             },
             colors = SliderDefaults.colors(

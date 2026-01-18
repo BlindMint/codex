@@ -702,12 +702,13 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
              onComicPageSelected = { page ->
                  screenModel.onEvent(ReaderEvent.OnComicPageSelected(page))
              },
-             comicProgressBar = mainState.value.comicProgressBar,
-             comicProgressCount = mainState.value.comicProgressCount,
-             comicProgressBarPadding = comicProgressBarPadding,
-             comicProgressBarAlignment = mainState.value.comicProgressBarAlignment,
-             comicProgressBarFontSize = comicProgressBarFontSize
-         )
+              comicProgressBar = mainState.value.comicProgressBar,
+              comicProgressCount = mainState.value.comicProgressCount,
+              comicProgressBarPadding = comicProgressBarPadding,
+              comicProgressBarAlignment = mainState.value.comicProgressBarAlignment,
+              comicProgressBarFontSize = comicProgressBarFontSize,
+              comicReadingDirection = mainState.value.comicReadingDirection
+          )
 
         // Speed reading settings bottom sheet
         SpeedReadingSettingsBottomSheet(
