@@ -6,8 +6,14 @@
 
 package us.blindmint.codex.presentation.settings.reader.search.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,6 +72,9 @@ fun SearchHighlightColorOption() {
         mutableStateOf(Color(state.value.searchHighlightColor))
     }
 
+    // State for showing/hiding RGBA sliders
+    var showSliders by remember { mutableStateOf(false) }
+
     // Hex value state
     var hexValue by remember {
         mutableStateOf(
@@ -107,7 +116,7 @@ fun SearchHighlightColorOption() {
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 18.dp)
     ) {
-        // Header row with title, hex input, color preview, and reset button
+        // Row 1: Title on left, Hex input on right
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -118,202 +127,233 @@ fun SearchHighlightColorOption() {
                 padding = 0.dp
             )
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Hex color input
-                OutlinedTextField(
-                    value = hexValue,
-                    onValueChange = { newHex ->
-                        val cleanedHex = newHex.uppercase().removePrefix("#").take(8)
-                        hexValue = cleanedHex
-                        if (cleanedHex.length == 8) {
-                            try {
-                                val colorValue = cleanedHex.toLong(16)
-                                color = Color(colorValue)
-                            } catch (e: Exception) {
-                                // Invalid hex, keep current value
-                            }
+            OutlinedTextField(
+                value = hexValue,
+                onValueChange = { newHex ->
+                    val cleanedHex = newHex.uppercase().removePrefix("#").take(8)
+                    hexValue = cleanedHex
+                    if (cleanedHex.length == 8) {
+                        try {
+                            val colorValue = cleanedHex.toLong(16)
+                            color = Color(colorValue)
+                        } catch (e: Exception) {
+                            // Invalid hex, keep current value
                         }
-                    },
-                    label = { Text(stringResource(id = R.string.hex_color)) },
-                    prefix = {
-                        Text(
-                            text = "#",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    },
-                    suffix = {
-                        Text(
-                            text = "#",
-                            color = Color.Transparent,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    },
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        textAlign = TextAlign.Center
-                    ),
-                    modifier = Modifier.width(100.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
-                    singleLine = true
-                )
-
-                // Color preview box
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outline,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .background(color, RoundedCornerShape(8.dp))
+                    }
+                },
+                label = { Text(stringResource(id = R.string.hex_color)) },
+                prefix = {
+                    Text(
+                        text = "#",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyLarge
                     )
-                }
-
-                // Reset button
-                IconButton(
-                    modifier = Modifier.size(32.dp),
-                    icon = Icons.Default.History,
-                    contentDescription = R.string.revert_content_desc,
-                    disableOnClick = false,
-                    enabled = state.value.searchHighlightColor != defaultColor
-                ) {
-                    color = Color(defaultColor)
-                }
-            }
+                },
+                suffix = {
+                    Text(
+                        text = "#",
+                        color = Color.Transparent,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier.width(100.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
+                singleLine = true
+            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Red slider with manual input
+        // Row 2: Tappable area with color preview, RGBA text, and reset button
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { showSliders = !showSliders }
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SliderWithTitle(
-                modifier = Modifier.weight(1f),
-                value = color.red to "",
-                title = stringResource(id = R.string.red_color),
-                toValue = 255,
-                horizontalPadding = 0.dp,
-                onValueChange = { color = color.copy(red = it) }
+            // Color preview box
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(color, RoundedCornerShape(8.dp))
+                )
+            }
+
+            // RGBA values text
+            Text(
+                text = "${(color.red * 255).toInt()} | ${(color.green * 255).toInt()} | ${(color.blue * 255).toInt()} | ${(color.alpha * 100).toInt()}",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier.weight(1f)
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            OutlinedTextField(
-                value = (color.red * 255).toInt().toString(),
-                onValueChange = { newValue ->
-                    val intValue = newValue.toIntOrNull() ?: (color.red * 255).toInt()
-                    val coercedValue = intValue.coerceIn(0, 255)
-                    color = color.copy(red = coercedValue / 255f)
-                },
-                label = { Text("R") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.width(60.dp),
-                textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
-                singleLine = true
-            )
+
+            // Reset button
+            IconButton(
+                modifier = Modifier.size(32.dp),
+                icon = Icons.Default.History,
+                contentDescription = R.string.revert_content_desc,
+                disableOnClick = false,
+                enabled = state.value.searchHighlightColor != defaultColor
+            ) {
+                color = Color(defaultColor)
+            }
         }
 
-        // Green slider with manual input
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+        // Collapsible RGBA sliders
+        AnimatedVisibility(
+            visible = showSliders,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
         ) {
-            SliderWithTitle(
-                modifier = Modifier.weight(1f),
-                value = color.green to "",
-                title = stringResource(id = R.string.green_color),
-                toValue = 255,
-                horizontalPadding = 0.dp,
-                onValueChange = { color = color.copy(green = it) }
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            OutlinedTextField(
-                value = (color.green * 255).toInt().toString(),
-                onValueChange = { newValue ->
-                    val intValue = newValue.toIntOrNull() ?: (color.green * 255).toInt()
-                    val coercedValue = intValue.coerceIn(0, 255)
-                    color = color.copy(green = coercedValue / 255f)
-                },
-                label = { Text("G") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.width(60.dp),
-                textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
-                singleLine = true
-            )
-        }
+            Column {
+                Spacer(modifier = Modifier.height(16.dp))
 
-        // Blue slider with manual input
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            SliderWithTitle(
-                modifier = Modifier.weight(1f),
-                value = color.blue to "",
-                title = stringResource(id = R.string.blue_color),
-                toValue = 255,
-                horizontalPadding = 0.dp,
-                onValueChange = { color = color.copy(blue = it) }
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            OutlinedTextField(
-                value = (color.blue * 255).toInt().toString(),
-                onValueChange = { newValue ->
-                    val intValue = newValue.toIntOrNull() ?: (color.blue * 255).toInt()
-                    val coercedValue = intValue.coerceIn(0, 255)
-                    color = color.copy(blue = coercedValue / 255f)
-                },
-                label = { Text("B") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.width(60.dp),
-                textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
-                singleLine = true
-            )
-        }
-
-        // Alpha slider with manual input
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            SliderWithTitle(
-                modifier = Modifier.weight(1f),
-                value = (color.alpha * 100).toInt() to "${(color.alpha * 100).toInt()}%",
-                title = stringResource(id = R.string.alpha_opacity),
-                fromValue = 0,
-                toValue = 100,
-                horizontalPadding = 0.dp,
-                onValueChange = { intValue ->
-                    color = color.copy(alpha = intValue / 100f)
+                // Red slider with manual input
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SliderWithTitle(
+                        modifier = Modifier.weight(1f),
+                        value = color.red to "",
+                        title = stringResource(id = R.string.red_color),
+                        toValue = 255,
+                        horizontalPadding = 0.dp,
+                        onValueChange = { color = color.copy(red = it) }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedTextField(
+                        value = (color.red * 255).toInt().toString(),
+                        onValueChange = { newValue ->
+                            val intValue = newValue.toIntOrNull() ?: (color.red * 255).toInt()
+                            val coercedValue = intValue.coerceIn(0, 255)
+                            color = color.copy(red = coercedValue / 255f)
+                        },
+                        label = { Text("R") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.width(60.dp),
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                        singleLine = true
+                    )
                 }
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            OutlinedTextField(
-                value = (color.alpha * 100).toInt().toString(),
-                onValueChange = { newValue ->
-                    val intValue = newValue.toIntOrNull() ?: (color.alpha * 100).toInt()
-                    val coercedValue = intValue.coerceIn(0, 100)
-                    color = color.copy(alpha = coercedValue / 100f)
-                },
-                label = { Text("%") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.width(60.dp),
-                textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
-                singleLine = true
-            )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Green slider with manual input
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SliderWithTitle(
+                        modifier = Modifier.weight(1f),
+                        value = color.green to "",
+                        title = stringResource(id = R.string.green_color),
+                        toValue = 255,
+                        horizontalPadding = 0.dp,
+                        onValueChange = { color = color.copy(green = it) }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedTextField(
+                        value = (color.green * 255).toInt().toString(),
+                        onValueChange = { newValue ->
+                            val intValue = newValue.toIntOrNull() ?: (color.green * 255).toInt()
+                            val coercedValue = intValue.coerceIn(0, 255)
+                            color = color.copy(green = coercedValue / 255f)
+                        },
+                        label = { Text("G") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.width(60.dp),
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                        singleLine = true
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Blue slider with manual input
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SliderWithTitle(
+                        modifier = Modifier.weight(1f),
+                        value = color.blue to "",
+                        title = stringResource(id = R.string.blue_color),
+                        toValue = 255,
+                        horizontalPadding = 0.dp,
+                        onValueChange = { color = color.copy(blue = it) }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedTextField(
+                        value = (color.blue * 255).toInt().toString(),
+                        onValueChange = { newValue ->
+                            val intValue = newValue.toIntOrNull() ?: (color.blue * 255).toInt()
+                            val coercedValue = intValue.coerceIn(0, 255)
+                            color = color.copy(blue = coercedValue / 255f)
+                        },
+                        label = { Text("B") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.width(60.dp),
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                        singleLine = true
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Alpha slider with manual input
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SliderWithTitle(
+                        modifier = Modifier.weight(1f),
+                        value = (color.alpha * 100).toInt() to "${(color.alpha * 100).toInt()}%",
+                        title = stringResource(id = R.string.alpha_opacity),
+                        fromValue = 0,
+                        toValue = 100,
+                        horizontalPadding = 0.dp,
+                        onValueChange = { intValue ->
+                            color = color.copy(alpha = intValue / 100f)
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedTextField(
+                        value = (color.alpha * 100).toInt().toString(),
+                        onValueChange = { newValue ->
+                            val intValue = newValue.toIntOrNull() ?: (color.alpha * 100).toInt()
+                            val coercedValue = intValue.coerceIn(0, 100)
+                            color = color.copy(alpha = coercedValue / 100f)
+                        },
+                        label = { Text("%") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.width(60.dp),
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
+                        singleLine = true
+                    )
+                }
+            }
         }
     }
 }
