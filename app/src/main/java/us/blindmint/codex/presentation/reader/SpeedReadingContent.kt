@@ -610,7 +610,10 @@ fun SpeedReadingContent(
             val sheetState = rememberModalBottomSheetState()
 
             ModalBottomSheet(
-                onDismissRequest = { showQuickWpmMenu = false },
+                onDismissRequest = {
+                    showQuickWpmMenu = false
+                    onToggleMenu() // Close tap menu when dismissing WPM panel
+                },
                 sheetState = sheetState,
                 containerColor = backgroundColor
             ) {
