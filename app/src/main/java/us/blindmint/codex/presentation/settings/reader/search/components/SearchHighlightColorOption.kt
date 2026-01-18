@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
@@ -116,17 +117,17 @@ fun SearchHighlightColorOption() {
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 18.dp)
     ) {
-        // Row 1: Title on left, Hex input on right
+        // Row 1: Title on left, Hex input on right (matching ColorPickerWithTitle layout)
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            SettingsSubcategoryTitle(
-                title = stringResource(id = R.string.search_highlight_color),
-                padding = 0.dp
+            Text(
+                text = stringResource(id = R.string.search_highlight_color),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f)
             )
-
+            Spacer(modifier = Modifier.width(16.dp))
             OutlinedTextField(
                 value = hexValue,
                 onValueChange = { newHex ->
@@ -159,7 +160,7 @@ fun SearchHighlightColorOption() {
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     textAlign = TextAlign.Center
                 ),
-                modifier = Modifier.width(120.dp),
+                modifier = Modifier.weight(1f),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
                 singleLine = true
             )
