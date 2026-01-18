@@ -553,13 +553,16 @@ fun SpeedReadingContent(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // WPM indicator (display only in tap menu)
+                // WPM indicator (tappable for quick menu)
                 Text(
                     text = "$wpm wpm",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = fontColor.copy(alpha = 0.8f),
                         fontWeight = FontWeight.Medium
-                    )
+                    ),
+                    modifier = Modifier.noRippleClickable {
+                        showQuickWpmMenu = true
+                    }
                 )
 
                 // Book icon (placeholder for now)
@@ -572,21 +575,7 @@ fun SpeedReadingContent(
             }
         }
 
-        // WPM indicator in bottom right corner (tappable to open quick panel)
-        if (showWpmIndicator) {
-            Text(
-                text = "$wpm wpm",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = fontColor.copy(alpha = 0.5f)
-                ),
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(bottom = 24.dp, end = 24.dp)
-                    .noRippleClickable {
-                        showQuickWpmMenu = true
-                    }
-            )
-        }
+
 
         // Countdown overlay
         if (showCountdown) {
