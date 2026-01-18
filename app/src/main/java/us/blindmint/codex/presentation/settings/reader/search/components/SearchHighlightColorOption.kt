@@ -159,7 +159,7 @@ fun SearchHighlightColorOption() {
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     textAlign = TextAlign.Center
                 ),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.width(120.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
                 singleLine = true
             )
