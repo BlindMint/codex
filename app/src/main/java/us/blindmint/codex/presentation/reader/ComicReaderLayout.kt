@@ -157,31 +157,38 @@ fun ComicReaderLayout(
         if (isRTL && totalPages > 0) totalPages - 1 - physicalPage else physicalPage
     }
 
-    // Calculate initial positions based on reading direction
-    val pagerInitialPage = remember(comicReadingDirection, totalPages) {
-        if (totalPages > 0 && comicReadingDirection == "RTL") {
-            totalPages - 1  // Start at last physical page for RTL (shows first logical page)
-        } else {
-            0  // Start at first physical page for LTR
-        }
-    }
-
-    val lazyInitialIndex = remember(comicReadingDirection, totalPages) {
-        if (totalPages > 0 && comicReadingDirection == "RTL") {
-            totalPages - 1  // Start at last physical index for RTL
-        } else {
-            0  // Start at first physical index for LTR
-        }
-    }
-
-    // Pager state for paged mode - uses calculated initial page
+    // Pager state for paged mode
     val pagerState = rememberPagerState(
-        initialPage = pagerInitialPage,
+        initialPage = 0,
         pageCount = { maxOf(1, totalPages) }
     )
 
-    // Lazy list state for webtoon mode - uses calculated initial index
-    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = lazyInitialIndex)
+    // Lazy list state for webtoon mode
+    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = 0)
+
+    // Store the current logical page for positioning when direction changes
+    var storedLogicalPage by remember { mutableIntStateOf(0) }
+
+    // Update stored logical page when current page changes
+    LaunchedEffect(currentPage) {
+        storedLogicalPage = currentPage
+    }
+
+    // Position to the same logical page when reading direction changes
+    LaunchedEffect(comicReadingDirection, totalPages) {
+        if (totalPages > 0) {
+            val targetPhysicalPage = if (comicReadingDirection == "RTL") {
+                totalPages - 1 - storedLogicalPage
+            } else {
+                storedLogicalPage
+            }
+            if (comicReaderMode == "PAGED") {
+                pagerState.scrollToPage(targetPhysicalPage)
+            } else {
+                lazyListState.scrollToItem(targetPhysicalPage)
+            }
+        }
+    }
 
     // Map comic scale type to ContentScale
     val contentScale = remember(comicScaleType) {
@@ -285,9 +292,9 @@ fun ComicReaderLayout(
                 onPageChanged(pagerState.currentPage)
             }
 
-            // When parent requests a specific page, scroll to it (only after initial load)
-            LaunchedEffect(currentPage, initialLoadComplete) {
-                if (initialLoadComplete && currentPage >= 0 && currentPage < totalPages) {
+            // When parent requests a specific page, scroll to it
+            LaunchedEffect(currentPage) {
+                if (currentPage >= 0 && currentPage < totalPages && totalPages > 0) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(currentPage)
                     if (targetPhysicalPage != pagerState.currentPage) {
                         pagerState.animateScrollToPage(targetPhysicalPage)
