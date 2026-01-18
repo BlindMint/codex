@@ -562,7 +562,6 @@ fun SpeedReadingContent(
                     ),
                     modifier = Modifier.noRippleClickable {
                         showQuickWpmMenu = true
-                        onToggleMenu() // Close the tap menu when opening WPM panel
                     }
                 )
 
@@ -599,7 +598,10 @@ fun SpeedReadingContent(
             val sheetState = rememberModalBottomSheetState()
 
             ModalBottomSheet(
-                onDismissRequest = { showQuickWpmMenu = false },
+                onDismissRequest = {
+                    showQuickWpmMenu = false
+                    onToggleMenu() // Close tap menu when dismissing WPM panel
+                },
                 sheetState = sheetState,
                 containerColor = backgroundColor
             ) {
