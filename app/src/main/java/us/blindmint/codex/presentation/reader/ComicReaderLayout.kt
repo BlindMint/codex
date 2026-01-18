@@ -307,14 +307,20 @@ fun ComicReaderLayout(
                 }
             }
 
-            // When reading mode changes, scroll the appropriate state to currentPage
-            // This ensures smooth transitions when switching between Paged (LTR/RTL) and Webtoon (Vertical)
-            LaunchedEffect(comicReaderMode) {
+            // Keep both scroll states in sync with currentPage (the logical source of truth)
+            // This ensures seamless transitions when switching between Paged (LTR/RTL) and Webtoon (Vertical).
+            // The inactive scroll state is kept synchronized so it's ready if we switch reading modes.
+            LaunchedEffect(currentPage, totalPages, isRTL) {
                 if (currentPage >= 0 && currentPage < totalPages && totalPages > 0) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(currentPage)
-                    if (comicReaderMode == "PAGED") {
+
+                    // Always sync both scroll states to the logical currentPage position
+                    // Even though only one is visible at a time, keeping both in sync means
+                    // switching modes is instant - no need to wait for a scroll animation
+                    if (pagerState.currentPage != targetPhysicalPage) {
                         pagerState.scrollToPage(targetPhysicalPage)
-                    } else if (comicReaderMode == "WEBTOON") {
+                    }
+                    if (lazyListState.firstVisibleItemIndex != targetPhysicalPage) {
                         lazyListState.scrollToItem(targetPhysicalPage)
                     }
                 }
