@@ -163,10 +163,7 @@ fun LazyListScope.SpeedReadingSubcategory(
                 )
             }
 
-            item {
-                BackgroundImageOption()
-            }
-
+            // Accent & Indicators
             item {
                 HorizontalDivider()
             }
