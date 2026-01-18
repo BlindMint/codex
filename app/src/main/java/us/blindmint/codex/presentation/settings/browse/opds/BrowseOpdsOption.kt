@@ -34,17 +34,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.core.util.noRippleClickable
+import us.blindmint.codex.presentation.core.util.showToast
+import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.ui.browse.OpdsAddSourceDialog
 import us.blindmint.codex.ui.browse.OpdsRootScreen
+import us.blindmint.codex.ui.settings.BrowseSettingsScreen
 import us.blindmint.codex.ui.settings.opds.OpdsSourcesModel
 import us.blindmint.codex.ui.theme.dynamicListItemColor
 import us.blindmint.codex.data.local.dto.OpdsSourceEntity
@@ -54,19 +62,39 @@ import us.blindmint.codex.data.local.dto.OpdsSourceStatus
 fun BrowseOpdsOption(
     onNavigateToOpdsCatalog: (OpdsRootScreen) -> Unit
 ) {
+    val context = LocalContext.current
+    val navigator = LocalNavigator.current
     val sourcesModel = hiltViewModel<OpdsSourcesModel>()
     val sourcesState by sourcesModel.state.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
 
     var showAddSourceDialog by remember { mutableStateOf(false) }
     var editingSource by remember { mutableStateOf<OpdsSourceEntity?>(null) }
     var showDeleteConfirmation by remember { mutableStateOf<OpdsSourceEntity?>(null) }
+    var showRootDirectoryPrompt by remember { mutableStateOf(false) }
 
     OpdsAddSourceDialog(
         showDialog = showAddSourceDialog,
         onDismiss = { showAddSourceDialog = false },
         onSourceAdded = { name, url, username, password ->
-            sourcesModel.addOpdsSource(name, url, username, password)
-            showAddSourceDialog = false
+            // Test connection with URL variations before adding
+            scope.launch {
+                try {
+                    val user = username?.takeIf { it.isNotBlank() }
+                    val pass = password?.takeIf { it.isNotBlank() }
+                    val workingUrl = sourcesModel.testConnection(url, user, pass)
+                    sourcesModel.addOpdsSource(name, workingUrl, user, pass)
+                    showAddSourceDialog = false
+                    val successMessage = if (workingUrl != url) {
+                        "Source added successfully (URL: $workingUrl)"
+                    } else {
+                        "Source added successfully"
+                    }
+                    successMessage.showToast(context, longToast = false)
+                } catch (e: Exception) {
+                    "Failed to connect: ${e.message ?: "Unknown error"}".showToast(context, longToast = false)
+                }
+            }
         }
     )
 
@@ -136,7 +164,48 @@ fun BrowseOpdsOption(
 
         // Add button below the list
         OpdsAddSourceAction(
-            onClick = { showAddSourceDialog = true }
+            onClick = {
+                // Check if Codex directory is configured before showing dialog
+                scope.launch {
+                    val isCodexConfigured = sourcesModel.isCodexDirectoryConfigured()
+                    if (isCodexConfigured) {
+                        showAddSourceDialog = true
+                    } else {
+                        showRootDirectoryPrompt = true
+                    }
+                }
+            }
+        )
+    }
+
+    // Root directory prompt dialog
+    if (showRootDirectoryPrompt) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showRootDirectoryPrompt = false },
+            title = { androidx.compose.material3.Text("Set Codex Directory") },
+            text = {
+                androidx.compose.material3.Text(
+                    "You need to configure your Codex directory before adding OPDS sources. " +
+                    "This is where downloaded books will be stored."
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = {
+                        showRootDirectoryPrompt = false
+                        navigator.push(BrowseSettingsScreen)
+                    }
+                ) {
+                    androidx.compose.material3.Text("Go to Settings")
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = { showRootDirectoryPrompt = false }
+                ) {
+                    androidx.compose.material3.Text("Cancel")
+                }
+            }
         )
     }
 }

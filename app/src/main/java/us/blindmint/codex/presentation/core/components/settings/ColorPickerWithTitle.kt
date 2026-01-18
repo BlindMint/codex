@@ -68,21 +68,39 @@ fun ColorPickerWithTitle(
     var color by remember(value) { mutableStateOf(value) }
     var hexValue by remember {
         mutableStateOf(
-            String.format("%06X",
-                ((value.red * 255).toInt() shl 16) or
-                ((value.green * 255).toInt() shl 8) or
-                (value.blue * 255).toInt()
-            )
+            if (opacity != null) {
+                String.format("%08X",
+                    ((opacity * 255).toInt() shl 24) or
+                    ((value.red * 255).toInt() shl 16) or
+                    ((value.green * 255).toInt() shl 8) or
+                    (value.blue * 255).toInt()
+                )
+            } else {
+                String.format("%06X",
+                    ((value.red * 255).toInt() shl 16) or
+                    ((value.green * 255).toInt() shl 8) or
+                    (value.blue * 255).toInt()
+                )
+            }
         )
     }
 
     // Update hexValue when color changes
     LaunchedEffect(color) {
-        hexValue = String.format("%06X",
-            ((color.red * 255).toInt() shl 16) or
-            ((color.green * 255).toInt() shl 8) or
-            (color.blue * 255).toInt()
-        )
+        hexValue = if (opacity != null) {
+            String.format("%08X",
+                ((opacity * 255).toInt() shl 24) or
+                ((color.red * 255).toInt() shl 16) or
+                ((color.green * 255).toInt() shl 8) or
+                (color.blue * 255).toInt()
+            )
+        } else {
+            String.format("%06X",
+                ((color.red * 255).toInt() shl 16) or
+                ((color.green * 255).toInt() shl 8) or
+                (color.blue * 255).toInt()
+            )
+        }
     }
 
     LaunchedEffect(color) {
@@ -90,6 +108,19 @@ fun ColorPickerWithTitle(
             color
         }.debounce(50).collectLatest {
             onValueChange(it)
+        }
+    }
+
+    // Update hexValue when opacity parameter changes
+    if (opacity != null) {
+        LaunchedEffect(opacity) {
+            // Update hexValue to include current color RGB + new opacity alpha
+            hexValue = String.format("%08X",
+                ((opacity * 255).toInt() shl 24) or
+                ((color.red * 255).toInt() shl 16) or
+                ((color.green * 255).toInt() shl 8) or
+                (color.blue * 255).toInt()
+            )
         }
     }
 
@@ -112,13 +143,25 @@ fun ColorPickerWithTitle(
             OutlinedTextField(
                 value = hexValue,
                 onValueChange = { newHex ->
-                    // Remove leading "#" if present and take first 6 hex digits
-                    val cleanedHex = newHex.uppercase().removePrefix("#").take(6)
-                    hexValue = cleanedHex
-                    if (cleanedHex.length == 6) {
+                    // Remove leading "#" if present
+                    val cleanedHex = newHex.uppercase().removePrefix("#")
+                    val maxDigits = if (opacity != null) 8 else 6
+                    val truncatedHex = cleanedHex.take(maxDigits)
+                    hexValue = truncatedHex
+                    if (truncatedHex.length == maxDigits) {
                         try {
-                            val colorValue = cleanedHex.toLong(16) or 0xFF000000L // Add alpha = 255
-                            color = Color(colorValue)
+                            val colorValue = truncatedHex.toLong(16)
+                            if (opacity != null && maxDigits == 8) {
+                                // 8-digit hex: extract alpha and RGB
+                                val alpha = ((colorValue shr 24) and 0xFF).toInt() / 255f
+                                val rgb = colorValue and 0x00FFFFFFL
+                                color = Color(rgb or 0xFF000000L) // RGB with full alpha for color
+                                // Update opacity
+                                onOpacityChange?.invoke(alpha)
+                            } else {
+                                // 6-digit hex: RGB only, keep current opacity
+                                color = Color(colorValue or 0xFF000000L)
+                            }
                         } catch (e: Exception) {
                             // Invalid hex, keep current value
                         }
