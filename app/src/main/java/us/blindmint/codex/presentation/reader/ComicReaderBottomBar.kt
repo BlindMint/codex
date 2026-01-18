@@ -81,17 +81,13 @@ fun ComicReaderBottomBar(
             }
 
             Slider(
-                value = if (isRTL) 1f - sliderValue else sliderValue,
+                value = sliderValue,
                 onValueChange = { newValue ->
-                    val adjustedValue = if (isRTL) newValue else 1f - newValue
+                    val adjustedValue = if (isRTL) 1f - newValue else newValue
                     val newPage = (adjustedValue * (totalPages - 1)).toInt().coerceIn(0, totalPages - 1)
                     onPageSelected(newPage)
                 },
-                modifier = Modifier
-                    .weight(1f)
-                    .graphicsLayer {
-                        if (isRTL) scaleX = -1f
-                    },
+                modifier = Modifier.weight(1f),
                 colors = SliderDefaults.colors(
                     inactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(0.15f),
                     activeTrackColor = MaterialTheme.colorScheme.primary,
