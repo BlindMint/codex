@@ -260,6 +260,17 @@ fun ColorPresetOption() {
                       horizontalPadding = 0.dp,
                       isLocked = selectedPreset.isLocked,
                       showRgbInputs = true,
+                      opacity = selectedPreset.backgroundColor.alpha,
+                      onOpacityChange = { alpha ->
+                         val updatedColor = selectedPreset.backgroundColor.copy(alpha = alpha)
+                         settingsModel.onEvent(
+                             SettingsEvent.OnUpdateColorPresetColor(
+                                 id = selectedPreset.id,
+                                 backgroundColor = updatedColor,
+                                 fontColor = null
+                             )
+                         )
+                      },
                       onValueChange = {
                          settingsModel.onEvent(
                              SettingsEvent.OnUpdateColorPresetColor(
@@ -275,23 +286,34 @@ fun ColorPresetOption() {
                  HorizontalDivider()
                  Spacer(modifier = Modifier.height(16.dp))
 
-                   ColorPickerWithTitle(
-                       value = selectedPreset.fontColor,
-                       presetId = selectedPreset.id,
-                       title = stringResource(id = R.string.font_color_option),
-                       horizontalPadding = 0.dp,
-                       isLocked = selectedPreset.isLocked,
-                       showRgbInputs = true,
-                       onValueChange = {
-                        settingsModel.onEvent(
-                            SettingsEvent.OnUpdateColorPresetColor(
-                                id = selectedPreset.id,
-                                backgroundColor = null,
-                                fontColor = it
-                            )
-                        )
-                    }
-                )
+                    ColorPickerWithTitle(
+                        value = selectedPreset.fontColor,
+                        presetId = selectedPreset.id,
+                        title = stringResource(id = R.string.font_color_option),
+                        horizontalPadding = 0.dp,
+                        isLocked = selectedPreset.isLocked,
+                        showRgbInputs = true,
+                        opacity = selectedPreset.fontColor.alpha,
+                        onOpacityChange = { alpha ->
+                           val updatedColor = selectedPreset.fontColor.copy(alpha = alpha)
+                           settingsModel.onEvent(
+                               SettingsEvent.OnUpdateColorPresetColor(
+                                   id = selectedPreset.id,
+                                   backgroundColor = null,
+                                   fontColor = updatedColor
+                               )
+                           )
+                       },
+                        onValueChange = {
+                         settingsModel.onEvent(
+                             SettingsEvent.OnUpdateColorPresetColor(
+                                 id = selectedPreset.id,
+                                 backgroundColor = null,
+                                 fontColor = it
+                             )
+                         )
+                     }
+                 )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
