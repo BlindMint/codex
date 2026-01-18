@@ -33,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -59,6 +60,12 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+
+// Custom saver for Color objects to enable rememberSaveable
+private val ColorSaver = Saver<Color, Long>(
+    save = { color -> color.value.toLong() },
+    restore = { value -> Color(value.toULong()) }
+)
 
 @OptIn(FlowPreview::class)
 @Composable
@@ -441,7 +448,7 @@ fun ExpandableColorPicker(
     onValueChange: (Color) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val initialValue = rememberSaveable(presetId) { initialColor }
+    val initialValue = rememberSaveable(presetId, saver = ColorSaver) { initialColor }
     var color by remember(value) { mutableStateOf(value) }
     var showSliders by remember { mutableStateOf(false) }
 
