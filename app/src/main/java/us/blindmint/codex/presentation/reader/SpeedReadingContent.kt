@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -529,7 +530,7 @@ fun SpeedReadingContent(
         }
 
         // Bottom bar with progress bar and controls
-        Row(
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
@@ -542,23 +543,23 @@ fun SpeedReadingContent(
                 .clickable(
                     onClick = {},
                     enabled = true
-                ),
-            verticalAlignment = Alignment.CenterVertically
+                )
         ) {
-            // Progress bar (takes available space)
-            LinearProgressIndicator(
-                progress = { totalProgress },
-                modifier = Modifier.weight(1f),
-                color = fontColor.copy(alpha = 0.7f),
-                trackColor = fontColor.copy(alpha = 0.2f)
-            )
-
-            // Right side controls (fixed spacing from right)
             Row(
-                modifier = Modifier,
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Progress bar (takes available space)
+                LinearProgressIndicator(
+                    progress = { totalProgress },
+                    modifier = Modifier.weight(1f),
+                    color = fontColor.copy(alpha = 0.7f),
+                    trackColor = fontColor.copy(alpha = 0.2f)
+                )
+
+                // Spacer for consistent spacing
+                Spacer(modifier = Modifier.width(24.dp))
+
                 // WPM indicator (tappable for quick menu)
                 Text(
                     text = "$wpm wpm",
@@ -570,6 +571,9 @@ fun SpeedReadingContent(
                         showQuickWpmMenu = true
                     }
                 )
+
+                // Spacer for consistent spacing
+                Spacer(modifier = Modifier.width(24.dp))
 
                 // Book icon (placeholder for now)
                 Icon(
