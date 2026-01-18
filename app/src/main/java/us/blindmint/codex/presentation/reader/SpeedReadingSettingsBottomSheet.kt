@@ -16,6 +16,10 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -25,6 +29,7 @@ import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScro
 import us.blindmint.codex.presentation.core.components.modal_bottom_sheet.ModalBottomSheet
 import us.blindmint.codex.presentation.core.components.modal_bottom_sheet.ModalBottomSheetTabRow
 import us.blindmint.codex.presentation.settings.reader.speed_reading.SpeedReadingSubcategory
+import us.blindmint.codex.presentation.settings.reader.speed_reading.SpeedReadingTab
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,6 +79,7 @@ fun SpeedReadingSettingsBottomSheet(
 ) {
     if (show) {
         val scrollState = rememberLazyListState()
+        var selectedTabIndex by remember { mutableIntStateOf(0) }
 
         ModalBottomSheet(
             hasFixedHeight = true,
@@ -85,12 +91,15 @@ fun SpeedReadingSettingsBottomSheet(
             sheetGesturesEnabled = true,
             dragHandle = { BottomSheetDefaults.DragHandle() }
         ) {
-            // Single tab row for Speed Reading
+            // Tab row with General and Focus tabs
             ModalBottomSheetTabRow(
-                selectedTabIndex = 0,
-                tabs = listOf(stringResource(id = R.string.speed_reading_tab))
-            ) {
-                // Only one tab, no navigation needed
+                selectedTabIndex = selectedTabIndex,
+                tabs = listOf(
+                    stringResource(id = R.string.speed_reading_general_tab),
+                    stringResource(id = R.string.speed_reading_focus_tab)
+                )
+            ) { newIndex ->
+                selectedTabIndex = newIndex
             }
 
             LazyColumnWithScrollbar(
@@ -101,51 +110,104 @@ fun SpeedReadingSettingsBottomSheet(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                SpeedReadingSubcategory(
-                    titleColor = { MaterialTheme.colorScheme.onSurface },
-                    showTitle = false,
-                    showDivider = false,
-                    wpm = wpm,
-                    onWpmChange = onWpmChange,
-                    manualSentencePauseEnabled = manualSentencePauseEnabled,
-                    onManualSentencePauseEnabledChange = onManualSentencePauseEnabledChange,
-                    sentencePauseDuration = sentencePauseDuration,
-                    onSentencePauseDurationChange = onSentencePauseDurationChange,
-                    wordSize = wordSize,
-                    onWordSizeChange = onWordSizeChange,
-                    accentCharacterEnabled = accentCharacterEnabled,
-                    onAccentCharacterEnabledChange = onAccentCharacterEnabledChange,
-                    accentColor = accentColor,
-                    onAccentColorChange = onAccentColorChange,
-                    accentOpacity = accentOpacity,
-                    onAccentOpacityChange = onAccentOpacityChange,
-                    showVerticalIndicators = showVerticalIndicators,
-                    onShowVerticalIndicatorsChange = onShowVerticalIndicatorsChange,
-                    verticalIndicatorsSize = verticalIndicatorsSize,
-                    onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange,
-                    showHorizontalBars = showHorizontalBars,
-                    onShowHorizontalBarsChange = onShowHorizontalBarsChange,
-                    horizontalBarsThickness = horizontalBarsThickness,
-                    onHorizontalBarsThicknessChange = onHorizontalBarsThicknessChange,
-                    horizontalBarsLength = horizontalBarsLength,
-                    onHorizontalBarsLengthChange = onHorizontalBarsLengthChange,
-                    horizontalBarsDistance = horizontalBarsDistance,
-                    onHorizontalBarsDistanceChange = onHorizontalBarsDistanceChange,
-                    horizontalBarsColor = horizontalBarsColor,
-                    onHorizontalBarsColorChange = onHorizontalBarsColorChange,
-                    horizontalBarsOpacity = horizontalBarsOpacity,
-                    onHorizontalBarsOpacityChange = onHorizontalBarsOpacityChange,
-                    focalPointPosition = focalPointPosition,
-                    onFocalPointPositionChange = onFocalPointPositionChange,
-                    verticalIndicatorType = verticalIndicatorType,
-                    onVerticalIndicatorTypeChange = onVerticalIndicatorTypeChange,
-                    osdEnabled = osdEnabled,
-                    onOsdEnabledChange = onOsdEnabledChange,
-                    customFontEnabled = customFontEnabled,
-                    onCustomFontChanged = onCustomFontEnabledChange,
-                    selectedFontFamily = selectedFontFamily,
-                    onFontFamilyChanged = onFontFamilyChange
-                )
+                when (selectedTabIndex) {
+                    0 -> { // General tab
+                        SpeedReadingSubcategory(
+                            tab = SpeedReadingTab.GENERAL,
+                            titleColor = { MaterialTheme.colorScheme.onSurface },
+                            showTitle = false,
+                            showDivider = false,
+                            wpm = wpm,
+                            onWpmChange = onWpmChange,
+                            manualSentencePauseEnabled = manualSentencePauseEnabled,
+                            onManualSentencePauseEnabledChange = onManualSentencePauseEnabledChange,
+                            sentencePauseDuration = sentencePauseDuration,
+                            onSentencePauseDurationChange = onSentencePauseDurationChange,
+                            wordSize = wordSize,
+                            onWordSizeChange = onWordSizeChange,
+                            accentCharacterEnabled = accentCharacterEnabled,
+                            onAccentCharacterEnabledChange = onAccentCharacterEnabledChange,
+                            accentColor = accentColor,
+                            onAccentColorChange = onAccentColorChange,
+                            accentOpacity = accentOpacity,
+                            onAccentOpacityChange = onAccentOpacityChange,
+                            showVerticalIndicators = showVerticalIndicators,
+                            onShowVerticalIndicatorsChange = onShowVerticalIndicatorsChange,
+                            verticalIndicatorsSize = verticalIndicatorsSize,
+                            onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange,
+                            showHorizontalBars = showHorizontalBars,
+                            onShowHorizontalBarsChange = onShowHorizontalBarsChange,
+                            horizontalBarsThickness = horizontalBarsThickness,
+                            onHorizontalBarsThicknessChange = onHorizontalBarsThicknessChange,
+                            horizontalBarsLength = horizontalBarsLength,
+                            onHorizontalBarsLengthChange = onHorizontalBarsLengthChange,
+                            horizontalBarsDistance = horizontalBarsDistance,
+                            onHorizontalBarsDistanceChange = onHorizontalBarsDistanceChange,
+                            horizontalBarsColor = horizontalBarsColor,
+                            onHorizontalBarsColorChange = onHorizontalBarsColorChange,
+                            horizontalBarsOpacity = horizontalBarsOpacity,
+                            onHorizontalBarsOpacityChange = onHorizontalBarsOpacityChange,
+                            focalPointPosition = focalPointPosition,
+                            onFocalPointPositionChange = onFocalPointPositionChange,
+                            verticalIndicatorType = verticalIndicatorType,
+                            onVerticalIndicatorTypeChange = onVerticalIndicatorTypeChange,
+                            osdEnabled = osdEnabled,
+                            onOsdEnabledChange = onOsdEnabledChange,
+                            customFontEnabled = customFontEnabled,
+                            onCustomFontChanged = onCustomFontEnabledChange,
+                            selectedFontFamily = selectedFontFamily,
+                            onFontFamilyChanged = onFontFamilyChange
+                        )
+                    }
+                    1 -> { // Focus tab
+                        SpeedReadingSubcategory(
+                            tab = SpeedReadingTab.FOCUS,
+                            titleColor = { MaterialTheme.colorScheme.onSurface },
+                            showTitle = false,
+                            showDivider = false,
+                            wpm = wpm,
+                            onWpmChange = onWpmChange,
+                            manualSentencePauseEnabled = manualSentencePauseEnabled,
+                            onManualSentencePauseEnabledChange = onManualSentencePauseEnabledChange,
+                            sentencePauseDuration = sentencePauseDuration,
+                            onSentencePauseDurationChange = onSentencePauseDurationChange,
+                            wordSize = wordSize,
+                            onWordSizeChange = onWordSizeChange,
+                            accentCharacterEnabled = accentCharacterEnabled,
+                            onAccentCharacterEnabledChange = onAccentCharacterEnabledChange,
+                            accentColor = accentColor,
+                            onAccentColorChange = onAccentColorChange,
+                            accentOpacity = accentOpacity,
+                            onAccentOpacityChange = onAccentOpacityChange,
+                            showVerticalIndicators = showVerticalIndicators,
+                            onShowVerticalIndicatorsChange = onShowVerticalIndicatorsChange,
+                            verticalIndicatorsSize = verticalIndicatorsSize,
+                            onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange,
+                            showHorizontalBars = showHorizontalBars,
+                            onShowHorizontalBarsChange = onShowHorizontalBarsChange,
+                            horizontalBarsThickness = horizontalBarsThickness,
+                            onHorizontalBarsThicknessChange = onHorizontalBarsThicknessChange,
+                            horizontalBarsLength = horizontalBarsLength,
+                            onHorizontalBarsLengthChange = onHorizontalBarsLengthChange,
+                            horizontalBarsDistance = horizontalBarsDistance,
+                            onHorizontalBarsDistanceChange = onHorizontalBarsDistanceChange,
+                            horizontalBarsColor = horizontalBarsColor,
+                            onHorizontalBarsColorChange = onHorizontalBarsColorChange,
+                            horizontalBarsOpacity = horizontalBarsOpacity,
+                            onHorizontalBarsOpacityChange = onHorizontalBarsOpacityChange,
+                            focalPointPosition = focalPointPosition,
+                            onFocalPointPositionChange = onFocalPointPositionChange,
+                            verticalIndicatorType = verticalIndicatorType,
+                            onVerticalIndicatorTypeChange = onVerticalIndicatorTypeChange,
+                            osdEnabled = osdEnabled,
+                            onOsdEnabledChange = onOsdEnabledChange,
+                            customFontEnabled = customFontEnabled,
+                            onCustomFontChanged = onCustomFontEnabledChange,
+                            selectedFontFamily = selectedFontFamily,
+                            onFontFamilyChanged = onFontFamilyChange
+                        )
+                    }
+                }
 
                 item {
                     Spacer(modifier = Modifier.height(16.dp))

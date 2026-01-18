@@ -52,7 +52,13 @@ import us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType
 
 import us.blindmint.codex.presentation.core.components.settings.SwitchWithTitle
 
+enum class SpeedReadingTab {
+    GENERAL,
+    FOCUS
+}
+
 fun LazyListScope.SpeedReadingSubcategory(
+    tab: SpeedReadingTab? = null,
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary },
     title: @Composable () -> String = { stringResource(id = R.string.speed_reading_reader_settings) },
     showTitle: Boolean = true,
@@ -99,216 +105,432 @@ fun LazyListScope.SpeedReadingSubcategory(
     onCustomFontChanged: (Boolean) -> Unit = {},
     onFontFamilyChanged: (String) -> Unit = {}
 ) {
-    SettingsSubcategory(
-        titleColor = titleColor,
-        title = title,
-        showTitle = showTitle,
-        showDivider = showDivider
-    ) {
-        // Performance
-        item {
-            SpeedReadingWpmOption(
-                wpm = wpm,
-                onWpmChange = onWpmChange
-            )
-        }
-
-        item {
-            val localManualPauseEnabled = remember { androidx.compose.runtime.mutableStateOf(manualSentencePauseEnabled) }
-
-            androidx.compose.runtime.LaunchedEffect(manualSentencePauseEnabled) {
-                localManualPauseEnabled.value = manualSentencePauseEnabled
+    when (tab) {
+        null -> {
+            // Show all settings (legacy behavior for general reader settings)
+            // Performance
+            item {
+                SpeedReadingWpmOption(
+                    wpm = wpm,
+                    onWpmChange = onWpmChange
+                )
             }
 
-            SwitchWithTitle(
-                selected = localManualPauseEnabled.value,
-                title = stringResource(id = R.string.manual_sentence_pause),
-                onClick = {
-                    val newValue = !localManualPauseEnabled.value
-                    localManualPauseEnabled.value = newValue
-                    onManualSentencePauseEnabledChange(newValue)
+            item {
+                val localManualPauseEnabled = remember { androidx.compose.runtime.mutableStateOf(manualSentencePauseEnabled) }
+
+                androidx.compose.runtime.LaunchedEffect(manualSentencePauseEnabled) {
+                    localManualPauseEnabled.value = manualSentencePauseEnabled
                 }
-            )
-        }
 
-
-
-        // Animated sentence pause duration slider (only shown when manual mode is enabled)
-        item {
-            AnimatedVisibility(
-                visible = manualSentencePauseEnabled,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                SpeedReadingSentencePauseOption(
-                    sentencePauseDuration = sentencePauseDuration,
-                    onSentencePauseDurationChange = onSentencePauseDurationChange
+                SwitchWithTitle(
+                    selected = localManualPauseEnabled.value,
+                    title = stringResource(id = R.string.manual_sentence_pause),
+                    onClick = {
+                        val newValue = !localManualPauseEnabled.value
+                        localManualPauseEnabled.value = newValue
+                        onManualSentencePauseEnabledChange(newValue)
+                    }
                 )
+            }
+
+            // Animated sentence pause duration slider (only shown when manual mode is enabled)
+            item {
+                AnimatedVisibility(
+                    visible = manualSentencePauseEnabled,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingSentencePauseOption(
+                        sentencePauseDuration = sentencePauseDuration,
+                        onSentencePauseDurationChange = onSentencePauseDurationChange
+                    )
+                }
+            }
+
+            item {
+                SwitchWithTitle(
+                    selected = osdEnabled,
+                    title = stringResource(id = R.string.speed_reading_osd),
+                    onClick = { onOsdEnabledChange(!osdEnabled) }
+                )
+            }
+
+            item {
+                SpeedReadingWordSizeOption(
+                    wordSize = wordSize,
+                    onWordSizeChange = onWordSizeChange
+                )
+            }
+
+            // Color presets (shared with normal reading)
+            item {
+                ColorPresetOption()
+            }
+
+            item {
+                BackgroundImageOption()
+            }
+
+            item {
+                HorizontalDivider()
+            }
+
+            // Accent & Indicators
+            item {
+                SpeedReadingAccentCharacterOption(
+                    selected = accentCharacterEnabled,
+                    onSelectionChange = onAccentCharacterEnabledChange
+                )
+            }
+
+            // Accent color section (only shown when accent character is enabled)
+            item {
+                AnimatedVisibility(
+                    visible = accentCharacterEnabled,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingColorsOption( // Accent color with RGB sliders and opacity
+                        color = accentColor,
+                        opacity = accentOpacity,
+                        onColorChange = onAccentColorChange,
+                        onOpacityChange = onAccentOpacityChange
+                    )
+                }
+            }
+
+            item {
+                HorizontalDivider()
+            }
+
+            // Horizontal Bars
+            item {
+                SpeedReadingHorizontalBarsOption(
+                    selected = showHorizontalBars,
+                    onSelectionChange = onShowHorizontalBarsChange
+                )
+            }
+
+            item {
+                AnimatedVisibility(
+                    visible = showHorizontalBars,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingHorizontalBarsThicknessOption(
+                        thickness = horizontalBarsThickness,
+                        onThicknessChange = onHorizontalBarsThicknessChange
+                    )
+                }
+            }
+
+            item {
+                AnimatedVisibility(
+                    visible = showHorizontalBars,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingHorizontalBarLengthOption(
+                        length = horizontalBarsLength,
+                        onLengthChange = onHorizontalBarsLengthChange
+                    )
+                }
+            }
+
+            item {
+                AnimatedVisibility(
+                    visible = showHorizontalBars,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingHorizontalBarsDistanceOption(
+                        distance = horizontalBarsDistance,
+                        onDistanceChange = onHorizontalBarsDistanceChange
+                    )
+                }
+            }
+
+            item {
+                AnimatedVisibility(
+                    visible = showHorizontalBars,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingHorizontalBarsColorOption(
+                        color = horizontalBarsColor,
+                        opacity = horizontalBarsOpacity,
+                        onColorChange = onHorizontalBarsColorChange,
+                        onOpacityChange = onHorizontalBarsOpacityChange
+                    )
+                }
+            }
+
+            // Focal Point
+            item {
+                SettingsSubcategoryTitle(title = stringResource(id = R.string.speed_reading_focal_point))
+            }
+
+            item {
+                SpeedReadingVerticalIndicatorTypeOption(
+                    selectedType = verticalIndicatorType,
+                    onTypeChange = onVerticalIndicatorTypeChange
+                )
+            }
+
+            item {
+                SpeedReadingVerticalIndicatorsLengthOption(
+                    verticalIndicatorsSize = verticalIndicatorsSize,
+                    onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange
+                )
+            }
+
+            item {
+                SpeedReadingFocalPointPositionOption(
+                    position = focalPointPosition,
+                    onPositionChange = onFocalPointPositionChange
+                )
+            }
+
+            // Font Settings
+            item {
+                SpeedReadingCustomFontOption(
+                    customFontEnabled = customFontEnabled,
+                    onCustomFontChanged = onCustomFontChanged
+                )
+            }
+
+            item {
+                AnimatedVisibility(
+                    visible = customFontEnabled,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingFontFamilyOption(
+                        selectedFontId = selectedFontFamily,
+                        onFontChanged = onFontFamilyChanged
+                    )
+                }
+            }
+        }
+        SpeedReadingTab.GENERAL -> {
+            // Performance section (no header needed)
+            item {
+                SpeedReadingWpmOption(
+                    wpm = wpm,
+                    onWpmChange = onWpmChange
+                )
+            }
+
+            item {
+                val localManualPauseEnabled = remember { androidx.compose.runtime.mutableStateOf(manualSentencePauseEnabled) }
+
+                androidx.compose.runtime.LaunchedEffect(manualSentencePauseEnabled) {
+                    localManualPauseEnabled.value = manualSentencePauseEnabled
+                }
+
+                SwitchWithTitle(
+                    selected = localManualPauseEnabled.value,
+                    title = stringResource(id = R.string.manual_sentence_pause),
+                    onClick = {
+                        val newValue = !localManualPauseEnabled.value
+                        localManualPauseEnabled.value = newValue
+                        onManualSentencePauseEnabledChange(newValue)
+                    }
+                )
+            }
+
+            // Animated sentence pause duration slider (only shown when manual mode is enabled)
+            item {
+                AnimatedVisibility(
+                    visible = manualSentencePauseEnabled,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingSentencePauseOption(
+                        sentencePauseDuration = sentencePauseDuration,
+                        onSentencePauseDurationChange = onSentencePauseDurationChange
+                    )
+                }
+            }
+
+            item {
+                SwitchWithTitle(
+                    selected = osdEnabled,
+                    title = stringResource(id = R.string.speed_reading_osd),
+                    onClick = { onOsdEnabledChange(!osdEnabled) }
+                )
+            }
+
+            item {
+                SpeedReadingWordSizeOption(
+                    wordSize = wordSize,
+                    onWordSizeChange = onWordSizeChange
+                )
+            }
+
+            // Appearance section (with header)
+            item {
+                SettingsSubcategoryTitle(title = stringResource(id = R.string.appearance_settings))
+            }
+
+            // Color presets (shared with normal reading)
+            item {
+                ColorPresetOption()
+            }
+
+            item {
+                BackgroundImageOption()
+            }
+
+            item {
+                SpeedReadingCustomFontOption(
+                    customFontEnabled = customFontEnabled,
+                    onCustomFontChanged = onCustomFontChanged
+                )
+            }
+
+            item {
+                AnimatedVisibility(
+                    visible = customFontEnabled,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingFontFamilyOption(
+                        selectedFontId = selectedFontFamily,
+                        onFontChanged = onFontFamilyChanged
+                    )
+                }
             }
         }
 
-        item {
-            SwitchWithTitle(
-                selected = osdEnabled,
-                title = stringResource(id = R.string.speed_reading_osd),
-                onClick = { onOsdEnabledChange(!osdEnabled) }
-            )
-        }
+        SpeedReadingTab.FOCUS -> {
+            // Focal Point section
+            item {
+                SettingsSubcategoryTitle(title = stringResource(id = R.string.speed_reading_focal_point))
+            }
 
-        item {
-            SpeedReadingWordSizeOption(
-                wordSize = wordSize,
-                onWordSizeChange = onWordSizeChange
-            )
-        }
-
-        // Color presets (shared with normal reading)
-        item {
-            ColorPresetOption()
-        }
-
-        item {
-            BackgroundImageOption()
-        }
-
-        item {
-            HorizontalDivider()
-        }
-
-        // Accent & Indicators
-        item {
-            SpeedReadingAccentCharacterOption(
-                selected = accentCharacterEnabled,
-                onSelectionChange = onAccentCharacterEnabledChange
-            )
-        }
-
-        // Accent color section (only shown when accent character is enabled)
-        item {
-            AnimatedVisibility(
-                visible = accentCharacterEnabled,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                SpeedReadingColorsOption( // Accent color with RGB sliders and opacity
-                    color = accentColor,
-                    opacity = accentOpacity,
-                    onColorChange = onAccentColorChange,
-                    onOpacityChange = onAccentOpacityChange
+            item {
+                SpeedReadingFocalPointPositionOption(
+                    position = focalPointPosition,
+                    onPositionChange = onFocalPointPositionChange
                 )
             }
-        }
 
-        item {
-            HorizontalDivider()
-        }
-
-        // Horizontal Bars
-        item {
-            SpeedReadingHorizontalBarsOption(
-                selected = showHorizontalBars,
-                onSelectionChange = onShowHorizontalBarsChange
-            )
-        }
-
-        item {
-            AnimatedVisibility(
-                visible = showHorizontalBars,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                SpeedReadingHorizontalBarsThicknessOption(
-                    thickness = horizontalBarsThickness,
-                    onThicknessChange = onHorizontalBarsThicknessChange
+            item {
+                SpeedReadingVerticalIndicatorTypeOption(
+                    selectedType = verticalIndicatorType,
+                    onTypeChange = onVerticalIndicatorTypeChange
                 )
             }
-        }
 
-        item {
-            AnimatedVisibility(
-                visible = showHorizontalBars,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                SpeedReadingHorizontalBarLengthOption(
-                    length = horizontalBarsLength,
-                    onLengthChange = onHorizontalBarsLengthChange
+            item {
+                SpeedReadingVerticalIndicatorsLengthOption(
+                    verticalIndicatorsSize = verticalIndicatorsSize,
+                    onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange
                 )
             }
-        }
 
-        item {
-            AnimatedVisibility(
-                visible = showHorizontalBars,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                SpeedReadingHorizontalBarsDistanceOption(
-                    distance = horizontalBarsDistance,
-                    onDistanceChange = onHorizontalBarsDistanceChange
+            // Accent Character section
+            item {
+                HorizontalDivider()
+            }
+
+            item {
+                SettingsSubcategoryTitle(title = stringResource(id = R.string.speed_reading_accent_character))
+            }
+
+            item {
+                SpeedReadingAccentCharacterOption(
+                    selected = accentCharacterEnabled,
+                    onSelectionChange = onAccentCharacterEnabledChange
                 )
             }
-        }
 
-        item {
-            AnimatedVisibility(
-                visible = showHorizontalBars,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                SpeedReadingHorizontalBarsColorOption(
-                    color = horizontalBarsColor,
-                    opacity = horizontalBarsOpacity,
-                    onColorChange = onHorizontalBarsColorChange,
-                    onOpacityChange = onHorizontalBarsOpacityChange
+            // Accent color section (only shown when accent character is enabled)
+            item {
+                AnimatedVisibility(
+                    visible = accentCharacterEnabled,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingColorsOption( // Accent color with RGB sliders and opacity
+                        color = accentColor,
+                        opacity = accentOpacity,
+                        onColorChange = onAccentColorChange,
+                        onOpacityChange = onAccentOpacityChange
+                    )
+                }
+            }
+
+            // Horizontal Bars section
+            item {
+                HorizontalDivider()
+            }
+
+            item {
+                SettingsSubcategoryTitle(title = stringResource(id = R.string.speed_reading_horizontal_bars))
+            }
+
+            item {
+                SpeedReadingHorizontalBarsOption(
+                    selected = showHorizontalBars,
+                    onSelectionChange = onShowHorizontalBarsChange
                 )
             }
-        }
 
-        // Focal Point
-        item {
-            SettingsSubcategoryTitle(title = stringResource(id = R.string.speed_reading_focal_point))
-        }
+            item {
+                AnimatedVisibility(
+                    visible = showHorizontalBars,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingHorizontalBarsThicknessOption(
+                        thickness = horizontalBarsThickness,
+                        onThicknessChange = onHorizontalBarsThicknessChange
+                    )
+                }
+            }
 
-        item {
-            SpeedReadingVerticalIndicatorTypeOption(
-                selectedType = verticalIndicatorType,
-                onTypeChange = onVerticalIndicatorTypeChange
-            )
-        }
+            item {
+                AnimatedVisibility(
+                    visible = showHorizontalBars,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingHorizontalBarLengthOption(
+                        length = horizontalBarsLength,
+                        onLengthChange = onHorizontalBarsLengthChange
+                    )
+                }
+            }
 
-        item {
-            SpeedReadingVerticalIndicatorsLengthOption(
-                verticalIndicatorsSize = verticalIndicatorsSize,
-                onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange
-            )
-        }
+            item {
+                AnimatedVisibility(
+                    visible = showHorizontalBars,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingHorizontalBarsDistanceOption(
+                        distance = horizontalBarsDistance,
+                        onDistanceChange = onHorizontalBarsDistanceChange
+                    )
+                }
+            }
 
-        item {
-            SpeedReadingFocalPointPositionOption(
-                position = focalPointPosition,
-                onPositionChange = onFocalPointPositionChange
-            )
-        }
-
-        // Font Settings
-        item {
-            SpeedReadingCustomFontOption(
-                customFontEnabled = customFontEnabled,
-                onCustomFontChanged = onCustomFontChanged
-            )
-        }
-
-        item {
-            AnimatedVisibility(
-                visible = customFontEnabled,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                SpeedReadingFontFamilyOption(
-                    selectedFontId = selectedFontFamily,
-                    onFontChanged = onFontFamilyChanged
-                )
+            item {
+                AnimatedVisibility(
+                    visible = showHorizontalBars,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingHorizontalBarsColorOption(
+                        color = horizontalBarsColor,
+                        opacity = horizontalBarsOpacity,
+                        onColorChange = onHorizontalBarsColorChange,
+                        onOpacityChange = onHorizontalBarsOpacityChange
+                    )
+                }
             }
         }
     }
