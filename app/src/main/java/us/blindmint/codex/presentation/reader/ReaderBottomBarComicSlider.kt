@@ -26,12 +26,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.domain.reader.ReaderProgressCount
 import us.blindmint.codex.domain.util.HorizontalAlignment
 import us.blindmint.codex.presentation.core.components.common.StyledText
-import us.blindmint.codex.ui.main.MainModel
 
 @Composable
 fun ReaderBottomBarComicSlider(
@@ -47,8 +44,6 @@ fun ReaderBottomBarComicSlider(
     comicReadingDirection: String = "LTR",
     modifier: Modifier = Modifier
 ) {
-    val mainModel = hiltViewModel<MainModel>()
-    val mainState = mainModel.state.collectAsStateWithLifecycle()
 
     if (totalPages <= 0) return
 
