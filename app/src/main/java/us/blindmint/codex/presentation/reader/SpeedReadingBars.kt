@@ -32,6 +32,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -46,6 +47,7 @@ import us.blindmint.codex.presentation.core.components.common.IconButton
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.ui.theme.readerBarsColor
+import us.blindmint.codex.presentation.reader.ReaderBottomBarSliderIndicator
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -150,34 +152,45 @@ fun SpeedReadingBottomBar(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Back button
-            IconButton(
-                icon = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = R.string.previous_word,
-                disableOnClick = false
-            ) {
-                navigateWord(-1)
-            }
+            // Back button - matches OSD style
+            Text(
+                text = "<",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    fontSize = 28.sp
+                ),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .noRippleClickable {
+                        navigateWord(-1)
+                    }
+            )
 
-            // Play/Pause button (larger, centered)
+            // Play/Pause button (matches OSD size)
             IconButton(
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(60.dp),
                 icon = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                 contentDescription = if (isPlaying) R.string.pause else R.string.play,
-                disableOnClick = false
+                disableOnClick = false,
+                color = MaterialTheme.colorScheme.onSurface
             ) {
                 onPlayPause()
                 onCloseMenu() // Close menu when play is pressed
             }
 
-            // Forward button
-            IconButton(
-                icon = Icons.AutoMirrored.Outlined.ArrowForward,
-                contentDescription = R.string.next_word,
-                disableOnClick = false
-            ) {
-                navigateWord(1)
-            }
+            // Forward button - matches OSD style
+            Text(
+                text = ">",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    fontSize = 28.sp
+                ),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .noRippleClickable {
+                        navigateWord(1)
+                    }
+            )
         }
 
         Spacer(Modifier.height(16.dp))
@@ -192,13 +205,8 @@ fun SpeedReadingBottomBar(
 
         Spacer(Modifier.height(8.dp))
 
-        // Progress bar (same as speed reader)
-        LinearProgressIndicator(
-            progress = { progressValue },
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-            trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
-        )
+        // Progress bar (matches normal reader style)
+        ReaderBottomBarSliderIndicator(progress = progressValue)
 
         Spacer(Modifier.height(8.dp + bottomBarPadding))
     }

@@ -555,7 +555,7 @@ fun SpeedReadingContent(
             ) {
                 // WPM indicator (tappable for quick menu)
                 Text(
-                    text = "$wpm",
+                    text = "$wpm wpm",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = fontColor.copy(alpha = 0.8f),
                         fontWeight = FontWeight.Medium
@@ -608,15 +608,6 @@ fun SpeedReadingContent(
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Header
-                    Text(
-                        text = "Words per minute",
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            color = fontColor
-                        ),
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
                     // Top row: -100, -50, current WPM, +50, +100
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -701,7 +692,7 @@ fun SpeedReadingContent(
 
                         Slider(
                             value = wpm.toFloat(),
-                            onValueChange = { onWpmChange(it.toInt()) },
+                            onValueChange = { onWpmChange((it / 5).toInt() * 5) },
                             valueRange = 200f..1200f,
                             modifier = Modifier.weight(1f)
                         )
