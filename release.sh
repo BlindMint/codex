@@ -282,6 +282,36 @@ check_gradle() {
     log_success "Gradle wrapper verified"
 }
 
+check_environment() {
+    log_info "Checking environment variables..."
+
+    local gitlab_token="${GITLAB_TOKEN:-}"
+    local gitlab_project_id="${GITLAB_PROJECT_ID:-}"
+
+    if [[ -z "$gitlab_token" ]]; then
+        log_warning "GITLAB_TOKEN not set"
+        log_info "GitLab APK uploads will be skipped unless you set it"
+        echo ""
+        read -p "Enter GitLab token (leave empty to skip): " gitlab_token
+        if [[ -n "$gitlab_token" ]]; then
+            export GITLAB_TOKEN="$gitlab_token"
+            log_success "GITLAB_TOKEN set for this session"
+        fi
+    fi
+
+    if [[ -z "$gitlab_project_id" && -n "$gitlab_token" ]]; then
+        log_warning "GITLAB_PROJECT_ID not set"
+        echo ""
+        read -p "Enter GitLab project ID: " gitlab_project_id
+        if [[ -n "$gitlab_project_id" ]]; then
+            export GITLAB_PROJECT_ID="$gitlab_project_id"
+            log_success "GITLAB_PROJECT_ID set for this session"
+        fi
+    fi
+
+    log_success "Environment variables checked"
+}
+
 check_remotes() {
     log_info "Checking git remotes..."
 
@@ -736,8 +766,7 @@ upload_to_gitlab_packages() {
     # Check if GitLab token is available
     local gitlab_token="${GITLAB_TOKEN:-}"
     if [[ -z "$gitlab_token" ]]; then
-        log_warning "GITLAB_TOKEN not set, skipping GitLab package upload"
-        log_info "Set GITLAB_TOKEN environment variable to enable automatic uploads"
+        log_info "GITLAB_TOKEN not set, skipping GitLab package upload"
         return
     fi
 
@@ -1060,6 +1089,7 @@ main() {
     check_git_status
     check_keystore
     check_gradle
+    check_environment
     check_remotes
 
     # Phase 2: Version selection
