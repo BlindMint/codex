@@ -446,7 +446,8 @@ fun ExpandableColorPicker(
     initialColor: Color = value,
     isLocked: Boolean = false,
     onValueChange: (Color) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    horizontalPadding: Dp = 18.dp
 ) {
     val initialValue = rememberSaveable(presetId, saver = ColorSaver) { initialColor }
     var color by remember(value) { mutableStateOf(value) }
@@ -485,7 +486,7 @@ fun ExpandableColorPicker(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 18.dp)
+            .padding(vertical = 8.dp, horizontal = horizontalPadding)
     ) {
         // Row 1: Title on left, Hex input on right
         Row(

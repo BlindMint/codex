@@ -259,6 +259,7 @@ fun ColorPresetOption() {
                       presetId = "${selectedPreset.id}_background",
                       initialColor = selectedPreset.backgroundColor,
                       isLocked = selectedPreset.isLocked,
+                      horizontalPadding = 0.dp,
                       onValueChange = {
                          settingsModel.onEvent(
                              SettingsEvent.OnUpdateColorPresetColor(
@@ -280,6 +281,7 @@ fun ColorPresetOption() {
                         presetId = "${selectedPreset.id}_font",
                         initialColor = selectedPreset.fontColor,
                         isLocked = selectedPreset.isLocked,
+                        horizontalPadding = 0.dp,
                         onValueChange = {
                          settingsModel.onEvent(
                              SettingsEvent.OnUpdateColorPresetColor(
