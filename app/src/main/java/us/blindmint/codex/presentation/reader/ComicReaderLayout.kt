@@ -209,7 +209,8 @@ fun ComicReaderLayout(
 
     // Update current page when pager changes
     // Debounce to avoid updating during scroll animation
-    LaunchedEffect(pagerState, isRTL) {
+    // Include comicReaderMode in dependencies so listener updates when switching modes
+    LaunchedEffect(pagerState, isRTL, comicReaderMode) {
         snapshotFlow { pagerState.currentPage to pagerState.isScrollInProgress }
             .debounce(50)  // Wait 50ms after scroll stops
             .collect { (physicalPage, _) ->
@@ -222,7 +223,8 @@ fun ComicReaderLayout(
 
     // Update current page when lazy list changes (webtoon mode)
     // Debounce to avoid updating during scroll animation
-    LaunchedEffect(lazyListState, isRTL) {
+    // Include comicReaderMode in dependencies so listener updates when switching modes
+    LaunchedEffect(lazyListState, isRTL, comicReaderMode) {
         snapshotFlow { lazyListState.firstVisibleItemIndex }
             .debounce(50)  // Wait 50ms after scroll stops
             .collect { physicalIndex ->
