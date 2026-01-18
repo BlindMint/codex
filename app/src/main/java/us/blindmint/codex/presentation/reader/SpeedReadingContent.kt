@@ -550,7 +550,7 @@ fun SpeedReadingContent(
             // Right side controls (50% width, evenly spaced)
             Row(
                 modifier = Modifier.weight(0.5f),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // WPM indicator (tappable for quick menu)
