@@ -536,7 +536,8 @@ fun SpeedReadingContent(
                     color = backgroundColor.copy(alpha = 0.8f),
                     shape = MaterialTheme.shapes.small
                 )
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .noRippleClickable { /* Consume clicks to prevent triggering parent tap menu */ },
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Progress bar (50% width)
