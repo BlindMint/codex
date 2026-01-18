@@ -369,9 +369,9 @@ fun LazyListScope.SpeedReadingSubcategory(
                 )
             }
 
-            // Appearance section (with header)
+            // Appearance section (with divider)
             item {
-                SettingsSubcategoryTitle(title = stringResource(id = R.string.appearance_settings))
+                HorizontalDivider()
             }
 
             // Color presets (shared with normal reading)
