@@ -553,16 +553,13 @@ fun SpeedReadingContent(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // WPM indicator (tappable for quick menu)
+                // WPM indicator (display only in tap menu)
                 Text(
                     text = "$wpm wpm",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = fontColor.copy(alpha = 0.8f),
                         fontWeight = FontWeight.Medium
-                    ),
-                    modifier = Modifier.noRippleClickable {
-                        showQuickWpmMenu = true
-                    }
+                    )
                 )
 
                 // Book icon (placeholder for now)
@@ -573,6 +570,22 @@ fun SpeedReadingContent(
                     modifier = Modifier.size(20.dp)
                 )
             }
+        }
+
+        // WPM indicator in bottom right corner (tappable to open quick panel)
+        if (showWpmIndicator) {
+            Text(
+                text = "$wpm wpm",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = fontColor.copy(alpha = 0.5f)
+                ),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(bottom = 24.dp, end = 24.dp)
+                    .noRippleClickable {
+                        showQuickWpmMenu = true
+                    }
+            )
         }
 
         // Countdown overlay
@@ -598,10 +611,7 @@ fun SpeedReadingContent(
             val sheetState = rememberModalBottomSheetState()
 
             ModalBottomSheet(
-                onDismissRequest = {
-                    showQuickWpmMenu = false
-                    onToggleMenu() // Close tap menu when dismissing WPM panel
-                },
+                onDismissRequest = { showQuickWpmMenu = false },
                 sheetState = sheetState,
                 containerColor = backgroundColor
             ) {
