@@ -75,6 +75,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.onSizeChanged
 import kotlinx.coroutines.delay
 import us.blindmint.codex.domain.reader.ReaderText
@@ -537,7 +538,14 @@ fun SpeedReadingContent(
                     shape = MaterialTheme.shapes.small
                 )
                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                .noRippleClickable { /* Consume clicks to prevent triggering parent tap menu */ },
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            awaitPointerEvent()
+                            // Consume all pointer events to prevent bubbling
+                        }
+                    }
+                },
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Progress bar (50% width)
@@ -551,7 +559,7 @@ fun SpeedReadingContent(
             // Right side controls (50% width, evenly spaced)
             Row(
                 modifier = Modifier.weight(0.5f),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // WPM indicator (tappable for quick menu)
