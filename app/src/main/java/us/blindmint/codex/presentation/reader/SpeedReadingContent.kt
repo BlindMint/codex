@@ -562,6 +562,7 @@ fun SpeedReadingContent(
                     ),
                     modifier = Modifier.noRippleClickable {
                         showQuickWpmMenu = true
+                        onToggleMenu() // Close the tap menu when opening WPM panel
                     }
                 )
 
