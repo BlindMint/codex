@@ -31,9 +31,8 @@ fun LazyListScope.ComicsReaderSettingsCategory(
         item {
             ComicReadingDirectionOption()
         }
-        item {
-            ComicReaderModeOption()
-        }
+        // Reader mode is now determined by reading direction:
+        // LTR/RTL -> Paged mode, Vertical -> Webtoon mode
         item {
             ComicTapZoneOption()
         }

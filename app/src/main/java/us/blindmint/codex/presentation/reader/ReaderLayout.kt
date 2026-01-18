@@ -129,7 +129,9 @@ fun ReaderLayout(
                 backgroundColor = backgroundColor,
                 fontColor = fontColor,
                 comicReadingDirection = mainState.value.comicReadingDirection,
-                comicReaderMode = mainState.value.comicReaderMode,
+                // Derive reader mode from reading direction:
+                // Vertical direction uses Webtoon mode, others use Paged
+                comicReaderMode = if (mainState.value.comicReadingDirection == "VERTICAL") "WEBTOON" else "PAGED",
                 comicTapZone = mainState.value.comicTapZone,
                 comicInvertTaps = mainState.value.comicInvertTaps,
                 comicScaleType = mainState.value.comicScaleType,
