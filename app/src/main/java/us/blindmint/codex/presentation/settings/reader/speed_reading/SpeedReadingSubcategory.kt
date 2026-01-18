@@ -163,11 +163,6 @@ fun LazyListScope.SpeedReadingSubcategory(
                 )
             }
 
-            // Color presets (shared with normal reading)
-            item {
-                ColorPresetOption()
-            }
-
             item {
                 BackgroundImageOption()
             }
