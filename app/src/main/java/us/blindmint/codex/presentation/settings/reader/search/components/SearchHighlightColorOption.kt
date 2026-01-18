@@ -208,6 +208,9 @@ fun SearchHighlightColorOption() {
                 )
             }
 
+            // Add spacing between color preview and reset button
+            Spacer(modifier = Modifier.width(12.dp))
+
             // Reset button (stays on right)
             IconButton(
                 modifier = Modifier.size(32.dp),
