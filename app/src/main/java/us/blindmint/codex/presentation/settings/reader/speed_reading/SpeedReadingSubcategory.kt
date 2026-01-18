@@ -407,10 +407,6 @@ fun LazyListScope.SpeedReadingSubcategory(
         SpeedReadingTab.FOCUS -> {
             // Focal Point section
             item {
-                SettingsSubcategoryTitle(title = stringResource(id = R.string.speed_reading_focal_point))
-            }
-
-            item {
                 SpeedReadingFocalPointPositionOption(
                     position = focalPointPosition,
                     onPositionChange = onFocalPointPositionChange
@@ -434,10 +430,6 @@ fun LazyListScope.SpeedReadingSubcategory(
             // Accent Character section
             item {
                 HorizontalDivider()
-            }
-
-            item {
-                SettingsSubcategoryTitle(title = stringResource(id = R.string.speed_reading_accent_character))
             }
 
             item {
@@ -466,10 +458,6 @@ fun LazyListScope.SpeedReadingSubcategory(
             // Horizontal Bars section
             item {
                 HorizontalDivider()
-            }
-
-            item {
-                SettingsSubcategoryTitle(title = stringResource(id = R.string.speed_reading_horizontal_bars))
             }
 
             item {
