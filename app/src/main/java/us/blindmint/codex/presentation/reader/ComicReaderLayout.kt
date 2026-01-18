@@ -200,11 +200,11 @@ fun ComicReaderLayout(
     }
 
     // Handle reading direction changes - keep current page in view
-    var lastReadingDirection by remember { mutableStateOf(comicReadingDirection) }
+    var lastReadingDirection by remember { mutableStateOf<String?>(null) }
     var lastLogicalPage by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(comicReadingDirection) {
-        if (initialLoadComplete && comicLoaded && comicReadingDirection != lastReadingDirection) {
+        if (lastReadingDirection != null && comicReadingDirection != lastReadingDirection) {
             // Use the last known logical page to calculate new position
             val newPhysicalPage = mapLogicalToPhysicalPage(lastLogicalPage)
             android.util.Log.d("CodexComic", "Reading direction changed from $lastReadingDirection to $comicReadingDirection, repositioning logical page $lastLogicalPage to physical page $newPhysicalPage")
