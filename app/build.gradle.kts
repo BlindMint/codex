@@ -109,6 +109,10 @@ android {
     buildFeatures {
         buildConfig = false
     }
+
+    lint {
+        disable += "AutoboxingStateCreation"
+    }
 }
 
 aboutLibraries {
