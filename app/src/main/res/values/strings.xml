@@ -280,7 +280,7 @@
     <!-- Settings options -->
     <!-- General -->
     <string name="language_option">App language</string>
-    <string name="dark_theme_option">Dark theme</string>
+    <string name="dark_theme_option">Theme</string>
     <string name="pure_dark_option">Pure dark</string>
     <string name="absolute_dark_option">Absolute dark</string>
     <string name="absolute_dark_option_desc">Change background color to be completely black</string>
@@ -410,8 +410,8 @@
     <string name="color_preset_placeholder">Name a preset…</string>
 
     <!-- Dark Theme properties -->
-    <string name="dark_theme_off">Disabled</string>
-    <string name="dark_theme_on">Enabled</string>
+    <string name="dark_theme_off">Light</string>
+    <string name="dark_theme_on">Dark</string>
     <string name="dark_theme_follow_system">System</string>
 
     <!-- Pure Dark properties -->
