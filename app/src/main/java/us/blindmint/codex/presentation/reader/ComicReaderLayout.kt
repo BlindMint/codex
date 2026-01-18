@@ -166,6 +166,18 @@ fun ComicReaderLayout(
     // Lazy list state for webtoon mode
     val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = 0)
 
+    // Scroll to correct position when reading direction changes
+    LaunchedEffect(comicReadingDirection, totalPages) {
+        if (totalPages > 0) {
+            val targetPhysicalPage = if (comicReadingDirection == "RTL") totalPages - 1 else 0
+            if (comicReaderMode == "PAGED") {
+                pagerState.scrollToPage(targetPhysicalPage)
+            } else {
+                lazyListState.scrollToItem(targetPhysicalPage)
+            }
+        }
+    }
+
     // Map comic scale type to ContentScale
     val contentScale = remember(comicScaleType) {
         when (comicScaleType) {
@@ -199,28 +211,7 @@ fun ComicReaderLayout(
         }
     }
 
-    // Handle reading direction changes - keep current page in view
-    var lastReadingDirection by remember { mutableStateOf<String?>(null) }
-    var lastLogicalPage by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(comicReadingDirection) {
-        if (lastReadingDirection != null && comicReadingDirection != lastReadingDirection) {
-            // Use the last known logical page to calculate new position
-            val newPhysicalPage = mapLogicalToPhysicalPage(lastLogicalPage)
-            android.util.Log.d("CodexComic", "Reading direction changed from $lastReadingDirection to $comicReadingDirection, repositioning logical page $lastLogicalPage to physical page $newPhysicalPage")
-            if (comicReaderMode == "PAGED") {
-                pagerState.animateScrollToPage(newPhysicalPage)
-            } else {
-                lazyListState.animateScrollToItem(newPhysicalPage)
-            }
-        }
-        lastReadingDirection = comicReadingDirection
-    }
-
-    // Track the current logical page
-    LaunchedEffect(currentPage) {
-        lastLogicalPage = currentPage
-    }
 
     // Load comic archive structure
     LaunchedEffect(book) {
