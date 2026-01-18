@@ -48,6 +48,8 @@ import us.blindmint.codex.presentation.settings.reader.speed_reading.components.
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingFocalPointPositionOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorTypeOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsLengthOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingOsdHeightOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingOsdSeparationOption
 import us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType
 
 import us.blindmint.codex.presentation.core.components.settings.SwitchWithTitle
@@ -71,6 +73,10 @@ fun LazyListScope.SpeedReadingSubcategory(
     onSentencePauseDurationChange: (Int) -> Unit = {},
     osdEnabled: Boolean = true,
     onOsdEnabledChange: (Boolean) -> Unit = {},
+    osdHeight: Float = 0.5f, // 0.0 = top, 1.0 = bottom, 0.5 = middle
+    onOsdHeightChange: (Float) -> Unit = {},
+    osdSeparation: Float = 0.5f, // 0.0 = close, 1.0 = far, 0.5 = current spacing
+    onOsdSeparationChange: (Float) -> Unit = {},
     wordSize: Int = 48,
     onWordSizeChange: (Int) -> Unit = {},
     accentCharacterEnabled: Boolean = true,
@@ -100,6 +106,8 @@ fun LazyListScope.SpeedReadingSubcategory(
     onHorizontalBarsOpacityChange: (Float) -> Unit = {},
     focalPointPosition: Float = 0.38f,
     onFocalPointPositionChange: (Float) -> Unit = {},
+    centerWord: Boolean = false,
+    onCenterWordChange: (Boolean) -> Unit = {},
     customFontEnabled: Boolean = false,
     selectedFontFamily: String = "default",
     onCustomFontChanged: (Boolean) -> Unit = {},
@@ -154,6 +162,38 @@ fun LazyListScope.SpeedReadingSubcategory(
                     title = stringResource(id = R.string.speed_reading_osd),
                     onClick = { onOsdEnabledChange(!osdEnabled) }
                 )
+            }
+
+            item {
+                SpeedReadingWordSizeOption(
+                    wordSize = wordSize,
+                    onWordSizeChange = onWordSizeChange
+                )
+            }
+
+            item {
+                SwitchWithTitle(
+                    selected = osdEnabled,
+                    title = stringResource(id = R.string.speed_reading_osd),
+                    onClick = { onOsdEnabledChange(!osdEnabled) }
+                )
+            }
+
+            // OSD Height and Separation sliders (only when OSD is enabled)
+            if (osdEnabled) {
+                item {
+                    SpeedReadingOsdHeightOption(
+                        osdHeight = osdHeight,
+                        onOsdHeightChange = onOsdHeightChange
+                    )
+                }
+
+                item {
+                    SpeedReadingOsdSeparationOption(
+                        osdSeparation = osdSeparation,
+                        onOsdSeparationChange = onOsdSeparationChange
+                    )
+                }
             }
 
             item {
@@ -397,11 +437,21 @@ fun LazyListScope.SpeedReadingSubcategory(
         }
 
         SpeedReadingTab.FOCUS -> {
+            // Center Word toggle
+            item {
+                SwitchWithTitle(
+                    selected = centerWord,
+                    title = stringResource(id = R.string.speed_reading_center_word),
+                    onClick = { onCenterWordChange(!centerWord) }
+                )
+            }
+
             // Focal Point section
             item {
                 SpeedReadingFocalPointPositionOption(
                     position = focalPointPosition,
-                    onPositionChange = onFocalPointPositionChange
+                    onPositionChange = onFocalPointPositionChange,
+                    enabled = !centerWord
                 )
             }
 

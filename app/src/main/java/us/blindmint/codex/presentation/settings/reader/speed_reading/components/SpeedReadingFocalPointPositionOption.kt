@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -21,12 +24,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
+import us.blindmint.codex.presentation.core.components.common.IconButton
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 
 @Composable
 fun SpeedReadingFocalPointPositionOption(
     position: Float = 0.38f,
-    onPositionChange: (Float) -> Unit = {}
+    onPositionChange: (Float) -> Unit = {},
+    enabled: Boolean = true
 ) {
     Column(
         modifier = Modifier
@@ -40,14 +45,24 @@ fun SpeedReadingFocalPointPositionOption(
             Text(
                 text = stringResource(id = R.string.speed_reading_focal_point_position),
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
                 modifier = Modifier.weight(1f)
             )
             Text(
                 text = "${(position * 100).toInt()}%",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
             )
+            // Reset button
+            IconButton(
+                modifier = Modifier.size(32.dp),
+                icon = Icons.Default.History,
+                contentDescription = R.string.revert_content_desc,
+                disableOnClick = false,
+                enabled = enabled && position != 0.38f // Default is 0.38f
+            ) {
+                onPositionChange(0.38f)
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -59,11 +74,12 @@ fun SpeedReadingFocalPointPositionOption(
             Text(
                 text = "Left",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
             )
             Slider(
                 value = position,
-                onValueChange = onPositionChange,
+                onValueChange = { if (enabled) onPositionChange(it) },
+                enabled = enabled,
                 valueRange = 0.25f..0.75f,
                 modifier = Modifier
                     .weight(1f)
@@ -72,7 +88,7 @@ fun SpeedReadingFocalPointPositionOption(
             Text(
                 text = "Right",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
             )
         }
     }

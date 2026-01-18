@@ -835,6 +835,9 @@
     <string name="speed_reading_vertical_indicator_type_arrows">Arrows</string>
     <string name="speed_reading_vertical_indicator_type_arrows_filled">Arrows (filled)</string>
     <string name="speed_reading_osd">OSD</string>
+    <string name="speed_reading_osd_height">OSD height</string>
+    <string name="speed_reading_osd_separation">OSD separation</string>
+    <string name="speed_reading_center_word">Center word</string>
     <string name="previous_word">Previous word</string>
     <string name="next_word">Next word</string>
 

@@ -60,6 +60,9 @@ fun SpeedReadingScaffold(
     bottomBarPadding: Dp,
     showWpmIndicator: Boolean,
     wpm: Int,
+    osdHeight: Float = 0.5f,
+    osdSeparation: Float = 0.5f,
+    centerWord: Boolean = false,
     onWpmChange: (Int) -> Unit,
     osdEnabled: Boolean,
     onExitSpeedReading: () -> Unit,
@@ -166,7 +169,10 @@ fun SpeedReadingScaffold(
                 },
                 alwaysShowPlayPause = alwaysShowPlayPause,
                 showWpmIndicator = showWpmIndicator,
-                osdEnabled = osdEnabled
+                osdEnabled = osdEnabled,
+                osdHeight = osdHeight,
+                osdSeparation = osdSeparation,
+                centerWord = centerWord
             )
         }
     }

@@ -119,6 +119,9 @@ fun SpeedReadingContent(
     alwaysShowPlayPause: Boolean,
     showWpmIndicator: Boolean = true,
     osdEnabled: Boolean = true,
+    osdHeight: Float = 0.5f, // 0.0 = top, 1.0 = bottom
+    osdSeparation: Float = 0.5f, // 0.0 = close, 1.0 = far
+    centerWord: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     // Extract words from text starting from current position
@@ -209,7 +212,7 @@ fun SpeedReadingContent(
 
     // Focal point position - configurable via settings
     // This creates a consistent focal point that words align to
-    val accentOffsetRatio = focalPointPosition
+    val accentOffsetRatio = if (centerWord) 0.5f else focalPointPosition
 
     var boxSize by remember { mutableStateOf(0 to 0) }
 
@@ -469,20 +472,22 @@ fun SpeedReadingContent(
             }
         }
 
-        // OSD controls centered at bottom
+        // OSD controls positioned based on settings
         if (osdEnabled) {
             val configuration = LocalConfiguration.current
             val screenHeight = configuration.screenHeightDp.dp
-            val bottomPadding = screenHeight * 0.2f // 20% from bottom
+            // osdHeight: 0.0 = top, 1.0 = bottom, 0.5 = middle
+            val verticalPosition = (screenHeight.value * (1f - osdHeight)).dp // Invert so 0.0 = top, 1.0 = bottom
 
             Box(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = bottomPadding),
+                    .align(Alignment.TopCenter)
+                    .padding(top = verticalPosition),
                 contentAlignment = Alignment.Center
             ) {
+                val separationDp = (12f + (osdSeparation * 36f)).dp // 12dp to 48dp
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(24.dp), // Increased spacing
+                    horizontalArrangement = Arrangement.spacedBy(separationDp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Left arrow (<) - navigate to previous word
