@@ -236,7 +236,9 @@ fun ComicReaderLayout(
 
 
     // Load comic archive structure
-    LaunchedEffect(book) {
+    // Use book.id as key so we only reload when switching to a different comic,
+    // not when the book object is updated (e.g., when progress is saved)
+    LaunchedEffect(book.id) {
         isLoading = true
         errorMessage = null
 
