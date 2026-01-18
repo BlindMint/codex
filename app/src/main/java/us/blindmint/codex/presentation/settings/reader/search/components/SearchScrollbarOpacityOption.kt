@@ -82,7 +82,7 @@ fun SearchScrollbarOpacityOption() {
             SliderWithTitle(
                 modifier = Modifier.weight(1f),
                 value = opacity.toFloat() to "%",
-                title = stringResource(id = R.string.alpha_opacity),
+                title = stringResource(id = R.string.search_scrollbar_opacity),
                 toValue = 100,
                 onValueChange = { opacity = it.toDouble() },
                 horizontalPadding = 0.dp,

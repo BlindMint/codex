@@ -159,7 +159,7 @@ fun SearchHighlightColorOption() {
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     textAlign = TextAlign.Center
                 ),
-                modifier = Modifier.width(100.dp),
+                modifier = Modifier.width(130.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
                 singleLine = true
             )
@@ -250,7 +250,7 @@ fun SearchHighlightColorOption() {
                             val coercedValue = intValue.coerceIn(0, 255)
                             color = color.copy(red = coercedValue / 255f)
                         },
-                        label = { Text("R") },
+
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.width(60.dp),
                         textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
@@ -281,7 +281,7 @@ fun SearchHighlightColorOption() {
                             val coercedValue = intValue.coerceIn(0, 255)
                             color = color.copy(green = coercedValue / 255f)
                         },
-                        label = { Text("G") },
+
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.width(60.dp),
                         textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
@@ -312,7 +312,7 @@ fun SearchHighlightColorOption() {
                             val coercedValue = intValue.coerceIn(0, 255)
                             color = color.copy(blue = coercedValue / 255f)
                         },
-                        label = { Text("B") },
+
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.width(60.dp),
                         textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),
@@ -346,7 +346,7 @@ fun SearchHighlightColorOption() {
                             val coercedValue = intValue.coerceIn(0, 100)
                             color = color.copy(alpha = coercedValue / 100f)
                         },
-                        label = { Text("%") },
+
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.width(60.dp),
                         textStyle = MaterialTheme.typography.bodyMedium.copy(textAlign = TextAlign.Center),

@@ -36,10 +36,6 @@ fun LazyListScope.SearchSubcategory(
             SearchHighlightColorOption()
         }
 
-        // Search scrollbar section
-        item {
-            SettingsSubcategoryTitle(title = stringResource(id = R.string.search_scrollbar_settings))
-        }
         item {
             ShowSearchScrollbarOption()
         }
