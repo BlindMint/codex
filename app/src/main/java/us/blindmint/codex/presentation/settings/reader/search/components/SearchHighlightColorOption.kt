@@ -168,7 +168,7 @@ fun SearchHighlightColorOption() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Row 2: Tappable area with color preview, RGBA text, and reset button
+        // Row 2: Tappable area with RGBA text, color preview, and reset button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -177,7 +177,16 @@ fun SearchHighlightColorOption() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Color preview box
+            // RGBA values text (now first, with larger font)
+            Text(
+                text = "RGBA( ${(color.red * 255).toInt()} | ${(color.green * 255).toInt()} | ${(color.blue * 255).toInt()} | ${(color.alpha * 100).toInt()} )",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                modifier = Modifier.weight(1f)
+            )
+
+            // Color preview box (moved to middle)
             Box(
                 modifier = Modifier
                     .size(40.dp)
@@ -199,17 +208,7 @@ fun SearchHighlightColorOption() {
                 )
             }
 
-            // RGBA values text
-            Text(
-                text = "RGBA( ${(color.red * 255).toInt()} | ${(color.green * 255).toInt()} | ${(color.blue * 255).toInt()} | ${(color.alpha * 100).toInt()} )",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                ),
-                modifier = Modifier.weight(1f)
-            )
-
-            // Reset button
+            // Reset button (stays on right)
             IconButton(
                 modifier = Modifier.size(32.dp),
                 icon = Icons.Default.History,
