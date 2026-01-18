@@ -18,11 +18,13 @@ import us.blindmint.codex.ui.main.MainModel
 @Composable
 fun SpeedReadingAccentCharacterOption(
     selected: Boolean = true,
-    onSelectionChange: (Boolean) -> Unit = {}
+    onSelectionChange: (Boolean) -> Unit = {},
+    enabled: Boolean = true
 ) {
     SwitchWithTitle(
         selected = selected,
+        enabled = enabled,
         title = stringResource(id = R.string.speed_reading_accent_character),
-        onClick = { onSelectionChange(!selected) }
+        onClick = { if (enabled) onSelectionChange(!selected) }
     )
 }

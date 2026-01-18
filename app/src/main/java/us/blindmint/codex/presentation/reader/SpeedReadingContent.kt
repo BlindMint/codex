@@ -297,17 +297,25 @@ fun SpeedReadingContent(
                     }
                 } else 0f
 
-                // Measure full word height for bar positioning when distance is 0
-                val fullWordHeight = with(density) {
+                // Measure full word dimensions
+                val fullWordSize = with(density) {
                     textMeasurer.measure(
                         text = currentWord,
                         style = textStyle
-                    ).size.height.toFloat()
+                    ).size
                 }
+                val fullWordWidth = fullWordSize.width.toFloat()
+                val fullWordHeight = fullWordSize.height.toFloat()
 
-                // Calculate offset to position the accent character at the focal point
-                val accentCenterOffset = beforeAccentWidth + (accentCharWidth / 2f)
-                val wordOffsetX = focalPointX - accentCenterOffset
+                // Calculate offset to position the word at the focal point
+                val wordOffsetX = if (centerWord) {
+                    // Center the entire word horizontally
+                    focalPointX - (fullWordWidth / 2f)
+                } else {
+                    // Position so accent character is at focal point
+                    val accentCenterOffset = beforeAccentWidth + (accentCharWidth / 2f)
+                    focalPointX - accentCenterOffset
+                }
 
                 // Frame dimensions
                 val frameHeight = 120.dp
@@ -482,7 +490,15 @@ fun SpeedReadingContent(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = verticalPosition),
+                    .padding(top = verticalPosition)
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                awaitPointerEvent()
+                                // Consume the pointer event so it doesn't bubble to parent tap detector
+                            }
+                        }
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 val separationDp = (12f + (osdSeparation * 36f)).dp // 12dp to 48dp

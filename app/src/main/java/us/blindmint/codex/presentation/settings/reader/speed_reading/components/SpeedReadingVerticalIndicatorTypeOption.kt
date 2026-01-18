@@ -29,7 +29,8 @@ import us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType
 @Composable
 fun SpeedReadingVerticalIndicatorTypeOption(
     selectedType: SpeedReadingVerticalIndicatorType = SpeedReadingVerticalIndicatorType.LINE,
-    onTypeChange: (SpeedReadingVerticalIndicatorType) -> Unit = {}
+    onTypeChange: (SpeedReadingVerticalIndicatorType) -> Unit = {},
+    enabled: Boolean = true
 ) {
     Column(
         modifier = Modifier
@@ -38,7 +39,8 @@ fun SpeedReadingVerticalIndicatorTypeOption(
     ) {
         SettingsSubcategoryTitle(
             title = stringResource(id = R.string.speed_reading_vertical_indicator_type),
-            padding = 0.dp
+            padding = 0.dp,
+            color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -52,7 +54,8 @@ fun SpeedReadingVerticalIndicatorTypeOption(
             ) {
                 RadioButton(
                     selected = selectedType == type,
-                    onClick = { onTypeChange(type) }
+                    onClick = { if (enabled) onTypeChange(type) },
+                    enabled = enabled
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -62,7 +65,7 @@ fun SpeedReadingVerticalIndicatorTypeOption(
                         SpeedReadingVerticalIndicatorType.ARROWS_FILLED -> stringResource(id = R.string.speed_reading_vertical_indicator_type_arrows_filled)
                     },
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
             }
         }

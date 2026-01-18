@@ -820,7 +820,7 @@
     <string name="manual_sentence_pause">Manual sentence pause</string>
     <string name="speed_reading_custom_font">Speed reading custom font</string>
     <string name="speed_reading_font_family">Speed reading font family</string>
-    <string name="speed_reading_word_size">Word size</string>
+    <string name="speed_reading_word_size">Font size</string>
     <string name="speed_reading_accent_opacity">Accent character alpha</string>
     <string name="speed_reading_background_image">Use background image</string>
     <string name="speed_reading_horizontal_bars_thickness">Horizontal bars thickness</string>

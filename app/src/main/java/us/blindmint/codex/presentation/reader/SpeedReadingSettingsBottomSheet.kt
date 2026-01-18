@@ -16,8 +16,11 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -86,6 +89,31 @@ fun SpeedReadingSettingsBottomSheet(
     if (show) {
         val scrollState = rememberLazyListState()
         var selectedTabIndex by remember { mutableIntStateOf(0) }
+
+        // Remember previous values for center word restoration
+        val savedValues = remember { mutableStateOf<Pair<Boolean, Int>?>(null) }
+        val centerWordApplied = remember { mutableStateOf(false) }
+
+        // Handle automatic changes when centerWord changes
+        androidx.compose.runtime.SideEffect {
+            if (centerWord) {
+                if (!centerWordApplied.value) {
+                    savedValues.value = Pair(accentCharacterEnabled, verticalIndicatorsSize)
+                    onAccentCharacterEnabledChange(false)
+                    onVerticalIndicatorsSizeChange(0)
+                    centerWordApplied.value = true
+                }
+            } else {
+                if (centerWordApplied.value) {
+                    savedValues.value?.let { (accent, size) ->
+                        onAccentCharacterEnabledChange(accent)
+                        onVerticalIndicatorsSizeChange(size)
+                    }
+                    savedValues.value = null
+                    centerWordApplied.value = false
+                }
+            }
+        }
 
         ModalBottomSheet(
             hasFixedHeight = true,

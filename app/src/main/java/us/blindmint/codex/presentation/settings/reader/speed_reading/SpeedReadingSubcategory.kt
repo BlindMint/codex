@@ -22,6 +22,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -98,7 +101,7 @@ fun LazyListScope.SpeedReadingSubcategory(
      onHorizontalBarsThicknessChange: (Int) -> Unit = {},
      horizontalBarsLength: Float = 0.9f,
      onHorizontalBarsLengthChange: (Float) -> Unit = {},
-     horizontalBarsDistance: Int = 8,
+     horizontalBarsDistance: Int = 32,
      onHorizontalBarsDistanceChange: (Int) -> Unit = {},
     horizontalBarsColor: Color = Color.Gray,
     onHorizontalBarsColorChange: (Color) -> Unit = {},
@@ -394,6 +397,33 @@ fun LazyListScope.SpeedReadingSubcategory(
                 )
             }
 
+            // OSD Height and Separation sliders (only when OSD is enabled)
+            item {
+                AnimatedVisibility(
+                    visible = osdEnabled,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingOsdHeightOption(
+                        osdHeight = osdHeight,
+                        onOsdHeightChange = onOsdHeightChange
+                    )
+                }
+            }
+
+            item {
+                AnimatedVisibility(
+                    visible = osdEnabled,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingOsdSeparationOption(
+                        osdSeparation = osdSeparation,
+                        onOsdSeparationChange = onOsdSeparationChange
+                    )
+                }
+            }
+
             item {
                 SpeedReadingWordSizeOption(
                     wordSize = wordSize,
@@ -459,14 +489,16 @@ fun LazyListScope.SpeedReadingSubcategory(
             item {
                 SpeedReadingVerticalIndicatorTypeOption(
                     selectedType = verticalIndicatorType,
-                    onTypeChange = onVerticalIndicatorTypeChange
+                    onTypeChange = onVerticalIndicatorTypeChange,
+                    enabled = !centerWord
                 )
             }
 
             item {
                 SpeedReadingVerticalIndicatorsLengthOption(
                     verticalIndicatorsSize = verticalIndicatorsSize,
-                    onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange
+                    onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange,
+                    enabled = !centerWord
                 )
             }
 
@@ -478,7 +510,8 @@ fun LazyListScope.SpeedReadingSubcategory(
             item {
                 SpeedReadingAccentCharacterOption(
                     selected = accentCharacterEnabled,
-                    onSelectionChange = onAccentCharacterEnabledChange
+                    onSelectionChange = onAccentCharacterEnabledChange,
+                    enabled = !centerWord
                 )
             }
 

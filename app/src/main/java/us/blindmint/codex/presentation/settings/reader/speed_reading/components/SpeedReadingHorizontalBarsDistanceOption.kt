@@ -21,12 +21,10 @@ fun SpeedReadingHorizontalBarsDistanceOption(
         title = stringResource(id = R.string.speed_reading_horizontal_bars_distance),
         value = Pair(distance, "dp"),
         fromValue = 0,
-        toValue = 64,
-        steps = 8,
+        toValue = 56,
+        steps = 7,
         onValueChange = { newValue ->
-            // Snap to multiples of 8
-            val snappedValue = ((newValue + 4) / 8) * 8 // Round to nearest multiple of 8
-            onDistanceChange(snappedValue.coerceIn(0, 64))
+            onDistanceChange(newValue)
         }
     )
 }
