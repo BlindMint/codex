@@ -285,6 +285,8 @@ fun ReaderScaffold(
              showPageIndicator = showPageIndicator,
              isLoading = isLoading,
             showMenu = showMenu,
+            currentComicPage = currentComicPage,
+            totalComicPages = totalComicPages,
             menuVisibility = menuVisibility,
             openTranslator = openTranslator,
              onTextSelected = onTextSelected,

@@ -72,6 +72,7 @@ import us.blindmint.codex.ui.reader.ReaderEvent
 fun ComicReaderLayout(
     book: Book,
     currentPage: Int,
+    initialPage: Int = 0,
     onPageChanged: (Int) -> Unit,
     contentPadding: PaddingValues,
     backgroundColor: Color,
@@ -285,15 +286,10 @@ fun ComicReaderLayout(
             Box(modifier = Modifier.fillMaxSize())
         } else if (errorMessage != null) {
             // Error state - could add error UI here
-            Box(modifier = Modifier.fillMaxSize())
-                } else if (totalPages > 0) {
-            // Track pager state changes and notify parent
-            LaunchedEffect(pagerState.currentPage) {
-                onPageChanged(pagerState.currentPage)
-            }
-
+            } else if (totalPages > 0) {
             // When parent requests a specific page, scroll to it
-            LaunchedEffect(currentPage) {
+            // Depends on both currentPage AND totalPages so it fires when either changes
+            LaunchedEffect(currentPage, totalPages) {
                 if (currentPage >= 0 && currentPage < totalPages && totalPages > 0) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(currentPage)
                     if (targetPhysicalPage != pagerState.currentPage) {

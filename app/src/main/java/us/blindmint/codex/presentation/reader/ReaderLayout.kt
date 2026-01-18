@@ -101,6 +101,8 @@ fun ReaderLayout(
     showPageIndicator: Boolean = true,
     isLoading: Boolean,
     showMenu: Boolean,
+    currentComicPage: Int = 0,
+    totalComicPages: Int = 0,
     menuVisibility: (ReaderEvent.OnMenuVisibility) -> Unit,
     openTranslator: (ReaderEvent.OnOpenTranslator) -> Unit,
     onTextSelected: (ReaderEvent.OnTextSelected) -> Unit,
@@ -115,15 +117,12 @@ fun ReaderLayout(
     // Conditional rendering based on whether it's a comic or text book
     if (book.isComic) {
         // Comic reader layout
-        var currentComicPage by mutableIntStateOf(0)
-        var totalComicPages by remember { mutableIntStateOf(0) }
-
         Column(Modifier.fillMaxSize()) {
             ComicReaderLayout(
                 book = book,
+                initialPage = currentComicPage,
                 currentPage = currentComicPage,
                 onPageChanged = { page ->
-                    currentComicPage = page
                     onReaderEvent(ReaderEvent.OnComicPageChanged(page))
                 },
                 contentPadding = contentPadding,
@@ -156,11 +155,9 @@ fun ReaderLayout(
                     )
                 },
                 onTotalPagesLoaded = { pages ->
-                    totalComicPages = pages
                     onReaderEvent(ReaderEvent.OnComicTotalPagesLoaded(pages))
                 },
                 onPageSelected = { page ->
-                    currentComicPage = page
                     onReaderEvent(ReaderEvent.OnComicPageSelected(page))
                 },
                 modifier = Modifier.weight(1f)

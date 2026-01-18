@@ -287,20 +287,42 @@ class ReaderModel @Inject constructor(
                             )
                         }
 
+                        // Save position for text books
                         _state.value.listState.apply {
                             if (
-                                _state.value.isLoading ||
-                                layoutInfo.totalItemsCount < 1 ||
-                                _state.value.text.isEmpty() ||
-                                _state.value.errorMessage != null
-                            ) return@apply
+                                !_state.value.book.isComic &&
+                                !_state.value.isLoading &&
+                                layoutInfo.totalItemsCount >= 1 &&
+                                _state.value.text.isNotEmpty() &&
+                                _state.value.errorMessage == null
+                            ) {
+                                _state.update {
+                                    it.copy(
+                                        book = it.book.copy(
+                                            progress = calculateProgress(),
+                                            scrollIndex = firstVisibleItemIndex,
+                                            scrollOffset = firstVisibleItemScrollOffset
+                                        )
+                                    )
+                                }
 
+                                updateBook.execute(_state.value.book)
+
+                                LibraryScreen.refreshListChannel.trySend(0)
+                                HistoryScreen.refreshListChannel.trySend(0)
+                            }
+                        }
+
+                        // Save position for comics
+                        if (_state.value.book.isComic && !_state.value.isLoading) {
                             _state.update {
                                 it.copy(
                                     book = it.book.copy(
-                                        progress = calculateProgress(),
-                                        scrollIndex = firstVisibleItemIndex,
-                                        scrollOffset = firstVisibleItemScrollOffset
+                                        currentPage = it.currentComicPage,
+                                        lastPageRead = it.currentComicPage,
+                                        progress = if (it.totalComicPages > 0) {
+                                            (it.currentComicPage + 1).toFloat() / it.totalComicPages
+                                        } else 0f
                                     )
                                 )
                             }
@@ -834,10 +856,23 @@ class ReaderModel @Inject constructor(
                 }
 
                 is ReaderEvent.OnComicPageChanged -> {
-                    _state.update {
-                        it.copy(
-                            currentComicPage = event.currentPage
-                        )
+                    launch(Dispatchers.IO) {
+                        _state.update {
+                            it.copy(
+                                currentComicPage = event.currentPage,
+                                book = it.book.copy(
+                                    currentPage = event.currentPage,
+                                    lastPageRead = event.currentPage,
+                                    progress = if (it.totalComicPages > 0) {
+                                        (event.currentPage + 1).toFloat() / it.totalComicPages
+                                    } else 0f
+                                )
+                            )
+                        }
+
+                        updateBook.execute(_state.value.book)
+                        LibraryScreen.refreshListChannel.trySend(300)
+                        HistoryScreen.refreshListChannel.trySend(300)
                     }
                 }
 
@@ -873,7 +908,13 @@ class ReaderModel @Inject constructor(
             eventJob = SupervisorJob()
 
             _state.update {
-                ReaderState(book = book)
+                ReaderState(
+                    book = book,
+                    currentComicPage = if (book.isComic) {
+                        // Restore last read page for comics
+                        book.lastPageRead.coerceIn(0, book.pageCount ?: 0)
+                    } else 0
+                )
             }
 
             // Skip text loading for comics - they use image-based rendering
