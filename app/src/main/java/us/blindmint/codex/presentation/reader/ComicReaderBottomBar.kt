@@ -21,6 +21,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -80,14 +81,17 @@ fun ComicReaderBottomBar(
             }
 
             Slider(
-                value = sliderValue,
+                value = if (isRTL) 1f - sliderValue else sliderValue,
                 onValueChange = { newValue ->
-                    val adjustedValue = if (isRTL) 1f - newValue else newValue
+                    val adjustedValue = if (isRTL) newValue else 1f - newValue
                     val newPage = (adjustedValue * (totalPages - 1)).toInt().coerceIn(0, totalPages - 1)
                     onPageSelected(newPage)
                 },
                 modifier = Modifier
-                    .weight(1f),
+                    .weight(1f)
+                    .graphicsLayer {
+                        if (isRTL) scaleX = -1f
+                    },
                 colors = SliderDefaults.colors(
                     inactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(0.15f),
                     activeTrackColor = MaterialTheme.colorScheme.primary,
