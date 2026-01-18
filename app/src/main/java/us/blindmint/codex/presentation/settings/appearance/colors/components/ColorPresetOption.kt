@@ -78,7 +78,7 @@ import us.blindmint.codex.domain.util.Selected
 import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
 import us.blindmint.codex.presentation.core.components.common.IconButton
 import us.blindmint.codex.presentation.core.components.common.StyledText
-import us.blindmint.codex.presentation.core.components.settings.ColorPickerWithTitle
+import us.blindmint.codex.presentation.core.components.settings.ExpandableColorPicker
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 import us.blindmint.codex.ui.settings.SettingsEvent
 import us.blindmint.codex.ui.settings.SettingsModel
@@ -253,24 +253,12 @@ fun ColorPresetOption() {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                  ColorPickerWithTitle(
-                      value = selectedPreset.backgroundColor,
-                      presetId = selectedPreset.id,
+                  ExpandableColorPicker(
                       title = stringResource(id = R.string.background_color_option),
-                      horizontalPadding = 0.dp,
+                      value = selectedPreset.backgroundColor,
+                      presetId = "${selectedPreset.id}_background",
+                      initialColor = selectedPreset.backgroundColor,
                       isLocked = selectedPreset.isLocked,
-                      showRgbInputs = true,
-                      opacity = selectedPreset.backgroundColor.alpha,
-                      onOpacityChange = { alpha ->
-                         val updatedColor = selectedPreset.backgroundColor.copy(alpha = alpha)
-                         settingsModel.onEvent(
-                             SettingsEvent.OnUpdateColorPresetColor(
-                                 id = selectedPreset.id,
-                                 backgroundColor = updatedColor,
-                                 fontColor = null
-                             )
-                         )
-                      },
                       onValueChange = {
                          settingsModel.onEvent(
                              SettingsEvent.OnUpdateColorPresetColor(
@@ -286,24 +274,12 @@ fun ColorPresetOption() {
                  HorizontalDivider()
                  Spacer(modifier = Modifier.height(16.dp))
 
-                    ColorPickerWithTitle(
-                        value = selectedPreset.fontColor,
-                        presetId = selectedPreset.id,
+                    ExpandableColorPicker(
                         title = stringResource(id = R.string.font_color_option),
-                        horizontalPadding = 0.dp,
+                        value = selectedPreset.fontColor,
+                        presetId = "${selectedPreset.id}_font",
+                        initialColor = selectedPreset.fontColor,
                         isLocked = selectedPreset.isLocked,
-                        showRgbInputs = true,
-                        opacity = selectedPreset.fontColor.alpha,
-                        onOpacityChange = { alpha ->
-                           val updatedColor = selectedPreset.fontColor.copy(alpha = alpha)
-                           settingsModel.onEvent(
-                               SettingsEvent.OnUpdateColorPresetColor(
-                                   id = selectedPreset.id,
-                                   backgroundColor = null,
-                                   fontColor = updatedColor
-                               )
-                           )
-                       },
                         onValueChange = {
                          settingsModel.onEvent(
                              SettingsEvent.OnUpdateColorPresetColor(

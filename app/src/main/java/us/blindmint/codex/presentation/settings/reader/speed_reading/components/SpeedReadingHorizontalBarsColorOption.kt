@@ -12,7 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.R
-import us.blindmint.codex.presentation.core.components.settings.ColorPickerWithTitle
+import us.blindmint.codex.presentation.core.components.settings.ExpandableColorPicker
 import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
 
@@ -23,13 +23,16 @@ fun SpeedReadingHorizontalBarsColorOption(
     onColorChange: (Color) -> Unit = {},
     onOpacityChange: (Float) -> Unit = {}
 ) {
-    ColorPickerWithTitle(
+    val combinedColor = color.copy(alpha = opacity)
+
+    ExpandableColorPicker(
         title = stringResource(id = R.string.speed_reading_horizontal_bars_color),
-        value = color,
-        presetId = 0, // TODO: Use proper preset ID for speed reading
-        showRgbInputs = true,
-        opacity = opacity,
-        onOpacityChange = onOpacityChange,
-        onValueChange = onColorChange
+        value = combinedColor,
+        presetId = "speed_reading_bars",
+        initialColor = combinedColor,
+        onValueChange = { newColor ->
+            onColorChange(newColor.copy(alpha = 1.0f)) // Pass RGB without alpha
+            onOpacityChange(newColor.alpha) // Pass alpha separately
+        }
     )
 }
