@@ -201,7 +201,7 @@ fun SearchHighlightColorOption() {
 
             // RGBA values text
             Text(
-                text = "${(color.red * 255).toInt()} | ${(color.green * 255).toInt()} | ${(color.blue * 255).toInt()} | ${(color.alpha * 100).toInt()}",
+                text = "RGBA( ${(color.red * 255).toInt()} | ${(color.green * 255).toInt()} | ${(color.blue * 255).toInt()} | ${(color.alpha * 100).toInt()} )",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
