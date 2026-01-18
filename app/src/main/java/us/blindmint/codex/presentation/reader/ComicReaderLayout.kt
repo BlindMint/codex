@@ -307,6 +307,19 @@ fun ComicReaderLayout(
                 }
             }
 
+            // When reading mode changes, scroll the appropriate state to currentPage
+            // This ensures smooth transitions when switching between Paged (LTR/RTL) and Webtoon (Vertical)
+            LaunchedEffect(comicReaderMode) {
+                if (currentPage >= 0 && currentPage < totalPages && totalPages > 0) {
+                    val targetPhysicalPage = mapLogicalToPhysicalPage(currentPage)
+                    if (comicReaderMode == "PAGED") {
+                        pagerState.scrollToPage(targetPhysicalPage)
+                    } else if (comicReaderMode == "WEBTOON") {
+                        lazyListState.scrollToItem(targetPhysicalPage)
+                    }
+                }
+            }
+
             Box(modifier = Modifier.fillMaxSize()) {
                 if (comicReaderMode == "PAGED") {
                     // Paged mode - horizontal pager
