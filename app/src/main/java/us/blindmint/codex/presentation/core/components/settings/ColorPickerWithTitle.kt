@@ -131,7 +131,7 @@ fun ColorPickerWithTitle(
     ) {
         // HEX Color Input - inline with title
         Row(
-            verticalAlignment = Alignment.Bottom,
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
