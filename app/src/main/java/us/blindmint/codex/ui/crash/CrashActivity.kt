@@ -29,7 +29,7 @@ class CrashActivity : AppCompatActivity() {
 
         setContent {
             CodexTheme(
-                theme = Theme.DYNAMIC,
+                theme = Theme.MERCURY,
                 isDark = isSystemInDarkTheme(),
                 isPureDark = false,
                 themeContrast = ThemeContrast.STANDARD

@@ -502,6 +502,17 @@
     <string name="yellow_theme">Venus</string>
     <string name="yellow2_theme">Makemake</string>
     <string name="aqua_theme">Uranus</string>
+    <string name="europa_theme">Europa</string>
+    <string name="titan_theme">Titan</string>
+    <string name="triton_theme">Triton</string>
+    <string name="catppuccin_theme">Catppuccin</string>
+    <string name="gruvbox_theme">Gruvbox</string>
+    <string name="nord_theme">Nord</string>
+    <string name="dracula_theme">Dracula</string>
+    <string name="tokyo_night_theme">Tokyo Night</string>
+    <string name="hackerman_theme">Hackerman</string>
+    <string name="rose_pine_theme">Rose Pine</string>
+    <string name="kanagawa_theme">Kanagawa</string>
 
     <!-- Toast messages -->
     <string name="press_again_toast">Press back again to exit</string>

@@ -30,6 +30,17 @@ import us.blindmint.codex.ui.theme.color.callistoTheme
 import us.blindmint.codex.ui.theme.color.marsTheme
 import us.blindmint.codex.ui.theme.color.makemakeTheme
 import us.blindmint.codex.ui.theme.color.venusTheme
+import us.blindmint.codex.ui.theme.color.europaTheme
+import us.blindmint.codex.ui.theme.color.titanTheme
+import us.blindmint.codex.ui.theme.color.tritonTheme
+import us.blindmint.codex.ui.theme.color.catppuccinTheme
+import us.blindmint.codex.ui.theme.color.gruvboxTheme
+import us.blindmint.codex.ui.theme.color.nordTheme
+import us.blindmint.codex.ui.theme.color.draculaTheme
+import us.blindmint.codex.ui.theme.color.tokyoNightTheme
+import us.blindmint.codex.ui.theme.color.hackermanTheme
+import us.blindmint.codex.ui.theme.color.rosePineTheme
+import us.blindmint.codex.ui.theme.color.kanagawaTheme
 
 
 @Immutable
@@ -37,29 +48,37 @@ enum class Theme(
     val hasThemeContrast: Boolean,
     @StringRes val title: Int
 ) {
-    DYNAMIC(hasThemeContrast = false, title = R.string.dynamic_theme),
-    BLUE(hasThemeContrast = true, title = R.string.blue_theme),
-    GREEN(hasThemeContrast = true, title = R.string.green_theme),
-    GREEN2(hasThemeContrast = false, title = R.string.green2_theme),
-    GREEN_GRAY(hasThemeContrast = false, title = R.string.green_gray_theme),
-    MARSH(hasThemeContrast = true, title = R.string.marsh_theme),
-    RED(hasThemeContrast = true, title = R.string.red_theme),
-    RED_GRAY(hasThemeContrast = false, title = R.string.red_gray_theme),
-    PURPLE(hasThemeContrast = true, title = R.string.purple_theme),
-    PURPLE_GRAY(hasThemeContrast = false, title = R.string.purple_gray_theme),
-    LAVENDER(hasThemeContrast = true, title = R.string.lavender_theme),
-    PINK(hasThemeContrast = true, title = R.string.pink_theme),
-    PINK2(hasThemeContrast = false, title = R.string.pink2_theme),
-    YELLOW(hasThemeContrast = true, title = R.string.yellow_theme),
-    YELLOW2(hasThemeContrast = false, title = R.string.yellow2_theme),
-    AQUA(hasThemeContrast = true, title = R.string.aqua_theme);
+    CATPPUCCIN(hasThemeContrast = false, title = R.string.catppuccin_theme),
+    MERCURY(hasThemeContrast = false, title = R.string.dynamic_theme),
+    NEPTUNE(hasThemeContrast = true, title = R.string.blue_theme),
+    EARTH(hasThemeContrast = true, title = R.string.green_theme),
+    IO(hasThemeContrast = false, title = R.string.green2_theme),
+    ENCELADUS(hasThemeContrast = false, title = R.string.green_gray_theme),
+    PLUTO(hasThemeContrast = true, title = R.string.marsh_theme),
+    MARS(hasThemeContrast = true, title = R.string.red_theme),
+    CALLISTO(hasThemeContrast = false, title = R.string.red_gray_theme),
+    JUPITER(hasThemeContrast = true, title = R.string.purple_theme),
+    CERES(hasThemeContrast = false, title = R.string.purple_gray_theme),
+    ERIS(hasThemeContrast = true, title = R.string.lavender_theme),
+    SATURN(hasThemeContrast = true, title = R.string.pink_theme),
+    GANYMEDE(hasThemeContrast = false, title = R.string.pink2_theme),
+    VENUS(hasThemeContrast = true, title = R.string.yellow_theme),
+    MAKEMAKE(hasThemeContrast = false, title = R.string.yellow2_theme),
+    URANUS(hasThemeContrast = true, title = R.string.aqua_theme),
+    TRITON(hasThemeContrast = false, title = R.string.triton_theme),
+    EUROPA(hasThemeContrast = false, title = R.string.europa_theme),
+    TITAN(hasThemeContrast = false, title = R.string.titan_theme),
+    GRUVBOX(hasThemeContrast = false, title = R.string.gruvbox_theme),
+    NORD(hasThemeContrast = false, title = R.string.nord_theme),
+    DRACULA(hasThemeContrast = false, title = R.string.dracula_theme),
+    TOKYO_NIGHT(hasThemeContrast = false, title = R.string.tokyo_night_theme),
+    HACKERMAN(hasThemeContrast = false, title = R.string.hackerman_theme),
+    ROSE_PINE(hasThemeContrast = false, title = R.string.rose_pine_theme),
+    KANAGAWA(hasThemeContrast = false, title = R.string.kanagawa_theme);
 
     companion object {
         fun entries(): List<Theme> {
-            return when {
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> Theme.entries
-                else -> Theme.entries.dropWhile { it == DYNAMIC }
-            }
+            return Theme.entries
         }
     }
 }
@@ -86,84 +105,139 @@ fun colorScheme(
     themeContrast: ThemeContrast
 ): ColorScheme {
     val colorScheme = when (theme) {
-        Theme.DYNAMIC -> {
+        Theme.MERCURY -> {
             /* Mercury Theme */
             mercuryTheme(isDark = darkTheme)
         }
 
-        Theme.BLUE -> {
+        Theme.NEPTUNE -> {
             /* Neptune Theme */
             neptuneTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
-        Theme.PURPLE -> {
+        Theme.JUPITER -> {
             /* Jupiter Theme */
             jupiterTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
-        Theme.PURPLE_GRAY -> {
+        Theme.CERES -> {
             /* Ceres Theme */
             ceresTheme(isDark = darkTheme)
         }
 
-        Theme.GREEN -> {
+        Theme.EARTH -> {
             /* Earth Theme */
             earthTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
-        Theme.GREEN2 -> {
+        Theme.IO -> {
             /* Io Theme */
             ioTheme(isDark = darkTheme)
         }
 
-        Theme.GREEN_GRAY -> {
+        Theme.ENCELADUS -> {
             /* Enceladus Theme */
             enceladusTheme(isDark = darkTheme)
         }
 
-        Theme.MARSH -> {
+        Theme.PLUTO -> {
             /* Pluto Theme */
             plutoTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
-        Theme.PINK -> {
+        Theme.SATURN -> {
             /* Saturn Theme */
             saturnTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
-        Theme.PINK2 -> {
+        Theme.GANYMEDE -> {
             /* Ganymede Theme */
             ganymedeTheme(isDark = darkTheme)
         }
 
-        Theme.LAVENDER -> {
+        Theme.ERIS -> {
             /* Eris Theme */
             erisTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
-        Theme.YELLOW -> {
+        Theme.VENUS -> {
             /* Venus Theme */
             venusTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
-        Theme.YELLOW2 -> {
+        Theme.MAKEMAKE -> {
             /* Makemake Theme */
             makemakeTheme(isDark = darkTheme)
         }
 
-        Theme.RED -> {
+        Theme.MARS -> {
             /* Mars Theme */
             marsTheme(isDark = darkTheme, themeContrast = themeContrast)
         }
 
-        Theme.RED_GRAY -> {
+        Theme.CALLISTO -> {
             /* Callisto Theme */
             callistoTheme(isDark = darkTheme)
         }
 
-        Theme.AQUA -> {
+        Theme.URANUS -> {
             /* Uranus Theme */
             uranusTheme(isDark = darkTheme, themeContrast = themeContrast)
+        }
+
+        Theme.EUROPA -> {
+            /* Europa Theme */
+            europaTheme(isDark = darkTheme)
+        }
+
+        Theme.TITAN -> {
+            /* Titan Theme */
+            titanTheme(isDark = darkTheme)
+        }
+
+        Theme.TRITON -> {
+            /* Triton Theme */
+            tritonTheme(isDark = darkTheme)
+        }
+
+        Theme.CATPPUCCIN -> {
+            /* Catppuccin Theme */
+            catppuccinTheme(isDark = darkTheme)
+        }
+
+        Theme.GRUVBOX -> {
+            /* Gruvbox Theme */
+            gruvboxTheme(isDark = darkTheme)
+        }
+
+        Theme.NORD -> {
+            /* Nord Theme */
+            nordTheme(isDark = darkTheme)
+        }
+
+        Theme.DRACULA -> {
+            /* Dracula Theme */
+            draculaTheme(isDark = darkTheme)
+        }
+
+        Theme.TOKYO_NIGHT -> {
+            /* Tokyo Night Theme */
+            tokyoNightTheme(isDark = darkTheme)
+        }
+
+        Theme.HACKERMAN -> {
+            /* Hackerman Theme */
+            hackermanTheme(isDark = darkTheme)
+        }
+
+        Theme.ROSE_PINE -> {
+            /* Rose Pine Theme */
+            rosePineTheme(isDark = darkTheme)
+        }
+
+        Theme.KANAGAWA -> {
+            /* Kanagawa Theme */
+            kanagawaTheme(isDark = darkTheme)
         }
     }
 
