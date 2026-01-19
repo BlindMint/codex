@@ -150,25 +150,85 @@
                 <data android:mimeType="*/*" />
             </intent-filter>
 
-            <!-- FODT files (Flat OpenDocument Text) -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="file" />
-                <data android:scheme="content" />
-                <data android:mimeType="application/vnd.oasis.opendocument.flat.text" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="file" />
-                <data android:scheme="content" />
-                <data android:host="*" />
-                <data android:pathPattern=".*\\.fodt" />
-                <data android:mimeType="*/*" />
-            </intent-filter>
+             <!-- FODT files (Flat OpenDocument Text) -->
+             <intent-filter>
+                 <action android:name="android.intent.action.VIEW" />
+                 <category android:name="android.intent.category.DEFAULT" />
+                 <category android:name="android.intent.category.BROWSABLE" />
+                 <data android:scheme="file" />
+                 <data android:scheme="content" />
+                 <data android:mimeType="application/vnd.oasis.opendocument.flat.text" />
+             </intent-filter>
+             <intent-filter>
+                 <action android:name="android.intent.action.VIEW" />
+                 <category android:name="android.intent.category.DEFAULT" />
+                 <category android:name="android.intent.category.BROWSABLE" />
+                 <data android:scheme="file" />
+                 <data android:scheme="content" />
+                 <data android:host="*" />
+                 <data android:pathPattern=".*\\.fodt" />
+                 <data android:mimeType="*/*" />
+             </intent-filter>
+
+             <!-- CBR files (Comic Book RAR) -->
+             <intent-filter>
+                 <action android:name="android.intent.action.VIEW" />
+                 <category android:name="android.intent.category.DEFAULT" />
+                 <category android:name="android.intent.category.BROWSABLE" />
+                 <data android:scheme="file" />
+                 <data android:scheme="content" />
+                 <data android:mimeType="application/x-cbr" />
+             </intent-filter>
+             <intent-filter>
+                 <action android:name="android.intent.action.VIEW" />
+                 <category android:name="android.intent.category.DEFAULT" />
+                 <category android:name="android.intent.category.BROWSABLE" />
+                 <data android:scheme="file" />
+                 <data android:scheme="content" />
+                 <data android:host="*" />
+                 <data android:pathPattern=".*\\.cbr" />
+                 <data android:mimeType="*/*" />
+             </intent-filter>
+
+             <!-- CBZ files (Comic Book ZIP) -->
+             <intent-filter>
+                 <action android:name="android.intent.action.VIEW" />
+                 <category android:name="android.intent.category.DEFAULT" />
+                 <category android:name="android.intent.category.BROWSABLE" />
+                 <data android:scheme="file" />
+                 <data android:scheme="content" />
+                 <data android:mimeType="application/x-cbz" />
+             </intent-filter>
+             <intent-filter>
+                 <action android:name="android.intent.action.VIEW" />
+                 <category android:name="android.intent.category.DEFAULT" />
+                 <category android:name="android.intent.category.BROWSABLE" />
+                 <data android:scheme="file" />
+                 <data android:scheme="content" />
+                 <data android:host="*" />
+                 <data android:pathPattern=".*\\.cbz" />
+                 <data android:mimeType="*/*" />
+             </intent-filter>
+
+             <!-- CB7 files (Comic Book 7z) -->
+             <intent-filter>
+                 <action android:name="android.intent.action.VIEW" />
+                 <category android:name="android.intent.category.DEFAULT" />
+                 <category android:name="android.intent.category.BROWSABLE" />
+                 <data android:scheme="file" />
+                 <data android:scheme="content" />
+                 <data android:mimeType="application/x-cb7" />
+             </intent-filter>
+             <intent-filter>
+                 <action android:name="android.intent.action.VIEW" />
+                 <category android:name="android.intent.category.DEFAULT" />
+                 <category android:name="android.intent.category.BROWSABLE" />
+                 <data android:scheme="file" />
+                 <data android:scheme="content" />
+                 <data android:host="*" />
+                 <data android:pathPattern=".*\\.cb7" />
+                 <data android:mimeType="*/*" />
+             </intent-filter>
         </activity>
 
         <!-- Crash activity -->
