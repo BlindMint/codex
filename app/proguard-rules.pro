@@ -36,6 +36,13 @@
 -dontwarn org.slf4j.LoggerFactory
 -dontwarn org.xmlpull.v1.XmlPullParserFactory
 
+# Simple XML library rules
+-keepattributes *Annotation*,Signature,Exceptions,InnerClasses
+-keep class org.simpleframework.** { *; }
+-keepclassmembers class org.simpleframework.** { *; }
+-dontwarn org.simpleframework.xml.stream.**
+-keep class org.simpleframework.xml.stream.** { *; }
+
 # Fixes issue with displaying .xml files, but may produce reproducibility issues
 #-keep class org.xmlpull.** { *; }
 #-keepclassmembers class org.xmlpull.** { *; }
