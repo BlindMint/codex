@@ -187,6 +187,9 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
     val speedReadingHorizontalBarsColor = remember { mutableStateOf(Color.Gray) }
     val speedReadingHorizontalBarsOpacity = remember { mutableFloatStateOf(1.0f) }
     val speedReadingFocalPointPosition = remember { mutableFloatStateOf(0.38f) }
+    val speedReadingOsdHeight = remember { mutableFloatStateOf(0.2f) }
+    val speedReadingOsdSeparation = remember { mutableFloatStateOf(0.5f) }
+    val speedReadingCenterWord = remember { mutableStateOf(false) }
     val speedReadingCustomFontEnabled = remember { mutableStateOf(false) }
     val speedReadingSelectedFontFamily = remember { mutableStateOf("default") }
 
@@ -750,6 +753,12 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             onHorizontalBarsOpacityChange = { speedReadingHorizontalBarsOpacity.floatValue = it },
             focalPointPosition = speedReadingFocalPointPosition.floatValue,
             onFocalPointPositionChange = { speedReadingFocalPointPosition.floatValue = it },
+            osdHeight = speedReadingOsdHeight.floatValue,
+            onOsdHeightChange = { speedReadingOsdHeight.floatValue = it },
+            osdSeparation = speedReadingOsdSeparation.floatValue,
+            onOsdSeparationChange = { speedReadingOsdSeparation.floatValue = it },
+            centerWord = speedReadingCenterWord.value,
+            onCenterWordChange = { speedReadingCenterWord.value = it },
             verticalIndicatorType = speedReadingVerticalIndicatorType.value,
             onVerticalIndicatorTypeChange = { speedReadingVerticalIndicatorType.value = it },
             customFontEnabled = speedReadingCustomFontEnabled.value,
@@ -762,9 +771,11 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
         if (state.value.speedReadingMode) {
             SpeedReadingScaffold(
                 text = state.value.text,
+                book = state.value.book,
                 bookTitle = state.value.book.title,
                 chapterTitle = state.value.currentChapter?.title,
                 currentProgress = state.value.book.progress,
+                totalProgress = state.value.book.progress,
                 backgroundColor = settingsState.value.selectedColorPreset.backgroundColor,
                 fontColor = settingsState.value.selectedColorPreset.fontColor,
                 accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
@@ -791,12 +802,22 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 horizontalBarsColor = speedReadingHorizontalBarsColor.value,
                 horizontalBarsOpacity = speedReadingHorizontalBarsOpacity.floatValue,
                 focalPointPosition = speedReadingFocalPointPosition.floatValue,
+                osdHeight = speedReadingOsdHeight.floatValue,
+                osdSeparation = speedReadingOsdSeparation.floatValue,
+                centerWord = speedReadingCenterWord.value,
                 progress = progress,
                 bottomBarPadding = bottomBarPadding,
                 showWpmIndicator = true,
                 wpm = speedReadingWpm.intValue,
                 onWpmChange = { speedReadingWpm.intValue = it },
                 osdEnabled = speedReadingOsdEnabled.value,
+                onChangeProgress = { progress ->
+                    screenModel.onEvent(ReaderEvent.OnChangeProgress(
+                        progress = progress,
+                        firstVisibleItemIndex = 0,
+                        firstVisibleItemOffset = 0
+                    ))
+                },
                 onExitSpeedReading = {
                     screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
                     // Reset menu visibility to normal state when exiting speed reading
@@ -808,6 +829,10 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                             activity = activity
                         )
                     )
+
+                },
+                onNavigateWord = { direction ->
+                    // For now, just log the navigation. Progress update will happen through normal mechanisms
                 },
                 onShowSpeedReadingSettings = {
                     screenModel.onEvent(ReaderEvent.OnShowSpeedReadingSettings)

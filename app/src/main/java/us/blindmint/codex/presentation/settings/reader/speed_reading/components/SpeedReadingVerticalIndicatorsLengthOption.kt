@@ -23,7 +23,8 @@ import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTi
 @Composable
 fun SpeedReadingVerticalIndicatorsLengthOption(
     verticalIndicatorsSize: Int = 8,
-    onVerticalIndicatorsSizeChange: (Int) -> Unit = {}
+    onVerticalIndicatorsSizeChange: (Int) -> Unit = {},
+    enabled: Boolean = true
 ) {
     Column(
         modifier = Modifier
@@ -32,17 +33,19 @@ fun SpeedReadingVerticalIndicatorsLengthOption(
     ) {
         SettingsSubcategoryTitle(
             title = stringResource(id = R.string.speed_reading_vertical_indicators_length),
-            padding = 0.dp
+            padding = 0.dp,
+            color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Slider(
             value = verticalIndicatorsSize.toFloat(),
             onValueChange = { newValue ->
-                onVerticalIndicatorsSizeChange(newValue.toInt())
+                if (enabled) onVerticalIndicatorsSizeChange(newValue.toInt())
             },
             valueRange = 0f..40f,
             steps = 4, // 0, 8, 16, 24, 32, 40 (5 steps = 6 positions)
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = enabled
         )
     }
 }
