@@ -398,6 +398,25 @@ class LibraryModel @Inject constructor(
                 }
             }
         }
+
+            is LibraryEvent.OnSelectAllBooks -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val allSelected = _state.value.books.all { it.selected }
+                    val newSelectedState = !allSelected
+
+                    val editedList = _state.value.books.map { book ->
+                        book.copy(selected = newSelectedState)
+                    }
+
+                    _state.update {
+                        it.copy(
+                            books = editedList,
+                            selectedItemsCount = if (newSelectedState) editedList.size else 0,
+                            hasSelectedItems = newSelectedState
+                        )
+                    }
+                }
+            }
         }
     }
 

@@ -22,7 +22,9 @@ import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.MoveUp
 import androidx.compose.material.icons.outlined.RestoreFromTrash
 import androidx.compose.material.icons.outlined.StarBorder
@@ -74,7 +76,9 @@ fun LibraryTopBar(
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
     sortMenuVisibility: (LibraryEvent) -> Unit,
     allSelectedBooksAreFavorites: Boolean,
-    toggleSelectedBooksFavorite: () -> Unit
+    toggleSelectedBooksFavorite: () -> Unit,
+    allBooksSelected: Boolean,
+    selectAllBooks: (LibraryEvent.OnSelectAllBooks) -> Unit
 ) {
     val animatedItemCountBackgroundColor = animateColorAsState(
         if (hasSelectedItems) MaterialTheme.colorScheme.surfaceContainerHighest
@@ -190,6 +194,14 @@ fun LibraryTopBar(
                 },
                 contentActions = {
                     IconButton(
+                        icon = Icons.Outlined.Checklist,
+                        contentDescription = R.string.select_all_files_content_desc,
+                        enabled = !isLoading && !isRefreshing,
+                        disableOnClick = false,
+                    ) {
+                        selectAllBooks(LibraryEvent.OnSelectAllBooks)
+                    }
+                    IconButton(
                         icon = if (allSelectedBooksAreFavorites) Icons.Filled.Star else Icons.Outlined.StarBorder,
                         contentDescription = if (allSelectedBooksAreFavorites) R.string.remove_from_favorites else R.string.add_to_favorites,
                         enabled = !isLoading && !isRefreshing,
@@ -198,20 +210,20 @@ fun LibraryTopBar(
                         toggleSelectedBooksFavorite()
                     }
                     IconButton(
+                        icon = Icons.Outlined.History,
+                        contentDescription = R.string.reset_reading_progress,
+                        enabled = !isLoading && !isRefreshing,
+                        disableOnClick = false
+                    ) {
+                        showClearProgressHistoryDialog(LibraryEvent.OnShowClearProgressHistoryDialog)
+                    }
+                    IconButton(
                         icon = Icons.Outlined.Delete,
                         contentDescription = R.string.delete_books_content_desc,
                         enabled = !isLoading && !isRefreshing,
                         disableOnClick = false
                     ) {
                         showDeleteDialog(LibraryEvent.OnShowDeleteDialog)
-                    }
-                    IconButton(
-                        icon = Icons.Outlined.RestoreFromTrash,
-                        contentDescription = R.string.clear_progress_history_content_desc,
-                        enabled = !isLoading && !isRefreshing,
-                        disableOnClick = false
-                    ) {
-                        showClearProgressHistoryDialog(LibraryEvent.OnShowClearProgressHistoryDialog)
                     }
                 }
             ),

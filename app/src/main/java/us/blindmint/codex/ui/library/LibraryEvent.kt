@@ -69,4 +69,6 @@ sealed class LibraryEvent {
     data class OnUpdateFilterState(val filterState: FilterState) : LibraryEvent()
 
     data object OnToggleSelectedBooksFavorite : LibraryEvent()
+
+    data object OnSelectAllBooks : LibraryEvent()
 }

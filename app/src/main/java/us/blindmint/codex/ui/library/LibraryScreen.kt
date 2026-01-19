@@ -213,6 +213,8 @@ object LibraryScreen : Screen, Parcelable {
             sortMenuVisibility = screenModel::onEvent,
             allSelectedBooksAreFavorites = screenModel.allSelectedBooksAreFavorites,
             toggleSelectedBooksFavorite = screenModel::toggleSelectedBooksFavorite,
+            allBooksSelected = state.value.selectedItemsCount == state.value.books.count() && state.value.hasSelectedItems,
+            selectAllBooks = screenModel::onEvent,
             navigateToBrowse = {
                 navigator.push(BrowseScreen)
             },
