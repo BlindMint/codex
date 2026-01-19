@@ -6,25 +6,21 @@
 
 package us.blindmint.codex.presentation.settings.reader.speed_reading.components
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.core.components.settings.SliderWithTitle
-import kotlin.math.roundToInt
 
 @Composable
-fun SpeedReadingHorizontalBarsDistanceOption(
-    distance: Int = 8,
-    onDistanceChange: (Int) -> Unit = {}
+fun SpeedReadingOsdHeightOption(
+    osdHeight: Float,
+    onOsdHeightChange: (Float) -> Unit
 ) {
     SliderWithTitle(
-        title = stringResource(id = R.string.speed_reading_horizontal_bars_distance),
-        value = Pair(distance, "dp"),
-        fromValue = 0,
-        toValue = 56,
-        steps = 7,
-        onValueChange = { newValue ->
-            onDistanceChange(newValue)
-        }
+        title = stringResource(id = R.string.speed_reading_osd_height),
+        value = Pair(osdHeight, "%"),
+        toValue = 100,
+        onValueChange = onOsdHeightChange
     )
 }

@@ -12,15 +12,28 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.Slider
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Pause
@@ -28,12 +41,14 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType
@@ -60,15 +75,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.layout.onSizeChanged
 import kotlinx.coroutines.delay
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpeedReadingContent(
     text: List<ReaderText>,
     currentProgress: Float,
+    totalProgress: Float, // Overall book progress
     backgroundColor: Color,
     fontColor: Color,
     fontFamily: FontFamily,
@@ -91,9 +111,19 @@ fun SpeedReadingContent(
     isPlaying: Boolean,
     onWpmChange: (Int) -> Unit,
     onPlayPause: () -> Unit,
+    onNavigateWord: (Int) -> Unit = {}, // -1 for back, +1 for forward
+    onToggleMenu: () -> Unit = {},
+    navigateWord: (Int) -> Unit = {},
+    onRegisterNavigationCallback: ((Int) -> Unit) -> Unit = {},
     alwaysShowPlayPause: Boolean,
     showWpmIndicator: Boolean = true,
     osdEnabled: Boolean = true,
+    osdHeight: Float = 0.5f, // 0.0 = top, 1.0 = bottom
+    osdSeparation: Float = 0.5f, // 0.0 = close, 1.0 = far
+    centerWord: Boolean = false,
+    wordPickerActive: Boolean = false,
+    initialWordIndex: Int = 0,
+    onShowWordPicker: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     // Extract words from text starting from current position
@@ -106,15 +136,51 @@ fun SpeedReadingContent(
     }
 
     var currentWordIndex by remember { mutableIntStateOf(0) }
+    var lastNavigationDirection by remember { mutableIntStateOf(0) }
+    var showQuickWpmMenu by remember { mutableStateOf(false) }
     var showCountdown by remember { mutableStateOf(false) }
     var countdownValue by remember { mutableIntStateOf(3) }
     val wordFontSize = wordSize.sp
     val density = LocalDensity.current
     val textMeasurer = rememberTextMeasurer()
 
-    // Reset word index when words change
-    LaunchedEffect(words) {
-        currentWordIndex = 0
+    // Reset word index when words change, using initialWordIndex if provided
+    LaunchedEffect(words, initialWordIndex) {
+        currentWordIndex = initialWordIndex.coerceIn(0, (words.size - 1).coerceAtLeast(0))
+        lastNavigationDirection = 0
+    }
+
+    // Handle word navigation
+    val handleNavigateWord: (Int) -> Unit = { direction ->
+        val newIndex = (currentWordIndex + direction).coerceIn(0, words.size - 1)
+        if (newIndex != currentWordIndex) {
+            currentWordIndex = newIndex
+            lastNavigationDirection = direction
+            // Pause auto-play when manually navigating
+            if (isPlaying) {
+                onPlayPause()
+            }
+        }
+    }
+
+    // Register navigation callback
+    LaunchedEffect(Unit) {
+        onRegisterNavigationCallback { direction ->
+            handleNavigateWord(direction)
+        }
+    }
+
+    // Register the navigation callback
+    LaunchedEffect(Unit) {
+        onRegisterNavigationCallback { direction ->
+            handleNavigateWord(direction)
+        }
+    }
+
+
+    // Call the parent's onNavigateWord callback
+    LaunchedEffect(currentWordIndex) {
+        onNavigateWord(lastNavigationDirection)
     }
 
     // Countdown animation
@@ -148,10 +214,78 @@ fun SpeedReadingContent(
 
     // Focal point position - configurable via settings
     // This creates a consistent focal point that words align to
-    val accentOffsetRatio = focalPointPosition
+    val accentOffsetRatio = if (centerWord) 0.5f else focalPointPosition
+
+    var boxSize by remember { mutableStateOf(0 to 0) }
+
+    // Get screen dimensions for calculating exclusion zones
+    val configuration = LocalConfiguration.current
+    val screenHeightDp = configuration.screenHeightDp.dp
+
+    // Calculate OSD exclusion zone bounds in dp
+    // OSD is positioned at (screenHeight * (1 - osdHeight)) from top
+    // OSD height is approximately 60dp (play button) + 16dp vertical padding = ~80dp
+    val osdTopDp = (screenHeightDp.value * (1f - osdHeight)).dp - 8.dp // Account for padding
+    val osdHeightDp = 80.dp // Approximate height of OSD controls with padding
+    val osdBottomDp = osdTopDp + osdHeightDp
+
+    // Bottom bar exclusion zone: approximately 60dp from bottom
+    val bottomBarHeightDp = 60.dp
 
     Box(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .onSizeChanged { boxSize = it.width to it.height }
+            .pointerInput(isPlaying, osdEnabled, osdHeight) {
+                // Convert dp to pixels for tap detection
+                val osdTopPx = osdTopDp.toPx()
+                val osdBottomPx = osdBottomDp.toPx()
+                val bottomBarTopPx = boxSize.second - bottomBarHeightDp.toPx()
+
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        if (event.type == androidx.compose.ui.input.pointer.PointerEventType.Press) {
+                            val position = event.changes.first().position
+                            val width = boxSize.first.toFloat()
+                            val height = boxSize.second.toFloat()
+                            val tapZoneWidth = width * 0.2f // 20% edge zones
+
+                            // Check if tap is in OSD exclusion zone (only if OSD is enabled)
+                            val inOsdZone = osdEnabled &&
+                                position.y >= osdTopPx &&
+                                position.y <= osdBottomPx
+
+                            // Check if tap is in bottom bar exclusion zone
+                            val inBottomBarZone = position.y >= bottomBarTopPx
+
+                            // Skip processing if tap is in an exclusion zone
+                            if (inOsdZone || inBottomBarZone) {
+                                continue
+                            }
+
+                            when {
+                                position.x < tapZoneWidth -> {
+                                    // Left tap zone - navigate back
+                                    navigateWord(-1)
+                                }
+                                position.x > width - tapZoneWidth -> {
+                                    // Right tap zone - navigate forward
+                                    navigateWord(1)
+                                }
+                                else -> {
+                                    // Middle tap zone - pause if playing, otherwise toggle menu
+                                    if (isPlaying) {
+                                        onPlayPause()
+                                    } else {
+                                        onToggleMenu()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
         contentAlignment = Alignment.Center
     ) {
         if (words.isNotEmpty() && currentWordIndex < words.size) {
@@ -198,17 +332,25 @@ fun SpeedReadingContent(
                     }
                 } else 0f
 
-                // Measure full word height for bar positioning when distance is 0
-                val fullWordHeight = with(density) {
+                // Measure full word dimensions
+                val fullWordSize = with(density) {
                     textMeasurer.measure(
                         text = currentWord,
                         style = textStyle
-                    ).size.height.toFloat()
+                    ).size
                 }
+                val fullWordWidth = fullWordSize.width.toFloat()
+                val fullWordHeight = fullWordSize.height.toFloat()
 
-                // Calculate offset to position the accent character at the focal point
-                val accentCenterOffset = beforeAccentWidth + (accentCharWidth / 2f)
-                val wordOffsetX = focalPointX - accentCenterOffset
+                // Calculate offset to position the word at the focal point
+                val wordOffsetX = if (centerWord) {
+                    // Center the entire word horizontally
+                    focalPointX - (fullWordWidth / 2f)
+                } else {
+                    // Position so accent character is at focal point
+                    val accentCenterOffset = beforeAccentWidth + (accentCharWidth / 2f)
+                    focalPointX - accentCenterOffset
+                }
 
                 // Frame dimensions
                 val frameHeight = 120.dp
@@ -373,34 +515,35 @@ fun SpeedReadingContent(
             }
         }
 
-        // OSD controls centered at bottom
+        // OSD controls positioned based on settings
+        // The parent tap detector has an exclusion zone for this area
         if (osdEnabled) {
-            val configuration = LocalConfiguration.current
-            val screenHeight = configuration.screenHeightDp.dp
-            val bottomPadding = screenHeight * 0.2f // 20% from bottom
+            // osdHeight: 0.0 = top, 1.0 = bottom, 0.5 = middle
+            val verticalPosition = (screenHeightDp.value * (1f - osdHeight)).dp
 
             Box(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = bottomPadding),
+                    .align(Alignment.TopCenter)
+                    .padding(top = verticalPosition)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
+                val separationDp = (12f + (osdSeparation * 36f)).dp // 12dp to 48dp
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(24.dp), // Increased spacing
+                    horizontalArrangement = Arrangement.spacedBy(separationDp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Left arrow (<) - decrease WPM
+                    // Left arrow (<) - navigate to previous word
                     Text(
                         text = "<",
-                        style = MaterialTheme.typography.headlineMedium.copy( // Increased size
+                        style = MaterialTheme.typography.headlineMedium.copy(
                             color = fontColor.copy(alpha = 0.7f),
-                            fontSize = 28.sp // Larger size
+                            fontSize = 28.sp
                         ),
                         modifier = Modifier
-                            .padding(12.dp) // Increased clickable area
+                            .padding(12.dp)
                             .noRippleClickable {
-                                val newWpm = (wpm - 50).coerceAtLeast(200)
-                                onWpmChange(newWpm)
+                                navigateWord(-1) // Navigate to previous word
                             }
                     )
 
@@ -410,43 +553,88 @@ fun SpeedReadingContent(
                         contentDescription = if (isPlaying) "Pause" else "Play",
                         tint = fontColor,
                         modifier = Modifier
-                            .size(60.dp) // 2.5x larger than default 24.dp
+                            .size(60.dp)
                             .padding(8.dp)
                             .noRippleClickable {
                                 onPlayPause()
                             }
                     )
 
-                    // Right arrow (>) - increase WPM
+                    // Right arrow (>) - navigate to next word
                     Text(
                         text = ">",
-                        style = MaterialTheme.typography.headlineMedium.copy( // Increased size
+                        style = MaterialTheme.typography.headlineMedium.copy(
                             color = fontColor.copy(alpha = 0.7f),
-                            fontSize = 28.sp // Larger size
+                            fontSize = 28.sp
                         ),
                         modifier = Modifier
-                            .padding(12.dp) // Increased clickable area
+                            .padding(12.dp)
                             .noRippleClickable {
-                                val newWpm = (wpm + 50).coerceAtMost(1200)
-                                onWpmChange(newWpm)
+                                navigateWord(1) // Navigate to next word
                             }
                     )
                 }
             }
         }
 
-        // WPM indicator in bottom right corner
-        if (showWpmIndicator) {
-            Text(
-                text = "$wpm wpm",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = fontColor.copy(alpha = 0.5f)
-                ),
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(bottom = 24.dp, end = 24.dp)
-            )
+        // Bottom bar with progress bar and controls
+        // The parent tap detector has an exclusion zone for this area
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .background(
+                    color = backgroundColor.copy(alpha = 0.8f),
+                    shape = MaterialTheme.shapes.small
+                )
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Progress bar (takes available space)
+                LinearProgressIndicator(
+                    progress = { totalProgress },
+                    modifier = Modifier.weight(1f),
+                    color = fontColor.copy(alpha = 0.7f),
+                    trackColor = fontColor.copy(alpha = 0.2f)
+                )
+
+                // Spacer for consistent spacing
+                Spacer(modifier = Modifier.width(24.dp))
+
+                // WPM indicator (tappable for quick menu)
+                Text(
+                    text = "$wpm wpm",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = fontColor.copy(alpha = 0.8f),
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier.noRippleClickable {
+                        showQuickWpmMenu = true
+                    }
+                )
+
+                // Spacer for consistent spacing
+                Spacer(modifier = Modifier.width(24.dp))
+
+                // Book icon - opens word picker
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                    contentDescription = "Select starting word",
+                    tint = fontColor.copy(alpha = 0.7f),
+                    modifier = Modifier
+                        .size(20.dp)
+                        .noRippleClickable {
+                            onShowWordPicker()
+                        }
+                )
+            }
         }
+
+
 
         // Countdown overlay
         if (showCountdown) {
@@ -463,6 +651,129 @@ fun SpeedReadingContent(
                         color = Color.White
                     )
                 )
+            }
+        }
+
+        // Quick WPM Menu Bottom Sheet
+        if (showQuickWpmMenu) {
+            val sheetState = rememberModalBottomSheetState()
+
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showQuickWpmMenu = false
+                    // Don't toggle tap menu - just close the WPM panel
+                },
+                sheetState = sheetState,
+                containerColor = backgroundColor
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Top row: -100, -50, current WPM, +50, +100
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "-100",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = fontColor.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .noRippleClickable {
+                                    onWpmChange((wpm - 100).coerceAtLeast(200))
+                                }
+                        )
+
+                        Text(
+                            text = "-50",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = fontColor.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .noRippleClickable {
+                                    onWpmChange((wpm - 50).coerceAtLeast(200))
+                                }
+                        )
+
+                        Text(
+                            text = "$wpm",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                color = fontColor,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+
+                        Text(
+                            text = "+50",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = fontColor.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .noRippleClickable {
+                                    onWpmChange((wpm + 50).coerceAtMost(1200))
+                                }
+                        )
+
+                        Text(
+                            text = "+100",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = fontColor.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .noRippleClickable {
+                                    onWpmChange((wpm + 100).coerceAtMost(1200))
+                                }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Bottom row: slider with - and + symbols
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "-",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = fontColor.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier.noRippleClickable {
+                                onWpmChange((wpm - 10).coerceAtLeast(200))
+                            }
+                        )
+
+                        Slider(
+                            value = wpm.toFloat(),
+                            onValueChange = { onWpmChange((it / 5).toInt() * 5) },
+                            valueRange = 200f..1200f,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        Text(
+                            text = "+",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = fontColor.copy(alpha = 0.7f)
+                            ),
+                            modifier = Modifier.noRippleClickable {
+                                onWpmChange((wpm + 10).coerceAtMost(1200))
+                            }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
         }
     }

@@ -17,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,9 +34,11 @@ import us.blindmint.codex.presentation.core.util.noRippleClickable
 @Composable
 fun SpeedReadingScaffold(
     text: List<ReaderText>,
+    book: us.blindmint.codex.domain.library.book.Book,
     bookTitle: String,
     chapterTitle: String?,
     currentProgress: Float,
+    totalProgress: Float,
     backgroundColor: Color,
     fontColor: Color,
     accentCharacterEnabled: Boolean,
@@ -58,19 +61,35 @@ fun SpeedReadingScaffold(
     bottomBarPadding: Dp,
     showWpmIndicator: Boolean,
     wpm: Int,
+    osdHeight: Float = 0.2f,
+    osdSeparation: Float = 0.5f,
+    centerWord: Boolean = false,
     onWpmChange: (Int) -> Unit,
     osdEnabled: Boolean,
     onExitSpeedReading: () -> Unit,
     onShowSpeedReadingSettings: () -> Unit,
-    onMenuVisibilityChanged: (Boolean) -> Unit = {}
+    onMenuVisibilityChanged: (Boolean) -> Unit = {},
+    onNavigateWord: (Int) -> Unit,
+    onToggleMenu: () -> Unit = {},
+    navigateWord: (Int) -> Unit = {},
+    onChangeProgress: (Float) -> Unit = {}
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
-    var showMenu by remember { mutableStateOf(true) } // Start with menu visible
+    var showMenu by remember { mutableStateOf(false) } // Start with menu hidden
     var isPlaying by remember { mutableStateOf(false) }
+    var navigateWordCallback: ((Int) -> Unit)? by remember { mutableStateOf(null) }
+    var showWordPicker by remember { mutableStateOf(false) }
+    var selectedProgress by remember { mutableFloatStateOf(currentProgress) }
+    var selectedWordIndex by remember { mutableIntStateOf(0) }
 
     // Notify parent of menu visibility changes
     LaunchedEffect(showMenu) {
         onMenuVisibilityChanged(showMenu)
+    }
+
+    // Update selectedProgress when currentProgress changes (to start from current position in word picker)
+    LaunchedEffect(currentProgress) {
+        selectedProgress = currentProgress
     }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -100,10 +119,19 @@ fun SpeedReadingScaffold(
             ) {
                 SpeedReadingBottomBar(
                     progress = progress,
+                    progressValue = currentProgress,
+                    book = book, // Need to add book parameter
+                    lockMenu = false, // For speed reading, allow seeking
+                    onChangeProgress = onChangeProgress,
                     wpm = wpm,
                     onWpmChange = onWpmChange,
                     isPlaying = isPlaying,
                     onPlayPause = { isPlaying = !isPlaying },
+                    onNavigateWord = onNavigateWord,
+                    navigateWord = { direction ->
+                        navigateWordCallback?.invoke(direction)
+                    },
+                    onCloseMenu = { showMenu = false },
                     bottomBarPadding = bottomBarPadding
                 )
             }
@@ -115,11 +143,11 @@ fun SpeedReadingScaffold(
             modifier = Modifier
                 .fillMaxSize()
                 .background(backgroundColor)
-                .noRippleClickable { showMenu = !showMenu }
         ) {
             SpeedReadingContent(
                 text = text,
                 currentProgress = currentProgress,
+                totalProgress = totalProgress,
                 backgroundColor = backgroundColor,
                 fontColor = fontColor,
                 fontFamily = fontFamily,
@@ -142,9 +170,37 @@ fun SpeedReadingScaffold(
                 isPlaying = isPlaying,
                 onWpmChange = onWpmChange,
                 onPlayPause = { isPlaying = !isPlaying },
+                onNavigateWord = onNavigateWord,
+                onToggleMenu = { showMenu = !showMenu },
+                navigateWord = navigateWordCallback ?: {},
+                onRegisterNavigationCallback = { callback ->
+                    navigateWordCallback = callback
+                },
                 alwaysShowPlayPause = alwaysShowPlayPause,
                 showWpmIndicator = showWpmIndicator,
-                osdEnabled = osdEnabled
+                osdEnabled = osdEnabled,
+                osdHeight = osdHeight,
+                osdSeparation = osdSeparation,
+                centerWord = centerWord,
+                initialWordIndex = selectedWordIndex,
+                onShowWordPicker = { showWordPicker = true }
+            )
+        }
+
+        // Word Picker Sheet
+        if (showWordPicker) {
+            SpeedReadingWordPickerSheet(
+                text = text,
+                currentProgress = selectedProgress,
+                backgroundColor = backgroundColor,
+                fontColor = fontColor,
+                onDismiss = { showWordPicker = false },
+                onConfirm = { progress, wordIndexInText ->
+                    selectedProgress = progress
+                    selectedWordIndex = wordIndexInText
+                    onChangeProgress(progress)
+                    showWordPicker = false
+                }
             )
         }
     }

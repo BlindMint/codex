@@ -820,7 +820,7 @@
     <string name="manual_sentence_pause">Manual sentence pause</string>
     <string name="speed_reading_custom_font">Speed reading custom font</string>
     <string name="speed_reading_font_family">Speed reading font family</string>
-    <string name="speed_reading_word_size">Word size</string>
+    <string name="speed_reading_word_size">Font size</string>
     <string name="speed_reading_accent_opacity">Accent character alpha</string>
     <string name="speed_reading_background_image">Use background image</string>
     <string name="speed_reading_horizontal_bars_thickness">Horizontal bars thickness</string>
@@ -835,6 +835,11 @@
     <string name="speed_reading_vertical_indicator_type_arrows">Arrows</string>
     <string name="speed_reading_vertical_indicator_type_arrows_filled">Arrows (filled)</string>
     <string name="speed_reading_osd">OSD</string>
+    <string name="speed_reading_osd_height">OSD height</string>
+    <string name="speed_reading_osd_separation">OSD separation</string>
+    <string name="speed_reading_center_word">Center word</string>
+    <string name="previous_word">Previous word</string>
+    <string name="next_word">Next word</string>
 
     <string name="delete_bookmark_content_desc">Delete bookmark</string>
     <string name="more_content_desc">More</string>
