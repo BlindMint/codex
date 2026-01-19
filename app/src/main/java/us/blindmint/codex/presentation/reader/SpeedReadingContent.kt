@@ -122,8 +122,8 @@ fun SpeedReadingContent(
     osdSeparation: Float = 0.5f, // 0.0 = close, 1.0 = far
     centerWord: Boolean = false,
     wordPickerActive: Boolean = false,
-    onShowWordPicker: () -> Unit = {},
     initialWordIndex: Int = 0,
+    onShowWordPicker: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     // Extract words from text starting from current position
@@ -620,12 +620,16 @@ fun SpeedReadingContent(
                 // Spacer for consistent spacing
                 Spacer(modifier = Modifier.width(24.dp))
 
-                // Book icon (placeholder for now)
+                // Book icon - opens word picker
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.MenuBook,
-                    contentDescription = "Book info",
+                    contentDescription = "Select starting word",
                     tint = fontColor.copy(alpha = 0.7f),
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier
+                        .size(20.dp)
+                        .noRippleClickable {
+                            onShowWordPicker()
+                        }
                 )
             }
         }

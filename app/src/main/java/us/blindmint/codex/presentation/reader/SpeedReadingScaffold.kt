@@ -17,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,7 +64,6 @@ fun SpeedReadingScaffold(
     osdHeight: Float = 0.2f,
     osdSeparation: Float = 0.5f,
     centerWord: Boolean = false,
-    initialWordIndex: Int = 0,
     onWpmChange: (Int) -> Unit,
     osdEnabled: Boolean,
     onExitSpeedReading: () -> Unit,
@@ -79,10 +79,17 @@ fun SpeedReadingScaffold(
     var isPlaying by remember { mutableStateOf(false) }
     var navigateWordCallback: ((Int) -> Unit)? by remember { mutableStateOf(null) }
     var showWordPicker by remember { mutableStateOf(false) }
+    var selectedProgress by remember { mutableFloatStateOf(currentProgress) }
+    var selectedWordIndex by remember { mutableIntStateOf(0) }
 
     // Notify parent of menu visibility changes
     LaunchedEffect(showMenu) {
         onMenuVisibilityChanged(showMenu)
+    }
+
+    // Update selectedProgress when currentProgress changes (to start from current position in word picker)
+    LaunchedEffect(currentProgress) {
+        selectedProgress = currentProgress
     }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -175,7 +182,25 @@ fun SpeedReadingScaffold(
                 osdHeight = osdHeight,
                 osdSeparation = osdSeparation,
                 centerWord = centerWord,
-                initialWordIndex = initialWordIndex
+                initialWordIndex = selectedWordIndex,
+                onShowWordPicker = { showWordPicker = true }
+            )
+        }
+
+        // Word Picker Sheet
+        if (showWordPicker) {
+            SpeedReadingWordPickerSheet(
+                text = text,
+                currentProgress = selectedProgress,
+                backgroundColor = backgroundColor,
+                fontColor = fontColor,
+                onDismiss = { showWordPicker = false },
+                onConfirm = { progress, wordIndexInText ->
+                    selectedProgress = progress
+                    selectedWordIndex = wordIndexInText
+                    onChangeProgress(progress)
+                    showWordPicker = false
+                }
             )
         }
     }
