@@ -178,9 +178,10 @@ class MainActivity : AppCompatActivity() {
                             val absolutePath = cachedFile.path
                             val uriString = if (uri.scheme == "content") uri.toString() else null
 
-                            // Check if book already exists in library using absolute path
+                            // Check if book already exists in library
                             val existingBook = withContext(Dispatchers.IO) {
-                                getBookByFilePath.execute(absolutePath)
+                                // Try to find by URI string first (for content URIs), then by absolute path
+                                uriString?.let { getBookByFilePath.execute(it) } ?: getBookByFilePath.execute(absolutePath)
                             }
 
                             if (existingBook != null) {
