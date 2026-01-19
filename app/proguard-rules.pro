@@ -1,4 +1,20 @@
 # Proguard-rules
+
+# Keep resource IDs to prevent crashes when loading resources in release builds
+-keepclassmembers class **.R$* {
+   public static <fields>;
+}
+
+# Compose UI specific rules
+-dontwarn android.view.RenderNode
+-dontwarn android.view.DisplayListCanvas
+-keepclassmembers class androidx.compose.ui.platform.ViewLayerContainer {
+    protected void dispatchGetDisplayList();
+}
+-keepclassmembers class androidx.compose.ui.platform.AndroidComposeView {
+    android.view.View findViewByAccessibilityIdTraversal(int);
+}
+
 -dontwarn android.content.res.**
 -dontwarn com.gemalto.jp2.JP2Decoder
 -dontwarn com.google.auto.service.AutoService
