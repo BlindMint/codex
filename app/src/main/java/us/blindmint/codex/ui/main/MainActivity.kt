@@ -174,7 +174,7 @@ class MainActivity : AppCompatActivity() {
                     scope.launch {
                         try {
                             val cachedFile = CachedFileCompat.fromUri(this@MainActivity, uri)
-                            val filePath = cachedFile.path
+                            val filePath = if (uri.scheme == "content") uri.toString() else cachedFile.path
 
                             // Check if book already exists in library
                             val existingBook = withContext(Dispatchers.IO) {
@@ -190,12 +190,16 @@ class MainActivity : AppCompatActivity() {
                                 val result = withContext(Dispatchers.IO) {
                                     getBookFromFile.execute(cachedFile)
                                 }
-                                when (result) {
-                                    is NullableBook.NotNull -> {
-                                        val bookTitle = result.bookWithCover!!.book.title
-                                        withContext(Dispatchers.IO) {
-                                            insertBook.execute(result.bookWithCover!!)
-                                        }
+                                 when (result) {
+                                     is NullableBook.NotNull -> {
+                                         val bookTitle = result.bookWithCover!!.book.title
+                                         // Update the filePath for content URIs
+                                         val bookWithCorrectPath = result.bookWithCover!!.copy(
+                                             book = result.bookWithCover.book.copy(filePath = filePath)
+                                         )
+                                         withContext(Dispatchers.IO) {
+                                             insertBook.execute(bookWithCorrectPath)
+                                         }
                                         // Get the newly inserted book to get its ID
                                         val newBook = withContext(Dispatchers.IO) {
                                             getBookByFilePath.execute(filePath)
