@@ -43,18 +43,12 @@ fun StorageLocationPicker(
     var showPicker by remember { mutableStateOf(false) }
     var showRemoveConfirmation by remember { mutableStateOf(false) }
     var showInfoDialog by remember { mutableStateOf(false) }
-    var wasCodexDirectorySet by remember { mutableStateOf(state.codexRootDisplayPath != null) }
 
     val folderPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
         uri?.let {
-            val isNewCodexDirectory = !wasCodexDirectorySet
             settingsModel.onEvent(SettingsEvent.OnSetCodexRootFolder(it))
-            if (isNewCodexDirectory) {
-                showInfoDialog = true
-            }
-            wasCodexDirectorySet = true
         }
         showPicker = false
     }
@@ -62,7 +56,13 @@ fun StorageLocationPicker(
     ListItem(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { showPicker = true },
+            .clickable {
+                if (state.codexRootDisplayPath == null) {
+                    showInfoDialog = true
+                } else {
+                    showPicker = true
+                }
+            },
         headlineContent = {
             Text(
                 text = "Codex Directory",
@@ -106,7 +106,6 @@ fun StorageLocationPicker(
                 TextButton(onClick = {
                     settingsModel.onEvent(SettingsEvent.OnRemoveCodexRootFolder)
                     showRemoveConfirmation = false
-                    wasCodexDirectorySet = false
                 }) {
                     Text("Remove")
                 }
@@ -134,8 +133,16 @@ fun StorageLocationPicker(
                 )
             },
             confirmButton = {
+                TextButton(onClick = {
+                    showInfoDialog = false
+                    showPicker = true
+                }) {
+                    Text("Continue")
+                }
+            },
+            dismissButton = {
                 TextButton(onClick = { showInfoDialog = false }) {
-                    Text("Dismiss")
+                    Text("Cancel")
                 }
             }
         )

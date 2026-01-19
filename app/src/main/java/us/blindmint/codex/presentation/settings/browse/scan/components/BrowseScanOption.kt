@@ -48,12 +48,10 @@ import com.anggrayudi.storage.file.getBasePath
 import com.anggrayudi.storage.file.getRootPath
 import kotlinx.coroutines.launch
 import us.blindmint.codex.R
-import us.blindmint.codex.data.local.data_store.DataStore
 import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
 import us.blindmint.codex.domain.use_case.book.BulkImportProgress
 
 import us.blindmint.codex.presentation.core.components.common.StyledText
-import us.blindmint.codex.presentation.core.constants.DataStoreConstants
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.browse.BrowseScreen
@@ -61,6 +59,7 @@ import us.blindmint.codex.ui.library.LibraryScreen
 import us.blindmint.codex.ui.settings.SettingsEvent
 import us.blindmint.codex.ui.settings.SettingsModel
 import us.blindmint.codex.ui.theme.dynamicListItemColor
+import androidx.compose.material3.AlertDialog
 
 @Composable
 fun BrowseScanOption() {
@@ -71,6 +70,7 @@ fun BrowseScanOption() {
 
     var importProgress by remember { mutableStateOf<BulkImportProgress?>(null) }
     var importingFolderUri by remember { mutableStateOf<android.net.Uri?>(null) }
+    var showLocalFolderInfoDialog by remember { mutableStateOf(false) }
 
     suspend fun getPersistedUriPermissions(): List<UriPermission> {
         return context.contentResolver?.persistedUriPermissions.let { permissions ->
@@ -190,16 +190,56 @@ fun BrowseScanOption() {
 
     BrowseScanAction(
         requestPersistableUriPermission = {
-            try {
-                persistedUriIntent.launch(null)
-            } catch (e: Exception) {
-                e.printStackTrace()
-
-                context.getString(R.string.error_no_file_manager_app)
-                    .showToast(context, longToast = false)
+            if (persistedUriPermissions.isEmpty()) {
+                showLocalFolderInfoDialog = true
+            } else {
+                try {
+                    persistedUriIntent.launch(null)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    context.getString(R.string.error_no_file_manager_app)
+                        .showToast(context, longToast = false)
+                }
             }
         }
     )
+
+    // Informational dialog about Local folders
+    if (showLocalFolderInfoDialog) {
+        AlertDialog(
+            onDismissRequest = { showLocalFolderInfoDialog = false },
+            title = { androidx.compose.material3.Text("Local Folders") },
+            text = {
+                androidx.compose.material3.Text(
+                    "Local folders allow you to add books from folders on your device. " +
+                    "These folders will be scanned for eBook files and added to your library. " +
+                    "Unlike Codex Directory, local folders are for one-time imports and " +
+                    "don't automatically sync with the folder contents.\n\n" +
+                    "You can add multiple local folders and refresh them individually."
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    showLocalFolderInfoDialog = false
+                    // Now launch the folder picker
+                    try {
+                        persistedUriIntent.launch(null)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        context.getString(R.string.error_no_file_manager_app)
+                            .showToast(context, longToast = false)
+                    }
+                }) {
+                    androidx.compose.material3.Text("Continue")
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { showLocalFolderInfoDialog = false }) {
+                    androidx.compose.material3.Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
