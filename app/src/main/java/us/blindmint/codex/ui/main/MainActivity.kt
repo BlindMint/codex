@@ -81,6 +81,7 @@ class MainActivity : AppCompatActivity() {
 
     // Pending file URI from external intent
     private var pendingFileUri: Uri? = null
+    private var pendingFileUriCounter = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Splash screen
@@ -167,7 +168,7 @@ class MainActivity : AppCompatActivity() {
                 val scope = rememberCoroutineScope()
 
                 // Handle pending file import from external intent
-                LaunchedEffect(pendingFileUri) {
+                LaunchedEffect(pendingFileUriCounter) {
                     val uri = pendingFileUri ?: return@LaunchedEffect
                     pendingFileUri = null // Clear to prevent re-processing
 
@@ -324,6 +325,7 @@ class MainActivity : AppCompatActivity() {
         if (intent?.action == Intent.ACTION_VIEW) {
             intent.data?.let { uri ->
                 pendingFileUri = uri
+                pendingFileUriCounter++
             }
         }
     }
