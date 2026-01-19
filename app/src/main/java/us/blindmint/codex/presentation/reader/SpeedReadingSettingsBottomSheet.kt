@@ -91,27 +91,45 @@ fun SpeedReadingSettingsBottomSheet(
         var selectedTabIndex by remember { mutableIntStateOf(0) }
 
         // Remember previous values for center word restoration
-        val savedValues = remember { mutableStateOf<Pair<Boolean, Int>?>(null) }
+        val savedValues = remember { mutableStateOf<Triple<Boolean, Boolean, Int>?>(null) }
         val centerWordApplied = remember { mutableStateOf(false) }
+
+        // Remember previous vertical indicators size for toggle restoration
+        val savedVerticalIndicatorsSize = remember { mutableIntStateOf(8) }
 
         // Handle automatic changes when centerWord changes
         androidx.compose.runtime.SideEffect {
             if (centerWord) {
                 if (!centerWordApplied.value) {
-                    savedValues.value = Pair(accentCharacterEnabled, verticalIndicatorsSize)
+                    savedValues.value = Triple(accentCharacterEnabled, showVerticalIndicators, verticalIndicatorsSize)
                     onAccentCharacterEnabledChange(false)
+                    onShowVerticalIndicatorsChange(false)
                     onVerticalIndicatorsSizeChange(0)
                     centerWordApplied.value = true
                 }
             } else {
                 if (centerWordApplied.value) {
-                    savedValues.value?.let { (accent, size) ->
-                        onAccentCharacterEnabledChange(accent)
-                        onVerticalIndicatorsSizeChange(size)
-                    }
+                    // When disabling Center word, always re-enable both features
+                    onAccentCharacterEnabledChange(true)
+                    onShowVerticalIndicatorsChange(true)
+                    // Restore vertical indicators size to saved value or default to 8
+                    val sizeToRestore = savedValues.value?.third?.takeIf { it > 0 } ?: 8
+                    onVerticalIndicatorsSizeChange(sizeToRestore)
                     savedValues.value = null
                     centerWordApplied.value = false
                 }
+            }
+        }
+
+        // Handle vertical indicators toggle - save size when disabling, restore when enabling
+        androidx.compose.runtime.SideEffect {
+            if (showVerticalIndicators && verticalIndicatorsSize == 0) {
+                // Toggle is being enabled and size is 0, restore to saved value
+                onVerticalIndicatorsSizeChange(savedVerticalIndicatorsSize.intValue)
+            } else if (!showVerticalIndicators && verticalIndicatorsSize > 0) {
+                // Toggle is being disabled, save current size and set to 0
+                savedVerticalIndicatorsSize.intValue = verticalIndicatorsSize
+                onVerticalIndicatorsSizeChange(0)
             }
         }
 

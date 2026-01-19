@@ -51,6 +51,7 @@ import us.blindmint.codex.presentation.settings.reader.speed_reading.components.
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingFocalPointPositionOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorTypeOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsLengthOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsToggleOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingOsdHeightOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingOsdSeparationOption
 import us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType
@@ -486,20 +487,43 @@ fun LazyListScope.SpeedReadingSubcategory(
                 )
             }
 
+            // Vertical Indicators toggle
             item {
-                SpeedReadingVerticalIndicatorTypeOption(
-                    selectedType = verticalIndicatorType,
-                    onTypeChange = onVerticalIndicatorTypeChange,
+                SpeedReadingVerticalIndicatorsToggleOption(
+                    selected = showVerticalIndicators,
+                    onSelectionChange = onShowVerticalIndicatorsChange,
                     enabled = !centerWord
                 )
             }
 
+            // Vertical indicator type (only when toggle is enabled)
             item {
-                SpeedReadingVerticalIndicatorsLengthOption(
-                    verticalIndicatorsSize = verticalIndicatorsSize,
-                    onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange,
-                    enabled = !centerWord
-                )
+                AnimatedVisibility(
+                    visible = showVerticalIndicators && !centerWord,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingVerticalIndicatorTypeOption(
+                        selectedType = verticalIndicatorType,
+                        onTypeChange = onVerticalIndicatorTypeChange,
+                        enabled = !centerWord
+                    )
+                }
+            }
+
+            // Vertical indicators length (only when toggle is enabled)
+            item {
+                AnimatedVisibility(
+                    visible = showVerticalIndicators && !centerWord,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    SpeedReadingVerticalIndicatorsLengthOption(
+                        verticalIndicatorsSize = verticalIndicatorsSize,
+                        onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange,
+                        enabled = !centerWord
+                    )
+                }
             }
 
             // Accent Character section

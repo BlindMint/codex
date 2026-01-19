@@ -821,31 +821,38 @@ fun findAccentCharIndex(word: String): Int {
 
     val len = cleanWord.length
 
-    // Rule: Short words (1-3 chars) - always 2nd character
-    if (len <= 3) {
-        return if (len >= 2) 1 else 0
+    // Rule: 1-letter words - accent the entire word
+    if (len == 1) {
+        return 0
     }
 
-    // Rule: Long words (7+ chars) - center leftward scan
-    if (len >= 7) {
-        val center = len / 2
-        // Scan from center leftward (descending) for first vowel
-        for (i in center downTo 1) {
+    // Rule: 2-3 letter words - always 2nd character
+    if (len <= 3) {
+        return 1
+    }
+
+    // Rule: 4-6 letter words (medium) - scan after first letter for first vowel
+    if (len < 7) {
+        for (i in 1..<len) {
             if (cleanWord[i] in vowels) {
                 return i
             }
         }
-        // Fallback: 2nd character
+        // Fallback: 2nd character if no vowel found
         return 1
     }
 
-    // Rule: Medium words (4-6 chars) - post-1st vowel priority
-    for (i in 1..<len) {
+    // Rule: 7+ letter words (long) - left-biased center scan
+    // Calculate center and scan LEFT from center toward the beginning
+    val center = len / 2
+    // Scan from index 1 up to center (left-bias: find earliest vowel)
+    for (i in 1..center) {
         if (cleanWord[i] in vowels) {
             return i
         }
     }
 
-    // Fallback: 2nd character (position 1)
-    return 1
+    // Fallback: if no vowel found in left-center region, return center position
+    // (prioritizing left-half balance as per guidelines)
+    return center.coerceAtLeast(2).coerceAtMost(len - 1)
 }
