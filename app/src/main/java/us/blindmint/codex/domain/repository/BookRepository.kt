@@ -69,4 +69,12 @@ interface BookRepository {
     suspend fun getAllLanguages(): List<String>
 
     suspend fun getPublicationYearRange(): Pair<Int, Int>
+
+    suspend fun getBooksByOpdsSourceUrl(
+        opdsSourceUrl: String
+    ): List<Book>
+
+    suspend fun getBooksByOpdsSourceId(
+        opdsSourceId: Int
+    ): List<Book>
 }

@@ -160,7 +160,7 @@ fun BookInfoDetailsBottomSheet(
              item {
                  BookInfoDetailsBottomSheetItem(
                      label = stringResource(id = R.string.author),
-                     text = book.author.asString(),
+                     text = book.authors.firstOrNull() ?: stringResource(id = R.string.unknown_author),
                      editable = false
                  )
              }
@@ -169,8 +169,46 @@ fun BookInfoDetailsBottomSheet(
                  BookInfoDetailsBottomSheetItem(
                      label = stringResource(id = R.string.description),
                      text = book.description ?: "",
-                     editable = false
+                     editable = false,
+                     maxLines = 4
                  )
+             }
+
+             // Metadata rows for Tags, Authors (list), Series, Languages
+             if (book.tags.isNotEmpty()) {
+                 item {
+                     BookInfoMetadataRow(
+                         title = stringResource(id = R.string.tags),
+                         items = book.tags
+                     )
+                 }
+             }
+
+             if (book.authors.size > 1) {
+                 item {
+                     BookInfoMetadataRow(
+                         title = stringResource(id = R.string.authors),
+                         items = book.authors
+                     )
+                 }
+             }
+
+             if (book.series.isNotEmpty()) {
+                 item {
+                     BookInfoMetadataRow(
+                         title = stringResource(id = R.string.series),
+                         items = book.series
+                     )
+                 }
+             }
+
+             if (book.languages.isNotEmpty()) {
+                 item {
+                     BookInfoMetadataRow(
+                         title = stringResource(id = R.string.languages),
+                         items = book.languages
+                     )
+                 }
              }
 
              item {

@@ -35,7 +35,7 @@ class HtmlFileParser @Inject constructor() : FileParser {
             BookWithCover(
                 book = Book(
                     title = title,
-                    author = UIText.StringResource(R.string.unknown_author),
+                    authors = emptyList(),
                     description = null,
                     scrollIndex = 0,
                     scrollOffset = 0,

@@ -75,11 +75,11 @@ class EpubFileParser @Inject constructor() : FileParser {
                         }
                     }
 
-                    val author = document.select("metadata > dc|creator").text().trim().run {
+                    val authors = document.select("metadata > dc|creator").text().trim().run {
                         if (isBlank()) {
-                            UIText.StringResource(R.string.unknown_author)
+                            emptyList()
                         } else {
-                            UIText.StringValue(this)
+                            listOf(this)
                         }
                     }
 
@@ -110,7 +110,7 @@ class EpubFileParser @Inject constructor() : FileParser {
                     book = BookWithCover(
                         book = Book(
                             title = title,
-                            author = author,
+                            authors = authors,
                             description = description,
                             scrollIndex = 0,
                             scrollOffset = 0,

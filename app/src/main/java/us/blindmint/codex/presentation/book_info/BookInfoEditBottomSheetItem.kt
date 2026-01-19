@@ -25,14 +25,15 @@ fun BookInfoEditBottomSheetItem(
     text: String,
     onEdit: () -> Unit,
     showError: Boolean = false,
-    errorMessage: String = ""
+    errorMessage: String = "",
+    maxLines: Int = 2
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = if (maxLines == 1) Alignment.CenterVertically else Alignment.Top
     ) {
         OutlinedTextField(
             modifier = Modifier
@@ -41,7 +42,7 @@ fun BookInfoEditBottomSheetItem(
             value = text,
             onValueChange = {},
             readOnly = true,
-            maxLines = 2,
+            maxLines = maxLines,
             label = {
                 StyledText(label)
             },

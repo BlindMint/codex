@@ -103,9 +103,9 @@ object LibraryScreen : Screen, Parcelable {
                 }
                 LibrarySortOrder.AUTHOR -> {
                     if (isDescending) {
-                        state.value.books.sortedByDescending { it.data.author.toString() }
+                        state.value.books.sortedByDescending { it.data.authors.firstOrNull().toString() }
                     } else {
-                        state.value.books.sortedBy { it.data.author.toString() }
+                        state.value.books.sortedBy { it.data.authors.firstOrNull().toString() }
                     }
                 }
             }

@@ -246,10 +246,12 @@ class BookInfoModel @Inject constructor(
 
                 is BookInfoEvent.OnActionAuthorDialog -> {
                     launch {
+                        val authorString = (event.author as? us.blindmint.codex.domain.ui.UIText.StringValue)?.value
+                            ?: if (event.author is us.blindmint.codex.domain.ui.UIText.StringResource) "" else ""
                         _state.update {
                             it.copy(
                                 book = it.book.copy(
-                                    author = event.author
+                                    authors = if (authorString.isNotEmpty()) listOf(authorString) else emptyList()
                                 )
                             )
                         }
@@ -472,6 +474,111 @@ class BookInfoModel @Inject constructor(
                 }
 
                 is BookInfoEvent.OnResetDescription -> {
+                    withContext(Dispatchers.Main) {
+                        event.context.getString(R.string.reset_no_original)
+                            .showToast(context = event.context)
+                    }
+                }
+
+                is BookInfoEvent.OnShowTagsDialog -> {
+                    _state.update {
+                        it.copy(
+                            dialog = BookInfoScreen.TAGS_DIALOG
+                        )
+                    }
+                }
+
+                is BookInfoEvent.OnActionTagsDialog -> {
+                    launch {
+                        _state.update {
+                            it.copy(
+                                book = it.book.copy(
+                                    tags = event.tags
+                                )
+                            )
+                        }
+                        updateBook.execute(_state.value.book)
+
+                        LibraryScreen.refreshListChannel.trySend(0)
+                        HistoryScreen.refreshListChannel.trySend(0)
+
+                        withContext(Dispatchers.Main) {
+                            "Tags updated".showToast(context = event.context)
+                        }
+                    }
+                }
+
+                is BookInfoEvent.OnResetTags -> {
+                    withContext(Dispatchers.Main) {
+                        event.context.getString(R.string.reset_no_original)
+                            .showToast(context = event.context)
+                    }
+                }
+
+                is BookInfoEvent.OnShowSeriesDialog -> {
+                    _state.update {
+                        it.copy(
+                            dialog = BookInfoScreen.SERIES_DIALOG
+                        )
+                    }
+                }
+
+                is BookInfoEvent.OnActionSeriesDialog -> {
+                    launch {
+                        _state.update {
+                            it.copy(
+                                book = it.book.copy(
+                                    series = event.series
+                                )
+                            )
+                        }
+                        updateBook.execute(_state.value.book)
+
+                        LibraryScreen.refreshListChannel.trySend(0)
+                        HistoryScreen.refreshListChannel.trySend(0)
+
+                        withContext(Dispatchers.Main) {
+                            "Series updated".showToast(context = event.context)
+                        }
+                    }
+                }
+
+                is BookInfoEvent.OnResetSeries -> {
+                    withContext(Dispatchers.Main) {
+                        event.context.getString(R.string.reset_no_original)
+                            .showToast(context = event.context)
+                    }
+                }
+
+                is BookInfoEvent.OnShowLanguagesDialog -> {
+                    _state.update {
+                        it.copy(
+                            dialog = BookInfoScreen.LANGUAGES_DIALOG
+                        )
+                    }
+                }
+
+                is BookInfoEvent.OnActionLanguagesDialog -> {
+                    launch {
+                        _state.update {
+                            it.copy(
+                                book = it.book.copy(
+                                    languages = event.languages
+                                )
+                            )
+                        }
+                        updateBook.execute(_state.value.book)
+
+                        LibraryScreen.refreshListChannel.trySend(0)
+                        HistoryScreen.refreshListChannel.trySend(0)
+
+                        withContext(Dispatchers.Main) {
+                            "Languages updated".showToast(context = event.context)
+                        }
+                    }
+                }
+
+                is BookInfoEvent.OnResetLanguages -> {
                     withContext(Dispatchers.Main) {
                         event.context.getString(R.string.reset_no_original)
                             .showToast(context = event.context)

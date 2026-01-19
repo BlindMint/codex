@@ -10,9 +10,15 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,11 +41,21 @@ fun StorageLocationPicker(
     val settingsModel = hiltViewModel<SettingsModel>()
     val state by settingsModel.state.collectAsStateWithLifecycle()
     var showPicker by remember { mutableStateOf(false) }
+    var showRemoveConfirmation by remember { mutableStateOf(false) }
+    var showInfoDialog by remember { mutableStateOf(false) }
+    var wasCodexDirectorySet by remember { mutableStateOf(state.codexRootDisplayPath != null) }
 
     val folderPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
-        uri?.let { settingsModel.onEvent(SettingsEvent.OnSetCodexRootFolder(it)) }
+        uri?.let {
+            val isNewCodexDirectory = !wasCodexDirectorySet
+            settingsModel.onEvent(SettingsEvent.OnSetCodexRootFolder(it))
+            if (isNewCodexDirectory) {
+                showInfoDialog = true
+            }
+            wasCodexDirectorySet = true
+        }
         showPicker = false
     }
 
@@ -49,7 +65,7 @@ fun StorageLocationPicker(
             .clickable { showPicker = true },
         headlineContent = {
             Text(
-                text = "Storage Location",
+                text = "Codex Directory",
                 style = MaterialTheme.typography.titleSmall
             )
         },
@@ -63,10 +79,65 @@ fun StorageLocationPicker(
                     MaterialTheme.colorScheme.onSurfaceVariant
                 }
             )
+        },
+        trailingContent = {
+            if (state.codexRootDisplayPath != null) {
+                IconButton(onClick = { showRemoveConfirmation = true }) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Remove Codex Directory"
+                    )
+                }
+            }
         }
     )
 
     if (showPicker) {
         folderPicker.launch(null)
+    }
+
+    // Confirmation dialog for removing Codex Directory
+    if (showRemoveConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showRemoveConfirmation = false },
+            title = { Text("Remove Codex Directory") },
+            text = { Text("Are you sure? This will remove the Codex Directory configuration.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    settingsModel.onEvent(SettingsEvent.OnRemoveCodexRootFolder)
+                    showRemoveConfirmation = false
+                    wasCodexDirectorySet = false
+                }) {
+                    Text("Remove")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRemoveConfirmation = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // Informational dialog about Codex Directory
+    if (showInfoDialog) {
+        AlertDialog(
+            onDismissRequest = { showInfoDialog = false },
+            title = { Text("Codex Directory") },
+            text = {
+                Text(
+                    "Codex Directory is the primary storage location for the app and should be a dedicated, " +
+                    "top-level folder such as /storage/emulated/0/codex. This is where books and metadata " +
+                    "from OPDS sources will be stored. It is not recommended to use built-in Android folders " +
+                    "like Documents or Downloads.\n\n" +
+                    "Local folders are for adding books from local folders on your system."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showInfoDialog = false }) {
+                    Text("Dismiss")
+                }
+            }
+        )
     }
 }

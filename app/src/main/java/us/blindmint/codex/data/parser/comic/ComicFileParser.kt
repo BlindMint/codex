@@ -57,7 +57,7 @@ class ComicFileParser @Inject constructor(
 
                     val book = Book(
                         title = cachedFile.name.substringBeforeLast('.'),
-                        author = UIText.StringResource(R.string.unknown_author),
+                        authors = emptyList(),
                         description = null,
                         filePath = cachedFile.uri.toString(),
                         coverImage = null,

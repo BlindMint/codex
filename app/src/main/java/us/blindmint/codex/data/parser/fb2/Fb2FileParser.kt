@@ -32,11 +32,11 @@ class Fb2FileParser @Inject constructor() : FileParser {
                 this
             }
 
-            val author = document?.selectFirst("author")?.text()?.trim().run {
+            val authors = document?.selectFirst("author")?.text()?.trim().run {
                 if (isNullOrBlank()) {
-                    return@run UIText.StringResource(R.string.unknown_author)
+                    return@run emptyList()
                 }
-                UIText.StringValue(this.trim())
+                listOf(this.trim())
             }
 
             val description = document?.selectFirst("annotation")?.text()?.trim().run {
@@ -49,7 +49,7 @@ class Fb2FileParser @Inject constructor() : FileParser {
             BookWithCover(
                 book = Book(
                     title = title,
-                    author = author,
+                    authors = authors,
                     description = description,
                     scrollIndex = 0,
                     scrollOffset = 0,

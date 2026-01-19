@@ -17,13 +17,11 @@ class OpdsMetadataMapper @Inject constructor() {
     fun applyOpdsMetadataToBook(book: Book, opdsEntry: OpdsEntry): Book {
         return book.copy(
             title = opdsEntry.title,
-            author = opdsEntry.author?.let { UIText.StringValue(it) } ?: book.author,
+            authors = if (opdsEntry.author != null) (book.authors + opdsEntry.author).distinct() else book.authors,
             description = opdsEntry.summary ?: book.description,
-            tags = opdsEntry.categories.takeIf { it.isNotEmpty() } ?: book.tags,
-            seriesName = opdsEntry.series ?: book.seriesName,
-            seriesIndex = opdsEntry.seriesIndex ?: book.seriesIndex,
-            publicationDate = opdsEntry.published?.let { parseDate(it) } ?: book.publicationDate,
-            language = opdsEntry.language ?: book.language,
+            tags = (book.tags + opdsEntry.categories).distinct().takeIf { it.isNotEmpty() } ?: book.tags,
+            series = if (opdsEntry.series != null) (book.series + opdsEntry.series).distinct() else book.series,
+            languages = if (opdsEntry.language != null) (book.languages + opdsEntry.language).distinct() else book.languages,
             publisher = opdsEntry.publisher ?: book.publisher,
             summary = opdsEntry.summary ?: book.summary,
             uuid = opdsEntry.identifiers.firstOrNull { it.startsWith("urn:uuid:") }?.substringAfter("urn:uuid:") ?: book.uuid,

@@ -32,6 +32,7 @@ fun BookInfoDetailsBottomSheetItem(
     editable: Boolean,
     showError: Boolean = false,
     errorMessage: String? = null,
+    maxLines: Int = 1,
     onEdit: () -> Unit = {}
 ) {
     Row(
@@ -39,7 +40,7 @@ fun BookInfoDetailsBottomSheetItem(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = if (maxLines == 1) Alignment.CenterVertically else Alignment.Top
     ) {
         OutlinedTextField(
             modifier = Modifier
@@ -49,6 +50,7 @@ fun BookInfoDetailsBottomSheetItem(
             onValueChange = {},
             readOnly = true,
             isError = showError,
+            maxLines = maxLines,
             supportingText = if (!showError || errorMessage.isNullOrBlank()) null else {
                 {
                     StyledText(

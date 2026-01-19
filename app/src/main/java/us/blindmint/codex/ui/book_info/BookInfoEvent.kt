@@ -109,5 +109,39 @@ sealed class BookInfoEvent {
         val context: Context
     ) : BookInfoEvent()
 
+    // Metadata editing events (Tags, Series, Languages)
+    data object OnShowTagsDialog : BookInfoEvent()
+
+    data class OnActionTagsDialog(
+        val tags: List<String>,
+        val context: Context
+    ) : BookInfoEvent()
+
+    data class OnResetTags(
+        val context: Context
+    ) : BookInfoEvent()
+
+    data object OnShowSeriesDialog : BookInfoEvent()
+
+    data class OnActionSeriesDialog(
+        val series: List<String>,
+        val context: Context
+    ) : BookInfoEvent()
+
+    data class OnResetSeries(
+        val context: Context
+    ) : BookInfoEvent()
+
+    data object OnShowLanguagesDialog : BookInfoEvent()
+
+    data class OnActionLanguagesDialog(
+        val languages: List<String>,
+        val context: Context
+    ) : BookInfoEvent()
+
+    data class OnResetLanguages(
+        val context: Context
+    ) : BookInfoEvent()
+
     data object OnToggleFavorite : BookInfoEvent()
 }

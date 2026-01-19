@@ -116,6 +116,8 @@
 
     <!-- Action Texts -->
     <string name="cancel">Cancel</string>
+    <string name="add">Add</string>
+    <string name="add_new">Add new</string>
     <string name="add_book">Add a book</string>
     <string name="move">Move</string>
     <string name="delete">Delete</string>
@@ -149,6 +151,9 @@
     <string name="delete_cover">Delete cover image</string>
     <string name="delete_cover_desc">Delete current cover image of the book</string>
     <string name="author">Author</string>
+    <string name="authors">Authors</string>
+    <string name="series">Series</string>
+    <string name="languages">Languages</string>
 
     <!-- Tabs -->
     <string name="reading_tab">All</string>

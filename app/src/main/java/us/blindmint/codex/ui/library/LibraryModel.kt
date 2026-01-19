@@ -445,7 +445,7 @@ class LibraryModel @Inject constructor(
             LibrarySortOrder.NAME -> compareBy<Book> { it.title.toString() }
             LibrarySortOrder.LAST_READ -> compareBy<Book> { it.lastOpened ?: 0L }
             LibrarySortOrder.PROGRESS -> compareBy<Book> { it.progress }
-            LibrarySortOrder.AUTHOR -> compareBy<Book> { it.author.toString() }
+            LibrarySortOrder.AUTHOR -> compareBy<Book> { it.authors.firstOrNull().toString() }
         }
 
         return if (descending) {
@@ -505,19 +505,20 @@ class LibraryModel @Inject constructor(
             // Filter by selected authors
             val authorsMatch = filterState.selectedAuthors.isEmpty() ||
                 filterState.selectedAuthors.any { selectedAuthor ->
-                    book.author.getAsString()?.equals(selectedAuthor, ignoreCase = true) == true
-                }
+                    book.authors.any { bookAuthor -> bookAuthor.equals(selectedAuthor, ignoreCase = true) }
+                } ||
+                (filterState.selectedAuthors.contains("Unknown") && book.authors.isEmpty())
 
             // Filter by selected series
             val seriesMatch = filterState.selectedSeries.isEmpty() ||
                 filterState.selectedSeries.any { selectedSeries ->
-                    book.seriesName?.equals(selectedSeries, ignoreCase = true) == true
+                    book.series.any { bookSeries -> bookSeries.equals(selectedSeries, ignoreCase = true) }
                 }
 
             // Filter by selected languages
             val languagesMatch = filterState.selectedLanguages.isEmpty() ||
                 filterState.selectedLanguages.any { selectedLanguage ->
-                    book.language?.equals(selectedLanguage, ignoreCase = true) == true
+                    book.languages.any { bookLanguage -> bookLanguage.equals(selectedLanguage, ignoreCase = true) }
                 }
 
             // Filter by publication year range

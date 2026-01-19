@@ -22,7 +22,7 @@ fun BookInfoAuthorDialog(
 ) {
     val context = LocalContext.current
     DialogWithTextField(
-        initialValue = book.author.getAsString() ?: "",
+        initialValue = book.authors.firstOrNull() ?: "",
         lengthLimit = 100,
         onDismiss = {
             dismissDialog(BookInfoEvent.OnDismissDialog)
@@ -30,8 +30,7 @@ fun BookInfoAuthorDialog(
         onAction = {
             actionAuthorDialog(
                 BookInfoEvent.OnActionAuthorDialog(
-                    author = if (it.isBlank()) UIText.StringResource(R.string.unknown_author)
-                    else UIText.StringValue(it.trim().replace("\n", "")),
+                    author = UIText.StringValue(it.trim().replace("\n", "")),
                     context = context
                 )
             )

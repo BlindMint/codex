@@ -29,9 +29,9 @@ class PdfFileParser @Inject constructor(
 
             val title = document.documentInformation.title
                 ?: cachedFile.name.substringBeforeLast(".").trim()
-            val author = document.documentInformation.author.run {
-                if (isNullOrBlank()) UIText.StringResource(R.string.unknown_author)
-                else UIText.StringValue(this)
+            val authors = document.documentInformation.author.run {
+                if (isNullOrBlank()) emptyList()
+                else listOf(this)
             }
             val description = document.documentInformation.subject
 
@@ -40,7 +40,7 @@ class PdfFileParser @Inject constructor(
             BookWithCover(
                 book = Book(
                     title = title,
-                    author = author,
+                    authors = authors,
                     description = description,
                     scrollIndex = 0,
                     scrollOffset = 0,

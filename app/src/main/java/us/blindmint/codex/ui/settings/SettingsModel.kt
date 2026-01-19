@@ -712,6 +712,20 @@ class SettingsModel @Inject constructor(
                     }
                 }
             }
+
+            is SettingsEvent.OnRemoveCodexRootFolder -> {
+                viewModelScope.launch {
+                    Log.i("SettingsModel", "Removing Codex root folder")
+                    codexDirectoryManager.clearConfiguration()
+                    _state.update {
+                        it.copy(
+                            codexRootDisplayPath = null,
+                            codexRootUri = null
+                        )
+                    }
+                    Log.i("SettingsModel", "Codex root folder removed successfully")
+                }
+            }
         }
     }
 
