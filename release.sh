@@ -312,6 +312,22 @@ check_environment() {
     log_success "Environment variables checked"
 }
 
+check_branch() {
+    log_info "Checking git branch..."
+
+    local current_branch
+    current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+    if [[ "$current_branch" != "master" ]]; then
+        log_error "Must be on master branch to run release script"
+        log_error "Current branch: $current_branch"
+        log_error "Please switch to master branch with: git checkout master"
+        exit 1
+    fi
+
+    log_success "On master branch"
+}
+
 check_remotes() {
     log_info "Checking git remotes..."
 
@@ -973,6 +989,9 @@ show_completion_summary() {
     echo "  APK:    ${apk_path}"
     echo "  SHA256: ${sha_path}"
     echo ""
+    echo "Open APK directory:"
+    echo "  xdg-open \"$(dirname "${apk_path}")\""
+    echo ""
     echo "Upload both files:"
     echo "  - codex-v${NEW_VERSION}.apk"
     echo "  - codex-v${NEW_VERSION}.apk.sha256"
@@ -1086,6 +1105,7 @@ main() {
 
     # Phase 1: Pre-flight checks
     check_working_directory
+    check_branch
     check_git_status
     check_keystore
     check_gradle

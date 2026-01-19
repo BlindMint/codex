@@ -5,6 +5,10 @@
    public static <fields>;
 }
 
+# Keep all Compose-related classes and members
+-keep class androidx.compose.** { *; }
+-keep class kotlin.coroutines.** { *; }
+
 # Compose UI specific rules
 -dontwarn android.view.RenderNode
 -dontwarn android.view.DisplayListCanvas
@@ -14,6 +18,14 @@
 -keepclassmembers class androidx.compose.ui.platform.AndroidComposeView {
     android.view.View findViewByAccessibilityIdTraversal(int);
 }
+
+# Keep vector drawable parsing classes
+-keep class androidx.core.content.res.** { *; }
+-keep class androidx.core.graphics.** { *; }
+
+# Keep XML parsing classes
+-keep class org.xmlpull.** { *; }
+-dontwarn org.xmlpull.**
 
 -dontwarn android.content.res.**
 -dontwarn com.gemalto.jp2.JP2Decoder
