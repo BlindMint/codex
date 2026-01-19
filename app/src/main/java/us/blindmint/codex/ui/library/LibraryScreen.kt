@@ -111,7 +111,7 @@ object LibraryScreen : Screen, Parcelable {
             }
         }
 
-        val skullPainter = painterResource(id = R.drawable.skull_outline)
+        val skullPainter = painterResource(id = R.drawable.skull_medium)
 
         val tabs = remember(sortedBooks) {
             derivedStateOf {

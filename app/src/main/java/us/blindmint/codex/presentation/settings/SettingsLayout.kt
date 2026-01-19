@@ -109,7 +109,7 @@ fun SettingsLayout(
 
         item {
             SettingsLayoutItem(
-                icon = painterResource(id = R.drawable.skull_outline),
+                icon = painterResource(id = R.drawable.skull_small),
                 title = stringResource(id = R.string.about_screen),
                 description = stringResource(id = R.string.about_screen)
             ) {
