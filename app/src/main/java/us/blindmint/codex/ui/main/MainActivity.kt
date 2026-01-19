@@ -32,6 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.internal.immutableListOf
@@ -82,6 +83,11 @@ class MainActivity : AppCompatActivity() {
     // Pending file URI from external intent
     private var pendingFileUri: Uri? = null
     private var pendingFileUriCounter = 0
+
+    // State for file import results
+    private val fileImportState = MutableStateFlow<FileImportState?>(null)
+
+    data class FileImportState(val bookId: Int, val message: String?)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Splash screen
@@ -162,27 +168,23 @@ class MainActivity : AppCompatActivity() {
                     settingsModel.performInitialColorPresetSelection(isDarkTheme)
                 }
 
-                // Track pending file import state
-                var fileImportBookId by remember { mutableStateOf<Int?>(null) }
-                var fileImportMessage by remember { mutableStateOf<String?>(null) }
-                val scope = rememberCoroutineScope()
 
-                // Handle pending file import from external intent
-                LaunchedEffect(pendingFileUriCounter) {
-                    val uri = pendingFileUri ?: return@LaunchedEffect
-                    pendingFileUri = null // Clear to prevent re-processing
 
-                    scope.launch {
-                        try {
-                            val cachedFile = CachedFileCompat.fromUri(this@MainActivity, uri)
-                            val absolutePath = cachedFile.path
-                            val uriString = if (uri.scheme == "content") uri.toString() else null
+                // Handle file import state changes
+                val currentFileImportState by fileImportState.collectAsStateWithLifecycle()
+                LaunchedEffect(currentFileImportState) {
+                    currentFileImportState?.let { state ->
+                        fileImportState.value = null // Consume the state
 
-                            // Check if book already exists in library
-                            val existingBook = withContext(Dispatchers.IO) {
-                                // Try to find by URI string first (for content URIs), then by absolute path
-                                uriString?.let { getBookByFilePath.execute(it) } ?: getBookByFilePath.execute(absolutePath)
-                            }
+                        state.message?.let {
+                            Toast.makeText(this@MainActivity, it, Toast.LENGTH_SHORT).show()
+                        }
+
+                        // Navigate to the reader
+                        HistoryScreen.insertHistoryChannel.trySend(state.bookId)
+                        navigator.push(ReaderScreen(state.bookId))
+                    }
+                }
 
                             if (existingBook != null) {
                                 // Book already exists - open it directly
@@ -315,6 +317,17 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+                            }
+
+                            else -> {
+                                android.util.Log.d("NAV_DEBUG", "Rendering screen: ${screen::class.simpleName}")
+                                screen.Content()
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -327,6 +340,89 @@ class MainActivity : AppCompatActivity() {
             intent.data?.let { uri ->
                 pendingFileUri = uri
                 pendingFileUriCounter++
+
+                // Launch file import in viewModelScope
+                viewModelScope.launch {
+                    processFileImport(uri)
+                }
+            }
+        }
+    }
+
+    private suspend fun processFileImport(uri: Uri) {
+        try {
+            val cachedFile = CachedFileCompat.fromUri(this@MainActivity, uri)
+            val absolutePath = cachedFile.path
+            val uriString = if (uri.scheme == "content") uri.toString() else null
+
+            // Check if book already exists in library
+            val existingBook = withContext(Dispatchers.IO) {
+                // Try to find by URI string first (for content URIs), then by absolute path
+                uriString?.let { getBookByFilePath.execute(it) } ?: getBookByFilePath.execute(absolutePath)
+            }
+
+            if (existingBook != null) {
+                // Book already exists - open it directly
+                fileImportState.value = FileImportState(
+                    bookId = existingBook.id,
+                    message = getString(R.string.opening_existing_book, existingBook.title)
+                )
+            } else {
+                // Import the book
+                val result = withContext(Dispatchers.IO) {
+                    getBookFromFile.execute(cachedFile)
+                }
+                when (result) {
+                    is NullableBook.NotNull -> {
+                        val bookTitle = result.bookWithCover!!.book.title
+                        // Update the filePath for content URIs
+                        val storagePath = uriString ?: absolutePath
+                        val bookWithCorrectPath = result.bookWithCover!!.copy(
+                            book = result.bookWithCover.book.copy(filePath = storagePath)
+                        )
+                        withContext(Dispatchers.IO) {
+                            insertBook.execute(bookWithCorrectPath)
+                        }
+                        // Get the newly inserted book to get its ID
+                        val newBook = withContext(Dispatchers.IO) {
+                            getBookByFilePath.execute(storagePath)
+                        }
+                        if (newBook != null) {
+                            fileImportState.value = FileImportState(
+                                bookId = newBook.id,
+                                message = getString(R.string.book_added, bookTitle)
+                            )
+                            // Trigger library refresh
+                            withContext(Dispatchers.Main) {
+                                libraryModel.onEvent(
+                                    us.blindmint.codex.ui.library.LibraryEvent.OnRefreshList(
+                                        loading = false,
+                                        hideSearch = true
+                                    )
+                                )
+                            }
+                        }
+                    }
+                    is NullableBook.Null -> {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@MainActivity,
+                                result.message?.asString(this@MainActivity)
+                                    ?: getString(R.string.error_something_went_wrong),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    this@MainActivity,
+                    getString(R.string.error_something_went_wrong),
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
