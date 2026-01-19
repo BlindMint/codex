@@ -26,6 +26,7 @@ fun BookInfoBottomSheet(
     resetAuthor: (BookInfoEvent.OnResetAuthor) -> Unit,
     resetDescription: (BookInfoEvent.OnResetDescription) -> Unit,
     clearProgressHistory: (BookInfoEvent.OnClearProgressHistory) -> Unit,
+    refreshMetadataFromOpds: (BookInfoEvent.OnRefreshMetadataFromOpds) -> Unit,
     changeCover: (BookInfoEvent.OnChangeCover) -> Unit,
     resetCover: (BookInfoEvent.OnResetCover) -> Unit,
     deleteCover: (BookInfoEvent.OnDeleteCover) -> Unit,
@@ -57,6 +58,7 @@ fun BookInfoBottomSheet(
                 resetAuthor = resetAuthor,
                 resetDescription = resetDescription,
                 clearProgressHistory = clearProgressHistory,
+                refreshMetadataFromOpds = refreshMetadataFromOpds,
                 dismissBottomSheet = dismissBottomSheet
             )
         }

@@ -93,6 +93,7 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 resetAuthor = screenModel::onEvent,
                 resetDescription = screenModel::onEvent,
                 clearProgressHistory = screenModel::onEvent,
+                refreshMetadataFromOpds = screenModel::onEvent,
                 checkCoverReset = screenModel::onEvent,
                 changeCover = screenModel::onEvent,
                 resetCover = screenModel::onEvent,

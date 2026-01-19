@@ -28,7 +28,9 @@ import us.blindmint.codex.domain.use_case.book.DeleteProgressHistoryUseCase
 import us.blindmint.codex.domain.use_case.book.GetBookById
 import us.blindmint.codex.domain.use_case.book.ResetCoverImage
 import us.blindmint.codex.domain.use_case.book.UpdateBook
+import us.blindmint.codex.domain.use_case.opds.RefreshBookMetadataFromOpds
 import us.blindmint.codex.domain.use_case.book.UpdateCoverImageOfBook
+import us.blindmint.codex.domain.repository.OpdsRepository
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.browse.BrowseScreen
 import us.blindmint.codex.ui.history.HistoryScreen
@@ -43,7 +45,9 @@ class BookInfoModel @Inject constructor(
     private val updateCoverImageOfBook: UpdateCoverImageOfBook,
     private val resetCoverImage: ResetCoverImage,
     private val deleteBooks: DeleteBooks,
-    private val deleteProgressHistory: DeleteProgressHistoryUseCase
+    private val deleteProgressHistory: DeleteProgressHistoryUseCase,
+    private val refreshBookMetadataFromOpds: RefreshBookMetadataFromOpds,
+    private val opdsRepository: OpdsRepository
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -582,6 +586,50 @@ class BookInfoModel @Inject constructor(
                     withContext(Dispatchers.Main) {
                         event.context.getString(R.string.reset_no_original)
                             .showToast(context = event.context)
+                    }
+                }
+
+                is BookInfoEvent.OnRefreshMetadataFromOpds -> {
+                    launch(Dispatchers.IO) {
+                        val currentBook = _state.value.book
+                        if (currentBook.opdsSourceUrl == null) {
+                            withContext(Dispatchers.Main) {
+                                "This book has no OPDS source".showToast(context = event.context)
+                            }
+                            return@launch
+                        }
+
+                        try {
+                            val refreshedBook = refreshBookMetadataFromOpds.execute(currentBook) { uuid, isbn ->
+                                // Find OPDS entry by UUID or ISBN from the book's OPDS source
+                                try {
+                                    val feed = opdsRepository.fetchFeed(currentBook.opdsSourceUrl!!)
+                                    feed.entries.firstOrNull { entry ->
+                                        (uuid != null && entry.id == uuid) ||
+                                        (isbn != null && entry.identifiers.any { it == isbn })
+                                    }
+                                } catch (e: Exception) {
+                                    null
+                                }
+                            }
+                            if (refreshedBook != null) {
+                                _state.update {
+                                    it.copy(book = refreshedBook)
+                                }
+                                updateBook.execute(refreshedBook)
+                            }
+
+                            LibraryScreen.refreshListChannel.trySend(0)
+                            HistoryScreen.refreshListChannel.trySend(0)
+
+                            withContext(Dispatchers.Main) {
+                                "Metadata refreshed from OPDS".showToast(context = event.context)
+                            }
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                "Failed to refresh metadata: ${e.message}".showToast(context = event.context)
+                            }
+                        }
                     }
                 }
 

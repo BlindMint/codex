@@ -47,6 +47,10 @@ fun LibraryContent(
     actionMoveDialog: (LibraryEvent.OnActionMoveDialog) -> Unit,
     actionDeleteDialog: (LibraryEvent.OnActionDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
+    showBulkEditDialog: (LibraryEvent.OnShowBulkEditDialog) -> Unit,
+    actionBulkEditTags: (LibraryEvent.OnActionBulkEditTags) -> Unit,
+    actionBulkEditSeries: (LibraryEvent.OnActionBulkEditSeries) -> Unit,
+    actionBulkEditLanguages: (LibraryEvent.OnActionBulkEditLanguages) -> Unit,
     dismissDialog: (LibraryEvent.OnDismissDialog) -> Unit,
     sortMenuVisibility: (LibraryEvent) -> Unit,
     allSelectedBooksAreFavorites: Boolean,
@@ -70,6 +74,9 @@ fun LibraryContent(
                 LibraryEvent.OnShowClearProgressHistoryDialog
             )
         },
+        actionBulkEditTags = actionBulkEditTags,
+        actionBulkEditSeries = actionBulkEditSeries,
+        actionBulkEditLanguages = actionBulkEditLanguages,
         dismissDialog = dismissDialog
     )
 
@@ -96,6 +103,7 @@ fun LibraryContent(
         showMoveDialog = showMoveDialog,
         showDeleteDialog = showDeleteDialog,
         showClearProgressHistoryDialog = showClearProgressHistoryDialog,
+        showBulkEditDialog = showBulkEditDialog,
         sortMenuVisibility = sortMenuVisibility,
         allSelectedBooksAreFavorites = allSelectedBooksAreFavorites,
         toggleSelectedBooksFavorite = toggleSelectedBooksFavorite,

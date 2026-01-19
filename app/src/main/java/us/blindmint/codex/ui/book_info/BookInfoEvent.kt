@@ -143,5 +143,9 @@ sealed class BookInfoEvent {
         val context: Context
     ) : BookInfoEvent()
 
+    data class OnRefreshMetadataFromOpds(
+        val context: Context
+    ) : BookInfoEvent()
+
     data object OnToggleFavorite : BookInfoEvent()
 }

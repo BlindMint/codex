@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Checklist
@@ -74,6 +75,7 @@ fun LibraryTopBar(
     showMoveDialog: (LibraryEvent.OnShowMoveDialog) -> Unit,
     showDeleteDialog: (LibraryEvent.OnShowDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
+    showBulkEditDialog: (LibraryEvent.OnShowBulkEditDialog) -> Unit,
     sortMenuVisibility: (LibraryEvent) -> Unit,
     allSelectedBooksAreFavorites: Boolean,
     toggleSelectedBooksFavorite: () -> Unit,
@@ -216,6 +218,14 @@ fun LibraryTopBar(
                         disableOnClick = false
                     ) {
                         showClearProgressHistoryDialog(LibraryEvent.OnShowClearProgressHistoryDialog)
+                    }
+                    IconButton(
+                        icon = Icons.Default.Edit,
+                        contentDescription = R.string.edit_metadata,
+                        enabled = !isLoading && !isRefreshing,
+                        disableOnClick = false
+                    ) {
+                        showBulkEditDialog(LibraryEvent.OnShowBulkEditDialog)
                     }
                     IconButton(
                         icon = Icons.Outlined.Delete,

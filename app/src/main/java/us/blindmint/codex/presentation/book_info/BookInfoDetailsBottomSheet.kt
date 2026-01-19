@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Restore
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -54,6 +55,7 @@ fun BookInfoDetailsBottomSheet(
     resetAuthor: (BookInfoEvent.OnResetAuthor) -> Unit,
     resetDescription: (BookInfoEvent.OnResetDescription) -> Unit,
     clearProgressHistory: (BookInfoEvent.OnClearProgressHistory) -> Unit,
+    refreshMetadataFromOpds: (BookInfoEvent.OnRefreshMetadataFromOpds) -> Unit,
     dismissBottomSheet: (BookInfoEvent.OnDismissBottomSheet) -> Unit
 ) {
     val pattern = remember { SimpleDateFormat("HH:mm dd MMM yyyy", Locale.getDefault()) }
@@ -145,6 +147,17 @@ fun BookInfoDetailsBottomSheet(
                              resetAuthor(BookInfoEvent.OnResetAuthor(context))
                              resetDescription(BookInfoEvent.OnResetDescription(context))
                          }
+                        if (book.opdsSourceUrl != null) {
+                            IconButton(
+                                icon = Icons.Default.Refresh,
+                                contentDescription = R.string.refresh_from_opds,
+                                disableOnClick = false,
+                                color = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                refreshMetadataFromOpds(BookInfoEvent.OnRefreshMetadataFromOpds(context))
+                            }
+                        }
                      }
                  }
             }

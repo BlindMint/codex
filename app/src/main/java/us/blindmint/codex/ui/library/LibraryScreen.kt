@@ -56,6 +56,12 @@ object LibraryScreen : Screen, Parcelable {
     const val DELETE_DIALOG = "delete_dialog"
 
     @IgnoredOnParcel
+    const val BULK_EDIT_DIALOG = "bulk_edit_dialog"
+
+    @IgnoredOnParcel
+    const val CLEAR_PROGRESS_HISTORY_DIALOG = "clear_progress_history_dialog"
+
+    @IgnoredOnParcel
     val refreshListChannel: Channel<Long> = Channel(Channel.CONFLATED)
 
     @IgnoredOnParcel
@@ -209,6 +215,10 @@ object LibraryScreen : Screen, Parcelable {
             actionDeleteDialog = screenModel::onEvent,
             showDeleteDialog = screenModel::onEvent,
             showClearProgressHistoryDialog = screenModel::onEvent,
+            showBulkEditDialog = screenModel::onEvent,
+            actionBulkEditTags = screenModel::onEvent,
+            actionBulkEditSeries = screenModel::onEvent,
+            actionBulkEditLanguages = screenModel::onEvent,
             dismissDialog = screenModel::onEvent,
             sortMenuVisibility = screenModel::onEvent,
             allSelectedBooksAreFavorites = screenModel.allSelectedBooksAreFavorites,

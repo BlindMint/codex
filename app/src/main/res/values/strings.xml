@@ -154,6 +154,8 @@
     <string name="authors">Authors</string>
     <string name="series">Series</string>
     <string name="languages">Languages</string>
+    <string name="edit_metadata">Edit Metadata</string>
+    <string name="refresh_from_opds">Refresh from OPDS</string>
 
     <!-- Tabs -->
     <string name="reading_tab">All</string>
@@ -858,7 +860,6 @@
     <string name="note_content_desc">Note</string>
     <string name="sort_content_desc">Sort</string>
     <string name="reset_content_desc">Reset to original</string>
-    <string name="edit_metadata">Edit Metadata</string>
     <string name="revert_changes">Revert changes</string>
     <string name="save_changes">Save changes</string>
     <string name="alignment_original">Original</string>

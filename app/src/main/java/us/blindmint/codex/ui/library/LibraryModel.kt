@@ -417,6 +417,102 @@ class LibraryModel @Inject constructor(
                     }
                 }
             }
+
+            is LibraryEvent.OnShowBulkEditDialog -> {
+                viewModelScope.launch {
+                    val selectedCount = _state.value.books.count { it.selected }
+                    if (selectedCount > 50) {
+                        // Cannot edit more than 50 books at once - UI should prevent this
+                        return@launch
+                    }
+                    _state.update {
+                        it.copy(
+                            dialog = LibraryScreen.BULK_EDIT_DIALOG
+                        )
+                    }
+                }
+            }
+
+            is LibraryEvent.OnActionBulkEditTags -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    _state.value.books.forEach { book ->
+                        if (book.selected) {
+                            moveBooks.execute(book.data.copy(tags = event.tags))
+                        }
+                    }
+
+                    _state.update {
+                        it.copy(
+                            books = it.books.map { book ->
+                                if (book.selected) {
+                                    book.copy(data = book.data.copy(tags = event.tags))
+                                } else {
+                                    book
+                                }
+                            },
+                            dialog = null
+                        )
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        "Tags updated".showToast(context = event.context)
+                    }
+                }
+            }
+
+            is LibraryEvent.OnActionBulkEditSeries -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    _state.value.books.forEach { book ->
+                        if (book.selected) {
+                            moveBooks.execute(book.data.copy(series = event.series))
+                        }
+                    }
+
+                    _state.update {
+                        it.copy(
+                            books = it.books.map { book ->
+                                if (book.selected) {
+                                    book.copy(data = book.data.copy(series = event.series))
+                                } else {
+                                    book
+                                }
+                            },
+                            dialog = null
+                        )
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        "Series updated".showToast(context = event.context)
+                    }
+                }
+            }
+
+            is LibraryEvent.OnActionBulkEditLanguages -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    _state.value.books.forEach { book ->
+                        if (book.selected) {
+                            moveBooks.execute(book.data.copy(languages = event.languages))
+                        }
+                    }
+
+                    _state.update {
+                        it.copy(
+                            books = it.books.map { book ->
+                                if (book.selected) {
+                                    book.copy(data = book.data.copy(languages = event.languages))
+                                } else {
+                                    book
+                                }
+                            },
+                            dialog = null
+                        )
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        "Languages updated".showToast(context = event.context)
+                    }
+                }
+            }
         }
     }
 

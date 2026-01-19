@@ -71,4 +71,21 @@ sealed class LibraryEvent {
     data object OnToggleSelectedBooksFavorite : LibraryEvent()
 
     data object OnSelectAllBooks : LibraryEvent()
+
+    data object OnShowBulkEditDialog : LibraryEvent()
+
+    data class OnActionBulkEditTags(
+        val tags: List<String>,
+        val context: Context
+    ) : LibraryEvent()
+
+    data class OnActionBulkEditSeries(
+        val series: List<String>,
+        val context: Context
+    ) : LibraryEvent()
+
+    data class OnActionBulkEditLanguages(
+        val languages: List<String>,
+        val context: Context
+    ) : LibraryEvent()
 }

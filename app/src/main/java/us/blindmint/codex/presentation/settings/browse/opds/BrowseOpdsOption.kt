@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material3.AlertDialog
@@ -158,6 +159,11 @@ fun BrowseOpdsOption(
                 },
                 onEditClick = { editingSource = source },
                 onDeleteClick = { showDeleteConfirmation = source },
+                onRefreshClick = {
+                    scope.launch {
+                        sourcesModel.refreshAllBooksFromSource(source.id, source.url)
+                    }
+                },
                 modifier = Modifier
             )
         }
@@ -217,6 +223,7 @@ private fun OpdsSourceItem(
     onSourceClick: () -> Unit,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    onRefreshClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -286,6 +293,16 @@ private fun OpdsSourceItem(
                 Icon(
                     Icons.Default.Edit,
                     contentDescription = "Edit source",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            IconButton(
+                onClick = onRefreshClick,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    Icons.Default.Refresh,
+                    contentDescription = "Refresh metadata from OPDS source",
                     modifier = Modifier.size(20.dp)
                 )
             }
