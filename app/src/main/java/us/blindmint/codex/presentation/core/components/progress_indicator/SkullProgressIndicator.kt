@@ -119,7 +119,7 @@ fun SkullProgressIndicator(
 
         // Skull icon in center with pulse effect
         Image(
-            painter = painterResource(id = R.drawable.skull_outline),
+            painter = painterResource(id = R.drawable.skull_small),
             contentDescription = null,
             modifier = Modifier
                 .size(size * 0.45f)
@@ -194,7 +194,7 @@ fun SkullProgressIndicator(
         // Skull icon - more visible as progress increases
         val skullVisibility = (skullAlpha * 0.5f) + (animatedProgress * skullAlpha * 0.5f)
         Image(
-            painter = painterResource(id = R.drawable.skull_outline),
+            painter = painterResource(id = R.drawable.skull_small),
             contentDescription = null,
             modifier = Modifier
                 .size(size * 0.45f)

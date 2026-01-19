@@ -126,29 +126,29 @@ class MainActivity : AppCompatActivity() {
                     screen = LibraryScreen,
                     title = R.string.library_screen,
                     tooltip = R.string.library_content_desc,
-                    selectedIcon = R.drawable.library_screen_filled,
-                    unselectedIcon = R.drawable.library_screen_outlined
+                    selectedIcon = R.drawable.library_filled,
+                    unselectedIcon = R.drawable.library_outlined
                 ),
                 NavigatorItem(
                     screen = HistoryScreen,
                     title = R.string.history_screen,
                     tooltip = R.string.history_content_desc,
-                    selectedIcon = R.drawable.history_screen_filled,
-                    unselectedIcon = R.drawable.history_screen_outlined
+                    selectedIcon = R.drawable.history_filled,
+                    unselectedIcon = R.drawable.history_outlined
                 ),
                 NavigatorItem(
                     screen = BrowseScreen,
                     title = R.string.browse_screen,
                     tooltip = R.string.browse_content_desc,
-                    selectedIcon = R.drawable.browse_screen_filled,
-                    unselectedIcon = R.drawable.browse_screen_outlined
+                    selectedIcon = R.drawable.discover_filled,
+                    unselectedIcon = R.drawable.discover_outlined
                 ),
                 NavigatorItem(
                     screen = SettingsScreen,
                     title = R.string.settings_screen,
                     tooltip = R.string.settings_screen,
-                    selectedIcon = R.drawable.settings_screen_filled,
-                    unselectedIcon = R.drawable.settings_screen_outlined
+                    selectedIcon = R.drawable.settings_filled,
+                    unselectedIcon = R.drawable.settings_outlined
                 )
             )
 
