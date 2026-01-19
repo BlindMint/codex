@@ -143,7 +143,7 @@ fun SpeedReadingBottomBar(
         Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.readerBarsColor)
-            .noRippleClickable(onClick = {})
+            .noRippleClickable(onClick = {}) // Consume taps to prevent propagation
             .navigationBarsPadding()
             .padding(horizontal = 18.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -175,6 +175,7 @@ fun SpeedReadingBottomBar(
             )
 
             // Play/Pause button (matches OSD size)
+            // Only close menu when starting playback, not when pausing
             IconButton(
                 modifier = Modifier.size(60.dp),
                 icon = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
@@ -182,8 +183,12 @@ fun SpeedReadingBottomBar(
                 disableOnClick = false,
                 color = MaterialTheme.colorScheme.onSurface
             ) {
+                val wasPlaying = isPlaying
                 onPlayPause()
-                onCloseMenu() // Close menu when play is pressed
+                // Only close menu when starting playback (was paused, now playing)
+                if (!wasPlaying) {
+                    onCloseMenu()
+                }
             }
 
             // Forward button - matches OSD style

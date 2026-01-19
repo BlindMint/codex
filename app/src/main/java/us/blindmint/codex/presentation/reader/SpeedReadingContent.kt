@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.clickable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -122,6 +121,9 @@ fun SpeedReadingContent(
     osdHeight: Float = 0.5f, // 0.0 = top, 1.0 = bottom
     osdSeparation: Float = 0.5f, // 0.0 = close, 1.0 = far
     centerWord: Boolean = false,
+    wordPickerActive: Boolean = false,
+    onShowWordPicker: () -> Unit = {},
+    initialWordIndex: Int = 0,
     modifier: Modifier = Modifier
 ) {
     // Extract words from text starting from current position
@@ -142,9 +144,9 @@ fun SpeedReadingContent(
     val density = LocalDensity.current
     val textMeasurer = rememberTextMeasurer()
 
-    // Reset word index when words change
-    LaunchedEffect(words) {
-        currentWordIndex = 0
+    // Reset word index when words change, using initialWordIndex if provided
+    LaunchedEffect(words, initialWordIndex) {
+        currentWordIndex = initialWordIndex.coerceIn(0, (words.size - 1).coerceAtLeast(0))
         lastNavigationDirection = 0
     }
 
@@ -216,18 +218,51 @@ fun SpeedReadingContent(
 
     var boxSize by remember { mutableStateOf(0 to 0) }
 
+    // Get screen dimensions for calculating exclusion zones
+    val configuration = LocalConfiguration.current
+    val screenHeightDp = configuration.screenHeightDp.dp
+
+    // Calculate OSD exclusion zone bounds in dp
+    // OSD is positioned at (screenHeight * (1 - osdHeight)) from top
+    // OSD height is approximately 60dp (play button) + 16dp vertical padding = ~80dp
+    val osdTopDp = (screenHeightDp.value * (1f - osdHeight)).dp - 8.dp // Account for padding
+    val osdHeightDp = 80.dp // Approximate height of OSD controls with padding
+    val osdBottomDp = osdTopDp + osdHeightDp
+
+    // Bottom bar exclusion zone: approximately 60dp from bottom
+    val bottomBarHeightDp = 60.dp
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .onSizeChanged { boxSize = it.width to it.height }
-            .pointerInput(isPlaying) {
+            .pointerInput(isPlaying, osdEnabled, osdHeight) {
+                // Convert dp to pixels for tap detection
+                val osdTopPx = osdTopDp.toPx()
+                val osdBottomPx = osdBottomDp.toPx()
+                val bottomBarTopPx = boxSize.second - bottomBarHeightDp.toPx()
+
                 awaitPointerEventScope {
                     while (true) {
                         val event = awaitPointerEvent()
                         if (event.type == androidx.compose.ui.input.pointer.PointerEventType.Press) {
                             val position = event.changes.first().position
                             val width = boxSize.first.toFloat()
+                            val height = boxSize.second.toFloat()
                             val tapZoneWidth = width * 0.2f // 20% edge zones
+
+                            // Check if tap is in OSD exclusion zone (only if OSD is enabled)
+                            val inOsdZone = osdEnabled &&
+                                position.y >= osdTopPx &&
+                                position.y <= osdBottomPx
+
+                            // Check if tap is in bottom bar exclusion zone
+                            val inBottomBarZone = position.y >= bottomBarTopPx
+
+                            // Skip processing if tap is in an exclusion zone
+                            if (inOsdZone || inBottomBarZone) {
+                                continue
+                            }
 
                             when {
                                 position.x < tapZoneWidth -> {
@@ -481,24 +516,16 @@ fun SpeedReadingContent(
         }
 
         // OSD controls positioned based on settings
+        // The parent tap detector has an exclusion zone for this area
         if (osdEnabled) {
-            val configuration = LocalConfiguration.current
-            val screenHeight = configuration.screenHeightDp.dp
             // osdHeight: 0.0 = top, 1.0 = bottom, 0.5 = middle
-            val verticalPosition = (screenHeight.value * (1f - osdHeight)).dp // Invert so 0.0 = top, 1.0 = bottom
+            val verticalPosition = (screenHeightDp.value * (1f - osdHeight)).dp
 
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = verticalPosition)
-                    .pointerInput(Unit) {
-                        awaitPointerEventScope {
-                            while (true) {
-                                awaitPointerEvent()
-                                // Consume the pointer event so it doesn't bubble to parent tap detector
-                            }
-                        }
-                    },
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 val separationDp = (12f + (osdSeparation * 36f)).dp // 12dp to 48dp
@@ -507,18 +534,18 @@ fun SpeedReadingContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Left arrow (<) - navigate to previous word
-                     Text(
-                         text = "<",
-                         style = MaterialTheme.typography.headlineMedium.copy( // Increased size
-                             color = fontColor.copy(alpha = 0.7f),
-                             fontSize = 28.sp // Larger size
-                         ),
-                          modifier = Modifier
-                              .padding(12.dp) // Increased clickable area
-                              .clickable {
-                                  navigateWord(-1) // Navigate to previous word
-                              }
-                     )
+                    Text(
+                        text = "<",
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            color = fontColor.copy(alpha = 0.7f),
+                            fontSize = 28.sp
+                        ),
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .noRippleClickable {
+                                navigateWord(-1) // Navigate to previous word
+                            }
+                    )
 
                     // Play/Pause button - centered and larger, minimal icon
                     Icon(
@@ -526,31 +553,32 @@ fun SpeedReadingContent(
                         contentDescription = if (isPlaying) "Pause" else "Play",
                         tint = fontColor,
                         modifier = Modifier
-                            .size(60.dp) // 2.5x larger than default 24.dp
+                            .size(60.dp)
                             .padding(8.dp)
-                            .clickable {
+                            .noRippleClickable {
                                 onPlayPause()
                             }
                     )
 
                     // Right arrow (>) - navigate to next word
-                     Text(
-                         text = ">",
-                         style = MaterialTheme.typography.headlineMedium.copy( // Increased size
-                             color = fontColor.copy(alpha = 0.7f),
-                             fontSize = 28.sp // Larger size
-                         ),
-                          modifier = Modifier
-                              .padding(12.dp) // Increased clickable area
-                              .clickable {
-                                  navigateWord(1) // Navigate to next word
-                              }
-                     )
+                    Text(
+                        text = ">",
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            color = fontColor.copy(alpha = 0.7f),
+                            fontSize = 28.sp
+                        ),
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .noRippleClickable {
+                                navigateWord(1) // Navigate to next word
+                            }
+                    )
                 }
             }
         }
 
         // Bottom bar with progress bar and controls
+        // The parent tap detector has an exclusion zone for this area
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -561,10 +589,6 @@ fun SpeedReadingContent(
                     shape = MaterialTheme.shapes.small
                 )
                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                .clickable(
-                    onClick = {},
-                    enabled = true
-                )
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -633,7 +657,7 @@ fun SpeedReadingContent(
             ModalBottomSheet(
                 onDismissRequest = {
                     showQuickWpmMenu = false
-                    onToggleMenu() // Close tap menu when dismissing WPM panel
+                    // Don't toggle tap menu - just close the WPM panel
                 },
                 sheetState = sheetState,
                 containerColor = backgroundColor

@@ -63,6 +63,7 @@ fun SpeedReadingScaffold(
     osdHeight: Float = 0.2f,
     osdSeparation: Float = 0.5f,
     centerWord: Boolean = false,
+    initialWordIndex: Int = 0,
     onWpmChange: (Int) -> Unit,
     osdEnabled: Boolean,
     onExitSpeedReading: () -> Unit,
@@ -77,6 +78,7 @@ fun SpeedReadingScaffold(
     var showMenu by remember { mutableStateOf(false) } // Start with menu hidden
     var isPlaying by remember { mutableStateOf(false) }
     var navigateWordCallback: ((Int) -> Unit)? by remember { mutableStateOf(null) }
+    var showWordPicker by remember { mutableStateOf(false) }
 
     // Notify parent of menu visibility changes
     LaunchedEffect(showMenu) {
@@ -172,7 +174,8 @@ fun SpeedReadingScaffold(
                 osdEnabled = osdEnabled,
                 osdHeight = osdHeight,
                 osdSeparation = osdSeparation,
-                centerWord = centerWord
+                centerWord = centerWord,
+                initialWordIndex = initialWordIndex
             )
         }
     }
