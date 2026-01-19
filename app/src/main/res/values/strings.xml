@@ -156,6 +156,8 @@
     <string name="languages">Languages</string>
     <string name="edit_metadata">Edit Metadata</string>
     <string name="refresh_from_opds">Refresh from OPDS</string>
+    <string name="confirm_changes">Confirm changes</string>
+    <string name="cancel_editing">Cancel editing</string>
 
     <!-- Tabs -->
     <string name="reading_tab">All</string>
@@ -538,6 +540,7 @@
     <string name="author_changed">Author was successfully changed.</string>
     <string name="description_changed">Description was successfully changed.</string>
     <string name="path_changed">File path was successfully changed.</string>
+    <string name="metadata_saved">Metadata was successfully saved.</string>
 
     <!-- Snackbar messages -->
     <string name="history_element_deleted">History element was successfully deleted.</string>
@@ -923,5 +926,7 @@
     <string name="crop_borders_desc">Automatically crop white borders around images</string>
     <string name="landscape_zoom">Landscape zoom</string>
     <string name="landscape_zoom_desc">Enable zoom when device is in landscape mode</string>
+    <string name="remove_item">Remove Item</string>
+    <string name="confirm_remove_item">Are you sure you want to remove "%1$s"?</string>
 
  </resources>

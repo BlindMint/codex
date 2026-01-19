@@ -81,8 +81,8 @@ fun LibrarySortMenu(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf(
         stringResource(R.string.sort_settings),
-        stringResource(R.string.display_settings),
-        stringResource(R.string.filter_settings)
+        stringResource(R.string.filter_settings),
+        stringResource(R.string.display_settings)
     )
 
     // Subpanel state and data for filters
@@ -208,8 +208,7 @@ fun LibrarySortMenu(
         item {
             when (selectedTabIndex) {
                 0 -> LibrarySortTabContent(state, mainModel)
-                1 -> LibraryDisplayTabContent(state, mainModel)
-                 2 -> LibraryFilterTabContent(
+                1 -> LibraryFilterTabContent(
                      selectedStatuses = selectedStatuses,
                      selectedTags = selectedTags,
                      selectedAuthors = selectedAuthors,
@@ -232,6 +231,7 @@ fun LibrarySortMenu(
                          updateFilterState()
                      }
                  )
+                2 -> LibraryDisplayTabContent(state, mainModel)
             }
         }
     }
@@ -415,88 +415,60 @@ private fun LibraryFilterTabContent(
                 "Status Presets",
                 style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
             )
-            IconButton(
+            OutlinedButton(
                 onClick = onClearAllFilters,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.padding(0.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.Clear,
-                    contentDescription = "Clear all filters",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text("Clear")
             }
         }
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            val statuses = listOf("Reading", "Planning", "Already Read")
-            statuses.forEach { status ->
-                FilterChip(
-                    selected = status in selectedStatuses,
-                    onClick = { onStatusToggle(status, status !in selectedStatuses) },
-                    label = { Text(status) }
-                )
+        StatusChipsRow(
+            selectedStatuses = selectedStatuses.map {
+                when (it) {
+                    "Reading" -> us.blindmint.codex.domain.library.category.Category.READING
+                    "Planning" -> us.blindmint.codex.domain.library.category.Category.PLANNING
+                    "Already Read" -> us.blindmint.codex.domain.library.category.Category.ALREADY_READ
+                    else -> us.blindmint.codex.domain.library.category.Category.PLANNING
+                }
+            }.toSet(),
+            onStatusToggle = { status, selected ->
+                val statusName = when (status) {
+                    us.blindmint.codex.domain.library.category.Category.READING -> "Reading"
+                    us.blindmint.codex.domain.library.category.Category.PLANNING -> "Planning"
+                    us.blindmint.codex.domain.library.category.Category.ALREADY_READ -> "Already Read"
+                    else -> ""
+                }
+                onStatusToggle(statusName, selected)
             }
-        }
-
-        Text(
-            "Tags",
-            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
         )
+
         if (sortedTags.isNotEmpty()) {
-            OutlinedButton(
-                onClick = onShowTagsSubpanel,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("${selectedTags.size} selected")
-                Spacer(modifier = Modifier.weight(1f))
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
-            }
-        } else {
-            Text(
-                "No tags available",
-                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            FilterMetadataRow(
+                title = "Tags",
+                selectedItems = selectedTags,
+                totalAvailableCount = sortedTags.size,
+                placeholderText = "Select tags to filter",
+                onEditClick = onShowTagsSubpanel
             )
         }
 
-        Text(
-            "Authors",
-            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
-        )
         if (sortedAuthors.isNotEmpty()) {
-            OutlinedButton(
-                onClick = onShowAuthorsSubpanel,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("${selectedAuthors.size} selected")
-                Spacer(modifier = Modifier.weight(1f))
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
-            }
-        } else {
-            Text(
-                "No authors available",
-                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            FilterMetadataRow(
+                title = "Authors",
+                selectedItems = selectedAuthors,
+                totalAvailableCount = sortedAuthors.size,
+                placeholderText = "Select authors to filter",
+                onEditClick = onShowAuthorsSubpanel
             )
         }
 
-        Text(
-            "Series",
-            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
-        )
         if (sortedSeries.isNotEmpty()) {
-            OutlinedButton(
-                onClick = onShowSeriesSubpanel,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("${selectedSeries.size} selected")
-                Spacer(modifier = Modifier.weight(1f))
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
-            }
-        } else {
-            Text(
-                "No series available",
-                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            FilterMetadataRow(
+                title = "Series",
+                selectedItems = selectedSeries,
+                totalAvailableCount = sortedSeries.size,
+                placeholderText = "Select series to filter",
+                onEditClick = onShowSeriesSubpanel
             )
         }
 

@@ -33,7 +33,9 @@ fun BookInfoDetailsBottomSheetItem(
     showError: Boolean = false,
     errorMessage: String? = null,
     maxLines: Int = 1,
-    onEdit: () -> Unit = {}
+    onEdit: () -> Unit = {},
+    onTextChange: (String) -> Unit = {},
+    onEditClick: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
@@ -45,10 +47,14 @@ fun BookInfoDetailsBottomSheetItem(
         OutlinedTextField(
             modifier = Modifier
                 .weight(1f)
-                .focusable(false),
+                .focusable(!editable),
             value = text,
-            onValueChange = {},
-            readOnly = true,
+            onValueChange = { newValue ->
+                if (editable) {
+                    onTextChange(newValue)
+                }
+            },
+            readOnly = !editable,
             isError = showError,
             maxLines = maxLines,
             supportingText = if (!showError || errorMessage.isNullOrBlank()) null else {
@@ -66,7 +72,7 @@ fun BookInfoDetailsBottomSheetItem(
             }
         )
 
-        if (editable) {
+        if (editable && onEditClick != null) {
             IconButton(
                 icon = Icons.Default.EditNote,
                 contentDescription = R.string.edit_content_desc,
@@ -74,8 +80,17 @@ fun BookInfoDetailsBottomSheetItem(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
             ) {
-                onEdit()
+                onEditClick()
             }
+        } else if (editable && onEditClick == null) {
+            // Empty space to maintain alignment
+            IconButton(
+                icon = Icons.Default.EditNote,
+                contentDescription = R.string.edit_metadata,
+                disableOnClick = true,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0f),
+                modifier = Modifier.size(24.dp)
+            ) {}
         }
     }
 }

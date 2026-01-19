@@ -51,6 +51,8 @@ fun LibraryContent(
     actionBulkEditTags: (LibraryEvent.OnActionBulkEditTags) -> Unit,
     actionBulkEditSeries: (LibraryEvent.OnActionBulkEditSeries) -> Unit,
     actionBulkEditLanguages: (LibraryEvent.OnActionBulkEditLanguages) -> Unit,
+    actionBulkEditAuthors: (LibraryEvent.OnActionBulkEditAuthors) -> Unit,
+    actionBulkEditCategory: (LibraryEvent.OnActionBulkEditCategory) -> Unit,
     dismissDialog: (LibraryEvent.OnDismissDialog) -> Unit,
     sortMenuVisibility: (LibraryEvent) -> Unit,
     allSelectedBooksAreFavorites: Boolean,
@@ -77,6 +79,8 @@ fun LibraryContent(
         actionBulkEditTags = actionBulkEditTags,
         actionBulkEditSeries = actionBulkEditSeries,
         actionBulkEditLanguages = actionBulkEditLanguages,
+        actionBulkEditAuthors = actionBulkEditAuthors,
+        actionBulkEditCategory = actionBulkEditCategory,
         dismissDialog = dismissDialog
     )
 

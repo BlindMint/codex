@@ -88,4 +88,18 @@ sealed class LibraryEvent {
         val languages: List<String>,
         val context: Context
     ) : LibraryEvent()
+
+    data class OnActionBulkEditAuthors(
+        val authors: List<String>,
+        val context: Context
+    ) : LibraryEvent()
+
+    data class OnActionBulkEditCategory(
+        val category: Category?,
+        val context: Context
+    ) : LibraryEvent()
+
+    data object OnConfirmBulkEdit : LibraryEvent()
+
+    data object OnCancelBulkEdit : LibraryEvent()
 }

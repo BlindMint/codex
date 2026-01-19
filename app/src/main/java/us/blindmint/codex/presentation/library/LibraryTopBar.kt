@@ -135,7 +135,7 @@ fun LibraryTopBar(
                         searchVisibility(LibraryEvent.OnSearchVisibility(true))
                     }
                     IconButton(
-                        icon = Icons.AutoMirrored.Outlined.Sort,
+                        icon = R.drawable.skull_list,
                         contentDescription = R.string.sort_content_desc,
                         disableOnClick = false,
                     ) {

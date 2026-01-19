@@ -9,6 +9,7 @@ package us.blindmint.codex.ui.book_info
 import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.Immutable
+import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.category.Category
 import us.blindmint.codex.domain.ui.UIText
 
@@ -148,4 +149,28 @@ sealed class BookInfoEvent {
     ) : BookInfoEvent()
 
     data object OnToggleFavorite : BookInfoEvent()
+
+    data object OnEnterEditMode : BookInfoEvent()
+
+    data object OnConfirmEditMetadata : BookInfoEvent()
+
+    data object OnCancelEditMetadata : BookInfoEvent()
+
+    data object OnSilentCancelEditMetadata : BookInfoEvent()
+
+    data class OnConfirmSaveChanges(
+        val context: Context
+    ) : BookInfoEvent()
+
+    data object OnDismissSaveDialog : BookInfoEvent()
+
+    data object OnDismissCancelDialog : BookInfoEvent()
+
+    data class OnUpdateEditedBook(
+        val updatedBook: Book
+    ) : BookInfoEvent()
+
+    data class OnChangeCategory(
+        val category: us.blindmint.codex.domain.library.category.Category
+    ) : BookInfoEvent()
 }

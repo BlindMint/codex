@@ -219,6 +219,8 @@ object LibraryScreen : Screen, Parcelable {
             actionBulkEditTags = screenModel::onEvent,
             actionBulkEditSeries = screenModel::onEvent,
             actionBulkEditLanguages = screenModel::onEvent,
+            actionBulkEditAuthors = screenModel::onEvent,
+            actionBulkEditCategory = screenModel::onEvent,
             dismissDialog = screenModel::onEvent,
             sortMenuVisibility = screenModel::onEvent,
             allSelectedBooksAreFavorites = screenModel.allSelectedBooksAreFavorites,

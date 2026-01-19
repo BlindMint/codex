@@ -24,6 +24,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.library.book.Book
+import us.blindmint.codex.domain.library.category.Category
+import us.blindmint.codex.presentation.book_info.BookInfoMetadataRow
 import us.blindmint.codex.presentation.book_info.MetadataItemEditor
 import us.blindmint.codex.presentation.core.components.modal_bottom_sheet.ModalBottomSheet
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
@@ -57,22 +59,42 @@ fun computeSharedLanguages(books: List<Book>): List<String> {
         .sorted()
 }
 
+fun computeSharedAuthors(books: List<Book>): List<String> {
+    if (books.isEmpty()) return emptyList()
+    return books.map { it.authors.toSet() }
+        .reduce { acc, set -> acc.intersect(set) }
+        .toList()
+        .sorted()
+}
+
 @Composable
 fun BulkEditBottomSheet(
     selectedBooks: List<Book>,
     actionBulkEditTags: (LibraryEvent.OnActionBulkEditTags) -> Unit,
     actionBulkEditSeries: (LibraryEvent.OnActionBulkEditSeries) -> Unit,
     actionBulkEditLanguages: (LibraryEvent.OnActionBulkEditLanguages) -> Unit,
+    actionBulkEditAuthors: (LibraryEvent.OnActionBulkEditAuthors) -> Unit,
+    actionBulkEditCategory: (LibraryEvent.OnActionBulkEditCategory) -> Unit,
     dismissDialog: (LibraryEvent.OnDismissDialog) -> Unit
 ) {
     val context = LocalContext.current
     var showTagsEditor by remember { mutableStateOf(false) }
     var showSeriesEditor by remember { mutableStateOf(false) }
     var showLanguagesEditor by remember { mutableStateOf(false) }
+    var showAuthorsEditor by remember { mutableStateOf(false) }
 
     val sharedTags = computeSharedTags(selectedBooks)
     val sharedSeries = computeSharedSeries(selectedBooks)
     val sharedLanguages = computeSharedLanguages(selectedBooks)
+    val sharedAuthors = computeSharedAuthors(selectedBooks)
+
+    // Determine shared category across selected books (only if ALL have the same category)
+    val sharedCategory = if (selectedBooks.isNotEmpty()) {
+        val allCategories = selectedBooks.map { it.category }.distinct()
+        if (allCategories.size == 1) allCategories.first() else null
+    } else {
+        null
+    }
 
     ModalBottomSheet(
         modifier = Modifier.fillMaxWidth(),
@@ -105,63 +127,49 @@ fun BulkEditBottomSheet(
             }
 
             item {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    if (sharedTags.isNotEmpty()) {
-                        Text(
-                            text = stringResource(id = R.string.tags),
-                            style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                        Text(
-                            text = sharedTags.joinToString(", "),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 12.dp)
-                        )
+                StatusChipsRow(
+                    selectedStatuses = if (sharedCategory != null) setOf(sharedCategory) else emptySet(),
+                    onStatusToggle = { status, selected ->
+                        val categoryToSet = if (selected) status else null
+                        actionBulkEditCategory(LibraryEvent.OnActionBulkEditCategory(categoryToSet, context))
                     }
+                )
+            }
 
-                    if (sharedSeries.isNotEmpty()) {
-                        Text(
-                            text = stringResource(id = R.string.series),
-                            style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                        Text(
-                            text = sharedSeries.joinToString(", "),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 12.dp)
-                        )
-                    }
+            item {
+                BookInfoMetadataRow(
+                    title = stringResource(id = R.string.tags),
+                    items = sharedTags,
+                    forceShowEmpty = true,
+                    onEditClick = { showTagsEditor = true }
+                )
+            }
 
-                    if (sharedLanguages.isNotEmpty()) {
-                        Text(
-                            text = stringResource(id = R.string.languages),
-                            style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                        Text(
-                            text = sharedLanguages.joinToString(", "),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 12.dp)
-                        )
-                    }
+            item {
+                BookInfoMetadataRow(
+                    title = stringResource(id = R.string.series),
+                    items = sharedSeries,
+                    forceShowEmpty = true,
+                    onEditClick = { showSeriesEditor = true }
+                )
+            }
 
-                    if (sharedTags.isEmpty() && sharedSeries.isEmpty() && sharedLanguages.isEmpty()) {
-                        Text(
-                            text = "No shared metadata items",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+            item {
+                BookInfoMetadataRow(
+                    title = stringResource(id = R.string.authors),
+                    items = sharedAuthors,
+                    forceShowEmpty = true,
+                    onEditClick = { showAuthorsEditor = true }
+                )
+            }
+
+            item {
+                BookInfoMetadataRow(
+                    title = stringResource(id = R.string.languages),
+                    items = sharedLanguages,
+                    forceShowEmpty = true,
+                    onEditClick = { showLanguagesEditor = true }
+                )
             }
         }
     }
@@ -199,6 +207,18 @@ fun BulkEditBottomSheet(
                 showLanguagesEditor = false
             },
             onDismiss = { showLanguagesEditor = false }
+        )
+    }
+
+    if (showAuthorsEditor) {
+        MetadataItemEditor(
+            title = stringResource(id = R.string.authors),
+            items = sharedAuthors,
+            onItemsChanged = { authors ->
+                actionBulkEditAuthors(LibraryEvent.OnActionBulkEditAuthors(authors, context))
+                showAuthorsEditor = false
+            },
+            onDismiss = { showAuthorsEditor = false }
         )
     }
 }

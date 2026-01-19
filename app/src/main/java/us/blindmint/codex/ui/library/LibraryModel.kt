@@ -435,9 +435,25 @@ class LibraryModel @Inject constructor(
 
             is LibraryEvent.OnActionBulkEditTags -> {
                 viewModelScope.launch(Dispatchers.IO) {
+                    // Get current shared tags
+                    val selectedBooks = _state.value.books.filter { it.selected }.map { it.data }
+                    val oldSharedTags = if (selectedBooks.isNotEmpty()) {
+                        selectedBooks.map { it.tags.toSet() }
+                            .reduce { acc, set -> acc.intersect(set) }
+                            .toList()
+                    } else {
+                        emptyList()
+                    }
+
+                    // Calculate what was added/removed
+                    val addedTags = (event.tags - oldSharedTags.toSet()).toList()
+                    val removedTags = (oldSharedTags.toSet() - event.tags.toSet()).toList()
+
                     _state.value.books.forEach { book ->
                         if (book.selected) {
-                            moveBooks.execute(book.data.copy(tags = event.tags))
+                            // Non-destructive merge: add new tags, remove deleted tags
+                            val updatedTags = (book.data.tags.toSet() + addedTags.toSet() - removedTags.toSet()).toList().sorted()
+                            moveBooks.execute(book.data.copy(tags = updatedTags))
                         }
                     }
 
@@ -445,7 +461,8 @@ class LibraryModel @Inject constructor(
                         it.copy(
                             books = it.books.map { book ->
                                 if (book.selected) {
-                                    book.copy(data = book.data.copy(tags = event.tags))
+                                    val updatedTags = (book.data.tags.toSet() + addedTags.toSet() - removedTags.toSet()).toList().sorted()
+                                    book.copy(data = book.data.copy(tags = updatedTags))
                                 } else {
                                     book
                                 }
@@ -462,9 +479,25 @@ class LibraryModel @Inject constructor(
 
             is LibraryEvent.OnActionBulkEditSeries -> {
                 viewModelScope.launch(Dispatchers.IO) {
+                    // Get current shared series
+                    val selectedBooks = _state.value.books.filter { it.selected }.map { it.data }
+                    val oldSharedSeries = if (selectedBooks.isNotEmpty()) {
+                        selectedBooks.map { it.series.toSet() }
+                            .reduce { acc, set -> acc.intersect(set) }
+                            .toList()
+                    } else {
+                        emptyList()
+                    }
+
+                    // Calculate what was added/removed
+                    val addedSeries = (event.series - oldSharedSeries.toSet()).toList()
+                    val removedSeries = (oldSharedSeries.toSet() - event.series.toSet()).toList()
+
                     _state.value.books.forEach { book ->
                         if (book.selected) {
-                            moveBooks.execute(book.data.copy(series = event.series))
+                            // Non-destructive merge: add new series, remove deleted series
+                            val updatedSeries = (book.data.series.toSet() + addedSeries.toSet() - removedSeries.toSet()).toList().sorted()
+                            moveBooks.execute(book.data.copy(series = updatedSeries))
                         }
                     }
 
@@ -472,7 +505,8 @@ class LibraryModel @Inject constructor(
                         it.copy(
                             books = it.books.map { book ->
                                 if (book.selected) {
-                                    book.copy(data = book.data.copy(series = event.series))
+                                    val updatedSeries = (book.data.series.toSet() + addedSeries.toSet() - removedSeries.toSet()).toList().sorted()
+                                    book.copy(data = book.data.copy(series = updatedSeries))
                                 } else {
                                     book
                                 }
@@ -489,9 +523,25 @@ class LibraryModel @Inject constructor(
 
             is LibraryEvent.OnActionBulkEditLanguages -> {
                 viewModelScope.launch(Dispatchers.IO) {
+                    // Get current shared languages
+                    val selectedBooks = _state.value.books.filter { it.selected }.map { it.data }
+                    val oldSharedLanguages = if (selectedBooks.isNotEmpty()) {
+                        selectedBooks.map { it.languages.toSet() }
+                            .reduce { acc, set -> acc.intersect(set) }
+                            .toList()
+                    } else {
+                        emptyList()
+                    }
+
+                    // Calculate what was added/removed
+                    val addedLanguages = (event.languages - oldSharedLanguages.toSet()).toList()
+                    val removedLanguages = (oldSharedLanguages.toSet() - event.languages.toSet()).toList()
+
                     _state.value.books.forEach { book ->
                         if (book.selected) {
-                            moveBooks.execute(book.data.copy(languages = event.languages))
+                            // Non-destructive merge: add new languages, remove deleted languages
+                            val updatedLanguages = (book.data.languages.toSet() + addedLanguages.toSet() - removedLanguages.toSet()).toList().sorted()
+                            moveBooks.execute(book.data.copy(languages = updatedLanguages))
                         }
                     }
 
@@ -499,7 +549,8 @@ class LibraryModel @Inject constructor(
                         it.copy(
                             books = it.books.map { book ->
                                 if (book.selected) {
-                                    book.copy(data = book.data.copy(languages = event.languages))
+                                    val updatedLanguages = (book.data.languages.toSet() + addedLanguages.toSet() - removedLanguages.toSet()).toList().sorted()
+                                    book.copy(data = book.data.copy(languages = updatedLanguages))
                                 } else {
                                     book
                                 }
@@ -510,6 +561,107 @@ class LibraryModel @Inject constructor(
 
                     withContext(Dispatchers.Main) {
                         "Languages updated".showToast(context = event.context)
+                    }
+                }
+            }
+
+            is LibraryEvent.OnActionBulkEditAuthors -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    // Get current shared authors
+                    val selectedBooks = _state.value.books.filter { it.selected }.map { it.data }
+                    val oldSharedAuthors = if (selectedBooks.isNotEmpty()) {
+                        selectedBooks.map { it.authors.toSet() }
+                            .reduce { acc, set -> acc.intersect(set) }
+                            .toList()
+                    } else {
+                        emptyList()
+                    }
+
+                    // Calculate what was added/removed
+                    val addedAuthors = (event.authors - oldSharedAuthors.toSet()).toList()
+                    val removedAuthors = (oldSharedAuthors.toSet() - event.authors.toSet()).toList()
+
+                    _state.value.books.forEach { book ->
+                        if (book.selected) {
+                            // Non-destructive merge: add new authors, remove deleted authors
+                            val updatedAuthors = (book.data.authors.toSet() + addedAuthors.toSet() - removedAuthors.toSet()).toList().sorted()
+                            moveBooks.execute(book.data.copy(authors = updatedAuthors))
+                        }
+                    }
+
+                    _state.update {
+                        it.copy(
+                            books = it.books.map { book ->
+                                if (book.selected) {
+                                    val updatedAuthors = (book.data.authors.toSet() + addedAuthors.toSet() - removedAuthors.toSet()).toList().sorted()
+                                    book.copy(data = book.data.copy(authors = updatedAuthors))
+                                } else {
+                                    book
+                                }
+                            },
+                            dialog = null
+                        )
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        "Authors updated".showToast(context = event.context)
+                    }
+                }
+            }
+
+            is LibraryEvent.OnActionBulkEditCategory -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val selectedBooks = _state.value.books.filter { it.selected }.map { it.data }
+
+                    selectedBooks.forEach { book ->
+                        val updatedBook = if (event.category != null) {
+                            book.copy(category = event.category)
+                        } else {
+                            book
+                        }
+                        moveBooks.execute(updatedBook)
+                    }
+
+                    _state.update {
+                        it.copy(
+                            books = it.books.map { book ->
+                                if (book.selected && event.category != null) {
+                                    book.copy(data = book.data.copy(category = event.category))
+                                } else {
+                                    book
+                                }
+                            },
+                            dialog = null
+                        )
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        val categoryName = when (event.category) {
+                            us.blindmint.codex.domain.library.category.Category.READING -> "Reading"
+                            us.blindmint.codex.domain.library.category.Category.PLANNING -> "Planning"
+                            us.blindmint.codex.domain.library.category.Category.ALREADY_READ -> "Already Read"
+                            else -> "Category"
+                        }
+                        "$categoryName updated".showToast(context = event.context)
+                    }
+                }
+            }
+
+            is LibraryEvent.OnConfirmBulkEdit -> {
+                // Handle bulk edit confirmation - this would typically close the bulk edit dialog
+                // and apply any pending changes. For now, just close the dialog.
+                viewModelScope.launch {
+                    _state.update {
+                        it.copy(dialog = null)
+                    }
+                }
+            }
+
+            is LibraryEvent.OnCancelBulkEdit -> {
+                // Handle bulk edit cancellation - close the dialog without applying changes
+                viewModelScope.launch {
+                    _state.update {
+                        it.copy(dialog = null)
                     }
                 }
             }

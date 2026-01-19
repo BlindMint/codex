@@ -17,12 +17,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +54,7 @@ fun MetadataItemEditor(
 ) {
     var currentItems by remember { mutableStateOf(items) }
     var newItemText by remember { mutableStateOf("") }
+    var itemToRemove by remember { mutableStateOf<String?>(null) }
 
     ModalBottomSheet(
         modifier = modifier.fillMaxWidth(),
@@ -96,7 +99,7 @@ fun MetadataItemEditor(
 
                         IconButton(
                             onClick = {
-                                currentItems = currentItems.filterIndexed { i, _ -> i != index }
+                                itemToRemove = item
                             },
                             modifier = Modifier.size(24.dp)
                         ) {
@@ -165,5 +168,28 @@ fun MetadataItemEditor(
                 }
             }
         }
+    }
+
+    if (itemToRemove != null) {
+        AlertDialog(
+            onDismissRequest = { itemToRemove = null },
+            title = { Text(stringResource(id = R.string.remove_item)) },
+            text = { Text(stringResource(id = R.string.confirm_remove_item, itemToRemove ?: "")) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        currentItems = currentItems.filter { it != itemToRemove }
+                        itemToRemove = null
+                    }
+                ) {
+                    Text(stringResource(id = R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { itemToRemove = null }) {
+                    Text(stringResource(id = R.string.cancel))
+                }
+            }
+        )
     }
 }

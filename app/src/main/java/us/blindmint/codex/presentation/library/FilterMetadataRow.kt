@@ -4,54 +4,53 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 
-package us.blindmint.codex.presentation.book_info
+package us.blindmint.codex.presentation.library
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /**
- * Displays a row of metadata items as chips (Tags, Authors, Series, Languages)
- * with a title label above them. Entire row is clickable to edit metadata.
+ * Displays a row of selected filter items as chips with a count badge.
+ * Limits display to 2-3 rows of chips, showing total count if there are more.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun BookInfoMetadataRow(
+fun FilterMetadataRow(
     title: String,
-    items: List<String>,
-    modifier: Modifier = Modifier,
-    onEdit: () -> Unit = {},
-    onItemTap: (String) -> Unit = {},
-    isEditable: Boolean = false,
-    onEditClick: (() -> Unit)? = null,
-    forceShowEmpty: Boolean = false
+    selectedItems: Set<String>,
+    totalAvailableCount: Int,
+    placeholderText: String,
+    onEditClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    if (items.isEmpty() && !isEditable && !forceShowEmpty) {
-        return
-    }
+    // Limit display to 2-3 rows of chips (approximately 6-9 items depending on chip width)
+    val displayLimit = 9
+    val displayItems = selectedItems.take(displayLimit)
+    val hiddenCount = selectedItems.size - displayLimit
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clickable {
-                if (onEditClick != null) {
-                    onEditClick()
-                } else {
-                    onEdit()
-                }
-            }
+            .clickable { onEditClick() }
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -73,22 +72,40 @@ fun BookInfoMetadataRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (items.isEmpty() && isEditable) {
+                if (selectedItems.isEmpty()) {
                     Text(
-                        text = "None. Tap to add",
+                        text = placeholderText,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(8.dp)
                     )
                 } else {
-                    items.forEach { item ->
+                    displayItems.forEach { item ->
                         AssistChip(
-                            onClick = {
-                                onItemTap(item)
-                            },
+                            onClick = { onEditClick() },
                             label = { Text(item) },
                             enabled = true
                         )
+                    }
+
+                    // Show count badge if there are hidden items
+                    if (hiddenCount > 0) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    MaterialTheme.colorScheme.secondary,
+                                    RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "+${hiddenCount}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSecondary,
+                                fontSize = 10.sp
+                            )
+                        }
                     }
                 }
             }

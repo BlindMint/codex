@@ -19,5 +19,10 @@ data class BookInfoState(
     val canResetCover: Boolean = false,
 
     val dialog: Dialog? = null,
-    val bottomSheet: BottomSheet? = null
+    val bottomSheet: BottomSheet? = null,
+
+    val isEditingMetadata: Boolean = false,
+    val editedBook: Book? = null,
+    val showConfirmSaveDialog: Boolean = false,
+    val showConfirmCancelDialog: Boolean = false
 )

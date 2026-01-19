@@ -640,6 +640,109 @@ class BookInfoModel @Inject constructor(
                     _state.update { it.copy(book = updatedBook) }
                     LibraryScreen.refreshListChannel.trySend(0)
                 }
+
+                is BookInfoEvent.OnEnterEditMode -> {
+                    _state.update {
+                        it.copy(
+                            isEditingMetadata = true,
+                            editedBook = it.book.copy()
+                        )
+                    }
+                }
+
+                is BookInfoEvent.OnUpdateEditedBook -> {
+                    _state.update {
+                        it.copy(
+                            editedBook = event.updatedBook
+                        )
+                    }
+                }
+
+                is BookInfoEvent.OnConfirmEditMetadata -> {
+                    _state.update {
+                        it.copy(
+                            showConfirmSaveDialog = true
+                        )
+                    }
+                }
+
+                is BookInfoEvent.OnCancelEditMetadata -> {
+                    _state.update {
+                        it.copy(
+                            showConfirmCancelDialog = true
+                        )
+                    }
+                }
+
+                is BookInfoEvent.OnSilentCancelEditMetadata -> {
+                    _state.update {
+                        it.copy(
+                            isEditingMetadata = false,
+                            editedBook = null,
+                            showConfirmCancelDialog = false
+                        )
+                    }
+                }
+
+                is BookInfoEvent.OnConfirmSaveChanges -> {
+                    launch {
+                        val bookToSave = _state.value.editedBook ?: return@launch
+                        updateBook.execute(bookToSave)
+
+                        _state.update {
+                            it.copy(
+                                book = bookToSave,
+                                isEditingMetadata = false,
+                                editedBook = null,
+                                showConfirmSaveDialog = false
+                            )
+                        }
+
+                        LibraryScreen.refreshListChannel.trySend(0)
+                        HistoryScreen.refreshListChannel.trySend(0)
+                        BrowseScreen.refreshListChannel.trySend(Unit)
+
+                        withContext(Dispatchers.Main) {
+                            event.context.getString(R.string.metadata_saved)
+                                .showToast(context = event.context)
+                        }
+                    }
+                }
+
+                is BookInfoEvent.OnDismissSaveDialog -> {
+                    _state.update {
+                        it.copy(
+                            showConfirmSaveDialog = false
+                        )
+                    }
+                }
+
+                is BookInfoEvent.OnDismissCancelDialog -> {
+                    _state.update {
+                        it.copy(
+                            showConfirmCancelDialog = false,
+                            isEditingMetadata = false,
+                            editedBook = null
+                        )
+                    }
+                }
+
+                is BookInfoEvent.OnChangeCategory -> {
+                    launch {
+                        val updatedBook = _state.value.book.copy(category = event.category)
+                        updateBook.execute(updatedBook)
+
+                        _state.update {
+                            it.copy(
+                                book = updatedBook
+                            )
+                        }
+
+                        LibraryScreen.refreshListChannel.trySend(0)
+                        HistoryScreen.refreshListChannel.trySend(0)
+                        BrowseScreen.refreshListChannel.trySend(Unit)
+                    }
+                }
             }
         }
     }
