@@ -42,8 +42,8 @@ fun SpeedReadingVerticalIndicatorsLengthOption(
             onValueChange = { newValue ->
                 if (enabled) onVerticalIndicatorsSizeChange(newValue.toInt())
             },
-            valueRange = 0f..40f,
-            steps = 4, // 0, 8, 16, 24, 32, 40 (5 steps = 6 positions)
+            valueRange = 8f..40f,
+            steps = 3, // 8, 16, 24, 32, 40 (4 steps = 5 positions)
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled
         )
