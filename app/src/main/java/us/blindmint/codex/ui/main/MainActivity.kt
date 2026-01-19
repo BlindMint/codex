@@ -174,11 +174,12 @@ class MainActivity : AppCompatActivity() {
                     scope.launch {
                         try {
                             val cachedFile = CachedFileCompat.fromUri(this@MainActivity, uri)
-                            val filePath = if (uri.scheme == "content") uri.toString() else cachedFile.path
+                            val absolutePath = cachedFile.path
+                            val uriString = if (uri.scheme == "content") uri.toString() else null
 
-                            // Check if book already exists in library
+                            // Check if book already exists in library using absolute path
                             val existingBook = withContext(Dispatchers.IO) {
-                                getBookByFilePath.execute(filePath)
+                                getBookByFilePath.execute(absolutePath)
                             }
 
                             if (existingBook != null) {
@@ -193,16 +194,17 @@ class MainActivity : AppCompatActivity() {
                                  when (result) {
                                      is NullableBook.NotNull -> {
                                          val bookTitle = result.bookWithCover!!.book.title
-                                         // Update the filePath for content URIs
-                                         val bookWithCorrectPath = result.bookWithCover!!.copy(
-                                             book = result.bookWithCover.book.copy(filePath = filePath)
-                                         )
-                                         withContext(Dispatchers.IO) {
-                                             insertBook.execute(bookWithCorrectPath)
-                                         }
+                                        // Update the filePath for content URIs
+                                        val storagePath = uriString ?: absolutePath
+                                        val bookWithCorrectPath = result.bookWithCover!!.copy(
+                                            book = result.bookWithCover.book.copy(filePath = storagePath)
+                                        )
+                                        withContext(Dispatchers.IO) {
+                                            insertBook.execute(bookWithCorrectPath)
+                                        }
                                         // Get the newly inserted book to get its ID
                                         val newBook = withContext(Dispatchers.IO) {
-                                            getBookByFilePath.execute(filePath)
+                                            getBookByFilePath.execute(storagePath)
                                         }
                                         if (newBook != null) {
                                             fileImportBookId = newBook.id
