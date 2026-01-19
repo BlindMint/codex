@@ -33,6 +33,7 @@
             android:name=".ui.main.MainActivity"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|locale|density|uiMode"
             android:exported="true"
+            android:launchMode="singleTask"
             android:theme="@style/Splash"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
