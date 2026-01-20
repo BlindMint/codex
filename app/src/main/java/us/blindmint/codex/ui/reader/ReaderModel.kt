@@ -134,19 +134,19 @@ class ReaderModel @Inject constructor(
                                 if (itemsCount == 0) return@collectLatest // Wait for list to start loading
 
                                 _state.value.book.apply {
-                                    // Always convert progress to scroll index to handle speed reader progress
-                                    val progressScrollIndex = (progress * _state.value.text.lastIndex).toInt()
-                                        .coerceIn(0, _state.value.text.lastIndex)
+                                    val finalScrollIndex: Int
+                                    val finalScrollOffset: Int
 
-                                    // Use progress-based positioning, but prefer saved position if it's close
-                                    val scrollIndexMatches = kotlin.math.abs(scrollIndex - progressScrollIndex) <= 1
-                                    val finalScrollIndex = if (scrollIndexMatches && scrollOffset != 0) {
-                                        scrollIndex // Use saved position if it matches progress and has offset
+                                    if (scrollOffset > 0) {
+                                        // Normal reader saved precise position - use it
+                                        finalScrollIndex = scrollIndex
+                                        finalScrollOffset = scrollOffset
                                     } else {
-                                        progressScrollIndex // Use progress-converted position
+                                        // Speed reader saved progress - convert to position
+                                        finalScrollIndex = (progress * _state.value.text.lastIndex).toInt()
+                                            .coerceIn(0, _state.value.text.lastIndex)
+                                        finalScrollOffset = 0
                                     }
-
-                                    val finalScrollOffset = if (scrollIndexMatches) scrollOffset else 0
 
                                     _state.value.listState.requestScrollToItem(
                                         finalScrollIndex,

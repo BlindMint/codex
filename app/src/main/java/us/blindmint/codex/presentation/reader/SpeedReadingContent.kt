@@ -241,23 +241,8 @@ fun SpeedReadingContent(
         // Save progress every 50 words or when pausing
         if (wordsSinceLastSave >= 50 || !isPlaying) {
             if (totalWords > 0 && wordsSinceLastSave > 0) {
-                // Calculate progress based on text item position for normal reader compatibility
-                // Find which text item the current word belongs to
-                var currentItemIndex = 0
-                var wordCountSoFar = 0
-
-                for ((itemIndex, textItem) in text.withIndex()) {
-                    if (textItem is ReaderText.Text) {
-                        val itemWords = textItem.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }
-                        wordCountSoFar += itemWords.size
-                        if (globalWordIndex < wordCountSoFar) {
-                            currentItemIndex = itemIndex
-                            break
-                        }
-                    }
-                }
-
-                val newProgress = (currentItemIndex.toFloat() / text.size).coerceIn(0f, 1f)
+                // Store precise word-based progress - normal reader will convert when loading
+                val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
                 onProgressUpdate(newProgress)
                 lastProgressSaveIndex = globalWordIndex
             }
