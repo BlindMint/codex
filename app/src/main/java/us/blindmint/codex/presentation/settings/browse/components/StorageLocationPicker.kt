@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.domain.import_progress.ImportStatus
-import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
+import us.blindmint.codex.ui.import_progress.ImportProgressViewModelWrapper
 import us.blindmint.codex.ui.settings.SettingsEvent
 import us.blindmint.codex.ui.settings.SettingsModel
 
@@ -45,7 +45,7 @@ fun StorageLocationPicker(
     modifier: Modifier = Modifier
 ) {
     val settingsModel = hiltViewModel<SettingsModel>()
-    val importProgressViewModel = hiltViewModel<ImportProgressViewModel>()
+    val importProgressViewModel = hiltViewModel<ImportProgressViewModelWrapper>()
     val state by settingsModel.state.collectAsStateWithLifecycle()
     val importOperations by importProgressViewModel.importOperations.collectAsStateWithLifecycle()
     var showPicker by remember { mutableStateOf(false) }

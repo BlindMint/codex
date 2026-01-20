@@ -25,11 +25,49 @@ import javax.inject.Inject
 private const val TAG = "ImportProgressViewModel"
 
 /**
+ * ViewModel wrapper for composables to access ImportProgressViewModel service.
+ */
+@HiltViewModel
+class ImportProgressViewModelWrapper @Inject constructor(
+    val importProgressService: ImportProgressViewModel
+) : ViewModel() {
+
+    val importOperations = importProgressService.importOperations
+    val isImporting = importProgressService.isImporting
+
+    fun startImport(folderUri: Uri, folderName: String, folderPath: String) =
+        importProgressService.startImport(folderUri, folderName, folderPath)
+
+    fun startCodexImport(folderPath: String, folderName: String) =
+        importProgressService.startCodexImport(folderPath, folderName)
+
+    fun updateCodexImportProgress(
+        folderPath: String,
+        totalBooks: Int,
+        currentProgress: Int,
+        currentFile: String = ""
+    ) = importProgressService.updateCodexImportProgress(
+        folderPath, totalBooks, currentProgress, currentFile
+    )
+
+    fun cancelImport(operationId: String) =
+        importProgressService.cancelImport(operationId)
+
+    fun clearOperation(operationId: String) =
+        importProgressService.clearOperation(operationId)
+
+    fun clearAllOperations() =
+        importProgressService.clearAllOperations()
+
+    fun getOperation(operationId: String) =
+        importProgressService.getOperation(operationId)
+}
+
+/**
  * App-level ViewModel for managing import operations.
  * Maintains import state across screen transitions and configuration changes.
  * Singleton-scoped to survive throughout app lifecycle.
  */
-@HiltViewModel
 class ImportProgressViewModel @Inject constructor(
     private val bulkImportBooksFromFolder: BulkImportBooksFromFolder
 ) : ViewModel() {

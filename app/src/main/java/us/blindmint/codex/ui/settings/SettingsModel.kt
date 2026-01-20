@@ -53,7 +53,7 @@ import java.util.UUID
 
 @HiltViewModel
 class SettingsModel @Inject constructor(
-    private val application: Application,
+    private val importProgressViewModel: ImportProgressViewModel,
     private val getColorPresets: GetColorPresets,
     private val updateColorPreset: UpdateColorPreset,
     private val selectColorPreset: SelectColorPreset,
@@ -73,10 +73,6 @@ class SettingsModel @Inject constructor(
 
     private val _state = MutableStateFlow(SettingsState())
     val state = _state.asStateFlow()
-
-    private val importProgressViewModel by lazy {
-        ViewModelProvider(application as androidx.lifecycle.ViewModelStoreOwner)[ImportProgressViewModel::class.java]
-    }
 
     private val _isReady = MutableStateFlow(false)
     val isReady = _isReady.asStateFlow()

@@ -55,7 +55,7 @@ import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.browse.BrowseScreen
-import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
+import us.blindmint.codex.ui.import_progress.ImportProgressViewModelWrapper
 import us.blindmint.codex.ui.library.LibraryScreen
 import us.blindmint.codex.ui.settings.SettingsEvent
 import us.blindmint.codex.ui.settings.SettingsModel
@@ -65,7 +65,7 @@ import androidx.compose.material3.AlertDialog
 @Composable
 fun BrowseScanOption() {
     val settingsModel = hiltViewModel<SettingsModel>()
-    val importProgressViewModel = hiltViewModel<ImportProgressViewModel>()
+    val importProgressViewModel = hiltViewModel<ImportProgressViewModelWrapper>()
     val state by settingsModel.state.collectAsStateWithLifecycle()
     val importOperations by importProgressViewModel.importOperations.collectAsStateWithLifecycle()
     val context = LocalContext.current
