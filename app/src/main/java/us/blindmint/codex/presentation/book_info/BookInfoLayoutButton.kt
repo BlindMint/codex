@@ -94,7 +94,7 @@ fun BookInfoLayoutButton(
             // Visual separator
             Box(
                 modifier = Modifier
-                    .width(1.dp)
+                    .width(2.dp)
                     .fillMaxHeight(0.6f)
                     .background(
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)
@@ -104,7 +104,7 @@ fun BookInfoLayoutButton(
             // Trailing button area
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(96.dp)
                     .background(
                         color = MaterialTheme.colorScheme.primary,
                         shape = androidx.compose.foundation.shape.RoundedCornerShape(

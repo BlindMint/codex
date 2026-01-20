@@ -318,7 +318,7 @@ fun SpeedReadingWordPickerSheet(
             HorizontalDivider(color = fontColor.copy(alpha = 0.2f))
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Bottom Row with Cancel, Sentence start checkbox, and Confirm buttons
+            // Bottom Row with Sentence start checkbox, Cancel, and Confirm buttons
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -326,12 +326,6 @@ fun SpeedReadingWordPickerSheet(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = onDismiss) {
-                    Text("Cancel", color = fontColor)
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
                 // Sentence start checkbox
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -346,6 +340,12 @@ fun SpeedReadingWordPickerSheet(
                         style = MaterialTheme.typography.bodyMedium,
                         color = fontColor
                     )
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel", color = fontColor)
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
