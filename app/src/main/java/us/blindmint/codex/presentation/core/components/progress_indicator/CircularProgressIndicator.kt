@@ -28,6 +28,6 @@ fun CircularProgressIndicator(
         modifier = modifier,
         progressColor = color,
         strokeWidth = strokeWidth,
-        size = 48.dp
+        size = 56.dp
     )
 }

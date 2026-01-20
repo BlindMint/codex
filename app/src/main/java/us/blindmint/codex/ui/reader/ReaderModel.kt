@@ -691,6 +691,7 @@ class ReaderModel @Inject constructor(
                     _state.update {
                         it.copy(
                             speedReadingMode = true,
+                            speedReadingOrigin = event.origin,
                             drawer = null,
                             bottomSheet = null
                         )
@@ -717,6 +718,7 @@ class ReaderModel @Inject constructor(
                     _state.update {
                         it.copy(
                             speedReadingMode = false,
+                            speedReadingOrigin = null,
                             speedReadingSettingsVisible = false
                         )
                     }
@@ -891,7 +893,10 @@ class ReaderModel @Inject constructor(
         bookId: Int,
         fullscreenMode: Boolean,
         activity: ComponentActivity,
-        navigateBack: () -> Unit
+        navigateBack: () -> Unit,
+        skipTextLoading: Boolean = false,
+        isSpeedReadingScreen: Boolean = false,
+        reuseExistingText: Boolean = false
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             val book = getBookById.execute(bookId)
@@ -901,24 +906,99 @@ class ReaderModel @Inject constructor(
                 return@launch
             }
 
-            eventJob.cancel()
-            resetJob?.cancel()
-            eventJob.join()
-            resetJob?.join()
-            eventJob = SupervisorJob()
+            // If reusing existing text, don't reset the ViewModel state
+            if (!reuseExistingText) {
+                eventJob.cancel()
+                resetJob?.cancel()
+                eventJob.join()
+                resetJob?.join()
+                eventJob = SupervisorJob()
+            }
 
             // Skip text loading for comics - they use image-based rendering
             if (!book.isComic) {
-                _state.update {
-                    ReaderState(book = book)
-                }
+                val hasExistingText = _state.value.text.isNotEmpty() && _state.value.book.id == bookId
 
-                onEvent(
-                    ReaderEvent.OnLoadText(
-                        activity = activity,
-                        fullscreenMode = fullscreenMode
-                    )
-                )
+                if (hasExistingText) {
+                    // Reuse existing text and just update speed reading mode
+                    _state.update {
+                        it.copy(
+                            speedReadingMode = isSpeedReadingScreen,
+                            speedReadingOrigin = if (isSpeedReadingScreen) SpeedReadingOrigin.NORMAL_READER else null,
+                            isLoading = false // Already loaded
+                        )
+                    }
+                } else {
+                    // Fresh initialization
+                    _state.update {
+                        ReaderState(
+                            book = book,
+                            speedReadingMode = skipTextLoading || isSpeedReadingScreen,  // Start in speed reading mode if requested or speed reading screen
+                            speedReadingOrigin = if (skipTextLoading || isSpeedReadingScreen) SpeedReadingOrigin.LIBRARY else null
+                        )
+                    }
+
+                    if (!isSpeedReadingScreen || skipTextLoading) {
+                        onEvent(
+                            ReaderEvent.OnLoadText(
+                                activity = activity,
+                                fullscreenMode = fullscreenMode
+                            )
+                        )
+                    } else {
+                        // For speed reading screen, load text directly and complete loading immediately
+                        launch(Dispatchers.IO) {
+                            val text = getText.execute(_state.value.book.id)
+                            yield()
+
+                            if (text.isEmpty()) {
+                                _state.update {
+                                    it.copy(
+                                        isLoading = false,
+                                        errorMessage = UIText.StringResource(R.string.error_could_not_get_text)
+                                    )
+                                }
+                                systemBarsVisibility(show = true, activity = activity)
+                                return@launch
+                            }
+
+                            systemBarsVisibility(
+                                show = false, // Speed reading doesn't need fullscreen
+                                activity = activity
+                            )
+
+                            val lastOpened = getLatestHistory.execute(_state.value.book.id)?.time
+                            yield()
+
+                            _state.update {
+                                it.copy(
+                                    showMenu = false,
+                                    book = it.book.copy(
+                                        lastOpened = lastOpened
+                                    ),
+                                    text = text,
+                                    isLoading = false, // Complete loading immediately for speed reading
+                                    errorMessage = null
+                                )
+                            }
+
+                            yield()
+
+                            updateBook.execute(_state.value.book)
+
+                            LibraryScreen.refreshListChannel.trySend(0)
+                            HistoryScreen.refreshListChannel.trySend(0)
+
+                            // Load bookmarks for the current book
+                            launch(Dispatchers.IO) {
+                                val bookmarks = getBookmarksByBookId.execute(_state.value.book.id)
+                                _state.update {
+                                    it.copy(bookmarks = bookmarks)
+                                }
+                            }
+                        }
+                    }
+                }
             } else {
                 // For comics, keep loading state until comic pages are loaded
                 systemBarsVisibility(

@@ -184,6 +184,31 @@ data class MainState(
 
     // Settings
     val autoColorPresetSelected: Boolean = provideDefaultValue { false },
+
+    // Speed Reader Settings
+    val speedReadingWpm: Int = provideDefaultValue { 300 },
+    val speedReadingManualSentencePauseEnabled: Boolean = provideDefaultValue { false },
+    val speedReadingSentencePauseDuration: Int = provideDefaultValue { 350 },
+    val speedReadingOsdEnabled: Boolean = provideDefaultValue { true },
+    val speedReadingWordSize: Int = provideDefaultValue { 48 },
+    val speedReadingAccentCharacterEnabled: Boolean = provideDefaultValue { true },
+    val speedReadingAccentColor: Long = provideDefaultValue { Color.Red.toArgb().toLong() },
+    val speedReadingAccentOpacity: Float = provideDefaultValue { 1.0f },
+    val speedReadingShowVerticalIndicators: Boolean = provideDefaultValue { true },
+    val speedReadingVerticalIndicatorsSize: Int = provideDefaultValue { 8 },
+    val speedReadingVerticalIndicatorType: String = provideDefaultValue { "LINE" },
+    val speedReadingShowHorizontalBars: Boolean = provideDefaultValue { true },
+    val speedReadingHorizontalBarsThickness: Int = provideDefaultValue { 2 },
+    val speedReadingHorizontalBarsLength: Float = provideDefaultValue { 0.9f },
+    val speedReadingHorizontalBarsDistance: Int = provideDefaultValue { 8 },
+    val speedReadingHorizontalBarsColor: Long = provideDefaultValue { Color.Gray.toArgb().toLong() },
+    val speedReadingHorizontalBarsOpacity: Float = provideDefaultValue { 1.0f },
+    val speedReadingFocalPointPosition: Float = provideDefaultValue { 0.38f },
+    val speedReadingOsdHeight: Float = provideDefaultValue { 0.2f },
+    val speedReadingOsdSeparation: Float = provideDefaultValue { 0.5f },
+    val speedReadingCenterWord: Boolean = provideDefaultValue { false },
+    val speedReadingCustomFontEnabled: Boolean = provideDefaultValue { false },
+    val speedReadingSelectedFontFamily: String = provideDefaultValue { "default" },
 ) : Parcelable {
     companion object {
         private fun <D> provideDefaultValue(calculation: () -> D): D {
@@ -554,6 +579,99 @@ data class MainState(
                     comicBackgroundColor = provideValue(
                         COMIC_BACKGROUND_COLOR
                     ) { comicBackgroundColor },
+
+                    // Speed Reader Settings
+                    speedReadingWpm = provideValue(
+                        SPEED_READING_WPM
+                    ) { speedReadingWpm },
+
+                    speedReadingManualSentencePauseEnabled = provideValue(
+                        SPEED_READING_MANUAL_SENTENCE_PAUSE_ENABLED
+                    ) { speedReadingManualSentencePauseEnabled },
+
+                    speedReadingSentencePauseDuration = provideValue(
+                        SPEED_READING_SENTENCE_PAUSE_DURATION
+                    ) { speedReadingSentencePauseDuration },
+
+                    speedReadingOsdEnabled = provideValue(
+                        SPEED_READING_OSD_ENABLED
+                    ) { speedReadingOsdEnabled },
+
+                    speedReadingWordSize = provideValue(
+                        SPEED_READING_WORD_SIZE
+                    ) { speedReadingWordSize },
+
+                    speedReadingAccentCharacterEnabled = provideValue(
+                        SPEED_READING_ACCENT_CHARACTER_ENABLED
+                    ) { speedReadingAccentCharacterEnabled },
+
+                    speedReadingAccentColor = provideValue(
+                        SPEED_READING_ACCENT_COLOR, convert = { toLong() }
+                    ) { speedReadingAccentColor },
+
+                    speedReadingAccentOpacity = provideValue(
+                        SPEED_READING_ACCENT_OPACITY, convert = { toFloat() }
+                    ) { speedReadingAccentOpacity },
+
+                    speedReadingShowVerticalIndicators = provideValue(
+                        SPEED_READING_SHOW_VERTICAL_INDICATORS
+                    ) { speedReadingShowVerticalIndicators },
+
+                    speedReadingVerticalIndicatorsSize = provideValue(
+                        SPEED_READING_VERTICAL_INDICATORS_SIZE
+                    ) { speedReadingVerticalIndicatorsSize },
+
+                    speedReadingVerticalIndicatorType = provideValue(
+                        SPEED_READING_VERTICAL_INDICATOR_TYPE
+                    ) { speedReadingVerticalIndicatorType },
+
+                    speedReadingShowHorizontalBars = provideValue(
+                        SPEED_READING_SHOW_HORIZONTAL_BARS
+                    ) { speedReadingShowHorizontalBars },
+
+                    speedReadingHorizontalBarsThickness = provideValue(
+                        SPEED_READING_HORIZONTAL_BARS_THICKNESS
+                    ) { speedReadingHorizontalBarsThickness },
+
+                    speedReadingHorizontalBarsLength = provideValue(
+                        SPEED_READING_HORIZONTAL_BARS_LENGTH, convert = { toFloat() }
+                    ) { speedReadingHorizontalBarsLength },
+
+                    speedReadingHorizontalBarsDistance = provideValue(
+                        SPEED_READING_HORIZONTAL_BARS_DISTANCE
+                    ) { speedReadingHorizontalBarsDistance },
+
+                    speedReadingHorizontalBarsColor = provideValue(
+                        SPEED_READING_HORIZONTAL_BARS_COLOR, convert = { toLong() }
+                    ) { speedReadingHorizontalBarsColor },
+
+                    speedReadingHorizontalBarsOpacity = provideValue(
+                        SPEED_READING_HORIZONTAL_BARS_OPACITY, convert = { toFloat() }
+                    ) { speedReadingHorizontalBarsOpacity },
+
+                    speedReadingFocalPointPosition = provideValue(
+                        SPEED_READING_FOCAL_POINT_POSITION, convert = { toFloat() }
+                    ) { speedReadingFocalPointPosition },
+
+                    speedReadingOsdHeight = provideValue(
+                        SPEED_READING_OSD_HEIGHT, convert = { toFloat() }
+                    ) { speedReadingOsdHeight },
+
+                    speedReadingOsdSeparation = provideValue(
+                        SPEED_READING_OSD_SEPARATION, convert = { toFloat() }
+                    ) { speedReadingOsdSeparation },
+
+                    speedReadingCenterWord = provideValue(
+                        SPEED_READING_CENTER_WORD
+                    ) { speedReadingCenterWord },
+
+                    speedReadingCustomFontEnabled = provideValue(
+                        SPEED_READING_CUSTOM_FONT_ENABLED
+                    ) { speedReadingCustomFontEnabled },
+
+                    speedReadingSelectedFontFamily = provideValue(
+                        SPEED_READING_SELECTED_FONT_FAMILY
+                    ) { speedReadingSelectedFontFamily },
 
                 )
             }

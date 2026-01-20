@@ -20,6 +20,11 @@ import us.blindmint.codex.domain.util.BottomSheet
 import us.blindmint.codex.domain.util.Drawer
 import us.blindmint.codex.presentation.core.constants.provideEmptyBook
 
+enum class SpeedReadingOrigin {
+    LIBRARY,           // Launched from library/book preview
+    NORMAL_READER      // Launched from normal reader top bar
+}
+
 @Immutable
 data class ReaderState(
     val book: Book = provideEmptyBook(),
@@ -38,6 +43,7 @@ data class ReaderState(
 
     val speedReadingMode: Boolean = false,
     val speedReadingFromBookInfo: Boolean = false,
+    val speedReadingOrigin: SpeedReadingOrigin? = null,
 
     val bottomSheet: BottomSheet? = null,
     val drawer: Drawer? = null,

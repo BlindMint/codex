@@ -38,6 +38,7 @@ fun LibraryPager(
     navigateToStorage: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
     navigateToReader: (id: Int) -> Unit,
+    navigateToSpeedReading: (id: Int) -> Unit,
 ) {
     HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { index ->
         val category = remember(categories, index) {

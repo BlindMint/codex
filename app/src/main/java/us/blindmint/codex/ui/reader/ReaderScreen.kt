@@ -67,6 +67,8 @@ import us.blindmint.codex.presentation.reader.ReaderContent
 import us.blindmint.codex.presentation.reader.SpeedReadingScaffold
 import us.blindmint.codex.presentation.reader.SpeedReadingSettingsBottomSheet
 import us.blindmint.codex.ui.book_info.BookInfoScreen
+import us.blindmint.codex.ui.library.LibraryScreen
+import us.blindmint.codex.ui.reader.SpeedReadingScreen
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.settings.SettingsModel
 import kotlin.math.roundToInt
@@ -167,31 +169,31 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             targetValue = settingsState.value.selectedColorPreset.fontColor
         )
 
-        // Speed reading state
-    val speedReadingWpm = remember { mutableIntStateOf(300) }
-    val speedReadingManualSentencePauseEnabled = remember { mutableStateOf(false) }
-    val speedReadingSentencePauseDuration = remember { mutableIntStateOf(350) }
-    val speedReadingOsdEnabled = remember { mutableStateOf(true) }
+        // Speed reading state - load from MainState for persistence
+    val speedReadingWpm = remember { mutableIntStateOf(mainState.value.speedReadingWpm) }
+    val speedReadingManualSentencePauseEnabled = remember { mutableStateOf(mainState.value.speedReadingManualSentencePauseEnabled) }
+    val speedReadingSentencePauseDuration = remember { mutableIntStateOf(mainState.value.speedReadingSentencePauseDuration) }
+    val speedReadingOsdEnabled = remember { mutableStateOf(mainState.value.speedReadingOsdEnabled) }
 
-    val speedReadingWordSize = remember { mutableIntStateOf(48) }
-    val speedReadingAccentCharacterEnabled = remember { mutableStateOf(true) }
-    val speedReadingAccentColor = remember { mutableStateOf(Color.Red) }
-    val speedReadingAccentOpacity = remember { mutableFloatStateOf(1.0f) }
-    val speedReadingShowVerticalIndicators = remember { mutableStateOf(true) }
-    val speedReadingVerticalIndicatorsSize = remember { mutableIntStateOf(8) }
-    val speedReadingVerticalIndicatorType = remember { mutableStateOf(SpeedReadingVerticalIndicatorType.LINE) }
-    val speedReadingShowHorizontalBars = remember { mutableStateOf(true) }
-    val speedReadingHorizontalBarsThickness = remember { mutableIntStateOf(2) }
-    val speedReadingHorizontalBarsLength = remember { mutableFloatStateOf(0.9f) }
-    val speedReadingHorizontalBarsDistance = remember { mutableIntStateOf(8) }
-    val speedReadingHorizontalBarsColor = remember { mutableStateOf(Color.Gray) }
-    val speedReadingHorizontalBarsOpacity = remember { mutableFloatStateOf(1.0f) }
-    val speedReadingFocalPointPosition = remember { mutableFloatStateOf(0.38f) }
-    val speedReadingOsdHeight = remember { mutableFloatStateOf(0.2f) }
-    val speedReadingOsdSeparation = remember { mutableFloatStateOf(0.5f) }
-    val speedReadingCenterWord = remember { mutableStateOf(false) }
-    val speedReadingCustomFontEnabled = remember { mutableStateOf(false) }
-    val speedReadingSelectedFontFamily = remember { mutableStateOf("default") }
+    val speedReadingWordSize = remember { mutableIntStateOf(mainState.value.speedReadingWordSize) }
+    val speedReadingAccentCharacterEnabled = remember { mutableStateOf(mainState.value.speedReadingAccentCharacterEnabled) }
+    val speedReadingAccentColor = remember { mutableStateOf(Color(mainState.value.speedReadingAccentColor.toInt())) }
+    val speedReadingAccentOpacity = remember { mutableFloatStateOf(mainState.value.speedReadingAccentOpacity) }
+    val speedReadingShowVerticalIndicators = remember { mutableStateOf(mainState.value.speedReadingShowVerticalIndicators) }
+    val speedReadingVerticalIndicatorsSize = remember { mutableIntStateOf(mainState.value.speedReadingVerticalIndicatorsSize) }
+    val speedReadingVerticalIndicatorType = remember { mutableStateOf(SpeedReadingVerticalIndicatorType.valueOf(mainState.value.speedReadingVerticalIndicatorType)) }
+    val speedReadingShowHorizontalBars = remember { mutableStateOf(mainState.value.speedReadingShowHorizontalBars) }
+    val speedReadingHorizontalBarsThickness = remember { mutableIntStateOf(mainState.value.speedReadingHorizontalBarsThickness) }
+    val speedReadingHorizontalBarsLength = remember { mutableFloatStateOf(mainState.value.speedReadingHorizontalBarsLength) }
+    val speedReadingHorizontalBarsDistance = remember { mutableIntStateOf(mainState.value.speedReadingHorizontalBarsDistance) }
+    val speedReadingHorizontalBarsColor = remember { mutableStateOf(Color(mainState.value.speedReadingHorizontalBarsColor.toInt())) }
+    val speedReadingHorizontalBarsOpacity = remember { mutableFloatStateOf(mainState.value.speedReadingHorizontalBarsOpacity) }
+    val speedReadingFocalPointPosition = remember { mutableFloatStateOf(mainState.value.speedReadingFocalPointPosition) }
+    val speedReadingOsdHeight = remember { mutableFloatStateOf(mainState.value.speedReadingOsdHeight) }
+    val speedReadingOsdSeparation = remember { mutableFloatStateOf(mainState.value.speedReadingOsdSeparation) }
+    val speedReadingCenterWord = remember { mutableStateOf(mainState.value.speedReadingCenterWord) }
+    val speedReadingCustomFontEnabled = remember { mutableStateOf(mainState.value.speedReadingCustomFontEnabled) }
+    val speedReadingSelectedFontFamily = remember { mutableStateOf(mainState.value.speedReadingSelectedFontFamily) }
 
     // Resolve speed reading font based on custom font setting
     val speedReadingFontFamily = remember(
@@ -218,6 +220,99 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
         } else {
             fontFamily.font
         }
+    }
+
+    // Persist speed reading settings when they change
+    LaunchedEffect(speedReadingWpm.intValue) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingWpm(speedReadingWpm.intValue))
+    }
+
+    LaunchedEffect(speedReadingManualSentencePauseEnabled.value) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingManualSentencePauseEnabled(speedReadingManualSentencePauseEnabled.value))
+    }
+
+    LaunchedEffect(speedReadingSentencePauseDuration.intValue) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingSentencePauseDuration(speedReadingSentencePauseDuration.intValue))
+    }
+
+    LaunchedEffect(speedReadingOsdEnabled.value) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingOsdEnabled(speedReadingOsdEnabled.value))
+    }
+
+    LaunchedEffect(speedReadingWordSize.intValue) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingWordSize(speedReadingWordSize.intValue))
+    }
+
+    LaunchedEffect(speedReadingAccentCharacterEnabled.value) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingAccentCharacterEnabled(speedReadingAccentCharacterEnabled.value))
+    }
+
+    LaunchedEffect(speedReadingAccentColor.value) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingAccentColor(speedReadingAccentColor.value.value.toLong()))
+    }
+
+    LaunchedEffect(speedReadingAccentOpacity.floatValue) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingAccentOpacity(speedReadingAccentOpacity.floatValue))
+    }
+
+    LaunchedEffect(speedReadingShowVerticalIndicators.value) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingShowVerticalIndicators(speedReadingShowVerticalIndicators.value))
+    }
+
+    LaunchedEffect(speedReadingVerticalIndicatorsSize.intValue) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingVerticalIndicatorsSize(speedReadingVerticalIndicatorsSize.intValue))
+    }
+
+    LaunchedEffect(speedReadingVerticalIndicatorType.value) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingVerticalIndicatorType(speedReadingVerticalIndicatorType.value.name))
+    }
+
+    LaunchedEffect(speedReadingShowHorizontalBars.value) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingShowHorizontalBars(speedReadingShowHorizontalBars.value))
+    }
+
+    LaunchedEffect(speedReadingHorizontalBarsThickness.intValue) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingHorizontalBarsThickness(speedReadingHorizontalBarsThickness.intValue))
+    }
+
+    LaunchedEffect(speedReadingHorizontalBarsLength.floatValue) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingHorizontalBarsLength(speedReadingHorizontalBarsLength.floatValue))
+    }
+
+    LaunchedEffect(speedReadingHorizontalBarsDistance.intValue) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingHorizontalBarsDistance(speedReadingHorizontalBarsDistance.intValue))
+    }
+
+    LaunchedEffect(speedReadingHorizontalBarsColor.value) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingHorizontalBarsColor(speedReadingHorizontalBarsColor.value.value.toLong()))
+    }
+
+    LaunchedEffect(speedReadingHorizontalBarsOpacity.floatValue) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingHorizontalBarsOpacity(speedReadingHorizontalBarsOpacity.floatValue))
+    }
+
+    LaunchedEffect(speedReadingFocalPointPosition.floatValue) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingFocalPointPosition(speedReadingFocalPointPosition.floatValue))
+    }
+
+    LaunchedEffect(speedReadingOsdHeight.floatValue) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingOsdHeight(speedReadingOsdHeight.floatValue))
+    }
+
+    LaunchedEffect(speedReadingOsdSeparation.floatValue) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingOsdSeparation(speedReadingOsdSeparation.floatValue))
+    }
+
+    LaunchedEffect(speedReadingCenterWord.value) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingCenterWord(speedReadingCenterWord.value))
+    }
+
+    LaunchedEffect(speedReadingCustomFontEnabled.value) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingCustomFontEnabled(speedReadingCustomFontEnabled.value))
+    }
+
+    LaunchedEffect(speedReadingSelectedFontFamily.value) {
+        mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingSelectedFontFamily(speedReadingSelectedFontFamily.value))
     }
         val lineHeight = remember(
             mainState.value.fontSize,
@@ -503,26 +598,16 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 fullscreenMode = mainState.value.fullscreen,
                 activity = activity,
                 navigateBack = {
-                    navigator.pop()
-                }
+                    navigator.push(
+                        LibraryScreen,
+                        popping = true,
+                        saveInBackStack = false
+                    )
+                },
+                skipTextLoading = startInSpeedReading
             )
         }
 
-        // Enable speed reading mode if requested
-        LaunchedEffect(state.value.isLoading, startInSpeedReading) {
-            if (!state.value.isLoading && startInSpeedReading && !state.value.speedReadingMode) {
-                screenModel.onEvent(ReaderEvent.OnShowSpeedReading)
-                // Ensure menu is visible when entering speed reading from book preview
-                screenModel.onEvent(
-                    ReaderEvent.OnMenuVisibility(
-                        show = true,
-                        fullscreenMode = mainState.value.fullscreen,
-                        saveCheckpoint = false,
-                        activity = activity
-                    )
-                )
-            }
-        }
         LaunchedEffect(mainState.value.fullscreen) {
             screenModel.onEvent(
                 ReaderEvent.OnMenuVisibility(
@@ -576,7 +661,9 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             }
         }
 
-        ReaderContent(
+        // Only render normal reader when NOT in speed reading mode
+        if (!state.value.speedReadingMode) {
+            ReaderContent(
             book = state.value.book,
             text = state.value.text,
             bottomSheet = state.value.bottomSheet,
@@ -646,7 +733,10 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             showSettingsBottomSheet = screenModel::onEvent,
             dismissBottomSheet = screenModel::onEvent,
             showChaptersDrawer = screenModel::onEvent,
-            showSpeedReading = screenModel::onEvent,
+             showSpeedReading = { event ->
+                 // Navigate to dedicated speed reading screen instead of overlay
+                 navigator.push(SpeedReadingScreen(bookId))
+             },
             scrollToBookmark = screenModel::onEvent,
             dismissDrawer = screenModel::onEvent,
             onDeleteBookmark = { bookmark ->
@@ -712,6 +802,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
               comicProgressBarFontSize = comicProgressBarFontSize,
               comicReadingDirection = mainState.value.comicReadingDirection
           )
+        }
 
         // Speed reading settings bottom sheet
         SpeedReadingSettingsBottomSheet(
@@ -778,6 +869,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 totalProgress = state.value.book.progress,
                 backgroundColor = settingsState.value.selectedColorPreset.backgroundColor,
                 fontColor = settingsState.value.selectedColorPreset.fontColor,
+                isLoading = state.value.isLoading,
                 accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
                 accentColor = speedReadingAccentColor.value,
                 fontFamily = speedReadingFontFamily,
@@ -819,17 +911,30 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                     ))
                 },
                 onExitSpeedReading = {
-                    screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
-                    // Reset menu visibility to normal state when exiting speed reading
-                    screenModel.onEvent(
-                        ReaderEvent.OnMenuVisibility(
-                            show = !mainState.value.fullscreen, // Show menu if not in fullscreen
-                            fullscreenMode = mainState.value.fullscreen,
-                            saveCheckpoint = false,
-                            activity = activity
-                        )
-                    )
+                    // Check origin to determine exit behavior
+                    val origin = state.value.speedReadingOrigin
 
+                    screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
+
+                    // If speed reading was launched from library, navigate back to library
+                    if (origin == SpeedReadingOrigin.LIBRARY) {
+                        navigator.push(
+                            LibraryScreen,
+                            popping = true,
+                            saveInBackStack = false
+                        )
+                    } else {
+                        // If from normal reader, just return to normal reader view
+                        // Reset menu visibility to normal state when exiting speed reading
+                        screenModel.onEvent(
+                            ReaderEvent.OnMenuVisibility(
+                                show = !mainState.value.fullscreen, // Show menu if not in fullscreen
+                                fullscreenMode = mainState.value.fullscreen,
+                                saveCheckpoint = false,
+                                activity = activity
+                            )
+                        )
+                    }
                 },
                 onNavigateWord = { direction ->
                     // For now, just log the navigation. Progress update will happen through normal mechanisms

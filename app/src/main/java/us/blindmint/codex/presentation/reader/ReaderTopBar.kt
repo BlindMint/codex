@@ -188,9 +188,9 @@ fun ReaderTopBar(
                         contentDescription = R.string.speed_reading_content_desc,
                         disableOnClick = false,
                         enabled = !lockMenu
-                    ) {
-                        showSpeedReading(ReaderEvent.OnShowSpeedReading)
-                    }
+                     ) {
+                         showSpeedReading(ReaderEvent.OnShowSpeedReading())
+                     }
                 }
 
                 IconButton(

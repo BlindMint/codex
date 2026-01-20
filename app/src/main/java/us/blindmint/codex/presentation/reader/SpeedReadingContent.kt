@@ -124,8 +124,20 @@ fun SpeedReadingContent(
     wordPickerActive: Boolean = false,
     initialWordIndex: Int = 0,
     onShowWordPicker: () -> Unit = {},
+    onProgressUpdate: (Float) -> Unit = {}, // Callback for word-based progress updates
     modifier: Modifier = Modifier
 ) {
+    // Calculate total words in entire book for progress tracking
+    val totalWords = remember(text) {
+        text.filterIsInstance<ReaderText.Text>()
+            .sumOf { it.line.text.split("\\s+".toRegex()).filter { w -> w.isNotBlank() }.size }
+    }
+
+    // Calculate starting word index based on current progress
+    val startingWordIndex = remember(text, currentProgress, totalWords) {
+        if (totalWords == 0) 0 else ((currentProgress * totalWords).toInt()).coerceIn(0, totalWords - 1)
+    }
+
     // Extract words from text starting from current position
     val words = remember(text, currentProgress) {
         val startIndex = (currentProgress * text.size).toInt()
@@ -136,6 +148,7 @@ fun SpeedReadingContent(
     }
 
     var currentWordIndex by remember { mutableIntStateOf(0) }
+    var lastProgressSaveIndex by remember { mutableIntStateOf(startingWordIndex) }
     var lastNavigationDirection by remember { mutableIntStateOf(0) }
     var showQuickWpmMenu by remember { mutableStateOf(false) }
     var showCountdown by remember { mutableStateOf(false) }
@@ -199,16 +212,40 @@ fun SpeedReadingContent(
     LaunchedEffect(isPlaying, currentWordIndex, wpm, words) {
         if (isPlaying && words.isNotEmpty() && currentWordIndex < words.size) {
             val currentWordText = words.getOrNull(currentWordIndex) ?: ""
+
+            // Check for sentence-ending punctuation (period, exclamation, question, colon)
             val isSentenceEnd = currentWordText.endsWith(".") ||
                                currentWordText.endsWith("!") ||
                                currentWordText.endsWith("?") ||
-                               currentWordText.endsWith(":") ||
-                               currentWordText.endsWith(";")
+                               currentWordText.endsWith(":")
+
+            // Check for comma/semicolon pause (medium length pause)
+            val isCommaPause = currentWordText.endsWith(",") ||
+                              currentWordText.endsWith(";")
 
             val wordDelay = (60.0 / wpm * 1000).toLong()
-            val delayTime = if (isSentenceEnd) sentencePauseMs.toLong() else wordDelay
+            val delayTime = when {
+                isSentenceEnd -> sentencePauseMs.toLong()
+                isCommaPause -> (wordDelay * 1.5).toLong() // 50% longer than normal word
+                else -> wordDelay
+            }
             delay(delayTime)
             currentWordIndex = if (currentWordIndex < words.size - 1) currentWordIndex + 1 else 0
+        }
+    }
+
+    // Periodic progress tracking - save every 50 words or on pause
+    LaunchedEffect(isPlaying, currentWordIndex) {
+        val globalWordIndex = startingWordIndex + currentWordIndex
+        val wordsSinceLastSave = globalWordIndex - lastProgressSaveIndex
+
+        // Save progress every 50 words or when pausing
+        if (wordsSinceLastSave >= 50 || !isPlaying) {
+            if (totalWords > 0 && wordsSinceLastSave > 0) {
+                val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                onProgressUpdate(newProgress)
+                lastProgressSaveIndex = globalWordIndex
+            }
         }
     }
 

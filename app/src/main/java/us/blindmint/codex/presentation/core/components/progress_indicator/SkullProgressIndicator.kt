@@ -49,7 +49,7 @@ import androidx.compose.ui.graphics.ColorFilter
 @Composable
 fun SkullProgressIndicator(
     modifier: Modifier = Modifier,
-    size: Dp = 48.dp,
+    size: Dp = 56.dp,
     trackColor: Color = MaterialTheme.colorScheme.surfaceVariant,
     progressColor: Color = MaterialTheme.colorScheme.primary,
     strokeWidth: Dp = 4.dp,
@@ -144,7 +144,7 @@ fun SkullProgressIndicator(
 fun SkullProgressIndicator(
     progress: Float,
     modifier: Modifier = Modifier,
-    size: Dp = 48.dp,
+    size: Dp = 56.dp,
     trackColor: Color = MaterialTheme.colorScheme.surfaceVariant,
     progressColor: Color = MaterialTheme.colorScheme.primary,
     strokeWidth: Dp = 4.dp,

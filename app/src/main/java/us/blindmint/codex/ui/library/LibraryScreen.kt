@@ -40,6 +40,7 @@ import us.blindmint.codex.domain.ui.UIText
 import us.blindmint.codex.presentation.library.LibraryContent
 import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.ui.book_info.BookInfoScreen
+import us.blindmint.codex.ui.reader.SpeedReadingScreen
 import us.blindmint.codex.ui.browse.BrowseScreen
 import us.blindmint.codex.ui.history.HistoryScreen
 import us.blindmint.codex.ui.main.MainModel
@@ -246,6 +247,10 @@ object LibraryScreen : Screen, Parcelable {
             navigateToReader = {
                 HistoryScreen.insertHistoryChannel.trySend(it)
                 navigator.push(ReaderScreen(it))
+            },
+            navigateToSpeedReading = { bookId ->
+                HistoryScreen.insertHistoryChannel.trySend(bookId)
+                navigator.push(SpeedReadingScreen(bookId))
             },
             navigateToBookInfo = {
                 navigator.push(BookInfoScreen(bookId = it))
