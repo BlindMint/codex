@@ -131,19 +131,19 @@ class ReaderModel @Inject constructor(
                             snapshotFlow {
                                 _state.value.listState.layoutInfo.totalItemsCount
                             }.collectLatest { itemsCount ->
-                                if (itemsCount < _state.value.text.size) return@collectLatest
+                                if (itemsCount == 0) return@collectLatest // Wait for list to start loading
 
                                 _state.value.book.apply {
-                                    // Check if saved scrollIndex matches current progress (within tolerance)
-                                    val expectedScrollIndex = (progress * _state.value.text.lastIndex).toInt()
-                                    val scrollIndexMatches = kotlin.math.abs(scrollIndex - expectedScrollIndex) <= 1 // Allow 1 item tolerance
+                                    // Always convert progress to scroll index to handle speed reader progress
+                                    val progressScrollIndex = (progress * _state.value.text.lastIndex).toInt()
+                                        .coerceIn(0, _state.value.text.lastIndex)
 
+                                    // Use progress-based positioning, but prefer saved position if it's close
+                                    val scrollIndexMatches = kotlin.math.abs(scrollIndex - progressScrollIndex) <= 1
                                     val finalScrollIndex = if (scrollIndexMatches && scrollOffset != 0) {
-                                        // Use saved position if it matches progress and has offset
-                                        scrollIndex
+                                        scrollIndex // Use saved position if it matches progress and has offset
                                     } else {
-                                        // Convert progress to scroll index (coarser positioning from speed reader)
-                                        expectedScrollIndex.coerceIn(0, _state.value.text.lastIndex)
+                                        progressScrollIndex // Use progress-converted position
                                     }
 
                                     val finalScrollOffset = if (scrollIndexMatches) scrollOffset else 0
