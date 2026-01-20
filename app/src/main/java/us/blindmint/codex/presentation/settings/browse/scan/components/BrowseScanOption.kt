@@ -301,42 +301,6 @@ private fun BrowseScanFolderItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
-
-                // Show current filename with strict height constraint (single line)
-                if (currentOperation != null && currentOperation.currentFile.isNotEmpty()) {
-                    val displayName = currentOperation.currentFile.let { name ->
-                        val maxLength = 35 // Character limit for folder item filename display
-                        if (name.length > maxLength) {
-                            name.take(maxLength - 3) + "..."
-                        } else {
-                            name
-                        }
-                    }
-
-                    Text(
-                        text = "Processing: $displayName",
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.height(14.dp) // Strict height to prevent layout expansion
-                    )
-                }
-
-                // Only show progress text if actively importing
-                if (currentOperation != null && currentOperation.totalBooks > 0) {
-                    StyledText(
-                        text = stringResource(
-                            R.string.importing_progress_no_file,
-                            currentOperation.currentProgress,
-                            currentOperation.totalBooks
-                        ),
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                }
             }
 
             Row(
@@ -361,6 +325,54 @@ private fun BrowseScanFolderItem(
                         Icons.Outlined.Clear,
                         contentDescription = "Remove folder",
                         modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+
+        // Show import details below the main row (doesn't affect icon positioning)
+        if (currentOperation != null) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp)
+            ) {
+                // Show current filename with strict height constraint (single line)
+                if (currentOperation.currentFile.isNotEmpty()) {
+                    val displayName = currentOperation.currentFile.let { name ->
+                        val maxLength = 35 // Character limit for folder item filename display
+                        if (name.length > maxLength) {
+                            name.take(maxLength - 3) + "..."
+                        } else {
+                            name
+                        }
+                    }
+
+                    Text(
+                        text = "Processing: $displayName",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(14.dp) // Strict height to prevent layout expansion
+                    )
+                }
+
+                // Only show progress text if actively importing
+                if (currentOperation.totalBooks > 0) {
+                    StyledText(
+                        text = stringResource(
+                            R.string.importing_progress_no_file,
+                            currentOperation.currentProgress,
+                            currentOperation.totalBooks
+                        ),
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.primary
+                        ),
+                        modifier = Modifier.padding(top = 2.dp)
                     )
                 }
             }
