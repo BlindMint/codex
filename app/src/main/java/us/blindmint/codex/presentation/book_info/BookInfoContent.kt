@@ -131,6 +131,7 @@ fun BookInfoContent(
         toggleFavorite = toggleFavorite,
         navigateToReader = navigateToReader,
         navigateToSpeedReading = navigateToSpeedReading,
+        onCategoryChange = onCategoryChange,
         navigateBack = navigateBack
     )
 

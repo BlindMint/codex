@@ -72,7 +72,7 @@ fun BookInfoDetailsBottomSheetItem(
             }
         )
 
-        if (editable && onEditClick != null) {
+        if (!editable && onEditClick != null) {
             IconButton(
                 icon = Icons.Default.EditNote,
                 contentDescription = R.string.edit_content_desc,
@@ -82,15 +82,6 @@ fun BookInfoDetailsBottomSheetItem(
             ) {
                 onEditClick()
             }
-        } else if (editable && onEditClick == null) {
-            // Empty space to maintain alignment
-            IconButton(
-                icon = Icons.Default.EditNote,
-                contentDescription = R.string.edit_metadata,
-                disableOnClick = true,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0f),
-                modifier = Modifier.size(24.dp)
-            ) {}
         }
     }
 }

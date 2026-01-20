@@ -261,6 +261,21 @@ fun BookInfoDetailsBottomSheet(
             }
 
             item {
+                StatusChipsRow(
+                    selectedStatuses = setOf(displayBook.category),
+                    onStatusToggle = { status, selected ->
+                        if (selected) {
+                            onCategoryChange(status)
+                            // Also update editedBook if in edit mode
+                            if (isEditingMetadata && editedBook != null) {
+                                onUpdateEditedBook(editedBook.copy(category = status))
+                            }
+                        }
+                    }
+                )
+            }
+
+            item {
                 BookInfoDetailsBottomSheetItem(
                     label = stringResource(id = R.string.title),
                     text = displayBook.title,
@@ -269,8 +284,7 @@ fun BookInfoDetailsBottomSheet(
                         if (isEditingMetadata && editedBook != null) {
                             onUpdateEditedBook(editedBook.copy(title = newTitle))
                         }
-                    },
-                    onEditClick = { showTitleDialog(BookInfoEvent.OnShowTitleDialog) }
+                    }
                 )
             }
 
@@ -282,18 +296,6 @@ fun BookInfoDetailsBottomSheet(
                     onTextChange = { newAuthor ->
                         if (isEditingMetadata && editedBook != null) {
                             onUpdateEditedBook(editedBook.copy(authors = if (newAuthor.isNotEmpty()) listOf(newAuthor) else emptyList()))
-                        }
-                    },
-                    onEditClick = { showAuthorDialog(BookInfoEvent.OnShowAuthorDialog) }
-                )
-            }
-
-            item {
-                StatusChipsRow(
-                    selectedStatuses = setOf(displayBook.category),
-                    onStatusToggle = { status, selected ->
-                        if (selected) {
-                            onCategoryChange(status)
                         }
                     }
                 )
@@ -309,8 +311,7 @@ fun BookInfoDetailsBottomSheet(
                             onUpdateEditedBook(editedBook.copy(description = newDescription.ifEmpty { null }))
                         }
                     },
-                    maxLines = 4,
-                    onEditClick = { showDescriptionDialog(BookInfoEvent.OnShowDescriptionDialog) }
+                    maxLines = 4
                 )
             }
 

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,6 +24,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
@@ -442,58 +444,69 @@ private fun LibraryFilterTabContent(
             }
         )
 
-        if (sortedTags.isNotEmpty()) {
-            FilterMetadataRow(
-                title = "Tags",
-                selectedItems = selectedTags,
-                totalAvailableCount = sortedTags.size,
-                placeholderText = "Select tags to filter",
-                onEditClick = onShowTagsSubpanel
-            )
-        }
-
-        if (sortedAuthors.isNotEmpty()) {
-            FilterMetadataRow(
-                title = "Authors",
-                selectedItems = selectedAuthors,
-                totalAvailableCount = sortedAuthors.size,
-                placeholderText = "Select authors to filter",
-                onEditClick = onShowAuthorsSubpanel
-            )
-        }
-
-        if (sortedSeries.isNotEmpty()) {
-            FilterMetadataRow(
-                title = "Series",
-                selectedItems = selectedSeries,
-                totalAvailableCount = sortedSeries.size,
-                placeholderText = "Select series to filter",
-                onEditClick = onShowSeriesSubpanel
-            )
-        }
-
-        Text(
-            "Language",
-            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+        FilterMetadataRow(
+            title = "Tags",
+            selectedItems = selectedTags,
+            totalAvailableCount = sortedTags.size,
+            placeholderText = "Select tags to filter",
+            onEditClick = onShowTagsSubpanel
         )
-        if (sortedLanguages.isNotEmpty()) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+
+        FilterMetadataRow(
+            title = "Authors",
+            selectedItems = selectedAuthors,
+            totalAvailableCount = sortedAuthors.size,
+            placeholderText = "Select authors to filter",
+            onEditClick = onShowAuthorsSubpanel
+        )
+
+        FilterMetadataRow(
+            title = "Series",
+            selectedItems = selectedSeries,
+            totalAvailableCount = sortedSeries.size,
+            placeholderText = "Select series to filter",
+            onEditClick = onShowSeriesSubpanel
+        )
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                "Language",
+                style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+            OutlinedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp)
             ) {
-                sortedLanguages.forEach { language ->
-                    FilterChip(
-                        selected = selectedLanguages.contains(language),
-                        onClick = { onLanguageToggle(language, !selectedLanguages.contains(language)) },
-                        label = { Text(language) }
-                    )
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (sortedLanguages.isEmpty()) {
+                        Text(
+                            text = "Select languages to filter",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    } else {
+                        sortedLanguages.forEach { language ->
+                            FilterChip(
+                                selected = selectedLanguages.contains(language),
+                                onClick = { onLanguageToggle(language, !selectedLanguages.contains(language)) },
+                                label = { Text(language) }
+                            )
+                        }
+                    }
                 }
             }
-        } else {
-            Text(
-                "No languages available",
-                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
-            )
         }
     }
 }

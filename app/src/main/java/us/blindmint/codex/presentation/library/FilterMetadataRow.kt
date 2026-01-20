@@ -51,7 +51,7 @@ fun FilterMetadataRow(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onEditClick() }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
