@@ -7,6 +7,7 @@
 package us.blindmint.codex.ui.import_progress
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +22,7 @@ import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
 import java.util.UUID
 import javax.inject.Inject
 
+private const val TAG = "ImportProgressViewModel"
 
 /**
  * App-level ViewModel for managing import operations.
@@ -152,6 +154,22 @@ class ImportProgressViewModel @Inject constructor(
      * Update progress for Codex Directory import.
      * Used for tracking OPDS book auto-imports from Codex Directory.
      */
+    fun startCodexImport(folderPath: String, folderName: String) {
+        val operationId = UUID.randomUUID().toString()
+        val operation = ImportOperation(
+            id = operationId,
+            folderName = folderName,
+            folderPath = folderPath,
+            totalBooks = 0, // Will be updated as progress comes in
+            currentProgress = 0,
+            status = ImportStatus.STARTING,
+            currentFile = ""
+        )
+
+        _importOperations.value = _importOperations.value + operation
+        Log.i(TAG, "Started Codex Directory import operation: $operationId")
+    }
+
     fun updateCodexImportProgress(
         folderPath: String,
         totalBooks: Int,

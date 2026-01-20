@@ -697,13 +697,15 @@ class SettingsModel @Inject constructor(
 
                         // Start background import with progress tracking
                         Log.i("SettingsModel", "Starting background auto-import of existing OPDS books")
-                        val operationId = UUID.randomUUID().toString()
                         val folderName = displayPath?.substringAfterLast("/") ?: "Codex Directory"
+
+                        // Create initial import operation for Codex Directory
+                        importProgressViewModel.startCodexImport(displayPath ?: "", folderName)
 
                         try {
                             val importedCount = autoImportCodexBooksUseCase.execute { progress ->
                                 Log.d("SettingsModel", "Auto-import progress: ${progress.current}/${progress.total} - ${progress.currentFolder}")
-                                // For Codex Directory, we track the import operation with total books being number of folders processed
+                                // Update the Codex Directory import progress
                                 importProgressViewModel.updateCodexImportProgress(
                                     folderPath = displayPath ?: "",
                                     totalBooks = progress.total,
@@ -717,14 +719,16 @@ class SettingsModel @Inject constructor(
                                 // Trigger library refresh to show imported books
                                 Log.i("SettingsModel", "Triggering library refresh after auto-import")
                                 try {
-                                    LibraryScreen.refreshListChannel.trySend(0)
+                                    withContext(Dispatchers.Main) {
+                                        LibraryScreen.refreshListChannel.trySend(0)
+                                    }
                                     Log.i("SettingsModel", "Library refresh signal sent successfully")
                                 } catch (e: Exception) {
                                     Log.e("SettingsModel", "Failed to trigger library refresh", e)
                                 }
-                        } else {
-                            Log.w("SettingsModel", "No books were imported during auto-import")
-                        }
+                            } else {
+                                Log.w("SettingsModel", "No books were imported during auto-import")
+                            }
                         } catch (e: Exception) {
                             Log.e("SettingsModel", "Auto-import failed with exception", e)
                         }
