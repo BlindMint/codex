@@ -48,13 +48,15 @@ import com.anggrayudi.storage.file.getBasePath
 import com.anggrayudi.storage.file.getRootPath
 import kotlinx.coroutines.launch
 import us.blindmint.codex.R
+import us.blindmint.codex.domain.import_progress.ImportOperation
 import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
 import us.blindmint.codex.domain.use_case.book.BulkImportProgress
-
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.core.util.showToast
+import us.blindmint.codex.presentation.import_progress.ImportProgressBar
 import us.blindmint.codex.ui.browse.BrowseScreen
+import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
 import us.blindmint.codex.ui.library.LibraryScreen
 import us.blindmint.codex.ui.settings.SettingsEvent
 import us.blindmint.codex.ui.settings.SettingsModel
@@ -64,12 +66,12 @@ import androidx.compose.material3.AlertDialog
 @Composable
 fun BrowseScanOption() {
     val settingsModel = hiltViewModel<SettingsModel>()
+    val importProgressViewModel = hiltViewModel<ImportProgressViewModel>()
     val state by settingsModel.state.collectAsStateWithLifecycle()
+    val importOperations by importProgressViewModel.importOperations.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    var importProgress by remember { mutableStateOf<BulkImportProgress?>(null) }
-    var importingFolderUri by remember { mutableStateOf<android.net.Uri?>(null) }
     var showLocalFolderInfoDialog by remember { mutableStateOf(false) }
 
     suspend fun getPersistedUriPermissions(): List<UriPermission> {
@@ -123,22 +125,20 @@ fun BrowseScanOption() {
                             persistedUriPermissions = getPersistedUriPermissions()
                         }
 
-        // Start bulk import instead of refreshing Browse
-        importingFolderUri = uri
+        // Start background import using ViewModel
+        val permissionFile = DocumentFileCompat.fromUri(context, uri)
+        val folderName = permissionFile?.getBasePath(context) ?: "Folder"
+        val folderPath = permissionFile?.getRootPath(context) ?: uri.toString()
+
+        importProgressViewModel.startImport(
+            folderUri = uri,
+            folderName = folderName,
+            folderPath = folderPath
+        )
+
+        // Schedule library refresh after import completes
         coroutineScope.launch {
-            try {
-                val importedCount = settingsModel.bulkImportBooksFromFolder.execute(uri) { progress ->
-                    importProgress = progress
-                }
-                context.getString(R.string.import_completed, importedCount).showToast(context, longToast = false)
-                LibraryScreen.refreshListChannel.trySend(0) // Refresh Library
-            } catch (e: Exception) {
-                e.printStackTrace()
-                context.getString(R.string.error_something_went_wrong).showToast(context, longToast = false)
-            } finally {
-                importProgress = null
-                importingFolderUri = null
-            }
+            LibraryScreen.refreshListChannel.trySend(0) // Refresh Library
         }
     }
 
@@ -147,27 +147,33 @@ fun BrowseScanOption() {
             .fillMaxWidth()
             .animateContentSize()
     ) {
+        // Display active import progress bars
+        importOperations.forEach { operation ->
+            ImportProgressBar(
+                operation = operation,
+                onCancel = {
+                    importProgressViewModel.cancelImport(operation.id)
+                }
+            )
+        }
+
         persistedUriPermissions.forEachIndexed { index, permission ->
             BrowseScanFolderItem(
                 index = index,
                 permission = permission,
                 context = context,
                 onRefreshClick = {
-                    importingFolderUri = permission.uri
+                    val permissionFile = DocumentFileCompat.fromUri(context, permission.uri)
+                    val folderName = permissionFile?.getBasePath(context) ?: "Folder"
+                    val folderPath = permissionFile?.getRootPath(context) ?: permission.uri.toString()
+
+                    importProgressViewModel.startImport(
+                        folderUri = permission.uri,
+                        folderName = folderName,
+                        folderPath = folderPath
+                    )
                     coroutineScope.launch {
-                        try {
-                            val importedCount = settingsModel.bulkImportBooksFromFolder.execute(permission.uri) { progress ->
-                                importProgress = progress
-                            }
-                            context.getString(R.string.import_completed, importedCount).showToast(context, longToast = false)
-                            LibraryScreen.refreshListChannel.trySend(0) // Refresh Library
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            context.getString(R.string.error_something_went_wrong).showToast(context, longToast = false)
-                        } finally {
-                            importProgress = null
-                            importingFolderUri = null
-                        }
+                        LibraryScreen.refreshListChannel.trySend(0) // Refresh Library
                     }
                 },
                 onRemoveClick = {
@@ -182,8 +188,8 @@ fun BrowseScanOption() {
                     }
                     BrowseScreen.refreshListChannel.trySend(Unit)
                 },
-                importProgress = importProgress,
-                isImportingThisFolder = importingFolderUri == permission.uri
+                importOperations = importOperations,
+                folderUri = permission.uri
             )
         }
     }
@@ -249,10 +255,16 @@ private fun BrowseScanFolderItem(
     context: Context,
     onRefreshClick: () -> Unit,
     onRemoveClick: () -> Unit,
-    importProgress: BulkImportProgress?,
-    isImportingThisFolder: Boolean
+    importOperations: List<us.blindmint.codex.domain.import_progress.ImportOperation>,
+    folderUri: android.net.Uri
 ) {
-    val permissionFile = DocumentFileCompat.fromUri(context, permission.uri) ?: return
+    val permissionFile = DocumentFileCompat.fromUri(context, folderUri) ?: return
+
+    // Find import operation for this folder if one exists
+    val currentOperation = importOperations.find { op ->
+        // Match by folder path
+        op.folderPath == permissionFile.getRootPath(context)
+    }
 
     Column(
         modifier = Modifier
@@ -292,13 +304,13 @@ private fun BrowseScanFolderItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
-                if (isImportingThisFolder && importProgress != null) {
+                if (currentOperation != null && currentOperation.totalBooks > 0) {
                     StyledText(
                         text = stringResource(
                             R.string.importing_progress,
-                            importProgress.current,
-                            importProgress.total,
-                            importProgress.currentFile
+                            currentOperation.currentProgress,
+                            currentOperation.totalBooks,
+                            currentOperation.currentFile
                         ),
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = MaterialTheme.colorScheme.primary
@@ -334,9 +346,9 @@ private fun BrowseScanFolderItem(
             }
         }
 
-        if (isImportingThisFolder && importProgress != null) {
+        if (currentOperation != null && currentOperation.totalBooks > 0) {
             LinearProgressIndicator(
-                progress = { importProgress.current.toFloat() / importProgress.total.toFloat() },
+                progress = { currentOperation.currentProgress.toFloat() / currentOperation.totalBooks.toFloat() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp),
