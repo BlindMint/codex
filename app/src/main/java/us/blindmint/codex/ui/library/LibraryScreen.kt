@@ -81,6 +81,16 @@ object LibraryScreen : Screen, Parcelable {
         val state = screenModel.state.collectAsStateWithLifecycle()
         val mainState = mainModel.state.collectAsStateWithLifecycle()
 
+        // Refresh library when screen becomes active (navigation to Library tab)
+        LaunchedEffect(Unit) {
+            screenModel.onEvent(
+                LibraryEvent.OnRefreshList(
+                    loading = false,
+                    hideSearch = false
+                )
+            )
+        }
+
         val sortedBooks = remember(state.value.books, mainState.value.librarySortOrder, mainState.value.librarySortOrderDescending) {
             val sortOrder = mainState.value.librarySortOrder
             val isDescending = mainState.value.librarySortOrderDescending

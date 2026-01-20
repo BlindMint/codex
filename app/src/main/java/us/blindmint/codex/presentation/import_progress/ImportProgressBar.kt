@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -78,14 +79,25 @@ fun ImportProgressBar(
             }
         }
 
-        // Current file name (single line only)
+        // Current file name (strictly single line with character limit)
         if (operation.currentFile.isNotEmpty()) {
+            val displayName = operation.currentFile.let { name ->
+                val prefix = "Processing: "
+                val maxLength = 40 // Character limit for filename display
+                if (name.length > maxLength) {
+                    prefix + name.take(maxLength - 3) + "..."
+                } else {
+                    prefix + name
+                }
+            }
+
             Text(
-                text = "Processing: ${operation.currentFile}",
+                text = displayName,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.height(16.dp) // Fixed height to prevent layout shifts
             )
         }
 
