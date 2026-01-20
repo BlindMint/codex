@@ -239,15 +239,21 @@ fun SpeedReadingContent(
         val globalWordIndex = startingWordIndex + currentWordIndex
         val wordsSinceLastSave = globalWordIndex - lastProgressSaveIndex
 
-        // Save progress every 50 words or when pausing
-        if (wordsSinceLastSave >= 50 || !isPlaying) {
-            if (totalWords > 0 && wordsSinceLastSave > 0) {
-                // Store precise word-based progress - normal reader will convert when loading
-                val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-                Log.d("SPEED_READER", "Saving progress: globalWordIndex=$globalWordIndex, totalWords=$totalWords, newProgress=$newProgress")
-                onProgressUpdate(newProgress)
-                lastProgressSaveIndex = globalWordIndex
-            }
+        // Save progress every 50 words or when pausing (but not immediately on load)
+        val shouldSave = if (!isPlaying) {
+            // Only save on pause if we've actually moved more than 10 words from start
+            wordsSinceLastSave >= 10
+        } else {
+            // Save every 50 words when playing
+            wordsSinceLastSave >= 50
+        }
+
+        if (shouldSave && totalWords > 0 && wordsSinceLastSave > 0) {
+            // Store precise word-based progress - normal reader will convert when loading
+            val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+            Log.d("SPEED_READER", "Saving progress: globalWordIndex=$globalWordIndex, totalWords=$totalWords, newProgress=$newProgress")
+            onProgressUpdate(newProgress)
+            lastProgressSaveIndex = globalWordIndex
         }
     }
 
