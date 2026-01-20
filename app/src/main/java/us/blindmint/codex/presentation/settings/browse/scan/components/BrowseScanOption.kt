@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -28,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -38,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -298,14 +301,36 @@ private fun BrowseScanFolderItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
+
+                // Show current filename with strict height constraint (single line)
+                if (currentOperation != null && currentOperation.currentFile.isNotEmpty()) {
+                    val displayName = currentOperation.currentFile.let { name ->
+                        val maxLength = 35 // Character limit for folder item filename display
+                        if (name.length > maxLength) {
+                            name.take(maxLength - 3) + "..."
+                        } else {
+                            name
+                        }
+                    }
+
+                    Text(
+                        text = "Processing: $displayName",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.height(14.dp) // Strict height to prevent layout expansion
+                    )
+                }
+
                 // Only show progress text if actively importing
                 if (currentOperation != null && currentOperation.totalBooks > 0) {
                     StyledText(
                         text = stringResource(
-                            R.string.importing_progress,
+                            R.string.importing_progress_no_file,
                             currentOperation.currentProgress,
-                            currentOperation.totalBooks,
-                            currentOperation.currentFile
+                            currentOperation.totalBooks
                         ),
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = MaterialTheme.colorScheme.primary
