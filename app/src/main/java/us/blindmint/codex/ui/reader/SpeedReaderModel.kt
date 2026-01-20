@@ -19,8 +19,8 @@ import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.use_case.book.GetBookById
 import us.blindmint.codex.domain.use_case.book.GetText
 import us.blindmint.codex.domain.use_case.book.UpdateBook
-import us.blindmint.codex.presentation.history.HistoryScreen
-import us.blindmint.codex.presentation.library.LibraryScreen
+import us.blindmint.codex.ui.history.HistoryScreen
+import us.blindmint.codex.ui.library.LibraryScreen
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,9 +39,20 @@ class SpeedReaderModel @Inject constructor(
     val currentProgress = mutableFloatStateOf(0f)
     val currentWordIndex = mutableIntStateOf(0)
     private var lastSavedProgress = 0f
+    private var lastDatabaseSaveWordIndex = 0
 
     fun loadBook(bookId: Int, activity: Activity, onError: () -> Unit) {
         viewModelScope.launch {
+            // Clear previous state when loading a new book
+            if (book.value?.id != bookId) {
+                book.value = null
+                text.value = emptyList()
+                isLoading.value = true
+                errorMessage.value = null
+                currentProgress.floatValue = 0f
+                currentWordIndex.intValue = 0
+            }
+
             val loadedBook = getBookById.execute(bookId)
             if (loadedBook == null) {
                 onError()
@@ -75,33 +86,35 @@ class SpeedReaderModel @Inject constructor(
 
     fun updateProgress(progress: Float, wordIndex: Int) {
         viewModelScope.launch {
+            // Always update UI state immediately for smooth progress bar
             currentProgress.floatValue = progress
             currentWordIndex.intValue = wordIndex
 
-            // Save to database
-            book.value?.let { currentBook ->
-                val updatedBook = currentBook.copy(progress = progress)
-                updateBook.execute(updatedBook)
-                lastSavedProgress = progress
-
-                // Refresh library and history
-                LibraryScreen.refreshListChannel.trySend(0)
-                HistoryScreen.refreshListChannel.trySend(0)
+            // Only save to database every 50+ words to avoid excessive writes
+            val wordsSinceLastSave = wordIndex - lastDatabaseSaveWordIndex
+            if (wordsSinceLastSave >= 50) {
+                saveProgressToDatabase(progress)
             }
+        }
+    }
+
+    private suspend fun saveProgressToDatabase(progress: Float) {
+        book.value?.let { currentBook ->
+            val updatedBook = currentBook.copy(progress = progress)
+            updateBook.execute(updatedBook)
+            lastSavedProgress = progress
+            lastDatabaseSaveWordIndex = currentWordIndex.intValue
+
+            // Refresh library and history
+            LibraryScreen.refreshListChannel.trySend(0)
+            HistoryScreen.refreshListChannel.trySend(0)
         }
     }
 
     fun onLeave() {
         viewModelScope.launch {
-            book.value?.let { currentBook ->
-                // Save final progress
-                val updatedBook = currentBook.copy(progress = currentProgress.floatValue)
-                updateBook.execute(updatedBook)
-
-                // Refresh screens
-                LibraryScreen.refreshListChannel.trySend(0)
-                HistoryScreen.refreshListChannel.trySend(0)
-            }
+            // Always save final progress, even if < 50 words since last save
+            saveProgressToDatabase(currentProgress.floatValue)
         }
     }
 }

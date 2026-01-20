@@ -606,7 +606,7 @@ data class MainState(
                     ) { speedReadingAccentCharacterEnabled },
 
                     speedReadingAccentColor = provideValue(
-                        SPEED_READING_ACCENT_COLOR, convert = { toLongOrNull() ?: 0xFFFF0000 }
+                        SPEED_READING_ACCENT_COLOR, convert = { toLongOrNull(16) ?: 0xFFFF0000 }
                     ) { speedReadingAccentColor },
 
                     speedReadingAccentOpacity = provideValue(
@@ -642,7 +642,7 @@ data class MainState(
                     ) { speedReadingHorizontalBarsDistance },
 
                     speedReadingHorizontalBarsColor = provideValue(
-                        SPEED_READING_HORIZONTAL_BARS_COLOR, convert = { toLongOrNull() ?: 0xFF424242 }
+                        SPEED_READING_HORIZONTAL_BARS_COLOR, convert = { toLongOrNull(16) ?: 0xFF424242 }
                     ) { speedReadingHorizontalBarsColor },
 
                     speedReadingHorizontalBarsOpacity = provideValue(

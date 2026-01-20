@@ -121,7 +121,7 @@ fun ReaderScaffold(
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
     showBookmarksDrawer: (ReaderEvent.OnShowBookmarksDrawer) -> Unit,
-    showSpeedReading: (ReaderEvent.OnShowSpeedReading) -> Unit,
+    showSpeedReading: () -> Unit,
     showSearch: (ReaderEvent.OnShowSearchPersistent) -> Unit,
     hideSearch: (ReaderEvent.OnHideSearch) -> Unit,
     searchQuery: String,

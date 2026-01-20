@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import us.blindmint.codex.presentation.core.components.progress_indicator.CircularProgressIndicator
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.BottomAppBar
@@ -89,7 +90,7 @@ fun SpeedReadingScaffold(
     accentOpacity: Float,
     showVerticalIndicators: Boolean,
     verticalIndicatorsSize: Int,
-    verticalIndicatorType: us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType,
+    verticalIndicatorType: us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType,
     showHorizontalBars: Boolean,
     horizontalBarsThickness: Int,
     horizontalBarsLength: Float,
@@ -225,14 +226,13 @@ fun SpeedReadingScaffold(
             if (isLoading || text.isEmpty()) {
                 // Show loading indicator when text is not ready
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surface),
                     contentAlignment = Alignment.Center
                 ) {
-                    SkullProgressIndicator(
-                        modifier = Modifier.size(56.dp),
-                        size = 56.dp,
-                        trackColor = backgroundColor,
-                        progressColor = fontColor,
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(48.dp),
                         strokeWidth = 4.5.dp
                     )
                 }
@@ -240,7 +240,7 @@ fun SpeedReadingScaffold(
                 SpeedReadingContent(
                 text = text,
                 currentProgress = currentProgress,
-                totalProgress = totalProgress,
+                totalProgress = realTimeProgress,
                 backgroundColor = backgroundColor,
                 fontColor = fontColor,
                 fontFamily = fontFamily,

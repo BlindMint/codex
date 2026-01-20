@@ -128,15 +128,7 @@ sealed class ReaderEvent {
 
     data object OnShowBookmarksDrawer : ReaderEvent()
 
-    data class OnShowSpeedReading(
-        val origin: SpeedReadingOrigin = SpeedReadingOrigin.NORMAL_READER
-    ) : ReaderEvent()
 
-    data object OnShowSpeedReadingSettings : ReaderEvent()
-
-    data object OnDismissSpeedReadingSettings : ReaderEvent()
-
-    data object OnDismissSpeedReading : ReaderEvent()
 
     data object OnDismissDrawer : ReaderEvent()
 

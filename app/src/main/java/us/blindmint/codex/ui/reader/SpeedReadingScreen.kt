@@ -18,11 +18,16 @@ import us.blindmint.codex.presentation.core.util.LocalActivity
 import us.blindmint.codex.presentation.core.util.calculateProgress
 import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.presentation.reader.SpeedReadingScaffold
+import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 import us.blindmint.codex.presentation.reader.SpeedReadingSettingsBottomSheet
 import us.blindmint.codex.ui.library.LibraryScreen
+import androidx.compose.animation.animateColorAsState
 
 @Parcelize
-data class SpeedReadingScreen(val bookId: Int) : Screen, Parcelable {
+data class SpeedReadingScreen(
+    val bookId: Int,
+    val sessionId: Long = System.currentTimeMillis()  // Forces new ViewModel instance
+) : Screen, Parcelable {
 
     @Composable
     override fun Content() {
@@ -225,27 +230,36 @@ data class SpeedReadingScreen(val bookId: Int) : Screen, Parcelable {
         val text = speedReaderModel.text.value
         val isLoading = speedReaderModel.isLoading.value
 
-        if (book == null) return
+        // Use empty book as fallback when book hasn't loaded yet
+        val displayBook = book ?: us.blindmint.codex.presentation.core.constants.provideEmptyBook()
 
         val bookProgress = androidx.compose.runtime.remember(
-            book.progress
+            speedReaderModel.currentProgress.floatValue
         ) {
-            "${book.progress.calculateProgress(2)}%"
+            "${speedReaderModel.currentProgress.floatValue.calculateProgress(2)}%"
         }
 
         val bottomBarPadding = androidx.compose.runtime.remember(mainState.value.bottomBarPadding) {
             (mainState.value.bottomBarPadding * 4f).dp
         }
 
+        // Animate color changes for smooth transitions, matching ReaderScreen behavior
+        val backgroundColor = animateColorAsState(
+            targetValue = settingsState.value.selectedColorPreset.backgroundColor
+        )
+        val fontColor = animateColorAsState(
+            targetValue = settingsState.value.selectedColorPreset.fontColor
+        )
+
         SpeedReadingScaffold(
             text = text,
-            book = book,
-            bookTitle = book.title,
+            book = displayBook,
+            bookTitle = displayBook.title,
             chapterTitle = null, // Speed reader doesn't track chapters
-            currentProgress = book.progress,
-            totalProgress = book.progress,
-            backgroundColor = settingsState.value.selectedColorPreset.backgroundColor,
-            fontColor = settingsState.value.selectedColorPreset.fontColor,
+            currentProgress = displayBook.progress,
+            totalProgress = displayBook.progress,
+            backgroundColor = backgroundColor.value,
+            fontColor = fontColor.value,
             isLoading = isLoading,
             accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
             accentColor = speedReadingAccentColor.value,
@@ -287,7 +301,14 @@ data class SpeedReadingScreen(val bookId: Int) : Screen, Parcelable {
             onExitSpeedReading = {
                 // Save progress before exiting
                 speedReaderModel.onLeave()
-                navigator.pop()
+
+                // Always return to library for a completely fresh state
+                // This ensures the book can be opened fresh from library with latest progress
+                navigator.push(
+                    LibraryScreen,
+                    popping = true,  // Replace current navigation stack
+                    saveInBackStack = false
+                )
             },
             onNavigateWord = { direction ->
                 // Speed reading handles word navigation internally

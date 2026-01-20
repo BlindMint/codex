@@ -876,9 +876,9 @@ class MainModel @Inject constructor(
 
             is MainEvent.OnChangeSpeedReadingAccentColor -> handleDatastoreUpdate(
                 key = DataStoreConstants.SPEED_READING_ACCENT_COLOR,
-                value = event.value.toString(),
+                value = "%08X".format(event.value),
                 updateState = {
-                    it.copy(speedReadingAccentColor = this.toLongOrNull() ?: 0xFFFF0000)
+                    it.copy(speedReadingAccentColor = this.toLongOrNull(16) ?: 0xFFFF0000)
                 }
             )
 
@@ -948,9 +948,9 @@ class MainModel @Inject constructor(
 
             is MainEvent.OnChangeSpeedReadingHorizontalBarsColor -> handleDatastoreUpdate(
                 key = DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_COLOR,
-                value = event.value.toString(),
+                value = "%08X".format(event.value),
                 updateState = {
-                    it.copy(speedReadingHorizontalBarsColor = this.toLongOrNull() ?: 0xFF424242)
+                    it.copy(speedReadingHorizontalBarsColor = this.toLongOrNull(16) ?: 0xFF424242)
                 }
             )
 

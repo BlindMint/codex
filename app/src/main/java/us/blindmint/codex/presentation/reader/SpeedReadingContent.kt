@@ -51,7 +51,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType
+import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -99,7 +99,7 @@ fun SpeedReadingContent(
     accentOpacity: Float,
     showVerticalIndicators: Boolean,
     verticalIndicatorsSize: Int,
-    verticalIndicatorType: us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType,
+    verticalIndicatorType: us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType,
     showHorizontalBars: Boolean,
     horizontalBarsThickness: Int,
     horizontalBarsLength: Float,

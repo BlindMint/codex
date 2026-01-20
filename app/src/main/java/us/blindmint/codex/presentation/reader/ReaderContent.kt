@@ -119,7 +119,7 @@ fun ReaderContent(
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     dismissBottomSheet: (ReaderEvent.OnDismissBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
-    showSpeedReading: (ReaderEvent.OnShowSpeedReading) -> Unit,
+    showSpeedReading: () -> Unit,
     scrollToBookmark: (ReaderEvent.OnScrollToBookmark) -> Unit,
     dismissDrawer: (ReaderEvent.OnDismissDrawer) -> Unit,
     onReaderEvent: (ReaderEvent) -> Unit,

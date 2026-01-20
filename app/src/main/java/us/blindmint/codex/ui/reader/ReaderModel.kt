@@ -687,42 +687,7 @@ class ReaderModel @Inject constructor(
                     }
                 }
 
-                is ReaderEvent.OnShowSpeedReading -> {
-                    _state.update {
-                        it.copy(
-                            speedReadingMode = true,
-                            speedReadingOrigin = event.origin,
-                            drawer = null,
-                            bottomSheet = null
-                        )
-                    }
-                }
 
-                is ReaderEvent.OnShowSpeedReadingSettings -> {
-                    _state.update {
-                        it.copy(
-                            speedReadingSettingsVisible = true
-                        )
-                    }
-                }
-
-                is ReaderEvent.OnDismissSpeedReadingSettings -> {
-                    _state.update {
-                        it.copy(
-                            speedReadingSettingsVisible = false
-                        )
-                    }
-                }
-
-                is ReaderEvent.OnDismissSpeedReading -> {
-                    _state.update {
-                        it.copy(
-                            speedReadingMode = false,
-                            speedReadingOrigin = null,
-                            speedReadingSettingsVisible = false
-                        )
-                    }
-                }
 
                 is ReaderEvent.OnDismissDrawer -> {
                     _state.update {
@@ -895,7 +860,6 @@ class ReaderModel @Inject constructor(
         activity: ComponentActivity,
         navigateBack: () -> Unit,
         skipTextLoading: Boolean = false,
-        isSpeedReadingScreen: Boolean = false,
         reuseExistingText: Boolean = false
     ) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -920,11 +884,10 @@ class ReaderModel @Inject constructor(
                 val hasExistingText = _state.value.text.isNotEmpty() && _state.value.book.id == bookId
 
                 if (hasExistingText) {
-                    // Reuse existing text and just update speed reading mode
+                    // Reuse existing text but update book (for fresh progress from database)
                     _state.update {
                         it.copy(
-                            speedReadingMode = isSpeedReadingScreen,
-                            speedReadingOrigin = if (isSpeedReadingScreen) SpeedReadingOrigin.NORMAL_READER else null,
+                            book = book,  // Always use fresh book from database (includes latest progress)
                             isLoading = false // Already loaded
                         )
                     }
@@ -932,13 +895,11 @@ class ReaderModel @Inject constructor(
                     // Fresh initialization
                     _state.update {
                         ReaderState(
-                            book = book,
-                            speedReadingMode = skipTextLoading || isSpeedReadingScreen,  // Start in speed reading mode if requested or speed reading screen
-                            speedReadingOrigin = if (skipTextLoading || isSpeedReadingScreen) SpeedReadingOrigin.LIBRARY else null
+                            book = book
                         )
                     }
 
-                    if (!isSpeedReadingScreen || skipTextLoading) {
+                    if (skipTextLoading) {
                         onEvent(
                             ReaderEvent.OnLoadText(
                                 activity = activity,

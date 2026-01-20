@@ -56,7 +56,7 @@ fun ReaderTopBar(
     selectNextPreset: (SettingsEvent.OnSelectNextPreset) -> Unit,
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
-    showSpeedReading: (ReaderEvent.OnShowSpeedReading) -> Unit,
+    showSpeedReading: () -> Unit,
     showBookmarksDrawer: (ReaderEvent.OnShowBookmarksDrawer) -> Unit = { },
     isSearchVisible: Boolean,
     showSearch: (ReaderEvent.OnShowSearchPersistent) -> Unit,
@@ -189,7 +189,7 @@ fun ReaderTopBar(
                         disableOnClick = false,
                         enabled = !lockMenu
                      ) {
-                         showSpeedReading(ReaderEvent.OnShowSpeedReading())
+                          showSpeedReading()
                      }
                 }
 
