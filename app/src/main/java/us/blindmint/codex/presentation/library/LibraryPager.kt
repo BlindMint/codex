@@ -79,6 +79,7 @@ fun LibraryPager(
                                 },
                                 navigateToBookInfo = { navigateToBookInfo(book.data.id) },
                                 navigateToReader = { navigateToReader(book.data.id) },
+                                navigateToSpeedReading = { navigateToSpeedReading(book.data.id) },
                                 modifier = Modifier.animateItem()
                             )
                         }
@@ -107,6 +108,7 @@ fun LibraryPager(
                                 },
                                 navigateToBookInfo = { navigateToBookInfo(book.data.id) },
                                 navigateToReader = { navigateToReader(book.data.id) },
+                                navigateToSpeedReading = { navigateToSpeedReading(book.data.id) },
                                 modifier = Modifier.animateItem(),
                                 listSize = mainState.value.libraryListSize
                             )

@@ -9,6 +9,7 @@ package us.blindmint.codex.presentation.reader
 import android.annotation.SuppressLint
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,7 +64,13 @@ import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
 import us.blindmint.codex.presentation.core.components.progress_indicator.SkullProgressIndicator
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.text.font.FontWeight
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpeedReadingScaffold(
     text: List<ReaderText>,
@@ -95,7 +113,10 @@ fun SpeedReadingScaffold(
     onNavigateWord: (Int) -> Unit,
     onToggleMenu: () -> Unit = {},
     navigateWord: (Int) -> Unit = {},
-    onChangeProgress: (Float) -> Unit = {}
+    onChangeProgress: (Float) -> Unit = {},
+    showOverlayMenu: Boolean = true,
+    onPlayPause: () -> Unit = {},
+    onShowWordPicker: () -> Unit = {}
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) } // Start with menu hidden
@@ -120,45 +141,77 @@ fun SpeedReadingScaffold(
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     Scaffold(
         topBar = {
-            AnimatedVisibility(
-                modifier = Modifier.fillMaxWidth(),
-                visible = showMenu,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                SpeedReadingTopBar(
-                    bookTitle = bookTitle,
-                    chapterTitle = chapterTitle,
-                    currentProgress = currentProgress,
-                    onExitSpeedReading = onExitSpeedReading,
-                    onShowSettings = onShowSpeedReadingSettings
+            if (!isLoading && !showOverlayMenu) {
+                // For independent speed reader: always show minimal top bar with back and settings icons
+                androidx.compose.material3.TopAppBar(
+                    title = {},
+                    navigationIcon = {
+                        androidx.compose.material3.IconButton(onClick = onExitSpeedReading) {
+                            androidx.compose.material3.Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = fontColor
+                            )
+                        }
+                    },
+                    actions = {
+                        androidx.compose.material3.IconButton(onClick = { if (isPlaying) onPlayPause(); onShowSpeedReadingSettings() }) {
+                            androidx.compose.material3.Icon(
+                                imageVector = Icons.Filled.Settings,
+                                contentDescription = "Settings",
+                                tint = fontColor
+                            )
+                        }
+                    },
+                    colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                        containerColor = backgroundColor.copy(alpha = 0.9f)
+                    )
                 )
+            } else if (!isLoading && showOverlayMenu) {
+                // For integrated speed reader: show overlay menu when tapped
+                AnimatedVisibility(
+                    modifier = Modifier.fillMaxWidth(),
+                    visible = showMenu,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    SpeedReadingTopBar(
+                        bookTitle = bookTitle,
+                        chapterTitle = chapterTitle,
+                        currentProgress = currentProgress,
+                        onExitSpeedReading = onExitSpeedReading,
+                        onShowSettings = onShowSpeedReadingSettings
+                    )
+                }
             }
         },
         bottomBar = {
-            AnimatedVisibility(
-                modifier = Modifier.fillMaxWidth(),
-                visible = showMenu,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                SpeedReadingBottomBar(
-                    progress = progress,
-                    progressValue = realTimeProgress, // Use real-time progress for live updates
-                    book = book, // Need to add book parameter
-                    lockMenu = false, // For speed reading, allow seeking
-                    onChangeProgress = onChangeProgress,
-                    wpm = wpm,
-                    onWpmChange = onWpmChange,
-                    isPlaying = isPlaying,
-                    onPlayPause = { isPlaying = !isPlaying },
-                    onNavigateWord = onNavigateWord,
-                    navigateWord = { direction ->
-                        navigateWordCallback?.invoke(direction)
-                    },
-                    onCloseMenu = { showMenu = false },
-                    bottomBarPadding = bottomBarPadding
-                )
+            if (!isLoading && showOverlayMenu) {
+                // For integrated speed reader: show overlay menu when tapped
+                AnimatedVisibility(
+                    modifier = Modifier.fillMaxWidth(),
+                    visible = showMenu,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    SpeedReadingBottomBar(
+                        progress = progress,
+                        progressValue = realTimeProgress, // Use real-time progress for live updates
+                        book = book, // Need to add book parameter
+                        lockMenu = false, // For speed reading, allow seeking
+                        onChangeProgress = onChangeProgress,
+                        wpm = wpm,
+                        onWpmChange = onWpmChange,
+                        isPlaying = isPlaying,
+                        onPlayPause = { isPlaying = !isPlaying },
+                        onNavigateWord = onNavigateWord,
+                        navigateWord = { direction ->
+                            navigateWordCallback?.invoke(direction)
+                        },
+                        onCloseMenu = { showMenu = false },
+                        bottomBarPadding = bottomBarPadding
+                    )
+                }
             }
         },
         containerColor = backgroundColor
@@ -178,8 +231,8 @@ fun SpeedReadingScaffold(
                     SkullProgressIndicator(
                         modifier = Modifier.size(56.dp),
                         size = 56.dp,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                        progressColor = MaterialTheme.colorScheme.primary,
+                        trackColor = backgroundColor,
+                        progressColor = fontColor,
                         strokeWidth = 4.5.dp
                     )
                 }
@@ -229,7 +282,8 @@ fun SpeedReadingScaffold(
                     realTimeProgress = progress
                     // Also update the underlying book progress periodically
                     onChangeProgress(progress)
-                }
+                },
+                showBottomBar = !showOverlayMenu
             )
             }
         }

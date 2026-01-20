@@ -192,7 +192,7 @@ data class MainState(
     val speedReadingOsdEnabled: Boolean = provideDefaultValue { true },
     val speedReadingWordSize: Int = provideDefaultValue { 48 },
     val speedReadingAccentCharacterEnabled: Boolean = provideDefaultValue { true },
-    val speedReadingAccentColor: Long = provideDefaultValue { Color.Red.toArgb().toLong() },
+    val speedReadingAccentColor: Long = provideDefaultValue { Color(0xFFFF0000).toArgb().toLong() }, // Bright red
     val speedReadingAccentOpacity: Float = provideDefaultValue { 1.0f },
     val speedReadingShowVerticalIndicators: Boolean = provideDefaultValue { true },
     val speedReadingVerticalIndicatorsSize: Int = provideDefaultValue { 8 },
@@ -201,7 +201,7 @@ data class MainState(
     val speedReadingHorizontalBarsThickness: Int = provideDefaultValue { 2 },
     val speedReadingHorizontalBarsLength: Float = provideDefaultValue { 0.9f },
     val speedReadingHorizontalBarsDistance: Int = provideDefaultValue { 8 },
-    val speedReadingHorizontalBarsColor: Long = provideDefaultValue { Color.Gray.toArgb().toLong() },
+    val speedReadingHorizontalBarsColor: Long = provideDefaultValue { Color(0xFF424242).toArgb().toLong() }, // Medium-dark gray
     val speedReadingHorizontalBarsOpacity: Float = provideDefaultValue { 1.0f },
     val speedReadingFocalPointPosition: Float = provideDefaultValue { 0.38f },
     val speedReadingOsdHeight: Float = provideDefaultValue { 0.2f },
@@ -606,7 +606,7 @@ data class MainState(
                     ) { speedReadingAccentCharacterEnabled },
 
                     speedReadingAccentColor = provideValue(
-                        SPEED_READING_ACCENT_COLOR, convert = { toLong() }
+                        SPEED_READING_ACCENT_COLOR, convert = { toLongOrNull() ?: 0xFFFF0000 }
                     ) { speedReadingAccentColor },
 
                     speedReadingAccentOpacity = provideValue(
@@ -642,7 +642,7 @@ data class MainState(
                     ) { speedReadingHorizontalBarsDistance },
 
                     speedReadingHorizontalBarsColor = provideValue(
-                        SPEED_READING_HORIZONTAL_BARS_COLOR, convert = { toLong() }
+                        SPEED_READING_HORIZONTAL_BARS_COLOR, convert = { toLongOrNull() ?: 0xFF424242 }
                     ) { speedReadingHorizontalBarsColor },
 
                     speedReadingHorizontalBarsOpacity = provideValue(

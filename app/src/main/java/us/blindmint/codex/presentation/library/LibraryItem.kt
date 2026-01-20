@@ -19,11 +19,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -55,6 +57,7 @@ fun LibraryItem(
     selectBook: (select: Boolean?) -> Unit,
     navigateToBookInfo: () -> Unit,
     navigateToReader: () -> Unit,
+    navigateToSpeedReading: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val backgroundColor = if (book.selected) MaterialTheme.colorScheme.secondary
@@ -140,7 +143,61 @@ fun LibraryItem(
                 }
             }
 
-            if (mainState.value.libraryShowReadButton) {
+            if (mainState.value.libraryShowReadButton && !book.data.isComic) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(6.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = MaterialTheme.shapes.small
+                        )
+                ) {
+                    // Main button - Normal Reading
+                    FilledIconButton(
+                        onClick = { navigateToReader() },
+                        modifier = Modifier.size(32.dp),
+                        shape = MaterialTheme.shapes.small,
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.PlayArrow,
+                            contentDescription = stringResource(id = R.string.continue_reading_content_desc),
+                            Modifier.size(20.dp)
+                        )
+                    }
+
+                    // Separator
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(32.dp * 0.6f)
+                            .align(Alignment.CenterVertically)
+                            .background(MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.3f))
+                    )
+
+                    // Trailing button - Speed Reading
+                    FilledIconButton(
+                        onClick = { navigateToSpeedReading() },
+                        modifier = Modifier.size(24.dp),
+                        shape = MaterialTheme.shapes.small,
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Bolt,
+                            contentDescription = "Speed Read",
+                            Modifier.size(16.dp)
+                        )
+                    }
+                }
+            } else if (mainState.value.libraryShowReadButton && book.data.isComic) {
+                // Keep existing single button for comics
                 FilledIconButton(
                     onClick = { navigateToReader() },
                     modifier = Modifier

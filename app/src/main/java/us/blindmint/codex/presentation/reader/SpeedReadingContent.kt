@@ -125,6 +125,7 @@ fun SpeedReadingContent(
     initialWordIndex: Int = 0,
     onShowWordPicker: () -> Unit = {},
     onProgressUpdate: (Float) -> Unit = {}, // Callback for word-based progress updates
+    showBottomBar: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     // Calculate total words in entire book for progress tracking
@@ -301,24 +302,28 @@ fun SpeedReadingContent(
                                 continue
                             }
 
-                            when {
-                                position.x < tapZoneWidth -> {
-                                    // Left tap zone - navigate back
-                                    navigateWord(-1)
-                                }
-                                position.x > width - tapZoneWidth -> {
-                                    // Right tap zone - navigate forward
-                                    navigateWord(1)
-                                }
-                                else -> {
-                                    // Middle tap zone - pause if playing, otherwise toggle menu
-                                    if (isPlaying) {
-                                        onPlayPause()
-                                    } else {
-                                        onToggleMenu()
-                                    }
-                                }
-                            }
+                             when {
+                                 position.x < tapZoneWidth -> {
+                                     // Left tap zone - navigate back (or pause if playing)
+                                     if (isPlaying) {
+                                         onPlayPause()
+                                     } else {
+                                         navigateWord(-1)
+                                     }
+                                 }
+                                 position.x > width - tapZoneWidth -> {
+                                     // Right tap zone - navigate forward (or pause if playing)
+                                     if (isPlaying) {
+                                         onPlayPause()
+                                     } else {
+                                         navigateWord(1)
+                                     }
+                                 }
+                                 else -> {
+                                     // Middle tap zone - always toggle play/pause
+                                     onPlayPause()
+                                 }
+                             }
                         }
                     }
                 }
@@ -463,9 +468,9 @@ fun SpeedReadingContent(
                                 start = Offset(focalPointX, bottomBarY),
                                 end = Offset(focalPointX, bottomBarY - verticalIndicatorHeight),
                                 strokeWidth = verticalIndicatorWidth
-                            )
-                        }
-                    }
+                )
+            }
+        }
 
                     // Vertical indicators as icons (for ARROWS and ARROWS_FILLED types)
                     if (showVerticalIndicators && verticalIndicatorType != SpeedReadingVerticalIndicatorType.LINE) {
@@ -616,17 +621,18 @@ fun SpeedReadingContent(
 
         // Bottom bar with progress bar and controls
         // The parent tap detector has an exclusion zone for this area
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .background(
-                    color = backgroundColor.copy(alpha = 0.8f),
-                    shape = MaterialTheme.shapes.small
-                )
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
+        if (showBottomBar) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 32.dp)
+                    .background(
+                        color = backgroundColor.copy(alpha = 0.8f),
+                        shape = MaterialTheme.shapes.small
+                    )
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -668,6 +674,7 @@ fun SpeedReadingContent(
                             onShowWordPicker()
                         }
                 )
+            }
             }
         }
 

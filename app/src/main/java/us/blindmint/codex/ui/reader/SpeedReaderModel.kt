@@ -7,6 +7,7 @@
 package us.blindmint.codex.ui.reader
 
 import android.app.Activity
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -17,18 +18,27 @@ import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.use_case.book.GetBookById
 import us.blindmint.codex.domain.use_case.book.GetText
+import us.blindmint.codex.domain.use_case.book.UpdateBook
+import us.blindmint.codex.presentation.history.HistoryScreen
+import us.blindmint.codex.presentation.library.LibraryScreen
 import javax.inject.Inject
 
 @HiltViewModel
 class SpeedReaderModel @Inject constructor(
     private val getBookById: GetBookById,
-    private val getText: GetText
+    private val getText: GetText,
+    private val updateBook: UpdateBook
 ) : ViewModel() {
 
     val book = mutableStateOf<Book?>(null)
     val text = mutableStateOf<List<ReaderText>>(emptyList())
     val isLoading = mutableStateOf(true)
     val errorMessage = mutableStateOf<String?>(null)
+
+    // Progress tracking
+    val currentProgress = mutableFloatStateOf(0f)
+    val currentWordIndex = mutableIntStateOf(0)
+    private var lastSavedProgress = 0f
 
     fun loadBook(bookId: Int, activity: Activity, onError: () -> Unit) {
         viewModelScope.launch {
@@ -39,6 +49,7 @@ class SpeedReaderModel @Inject constructor(
             }
 
             book.value = loadedBook
+            currentProgress.floatValue = loadedBook.progress
 
             if (!loadedBook.isComic) {
                 try {
@@ -58,6 +69,38 @@ class SpeedReaderModel @Inject constructor(
                 // Comics not supported in speed reader
                 errorMessage.value = "Comics not supported in speed reader"
                 isLoading.value = false
+            }
+        }
+    }
+
+    fun updateProgress(progress: Float, wordIndex: Int) {
+        viewModelScope.launch {
+            currentProgress.floatValue = progress
+            currentWordIndex.intValue = wordIndex
+
+            // Save to database
+            book.value?.let { currentBook ->
+                val updatedBook = currentBook.copy(progress = progress)
+                updateBook.execute(updatedBook)
+                lastSavedProgress = progress
+
+                // Refresh library and history
+                LibraryScreen.refreshListChannel.trySend(0)
+                HistoryScreen.refreshListChannel.trySend(0)
+            }
+        }
+    }
+
+    fun onLeave() {
+        viewModelScope.launch {
+            book.value?.let { currentBook ->
+                // Save final progress
+                val updatedBook = currentBook.copy(progress = currentProgress.floatValue)
+                updateBook.execute(updatedBook)
+
+                // Refresh screens
+                LibraryScreen.refreshListChannel.trySend(0)
+                HistoryScreen.refreshListChannel.trySend(0)
             }
         }
     }
