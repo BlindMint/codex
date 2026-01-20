@@ -435,10 +435,20 @@ fun LazyListScope.SpeedReadingSubcategory(
             }
 
             item {
+                val localFilterCompoundWords = remember { androidx.compose.runtime.mutableStateOf(filterCompoundWords) }
+
+                androidx.compose.runtime.LaunchedEffect(filterCompoundWords) {
+                    localFilterCompoundWords.value = filterCompoundWords
+                }
+
                 SwitchWithTitle(
-                    selected = filterCompoundWords,
+                    selected = localFilterCompoundWords.value,
                     title = stringResource(id = R.string.speed_reading_filter_compound_words),
-                    onClick = { onFilterCompoundWordsChange(!filterCompoundWords) }
+                    onClick = {
+                        val newValue = !localFilterCompoundWords.value
+                        localFilterCompoundWords.value = newValue
+                        onFilterCompoundWordsChange(newValue)
+                    }
                 )
             }
 

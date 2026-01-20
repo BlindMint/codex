@@ -69,12 +69,16 @@ fun LazyListScope.BooksReaderSettingsCategory(
 }
 
 fun LazyListScope.SpeedReadingReaderSettingsCategory(
-    titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary }
+    titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary },
+    filterCompoundWords: Boolean = false,
+    onFilterCompoundWordsChange: (Boolean) -> Unit = {}
 ) {
     SpeedReadingSubcategory(
         tab = null, // Show all speed reading settings in one tab
         titleColor = titleColor,
         showTitle = false,
-        showDivider = false
+        showDivider = false,
+        filterCompoundWords = filterCompoundWords,
+        onFilterCompoundWordsChange = onFilterCompoundWordsChange
     )
 }
