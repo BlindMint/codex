@@ -72,25 +72,52 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.text.font.FontWeight
 
-// Find the nearest sentence or paragraph start before the given word index
-private fun findNearestSentenceStart(words: List<String>, targetIndex: Int): Int {
+// Find the nearest paragraph start before the given word index
+private fun findNearestParagraphStart(text: List<us.blindmint.codex.domain.reader.ReaderText>, words: List<String>, targetIndex: Int): Int {
     if (targetIndex <= 0) return targetIndex
 
-    // Look backwards up to 50 words to find a sentence boundary
-    val searchStart = maxOf(0, targetIndex - 50)
+    // Find which text item contains the target word
+    var currentWordCount = 0
+    var targetItemIndex = -1
 
-    for (i in targetIndex downTo searchStart) {
-        val word = words.getOrNull(i) ?: continue
+    for ((itemIndex, textItem) in text.withIndex()) {
+        if (textItem is us.blindmint.codex.domain.reader.ReaderText.Text) {
+            val itemWords = textItem.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }
+            currentWordCount += itemWords.size
 
-        // Check for sentence endings (period, exclamation, question mark)
-        if (word.endsWith('.') || word.endsWith('!') || word.endsWith('?') ||
-            word.endsWith(".\"") || word.endsWith("!\"") || word.endsWith("?\"")) {
-            // Return the index after this sentence-ending word
-            return (i + 1).coerceAtMost(words.size - 1)
+            if (currentWordCount > targetIndex) {
+                targetItemIndex = itemIndex
+                break
+            }
         }
     }
 
-    // If no sentence boundary found within 50 words, don't adjust the position
+    if (targetItemIndex <= 0) return targetIndex
+
+    // Look backwards through text items to find a paragraph boundary
+    // A paragraph boundary is typically a transition from one text item to another
+    // We'll go back up to 3 text items to find a suitable paragraph start
+    val searchStartItem = maxOf(0, targetItemIndex - 3)
+
+    for (itemIndex in targetItemIndex downTo searchStartItem) {
+        val textItem = text.getOrNull(itemIndex)
+        if (textItem is us.blindmint.codex.domain.reader.ReaderText.Text) {
+            // Count words up to this text item
+            var wordCountUpToItem = 0
+            for (i in 0 until itemIndex) {
+                if (text[i] is us.blindmint.codex.domain.reader.ReaderText.Text) {
+                    val itemWords = (text[i] as us.blindmint.codex.domain.reader.ReaderText.Text)
+                        .line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }
+                    wordCountUpToItem += itemWords.size
+                }
+            }
+
+            // Return the word index at the start of this text item (paragraph)
+            return wordCountUpToItem
+        }
+    }
+
+    // If no paragraph boundary found, return the original target index
     return targetIndex
 }
 
@@ -173,8 +200,8 @@ fun SpeedReadingScaffold(
 
             val rawWordIndex = (currentProgress * allWords.size).toInt().coerceIn(0, (allWords.size - 1).coerceAtLeast(0))
 
-            // For better UX when switching from normal reader, snap to nearest sentence/paragraph boundary
-            val adjustedWordIndex = findNearestSentenceStart(allWords, rawWordIndex)
+            // For better UX when switching from normal reader, snap to nearest paragraph boundary
+            val adjustedWordIndex = findNearestParagraphStart(text, allWords, rawWordIndex)
 
             Log.d("SPEED_READER", "Loading with progress=$currentProgress, raw wordIndex=$rawWordIndex, adjusted wordIndex=$adjustedWordIndex, totalWords=${allWords.size}")
             selectedWordIndex = adjustedWordIndex
