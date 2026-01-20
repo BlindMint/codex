@@ -100,16 +100,7 @@ class SpeedReaderModel @Inject constructor(
 
     private suspend fun saveProgressToDatabase(progress: Float) {
         book.value?.let { currentBook ->
-            // Calculate scroll position for normal reader compatibility
-            // Convert progress percentage to scroll index in the text
-            val scrollIndex = (text.value.size * progress).toInt().coerceIn(0, text.value.size - 1)
-            val scrollOffset = 0 // Start at top of the item
-
-            val updatedBook = currentBook.copy(
-                progress = progress,
-                scrollIndex = scrollIndex,
-                scrollOffset = scrollOffset
-            )
+            val updatedBook = currentBook.copy(progress = progress)
             updateBook.execute(updatedBook)
             lastSavedProgress = progress
             lastDatabaseSaveWordIndex = currentWordIndex.intValue

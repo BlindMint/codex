@@ -134,11 +134,25 @@ class ReaderModel @Inject constructor(
                                 if (itemsCount < _state.value.text.size) return@collectLatest
 
                                 _state.value.book.apply {
+                                    // Check if saved scrollIndex matches current progress (within tolerance)
+                                    val expectedScrollIndex = (progress * _state.value.text.lastIndex).toInt()
+                                    val scrollIndexMatches = kotlin.math.abs(scrollIndex - expectedScrollIndex) <= 1 // Allow 1 item tolerance
+
+                                    val finalScrollIndex = if (scrollIndexMatches && scrollOffset != 0) {
+                                        // Use saved position if it matches progress and has offset
+                                        scrollIndex
+                                    } else {
+                                        // Convert progress to scroll index (coarser positioning from speed reader)
+                                        expectedScrollIndex.coerceIn(0, _state.value.text.lastIndex)
+                                    }
+
+                                    val finalScrollOffset = if (scrollIndexMatches) scrollOffset else 0
+
                                     _state.value.listState.requestScrollToItem(
-                                        scrollIndex,
-                                        scrollOffset
+                                        finalScrollIndex,
+                                        finalScrollOffset
                                     )
-                                    updateChapter(index = scrollIndex)
+                                    updateChapter(index = finalScrollIndex)
                                 }
 
                                 _state.update {
@@ -296,15 +310,17 @@ class ReaderModel @Inject constructor(
                                 _state.value.text.isNotEmpty() &&
                                 _state.value.errorMessage == null
                             ) {
-                                _state.update {
-                                    it.copy(
-                                        book = it.book.copy(
-                                            progress = calculateProgress(),
-                                            scrollIndex = firstVisibleItemIndex,
-                                            scrollOffset = firstVisibleItemScrollOffset
+                                    _state.update {
+                                        it.copy(
+                                            book = it.book.copy(
+                                                // Save progress snapped to current item (coarser granularity)
+                                                progress = (firstVisibleItemIndex.toFloat() / _state.value.text.lastIndex)
+                                                    .coerceIn(0f, 1f),
+                                                scrollIndex = _state.value.listState.firstVisibleItemIndex,
+                                                scrollOffset = _state.value.listState.firstVisibleItemScrollOffset
+                                            )
                                         )
-                                    )
-                                }
+                                    }
 
                                 updateBook.execute(_state.value.book)
 
@@ -314,20 +330,21 @@ class ReaderModel @Inject constructor(
                         }
 
                         // Save position for comics
-                        if (_state.value.book.isComic && !_state.value.isLoading) {
-                            _state.update {
-                                it.copy(
-                                    book = it.book.copy(
-                                        currentPage = it.currentComicPage,
-                                        lastPageRead = it.currentComicPage,
-                                        progress = if (it.totalComicPages > 0) {
-                                            (it.currentComicPage + 1).toFloat() / it.totalComicPages
-                                        } else 0f
-                                    )
-                                )
-                            }
+                                if (_state.value.book.isComic && !_state.value.isLoading) {
+                                    _state.update {
+                                        it.copy(
+                                            book = it.book.copy(
+                                                currentPage = it.currentComicPage,
+                                                lastPageRead = it.currentComicPage,
+                                                 progress = if (it.totalComicPages > 0) {
+                                                     (it.currentComicPage + 1).toFloat() / it.totalComicPages
+                                                 } else 0f
+                                                 // Comics don't use scrollIndex/scrollOffset
+                                            )
+                                        )
+                                    }
 
-                            updateBook.execute(_state.value.book)
+                                    updateBook.execute(_state.value.book)
 
                             LibraryScreen.refreshListChannel.trySend(0)
                             HistoryScreen.refreshListChannel.trySend(0)
