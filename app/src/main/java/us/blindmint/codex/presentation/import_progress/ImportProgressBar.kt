@@ -45,7 +45,7 @@ fun ImportProgressBar(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         // Header with title and cancel button
         Row(
@@ -78,22 +78,23 @@ fun ImportProgressBar(
             }
         }
 
-        // Progress bar
-        LinearProgressIndicator(
-            progress = { progress },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        // Current file name
+        // Current file name (limited to 1-2 lines, progress bar always visible)
         if (operation.currentFile.isNotEmpty()) {
             Text(
                 text = "Processing: ${operation.currentFile}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(bottom = 4.dp)
             )
         }
+
+        // Progress bar (always visible at bottom)
+        LinearProgressIndicator(
+            progress = { progress },
+            modifier = Modifier.fillMaxWidth()
+        )
 
         // Status message
         when (operation.status) {

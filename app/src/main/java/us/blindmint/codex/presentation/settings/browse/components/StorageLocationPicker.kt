@@ -62,10 +62,13 @@ fun StorageLocationPicker(
     }
 
     // Find import operation for Codex Directory if one is actively running
-    // Match by display path (the folder name shown in UI)
+    // Match by checking if this is a Codex Directory import operation
     val codexImportOperation = importOperations.find { op ->
+        // Codex Directory imports have folderPath starting with the display path
         state.codexRootDisplayPath != null &&
-                op.folderPath.endsWith(state.codexRootDisplayPath!!) &&
+                (op.folderPath == state.codexRootDisplayPath ||
+                 op.folderPath.endsWith(state.codexRootDisplayPath!!) ||
+                 state.codexRootDisplayPath!!.endsWith(op.folderPath)) &&
                 (op.status == ImportStatus.IN_PROGRESS ||
                  op.status == ImportStatus.SCANNING ||
                  op.status == ImportStatus.STARTING)
