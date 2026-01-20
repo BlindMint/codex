@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import us.blindmint.codex.R
@@ -713,10 +714,9 @@ class SettingsModel @Inject constructor(
 
                             if (importedCount > 0) {
                                 // Trigger library refresh to show imported books
-                                // Add small delay to ensure database transaction is committed
                                 Log.i("SettingsModel", "Triggering library refresh after auto-import")
                                 try {
-                                    delay(200) // Wait for database operations to complete
+                                    delay(500) // Wait for all database operations to complete
                                     withContext(Dispatchers.Main) {
                                         LibraryScreen.refreshListChannel.trySend(0)
                                     }

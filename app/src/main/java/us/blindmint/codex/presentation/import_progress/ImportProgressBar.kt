@@ -78,22 +78,23 @@ fun ImportProgressBar(
             }
         }
 
-        // Current file name (limited to 1-2 lines, progress bar always visible)
+        // Current file name (single line only)
         if (operation.currentFile.isNotEmpty()) {
             Text(
                 text = "Processing: ${operation.currentFile}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(bottom = 4.dp)
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
 
-        // Progress bar (always visible at bottom)
+        // Progress bar (always visible below filename)
         LinearProgressIndicator(
             progress = { progress },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
         )
 
         // Status message

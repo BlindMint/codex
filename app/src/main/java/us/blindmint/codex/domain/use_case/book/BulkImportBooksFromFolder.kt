@@ -58,8 +58,6 @@ class BulkImportBooksFromFolder @Inject constructor(
         Log.i(BULK_IMPORT, "Found ${supportedFiles.size} supported files to import")
 
         supportedFiles.forEachIndexed { index, cachedFile ->
-            onProgress(BulkImportProgress(index + 1, supportedFiles.size, cachedFile.name))
-
             try {
                 val nullableBook = fileSystemRepository.getBookFromFile(cachedFile)
                 when (nullableBook) {
@@ -67,13 +65,19 @@ class BulkImportBooksFromFolder @Inject constructor(
                         insertBook.execute(nullableBook.bookWithCover!!)
                         importedCount++
                         Log.i(BULK_IMPORT, "Imported: ${cachedFile.name}")
+                        // Report progress after successful database insertion
+                        onProgress(BulkImportProgress(importedCount, supportedFiles.size, cachedFile.name))
                     }
                     is us.blindmint.codex.domain.library.book.NullableBook.Null -> {
                         Log.w(BULK_IMPORT, "Failed to parse: ${cachedFile.name} - ${nullableBook.message}")
+                        // Still report progress for failed imports to show activity
+                        onProgress(BulkImportProgress(index + 1, supportedFiles.size, cachedFile.name))
                     }
                 }
             } catch (e: Exception) {
                 Log.e(BULK_IMPORT, "Error importing ${cachedFile.name}: ${e.message}")
+                // Report progress even for errors
+                onProgress(BulkImportProgress(index + 1, supportedFiles.size, cachedFile.name))
             }
         }
 

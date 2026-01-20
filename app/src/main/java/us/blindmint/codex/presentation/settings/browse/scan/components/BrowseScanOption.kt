@@ -138,7 +138,7 @@ fun BrowseScanOption() {
 
         // Schedule library refresh after import completes
         coroutineScope.launch {
-            delay(200) // Wait for database operations to complete
+            delay(300) // Wait for database operations to complete
             LibraryScreen.refreshListChannel.trySend(0) // Refresh Library
         }
     }
