@@ -135,10 +135,8 @@ fun SpeedReadingContent(
             .sumOf { it.line.text.split("\\s+".toRegex()).filter { w -> w.isNotBlank() }.size }
     }
 
-    // Calculate starting word index based on current progress
-    val startingWordIndex = remember(text, currentProgress, totalWords) {
-        if (totalWords == 0) 0 else ((currentProgress * totalWords).toInt()).coerceIn(0, totalWords - 1)
-    }
+    // Speed reader always starts from beginning of book
+    val startingWordIndex = 0
 
     // Extract all words from text - navigation will start from initialWordIndex
     val words = remember(text) {
