@@ -37,6 +37,9 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
         const val AUTHOR_DIALOG = "author_dialog"
         const val DESCRIPTION_DIALOG = "description_dialog"
         const val PATH_DIALOG = "path_dialog"
+        const val TAGS_DIALOG = "tags_dialog"
+        const val SERIES_DIALOG = "series_dialog"
+        const val LANGUAGES_DIALOG = "languages_dialog"
 
         const val CHANGE_COVER_BOTTOM_SHEET = "change_cover_bottom_sheet"
         const val DETAILS_BOTTOM_SHEET = "details_bottom_sheet"
@@ -78,6 +81,10 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 dialog = state.value.dialog,
                 listState = listState,
                 canResetCover = state.value.canResetCover,
+                isEditingMetadata = state.value.isEditingMetadata,
+                editedBook = state.value.editedBook,
+                showConfirmSaveDialog = state.value.showConfirmSaveDialog,
+                showConfirmCancelDialog = state.value.showConfirmCancelDialog,
                 showTitleDialog = screenModel::onEvent,
                 actionTitleDialog = screenModel::onEvent,
                 showAuthorDialog = screenModel::onEvent,
@@ -86,10 +93,14 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 actionDescriptionDialog = screenModel::onEvent,
                 showPathDialog = screenModel::onEvent,
                 actionPathDialog = screenModel::onEvent,
+                showTagsDialog = screenModel::onEvent,
+                showSeriesDialog = screenModel::onEvent,
+                showLanguagesDialog = screenModel::onEvent,
                 resetTitle = screenModel::onEvent,
                 resetAuthor = screenModel::onEvent,
                 resetDescription = screenModel::onEvent,
                 clearProgressHistory = screenModel::onEvent,
+                refreshMetadataFromOpds = screenModel::onEvent,
                 checkCoverReset = screenModel::onEvent,
                 changeCover = screenModel::onEvent,
                 resetCover = screenModel::onEvent,
@@ -103,6 +114,15 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 showResetProgressDialog = screenModel::onEvent,
                 actionDeleteDialog = screenModel::onEvent,
                 actionResetProgressDialog = screenModel::onEvent,
+                onEnterEditMode = { screenModel.onEvent(BookInfoEvent.OnEnterEditMode) },
+                onConfirmEditMetadata = { screenModel.onEvent(BookInfoEvent.OnConfirmEditMetadata) },
+                onCancelEditMetadata = { screenModel.onEvent(BookInfoEvent.OnCancelEditMetadata) },
+                onSilentCancelEditMetadata = { screenModel.onEvent(BookInfoEvent.OnSilentCancelEditMetadata) },
+                onConfirmSaveChanges = { context -> screenModel.onEvent(BookInfoEvent.OnConfirmSaveChanges(context)) },
+                onDismissSaveDialog = { screenModel.onEvent(BookInfoEvent.OnDismissSaveDialog) },
+                onDismissCancelDialog = { screenModel.onEvent(BookInfoEvent.OnDismissCancelDialog) },
+                onUpdateEditedBook = { updatedBook -> screenModel.onEvent(BookInfoEvent.OnUpdateEditedBook(updatedBook)) },
+                onCategoryChange = { category -> screenModel.onEvent(BookInfoEvent.OnChangeCategory(category)) },
                 toggleFavorite = { screenModel.onEvent(BookInfoEvent.OnToggleFavorite) },
                 navigateToReader = {
                     if (state.value.book.id != -1) {

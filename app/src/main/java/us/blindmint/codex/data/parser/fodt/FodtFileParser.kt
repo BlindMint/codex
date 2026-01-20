@@ -40,10 +40,10 @@ class FodtFileParser @Inject constructor() : FileParser {
 
             // Extract author from meta
             val metaAuthor = doc.select("office|meta dc|creator, dc\\:creator").firstOrNull()?.text()
-            val author = if (!metaAuthor.isNullOrBlank()) {
-                UIText.StringValue(metaAuthor)
+            val authors = if (!metaAuthor.isNullOrBlank()) {
+                listOf(metaAuthor)
             } else {
-                UIText.StringResource(R.string.unknown_author)
+                emptyList()
             }
 
             // Extract description/subject from meta
@@ -53,12 +53,12 @@ class FodtFileParser @Inject constructor() : FileParser {
             BookWithCover(
                 book = Book(
                     title = title,
-                    author = author,
+                    authors = authors,
                     description = description,
                     scrollIndex = 0,
                     scrollOffset = 0,
                     progress = 0f,
-                    filePath = cachedFile.path,
+                    filePath = cachedFile.uri.toString(),
                     lastOpened = null,
                     category = Category.entries[0],
                     coverImage = null

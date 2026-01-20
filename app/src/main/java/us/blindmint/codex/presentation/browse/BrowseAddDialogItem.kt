@@ -52,7 +52,7 @@ fun BrowseAddDialogItem(result: SelectableNullableBook, onClick: (Boolean) -> Un
                     maxLines = 1
                 )
                 StyledText(
-                    text = result.data.bookWithCover.book.author.asString(),
+                    text = result.data.bookWithCover.book.authors.firstOrNull() ?: stringResource(id = R.string.unknown_author),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     ),

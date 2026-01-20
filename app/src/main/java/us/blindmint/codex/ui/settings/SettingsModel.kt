@@ -6,8 +6,10 @@
 
 package us.blindmint.codex.ui.settings
 
+import android.app.Application
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import us.blindmint.codex.R
@@ -41,13 +44,17 @@ import us.blindmint.codex.presentation.core.constants.provideDefaultColorPresets
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import us.blindmint.codex.presentation.core.util.showToast
+import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
+
 import us.blindmint.codex.ui.library.LibraryScreen
 import javax.inject.Inject
 import kotlin.random.Random
 import kotlinx.coroutines.delay
+import java.util.UUID
 
 @HiltViewModel
 class SettingsModel @Inject constructor(
+    private val importProgressViewModel: ImportProgressViewModel,
     private val getColorPresets: GetColorPresets,
     private val updateColorPreset: UpdateColorPreset,
     private val selectColorPreset: SelectColorPreset,
@@ -60,6 +67,7 @@ class SettingsModel @Inject constructor(
     val bulkImportBooksFromFolder: BulkImportBooksFromFolder,
     private val autoImportCodexBooksUseCase: AutoImportCodexBooksUseCase,
     val codexDirectoryManager: CodexDirectoryManager,
+
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -684,11 +692,23 @@ class SettingsModel @Inject constructor(
                         val isConfigured = codexDirectoryManager.isConfigured()
                         Log.i("SettingsModel", "Codex directory configured: $isConfigured")
 
-                        // Automatically import existing OPDS books from the downloads folder
-                        Log.i("SettingsModel", "Starting auto-import of existing OPDS books")
+                        // Start background import with progress tracking
+                        Log.i("SettingsModel", "Starting background auto-import of existing OPDS books")
+                        val folderName = displayPath?.substringAfterLast("/") ?: "Codex Directory"
+
+                        // Create initial import operation for Codex Directory
+                        importProgressViewModel.startCodexImport(displayPath ?: "", folderName)
+
                         try {
                             val importedCount = autoImportCodexBooksUseCase.execute { progress ->
                                 Log.d("SettingsModel", "Auto-import progress: ${progress.current}/${progress.total} - ${progress.currentFolder}")
+                                // Update the Codex Directory import progress
+                                importProgressViewModel.updateCodexImportProgress(
+                                    folderPath = displayPath ?: "",
+                                    totalBooks = progress.total,
+                                    currentProgress = progress.current,
+                                    currentFile = progress.currentFolder
+                                )
                             }
                             Log.i("SettingsModel", "Auto-import completed. Imported $importedCount books")
 
@@ -696,20 +716,37 @@ class SettingsModel @Inject constructor(
                                 // Trigger library refresh to show imported books
                                 Log.i("SettingsModel", "Triggering library refresh after auto-import")
                                 try {
-                                    LibraryScreen.refreshListChannel.trySend(0)
+                                    delay(500) // Wait for all database operations to complete
+                                    withContext(Dispatchers.Main) {
+                                        LibraryScreen.refreshListChannel.trySend(0)
+                                    }
                                     Log.i("SettingsModel", "Library refresh signal sent successfully")
                                 } catch (e: Exception) {
                                     Log.e("SettingsModel", "Failed to trigger library refresh", e)
                                 }
-                        } else {
-                            Log.w("SettingsModel", "No books were imported during auto-import")
-                        }
+                            } else {
+                                Log.w("SettingsModel", "No books were imported during auto-import")
+                            }
                         } catch (e: Exception) {
                             Log.e("SettingsModel", "Auto-import failed with exception", e)
                         }
                     } else {
                         Log.e("SettingsModel", "Failed to set Codex root folder")
                     }
+                }
+            }
+
+            is SettingsEvent.OnRemoveCodexRootFolder -> {
+                viewModelScope.launch {
+                    Log.i("SettingsModel", "Removing Codex root folder")
+                    codexDirectoryManager.clearConfiguration()
+                    _state.update {
+                        it.copy(
+                            codexRootDisplayPath = null,
+                            codexRootUri = null
+                        )
+                    }
+                    Log.i("SettingsModel", "Codex root folder removed successfully")
                 }
             }
         }

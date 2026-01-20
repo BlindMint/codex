@@ -44,6 +44,7 @@ import us.blindmint.codex.presentation.core.components.modal_bottom_sheet.ModalB
 import us.blindmint.codex.presentation.core.constants.provideExtensions
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 import us.blindmint.codex.ui.book_info.BookInfoEvent
+import us.blindmint.codex.domain.ui.UIText
 
 @Composable
 fun BookInfoEditBottomSheet(
@@ -52,6 +53,9 @@ fun BookInfoEditBottomSheet(
     showAuthorDialog: (BookInfoEvent.OnShowAuthorDialog) -> Unit,
     showDescriptionDialog: (BookInfoEvent.OnShowDescriptionDialog) -> Unit,
     showPathDialog: (BookInfoEvent.OnShowPathDialog) -> Unit,
+    onTagsChanged: (BookInfoEvent.OnActionTagsDialog) -> Unit = {},
+    onSeriesChanged: (BookInfoEvent.OnActionSeriesDialog) -> Unit = {},
+    onLanguagesChanged: (BookInfoEvent.OnActionLanguagesDialog) -> Unit = {},
     resetTitle: (BookInfoEvent.OnResetTitle) -> Unit,
     resetAuthor: (BookInfoEvent.OnResetAuthor) -> Unit,
     resetDescription: (BookInfoEvent.OnResetDescription) -> Unit,
@@ -78,6 +82,11 @@ fun BookInfoEditBottomSheet(
 
     // Track if any changes have been made
     var hasChanges by remember { mutableStateOf(false) }
+
+    // Metadata editor state
+    var showTagsEditor by remember { mutableStateOf(false) }
+    var showSeriesEditor by remember { mutableStateOf(false) }
+    var showLanguagesEditor by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         modifier = Modifier.fillMaxWidth(),
@@ -134,7 +143,7 @@ fun BookInfoEditBottomSheet(
             item {
                 BookInfoEditBottomSheetItem(
                     label = stringResource(id = R.string.author),
-                    text = book.author.asString(),
+                    text = book.authors.firstOrNull() ?: stringResource(id = R.string.unknown_author),
                     onEdit = {
                         showAuthorDialog(BookInfoEvent.OnShowAuthorDialog)
                         hasChanges = true
@@ -149,8 +158,49 @@ fun BookInfoEditBottomSheet(
                     onEdit = {
                         showDescriptionDialog(BookInfoEvent.OnShowDescriptionDialog)
                         hasChanges = true
-                    }
+                    },
+                    maxLines = 3
                 )
+            }
+
+            // Metadata rows for editing
+            if (book.tags.isNotEmpty()) {
+                item {
+                    BookInfoMetadataRow(
+                        title = stringResource(id = R.string.tags),
+                        items = book.tags,
+                        onEdit = { showTagsEditor = true }
+                    )
+                }
+            }
+
+            if (book.authors.size > 1) {
+                item {
+                    BookInfoMetadataRow(
+                        title = stringResource(id = R.string.authors),
+                        items = book.authors
+                    )
+                }
+            }
+
+            if (book.series.isNotEmpty()) {
+                item {
+                    BookInfoMetadataRow(
+                        title = stringResource(id = R.string.series),
+                        items = book.series,
+                        onEdit = { showSeriesEditor = true }
+                    )
+                }
+            }
+
+            if (book.languages.isNotEmpty()) {
+                item {
+                    BookInfoMetadataRow(
+                        title = stringResource(id = R.string.languages),
+                        items = book.languages,
+                        onEdit = { showLanguagesEditor = true }
+                    )
+                }
             }
 
             item {
@@ -208,6 +258,43 @@ fun BookInfoEditBottomSheet(
                     }
                 }
             }
+        }
+
+        // Metadata item editors
+        if (showTagsEditor) {
+            MetadataItemEditor(
+                title = stringResource(id = R.string.tags),
+                items = book.tags,
+                onItemsChanged = { tags ->
+                    onTagsChanged(BookInfoEvent.OnActionTagsDialog(tags, context))
+                    hasChanges = true
+                },
+                onDismiss = { showTagsEditor = false }
+            )
+        }
+
+        if (showSeriesEditor) {
+            MetadataItemEditor(
+                title = stringResource(id = R.string.series),
+                items = book.series,
+                onItemsChanged = { series ->
+                    onSeriesChanged(BookInfoEvent.OnActionSeriesDialog(series, context))
+                    hasChanges = true
+                },
+                onDismiss = { showSeriesEditor = false }
+            )
+        }
+
+        if (showLanguagesEditor) {
+            MetadataItemEditor(
+                title = stringResource(id = R.string.languages),
+                items = book.languages,
+                onItemsChanged = { languages ->
+                    onLanguagesChanged(BookInfoEvent.OnActionLanguagesDialog(languages, context))
+                    hasChanges = true
+                },
+                onDismiss = { showLanguagesEditor = false }
+            )
         }
     }
 }

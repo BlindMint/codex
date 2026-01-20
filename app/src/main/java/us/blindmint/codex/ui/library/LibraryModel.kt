@@ -398,6 +398,273 @@ class LibraryModel @Inject constructor(
                 }
             }
         }
+
+            is LibraryEvent.OnSelectAllBooks -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val allSelected = _state.value.books.all { it.selected }
+                    val newSelectedState = !allSelected
+
+                    val editedList = _state.value.books.map { book ->
+                        book.copy(selected = newSelectedState)
+                    }
+
+                    _state.update {
+                        it.copy(
+                            books = editedList,
+                            selectedItemsCount = if (newSelectedState) editedList.size else 0,
+                            hasSelectedItems = newSelectedState
+                        )
+                    }
+                }
+            }
+
+            is LibraryEvent.OnShowBulkEditDialog -> {
+                viewModelScope.launch {
+                    val selectedCount = _state.value.books.count { it.selected }
+                    if (selectedCount > 50) {
+                        // Cannot edit more than 50 books at once - UI should prevent this
+                        return@launch
+                    }
+                    _state.update {
+                        it.copy(
+                            dialog = LibraryScreen.BULK_EDIT_DIALOG
+                        )
+                    }
+                }
+            }
+
+            is LibraryEvent.OnActionBulkEditTags -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    // Get current shared tags
+                    val selectedBooks = _state.value.books.filter { it.selected }.map { it.data }
+                    val oldSharedTags = if (selectedBooks.isNotEmpty()) {
+                        selectedBooks.map { it.tags.toSet() }
+                            .reduce { acc, set -> acc.intersect(set) }
+                            .toList()
+                    } else {
+                        emptyList()
+                    }
+
+                    // Calculate what was added/removed
+                    val addedTags = (event.tags - oldSharedTags.toSet()).toList()
+                    val removedTags = (oldSharedTags.toSet() - event.tags.toSet()).toList()
+
+                    _state.value.books.forEach { book ->
+                        if (book.selected) {
+                            // Non-destructive merge: add new tags, remove deleted tags
+                            val updatedTags = (book.data.tags.toSet() + addedTags.toSet() - removedTags.toSet()).toList().sorted()
+                            moveBooks.execute(book.data.copy(tags = updatedTags))
+                        }
+                    }
+
+                    _state.update {
+                        it.copy(
+                            books = it.books.map { book ->
+                                if (book.selected) {
+                                    val updatedTags = (book.data.tags.toSet() + addedTags.toSet() - removedTags.toSet()).toList().sorted()
+                                    book.copy(data = book.data.copy(tags = updatedTags))
+                                } else {
+                                    book
+                                }
+                            },
+                            dialog = null
+                        )
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        "Tags updated".showToast(context = event.context)
+                    }
+                }
+            }
+
+            is LibraryEvent.OnActionBulkEditSeries -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    // Get current shared series
+                    val selectedBooks = _state.value.books.filter { it.selected }.map { it.data }
+                    val oldSharedSeries = if (selectedBooks.isNotEmpty()) {
+                        selectedBooks.map { it.series.toSet() }
+                            .reduce { acc, set -> acc.intersect(set) }
+                            .toList()
+                    } else {
+                        emptyList()
+                    }
+
+                    // Calculate what was added/removed
+                    val addedSeries = (event.series - oldSharedSeries.toSet()).toList()
+                    val removedSeries = (oldSharedSeries.toSet() - event.series.toSet()).toList()
+
+                    _state.value.books.forEach { book ->
+                        if (book.selected) {
+                            // Non-destructive merge: add new series, remove deleted series
+                            val updatedSeries = (book.data.series.toSet() + addedSeries.toSet() - removedSeries.toSet()).toList().sorted()
+                            moveBooks.execute(book.data.copy(series = updatedSeries))
+                        }
+                    }
+
+                    _state.update {
+                        it.copy(
+                            books = it.books.map { book ->
+                                if (book.selected) {
+                                    val updatedSeries = (book.data.series.toSet() + addedSeries.toSet() - removedSeries.toSet()).toList().sorted()
+                                    book.copy(data = book.data.copy(series = updatedSeries))
+                                } else {
+                                    book
+                                }
+                            },
+                            dialog = null
+                        )
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        "Series updated".showToast(context = event.context)
+                    }
+                }
+            }
+
+            is LibraryEvent.OnActionBulkEditLanguages -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    // Get current shared languages
+                    val selectedBooks = _state.value.books.filter { it.selected }.map { it.data }
+                    val oldSharedLanguages = if (selectedBooks.isNotEmpty()) {
+                        selectedBooks.map { it.languages.toSet() }
+                            .reduce { acc, set -> acc.intersect(set) }
+                            .toList()
+                    } else {
+                        emptyList()
+                    }
+
+                    // Calculate what was added/removed
+                    val addedLanguages = (event.languages - oldSharedLanguages.toSet()).toList()
+                    val removedLanguages = (oldSharedLanguages.toSet() - event.languages.toSet()).toList()
+
+                    _state.value.books.forEach { book ->
+                        if (book.selected) {
+                            // Non-destructive merge: add new languages, remove deleted languages
+                            val updatedLanguages = (book.data.languages.toSet() + addedLanguages.toSet() - removedLanguages.toSet()).toList().sorted()
+                            moveBooks.execute(book.data.copy(languages = updatedLanguages))
+                        }
+                    }
+
+                    _state.update {
+                        it.copy(
+                            books = it.books.map { book ->
+                                if (book.selected) {
+                                    val updatedLanguages = (book.data.languages.toSet() + addedLanguages.toSet() - removedLanguages.toSet()).toList().sorted()
+                                    book.copy(data = book.data.copy(languages = updatedLanguages))
+                                } else {
+                                    book
+                                }
+                            },
+                            dialog = null
+                        )
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        "Languages updated".showToast(context = event.context)
+                    }
+                }
+            }
+
+            is LibraryEvent.OnActionBulkEditAuthors -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    // Get current shared authors
+                    val selectedBooks = _state.value.books.filter { it.selected }.map { it.data }
+                    val oldSharedAuthors = if (selectedBooks.isNotEmpty()) {
+                        selectedBooks.map { it.authors.toSet() }
+                            .reduce { acc, set -> acc.intersect(set) }
+                            .toList()
+                    } else {
+                        emptyList()
+                    }
+
+                    // Calculate what was added/removed
+                    val addedAuthors = (event.authors - oldSharedAuthors.toSet()).toList()
+                    val removedAuthors = (oldSharedAuthors.toSet() - event.authors.toSet()).toList()
+
+                    _state.value.books.forEach { book ->
+                        if (book.selected) {
+                            // Non-destructive merge: add new authors, remove deleted authors
+                            val updatedAuthors = (book.data.authors.toSet() + addedAuthors.toSet() - removedAuthors.toSet()).toList().sorted()
+                            moveBooks.execute(book.data.copy(authors = updatedAuthors))
+                        }
+                    }
+
+                    _state.update {
+                        it.copy(
+                            books = it.books.map { book ->
+                                if (book.selected) {
+                                    val updatedAuthors = (book.data.authors.toSet() + addedAuthors.toSet() - removedAuthors.toSet()).toList().sorted()
+                                    book.copy(data = book.data.copy(authors = updatedAuthors))
+                                } else {
+                                    book
+                                }
+                            },
+                            dialog = null
+                        )
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        "Authors updated".showToast(context = event.context)
+                    }
+                }
+            }
+
+            is LibraryEvent.OnActionBulkEditCategory -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val selectedBooks = _state.value.books.filter { it.selected }.map { it.data }
+
+                    selectedBooks.forEach { book ->
+                        val updatedBook = if (event.category != null) {
+                            book.copy(category = event.category)
+                        } else {
+                            book
+                        }
+                        moveBooks.execute(updatedBook)
+                    }
+
+                    _state.update {
+                        it.copy(
+                            books = it.books.map { book ->
+                                if (book.selected && event.category != null) {
+                                    book.copy(data = book.data.copy(category = event.category))
+                                } else {
+                                    book
+                                }
+                            },
+                            dialog = null
+                        )
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        val categoryName = when (event.category) {
+                            us.blindmint.codex.domain.library.category.Category.READING -> "Reading"
+                            us.blindmint.codex.domain.library.category.Category.PLANNING -> "Planning"
+                            us.blindmint.codex.domain.library.category.Category.ALREADY_READ -> "Already Read"
+                            else -> "Category"
+                        }
+                        "$categoryName updated".showToast(context = event.context)
+                    }
+                }
+            }
+
+            is LibraryEvent.OnConfirmBulkEdit -> {
+                // Handle bulk edit confirmation - this would typically close the bulk edit dialog
+                // and apply any pending changes. For now, just close the dialog.
+                viewModelScope.launch {
+                    _state.update {
+                        it.copy(dialog = null)
+                    }
+                }
+            }
+
+            is LibraryEvent.OnCancelBulkEdit -> {
+                // Handle bulk edit cancellation - close the dialog without applying changes
+                viewModelScope.launch {
+                    _state.update {
+                        it.copy(dialog = null)
+                    }
+                }
+            }
         }
     }
 
@@ -426,7 +693,7 @@ class LibraryModel @Inject constructor(
             LibrarySortOrder.NAME -> compareBy<Book> { it.title.toString() }
             LibrarySortOrder.LAST_READ -> compareBy<Book> { it.lastOpened ?: 0L }
             LibrarySortOrder.PROGRESS -> compareBy<Book> { it.progress }
-            LibrarySortOrder.AUTHOR -> compareBy<Book> { it.author.toString() }
+            LibrarySortOrder.AUTHOR -> compareBy<Book> { it.authors.firstOrNull().toString() }
         }
 
         return if (descending) {
@@ -486,19 +753,20 @@ class LibraryModel @Inject constructor(
             // Filter by selected authors
             val authorsMatch = filterState.selectedAuthors.isEmpty() ||
                 filterState.selectedAuthors.any { selectedAuthor ->
-                    book.author.getAsString()?.equals(selectedAuthor, ignoreCase = true) == true
-                }
+                    book.authors.any { bookAuthor -> bookAuthor.equals(selectedAuthor, ignoreCase = true) }
+                } ||
+                (filterState.selectedAuthors.contains("Unknown") && book.authors.isEmpty())
 
             // Filter by selected series
             val seriesMatch = filterState.selectedSeries.isEmpty() ||
                 filterState.selectedSeries.any { selectedSeries ->
-                    book.seriesName?.equals(selectedSeries, ignoreCase = true) == true
+                    book.series.any { bookSeries -> bookSeries.equals(selectedSeries, ignoreCase = true) }
                 }
 
             // Filter by selected languages
             val languagesMatch = filterState.selectedLanguages.isEmpty() ||
                 filterState.selectedLanguages.any { selectedLanguage ->
-                    book.language?.equals(selectedLanguage, ignoreCase = true) == true
+                    book.languages.any { bookLanguage -> bookLanguage.equals(selectedLanguage, ignoreCase = true) }
                 }
 
             // Filter by publication year range

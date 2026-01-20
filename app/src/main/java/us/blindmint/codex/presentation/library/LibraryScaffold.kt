@@ -47,9 +47,12 @@ fun LibraryScaffold(
     showMoveDialog: (LibraryEvent.OnShowMoveDialog) -> Unit,
     showDeleteDialog: (LibraryEvent.OnShowDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
+    showBulkEditDialog: (LibraryEvent.OnShowBulkEditDialog) -> Unit,
     sortMenuVisibility: (LibraryEvent) -> Unit,
     allSelectedBooksAreFavorites: Boolean,
     toggleSelectedBooksFavorite: () -> Unit,
+    allBooksSelected: Boolean,
+    selectAllBooks: (LibraryEvent.OnSelectAllBooks) -> Unit,
     navigateToBrowse: () -> Unit,
     navigateToStorage: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
@@ -83,9 +86,12 @@ fun LibraryScaffold(
                 showMoveDialog = showMoveDialog,
                 showDeleteDialog = showDeleteDialog,
                 showClearProgressHistoryDialog = showClearProgressHistoryDialog,
+                showBulkEditDialog = showBulkEditDialog,
                 sortMenuVisibility = sortMenuVisibility,
                 allSelectedBooksAreFavorites = allSelectedBooksAreFavorites,
-                toggleSelectedBooksFavorite = toggleSelectedBooksFavorite
+                toggleSelectedBooksFavorite = toggleSelectedBooksFavorite,
+                allBooksSelected = allBooksSelected,
+                selectAllBooks = selectAllBooks
             )
         }
     ) { paddingValues ->

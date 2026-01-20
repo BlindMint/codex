@@ -69,4 +69,37 @@ sealed class LibraryEvent {
     data class OnUpdateFilterState(val filterState: FilterState) : LibraryEvent()
 
     data object OnToggleSelectedBooksFavorite : LibraryEvent()
+
+    data object OnSelectAllBooks : LibraryEvent()
+
+    data object OnShowBulkEditDialog : LibraryEvent()
+
+    data class OnActionBulkEditTags(
+        val tags: List<String>,
+        val context: Context
+    ) : LibraryEvent()
+
+    data class OnActionBulkEditSeries(
+        val series: List<String>,
+        val context: Context
+    ) : LibraryEvent()
+
+    data class OnActionBulkEditLanguages(
+        val languages: List<String>,
+        val context: Context
+    ) : LibraryEvent()
+
+    data class OnActionBulkEditAuthors(
+        val authors: List<String>,
+        val context: Context
+    ) : LibraryEvent()
+
+    data class OnActionBulkEditCategory(
+        val category: Category?,
+        val context: Context
+    ) : LibraryEvent()
+
+    data object OnConfirmBulkEdit : LibraryEvent()
+
+    data object OnCancelBulkEdit : LibraryEvent()
 }

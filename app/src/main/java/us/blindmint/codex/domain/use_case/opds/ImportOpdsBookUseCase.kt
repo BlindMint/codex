@@ -212,20 +212,20 @@ class ImportOpdsBookUseCase @Inject constructor(
                         ifBlank { file.name.substringBeforeLast(".").trim() }
                     }
 
-                    val author = document.select("metadata > dc|creator").text().trim().run {
-                        if (isBlank()) UIText.StringResource(R.string.unknown_author) else UIText.StringValue(this)
+                    val authors = document.select("metadata > dc|creator").text().trim().run {
+                        if (isBlank()) emptyList() else listOf(this)
                     }
 
                     val description = Jsoup.parse(document.select("metadata > dc|description").text()).text().run {
                         ifBlank { null }
                     }
 
-                    android.util.Log.d("OPDS_DEBUG", "Parsed EPUB: title='$title', author='$author'")
+                    android.util.Log.d("OPDS_DEBUG", "Parsed EPUB: title='$title', authors='$authors'")
 
                     BookWithCover(
                         book = Book(
                             title = title,
-                            author = author,
+                            authors = authors,
                             description = description,
                             scrollIndex = 0,
                             scrollOffset = 0,

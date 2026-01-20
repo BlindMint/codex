@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
 import us.blindmint.codex.presentation.core.constants.providePrimaryScrollbar
+import us.blindmint.codex.presentation.library.StatusChipsRow
 import us.blindmint.codex.ui.book_info.BookInfoEvent
 
 @Composable
@@ -32,7 +33,8 @@ fun BookInfoLayout(
     paddingValues: PaddingValues,
     showChangeCoverBottomSheet: (BookInfoEvent.OnShowChangeCoverBottomSheet) -> Unit,
     navigateToReader: () -> Unit,
-    navigateToSpeedReading: (() -> Unit)? = null
+    navigateToSpeedReading: (() -> Unit)? = null,
+    onCategoryChange: (us.blindmint.codex.domain.library.category.Category) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         // Fixed top section: Book cover and info
@@ -71,6 +73,17 @@ fun BookInfoLayout(
                     bottom = 18.dp
                 )
             ) {
+                item {
+                    StatusChipsRow(
+                        selectedStatuses = setOf(book.category),
+                        onStatusToggle = { status, selected ->
+                            if (selected) {
+                                onCategoryChange(status)
+                            }
+                        }
+                    )
+                }
+
                 item {
                     BookInfoLayoutDescription(
                         book = book

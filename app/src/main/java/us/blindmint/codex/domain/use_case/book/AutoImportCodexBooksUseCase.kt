@@ -241,13 +241,12 @@ class AutoImportCodexBooksUseCase @Inject constructor(
     private fun mergeOpfMetadata(book: us.blindmint.codex.domain.library.book.Book, opfMetadata: OpfMetadata): us.blindmint.codex.domain.library.book.Book {
         return book.copy(
             title = opfMetadata.title ?: book.title,
-            author = UIText.StringValue(opfMetadata.author ?: book.author.getAsString() ?: "Unknown"),
+            authors = (book.authors + listOfNotNull(opfMetadata.author)).distinct().takeIf { it.isNotEmpty() } ?: book.authors,
             description = opfMetadata.description ?: book.description,
             tags = opfMetadata.tags.takeIf { it.isNotEmpty() } ?: book.tags,
-            seriesName = opfMetadata.series ?: book.seriesName,
-            seriesIndex = opfMetadata.seriesIndex ?: book.seriesIndex,
+            series = (book.series + listOfNotNull(opfMetadata.series)).distinct().takeIf { it.isNotEmpty() } ?: book.series,
+            languages = (book.languages + listOfNotNull(opfMetadata.language)).distinct().takeIf { it.isNotEmpty() } ?: book.languages,
             publicationDate = opfMetadata.publicationDate ?: book.publicationDate,
-            language = opfMetadata.language ?: book.language,
             publisher = opfMetadata.publisher ?: book.publisher,
             isbn = opfMetadata.isbn ?: book.isbn
         )

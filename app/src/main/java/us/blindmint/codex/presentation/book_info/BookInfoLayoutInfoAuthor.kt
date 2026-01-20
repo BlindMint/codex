@@ -39,7 +39,7 @@ fun BookInfoLayoutInfoAuthor(
         )
 
         StyledText(
-            text = book.author.asString(),
+            text = book.authors.firstOrNull() ?: stringResource(id = R.string.unknown_author),
             modifier = Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.bodyLarge.copy(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

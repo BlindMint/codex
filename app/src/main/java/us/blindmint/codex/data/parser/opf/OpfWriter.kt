@@ -41,16 +41,16 @@ class OpfWriter @Inject constructor(
      */
     fun generateOpfContent(book: Book, opdsEntry: OpdsEntry? = null): String {
         val title = escapeXml(book.title)
-        val author = escapeXml(getAuthorString(book.author))
+        val author = escapeXml(book.authors.firstOrNull() ?: opdsEntry?.author ?: "")
         val description = escapeXml(book.description ?: book.summary ?: "")
         val uuid = book.uuid ?: opdsEntry?.identifiers?.find { it.startsWith("urn:uuid:") }
             ?.removePrefix("urn:uuid:") ?: UUID.randomUUID().toString()
         val isbn = book.isbn ?: opdsEntry?.identifiers?.find { it.startsWith("urn:isbn:") }
             ?.removePrefix("urn:isbn:") ?: ""
-        val language = escapeXml(book.language ?: opdsEntry?.language ?: "")
+        val language = escapeXml(book.languages.firstOrNull() ?: opdsEntry?.language ?: "")
         val publisher = escapeXml(book.publisher ?: opdsEntry?.publisher ?: "")
-        val series = escapeXml(book.seriesName ?: opdsEntry?.series ?: "")
-        val seriesIndex = book.seriesIndex ?: opdsEntry?.seriesIndex ?: 1
+        val series = escapeXml(book.series.firstOrNull() ?: opdsEntry?.series ?: "")
+        val seriesIndex = opdsEntry?.seriesIndex ?: 1
         val tags = (book.tags.takeIf { it.isNotEmpty() } ?: opdsEntry?.categories ?: emptyList())
         val publicationDate = formatDate(book.publicationDate) ?: parseOpdsDate(opdsEntry?.published) ?: ""
 
@@ -165,15 +165,6 @@ class OpfWriter @Inject constructor(
         }
     }
 
-    /**
-     * Convert author UIText to plain string.
-     */
-    private fun getAuthorString(author: UIText): String {
-        return when (author) {
-            is UIText.StringValue -> author.value
-            is UIText.StringResource -> "" // Can't resolve resource without context in this context
-        }
-    }
 
     /**
      * Format epoch millis to ISO date string.

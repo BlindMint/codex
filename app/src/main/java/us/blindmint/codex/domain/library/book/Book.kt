@@ -19,7 +19,7 @@ data class Book(
     val id: Int = 0,
 
     val title: String,
-    val author: UIText,
+    val authors: List<String> = emptyList(),
     val description: String?,
 
     val filePath: String,
@@ -33,16 +33,18 @@ data class Book(
     val category: Category = Category.PLANNING, // TODO: remove when UI updated
 
     val tags: List<String> = emptyList(),
-    val seriesName: String? = null,
-    val seriesIndex: Int? = null,
+    val series: List<String> = emptyList(),
     val publicationDate: Long? = null,
-    val language: String? = null,
+    val languages: List<String> = emptyList(),
     val publisher: String? = null,
     val summary: String? = null,
     val uuid: String? = null,
     val isbn: String? = null,
     val source: BookSource = BookSource.LOCAL,
     val remoteUrl: String? = null,
+    val opdsSourceUrl: String? = null,
+    val opdsSourceId: Int? = null,
+    val metadataLastRefreshTime: Long? = null,
     // Comic fields
     val isComic: Boolean = false,
     val pageCount: Int? = null,
@@ -50,6 +52,6 @@ data class Book(
     val lastPageRead: Int = 0,
     val readingDirection: String = "LTR",
     val comicReaderMode: String = "PAGED",
-     val archiveFormat: String? = null,
-     val isFavorite: Boolean = false
+    val archiveFormat: String? = null,
+    val isFavorite: Boolean = false
 ) : Parcelable

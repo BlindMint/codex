@@ -22,6 +22,11 @@ fun LibraryDialog(
     actionMoveDialog: (LibraryEvent.OnActionMoveDialog) -> Unit,
     actionDeleteDialog: (LibraryEvent.OnActionDeleteDialog) -> Unit,
     actionClearProgressHistoryDialog: (LibraryEvent.OnActionClearProgressHistoryDialog) -> Unit,
+    actionBulkEditTags: (LibraryEvent.OnActionBulkEditTags) -> Unit,
+    actionBulkEditSeries: (LibraryEvent.OnActionBulkEditSeries) -> Unit,
+    actionBulkEditLanguages: (LibraryEvent.OnActionBulkEditLanguages) -> Unit,
+    actionBulkEditAuthors: (LibraryEvent.OnActionBulkEditAuthors) -> Unit,
+    actionBulkEditCategory: (LibraryEvent.OnActionBulkEditCategory) -> Unit,
     dismissDialog: (LibraryEvent.OnDismissDialog) -> Unit
 ) {
     when (dialog) {
@@ -46,6 +51,21 @@ fun LibraryDialog(
                 description = "This will remove the progress history for all selected books. This action cannot be undone.",
                 confirmText = "Clear History"
             )
+        }
+
+        LibraryScreen.BULK_EDIT_DIALOG -> {
+            val selectedBooks = books.filter { it.selected }.map { it.data }
+            if (selectedBooks.isNotEmpty()) {
+                BulkEditBottomSheet(
+                    selectedBooks = selectedBooks,
+                    actionBulkEditTags = actionBulkEditTags,
+                    actionBulkEditSeries = actionBulkEditSeries,
+                    actionBulkEditLanguages = actionBulkEditLanguages,
+                    actionBulkEditAuthors = actionBulkEditAuthors,
+                    actionBulkEditCategory = actionBulkEditCategory,
+                    dismissDialog = dismissDialog
+                )
+            }
         }
     }
 }

@@ -30,6 +30,7 @@ fun BookInfoScaffold(
     toggleFavorite: () -> Unit,
     navigateToReader: () -> Unit,
     navigateToSpeedReading: (() -> Unit)? = null,
+    onCategoryChange: (us.blindmint.codex.domain.library.category.Category) -> Unit,
     navigateBack: () -> Unit
 ) {
     Scaffold(
@@ -56,7 +57,8 @@ fun BookInfoScaffold(
             paddingValues = paddingValues,
             showChangeCoverBottomSheet = showChangeCoverBottomSheet,
             navigateToReader = navigateToReader,
-            navigateToSpeedReading = navigateToSpeedReading
+            navigateToSpeedReading = navigateToSpeedReading,
+            onCategoryChange = onCategoryChange
         )
     }
 }

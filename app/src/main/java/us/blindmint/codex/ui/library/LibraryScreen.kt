@@ -56,6 +56,12 @@ object LibraryScreen : Screen, Parcelable {
     const val DELETE_DIALOG = "delete_dialog"
 
     @IgnoredOnParcel
+    const val BULK_EDIT_DIALOG = "bulk_edit_dialog"
+
+    @IgnoredOnParcel
+    const val CLEAR_PROGRESS_HISTORY_DIALOG = "clear_progress_history_dialog"
+
+    @IgnoredOnParcel
     val refreshListChannel: Channel<Long> = Channel(Channel.CONFLATED)
 
     @IgnoredOnParcel
@@ -74,6 +80,16 @@ object LibraryScreen : Screen, Parcelable {
 
         val state = screenModel.state.collectAsStateWithLifecycle()
         val mainState = mainModel.state.collectAsStateWithLifecycle()
+
+        // Refresh library when screen becomes active (navigation to Library tab)
+        LaunchedEffect(Unit) {
+            screenModel.onEvent(
+                LibraryEvent.OnRefreshList(
+                    loading = false,
+                    hideSearch = false
+                )
+            )
+        }
 
         val sortedBooks = remember(state.value.books, mainState.value.librarySortOrder, mainState.value.librarySortOrderDescending) {
             val sortOrder = mainState.value.librarySortOrder
@@ -103,9 +119,9 @@ object LibraryScreen : Screen, Parcelable {
                 }
                 LibrarySortOrder.AUTHOR -> {
                     if (isDescending) {
-                        state.value.books.sortedByDescending { it.data.author.toString() }
+                        state.value.books.sortedByDescending { it.data.authors.firstOrNull().toString() }
                     } else {
-                        state.value.books.sortedBy { it.data.author.toString() }
+                        state.value.books.sortedBy { it.data.authors.firstOrNull().toString() }
                     }
                 }
             }
@@ -209,10 +225,18 @@ object LibraryScreen : Screen, Parcelable {
             actionDeleteDialog = screenModel::onEvent,
             showDeleteDialog = screenModel::onEvent,
             showClearProgressHistoryDialog = screenModel::onEvent,
+            showBulkEditDialog = screenModel::onEvent,
+            actionBulkEditTags = screenModel::onEvent,
+            actionBulkEditSeries = screenModel::onEvent,
+            actionBulkEditLanguages = screenModel::onEvent,
+            actionBulkEditAuthors = screenModel::onEvent,
+            actionBulkEditCategory = screenModel::onEvent,
             dismissDialog = screenModel::onEvent,
             sortMenuVisibility = screenModel::onEvent,
             allSelectedBooksAreFavorites = screenModel.allSelectedBooksAreFavorites,
             toggleSelectedBooksFavorite = screenModel::toggleSelectedBooksFavorite,
+            allBooksSelected = state.value.selectedItemsCount == state.value.books.count() && state.value.hasSelectedItems,
+            selectAllBooks = screenModel::onEvent,
             navigateToBrowse = {
                 navigator.push(BrowseScreen)
             },

@@ -35,7 +35,6 @@ interface BookDao {
         """
         SELECT * FROM bookentity
         WHERE LOWER(title) LIKE '%' || LOWER(:query) || '%'
-           OR LOWER(COALESCE(author, '')) LIKE '%' || LOWER(:query) || '%'
            OR LOWER(COALESCE(description, '')) LIKE '%' || LOWER(:query) || '%'
     """
     )
@@ -147,16 +146,11 @@ interface BookDao {
     /* - - - - - - - - - - - - - - - - - - - - */
 
     // Metadata extraction for filters
-    @Query("SELECT DISTINCT COALESCE(author, '') FROM bookentity WHERE COALESCE(author, '') != '' ORDER BY author")
-    suspend fun getAllAuthors(): List<String>
+    // Note: authors, series, and languages are now List<String> fields (JSON stored)
+    // Distinct value extraction is handled in the repository layer for these fields
+    // Tags extraction still uses this method since tags are also List<String>
 
-    @Query("SELECT DISTINCT COALESCE(seriesName, '') FROM bookentity WHERE COALESCE(seriesName, '') != '' ORDER BY seriesName")
-    suspend fun getAllSeries(): List<String>
-
-    @Query("SELECT DISTINCT COALESCE(language, '') FROM bookentity WHERE COALESCE(language, '') != '' ORDER BY language")
-    suspend fun getAllLanguages(): List<String>
-
-    // Get all books for metadata extraction (used for tags and other complex fields)
+    // Get all books for metadata extraction (used for tags, authors, series, languages)
     @Query("SELECT * FROM bookentity ORDER BY title ASC")
     suspend fun getAllBooks(): List<BookEntity>
 

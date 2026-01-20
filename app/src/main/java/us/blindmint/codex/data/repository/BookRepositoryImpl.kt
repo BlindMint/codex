@@ -375,7 +375,7 @@ class BookRepositoryImpl @Inject constructor(
                 id = 0, // Auto-generated
                 filePath = book.filePath,
                 title = book.title,
-                author = book.author,
+                author = book.authors.firstOrNull(),
                 scrollIndex = book.scrollIndex,
                 scrollOffset = book.scrollOffset,
                 progress = book.progress,
@@ -498,20 +498,31 @@ class BookRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getAllAuthors(): List<String> = withContext(Dispatchers.IO) {
-        val knownAuthors = database.getAllAuthors().filter { it.isNotBlank() }
+        val allBooks = database.getAllBooks()
+        val authorsSet = mutableSetOf<String>()
+        allBooks.forEach { book ->
+            authorsSet.addAll(book.authors.filter { it.isNotBlank() })
+        }
 
-        // Check if any books have null/blank author
-        val hasUnknownAuthors = database.getAllBooks().any { it.author.isNullOrBlank() }
+        // Check if any books have no authors
+        val hasUnknownAuthors = allBooks.any { it.authors.isEmpty() }
 
+        val sortedAuthors = authorsSet.sorted()
         if (hasUnknownAuthors) {
-            listOf("Unknown") + knownAuthors
+            listOf("Unknown") + sortedAuthors
         } else {
-            knownAuthors
+            sortedAuthors
         }
     }
 
-    override suspend fun getAllSeries(): List<String> {
-        return database.getAllSeries().filter { it.isNotBlank() }
+    override suspend fun getAllSeries(): List<String> = withContext(Dispatchers.IO) {
+        val allBooks = database.getAllBooks()
+        val seriesSet = mutableSetOf<String>()
+        allBooks.forEach { book ->
+            seriesSet.addAll(book.series.filter { it.isNotBlank() })
+        }
+
+        seriesSet.sorted()
     }
 
     override suspend fun getAllTags(): List<String> = withContext(Dispatchers.IO) {
@@ -524,8 +535,14 @@ class BookRepositoryImpl @Inject constructor(
         tagsSet.sorted()
     }
 
-    override suspend fun getAllLanguages(): List<String> {
-        return database.getAllLanguages().filter { it.isNotBlank() }
+    override suspend fun getAllLanguages(): List<String> = withContext(Dispatchers.IO) {
+        val allBooks = database.getAllBooks()
+        val languagesSet = mutableSetOf<String>()
+        allBooks.forEach { book ->
+            languagesSet.addAll(book.languages.filter { it.isNotBlank() })
+        }
+
+        languagesSet.sorted()
     }
 
     override suspend fun getPublicationYearRange(): Pair<Int, Int> {
@@ -555,4 +572,26 @@ class BookRepositoryImpl @Inject constructor(
             Log.i("CLEANUP", "Cleaned up $deletedCount old progress history entries.")
         }
     }
+
+    /**
+     * Get all books downloaded from a specific OPDS source by URL.
+     * Used for metadata refresh operations.
+     */
+    override suspend fun getBooksByOpdsSourceUrl(opdsSourceUrl: String): List<Book> =
+        withContext(Dispatchers.IO) {
+            database.getAllBooks()
+                .filter { it.opdsSourceUrl == opdsSourceUrl }
+                .map { bookEntity -> bookMapper.toBook(bookEntity) }
+        }
+
+    /**
+     * Get all books downloaded from a specific OPDS source by ID.
+     * Used for metadata refresh operations and source management.
+     */
+    override suspend fun getBooksByOpdsSourceId(opdsSourceId: Int): List<Book> =
+        withContext(Dispatchers.IO) {
+            database.getAllBooks()
+                .filter { it.opdsSourceId == opdsSourceId }
+                .map { bookEntity -> bookMapper.toBook(bookEntity) }
+        }
 }

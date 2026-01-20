@@ -23,6 +23,7 @@ import us.blindmint.codex.domain.repository.OpdsRepository
 import us.blindmint.codex.domain.storage.CodexDirectoryManager
 import us.blindmint.codex.domain.backup.OpdsSourceData
 import us.blindmint.codex.domain.backup.CodexBackup
+import us.blindmint.codex.domain.use_case.opds.RefreshAllBooksFromOpdsSource
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,7 +31,8 @@ import javax.inject.Inject
 class OpdsSourcesModel @Inject constructor(
     private val application: Application,
     private val opdsRepository: OpdsRepository,
-    private val codexDirectoryManager: CodexDirectoryManager
+    private val codexDirectoryManager: CodexDirectoryManager,
+    private val refreshAllBooksFromOpdsSource: RefreshAllBooksFromOpdsSource
 ) : ViewModel() {
 
     private val database: BookDatabase by lazy {
@@ -275,6 +277,32 @@ class OpdsSourcesModel @Inject constructor(
                 val updatedSource = source.copy(status = status)
                 opdsSourceDao.updateOpdsSource(updatedSource)
                 loadOpdsSources()
+            }
+        }
+    }
+
+    fun refreshAllBooksFromSource(sourceId: Int, sourceUrl: String) {
+        viewModelScope.launch {
+            try {
+                val count = refreshAllBooksFromOpdsSource.execute(sourceId) { title, author ->
+                    // Fetch OPDS entry from the source for matching books
+                    try {
+                        val feed = opdsRepository.fetchFeed(sourceUrl)
+                        feed.entries.firstOrNull { entry ->
+                            entry.title.equals(title, ignoreCase = true) ||
+                            (title != null && entry.title.contains(title, ignoreCase = true))
+                        }
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                "Refreshed metadata for $count books from OPDS source".apply {
+                    android.widget.Toast.makeText(application, this, android.widget.Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                "Failed to refresh metadata: ${e.message ?: "Unknown error"}".apply {
+                    android.widget.Toast.makeText(application, this, android.widget.Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

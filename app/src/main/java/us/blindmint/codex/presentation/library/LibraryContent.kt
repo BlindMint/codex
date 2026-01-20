@@ -47,10 +47,18 @@ fun LibraryContent(
     actionMoveDialog: (LibraryEvent.OnActionMoveDialog) -> Unit,
     actionDeleteDialog: (LibraryEvent.OnActionDeleteDialog) -> Unit,
     showClearProgressHistoryDialog: (LibraryEvent.OnShowClearProgressHistoryDialog) -> Unit,
+    showBulkEditDialog: (LibraryEvent.OnShowBulkEditDialog) -> Unit,
+    actionBulkEditTags: (LibraryEvent.OnActionBulkEditTags) -> Unit,
+    actionBulkEditSeries: (LibraryEvent.OnActionBulkEditSeries) -> Unit,
+    actionBulkEditLanguages: (LibraryEvent.OnActionBulkEditLanguages) -> Unit,
+    actionBulkEditAuthors: (LibraryEvent.OnActionBulkEditAuthors) -> Unit,
+    actionBulkEditCategory: (LibraryEvent.OnActionBulkEditCategory) -> Unit,
     dismissDialog: (LibraryEvent.OnDismissDialog) -> Unit,
     sortMenuVisibility: (LibraryEvent) -> Unit,
     allSelectedBooksAreFavorites: Boolean,
     toggleSelectedBooksFavorite: () -> Unit,
+    allBooksSelected: Boolean,
+    selectAllBooks: (LibraryEvent.OnSelectAllBooks) -> Unit,
     navigateToBrowse: () -> Unit,
     navigateToStorage: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
@@ -68,6 +76,11 @@ fun LibraryContent(
                 LibraryEvent.OnShowClearProgressHistoryDialog
             )
         },
+        actionBulkEditTags = actionBulkEditTags,
+        actionBulkEditSeries = actionBulkEditSeries,
+        actionBulkEditLanguages = actionBulkEditLanguages,
+        actionBulkEditAuthors = actionBulkEditAuthors,
+        actionBulkEditCategory = actionBulkEditCategory,
         dismissDialog = dismissDialog
     )
 
@@ -94,9 +107,12 @@ fun LibraryContent(
         showMoveDialog = showMoveDialog,
         showDeleteDialog = showDeleteDialog,
         showClearProgressHistoryDialog = showClearProgressHistoryDialog,
+        showBulkEditDialog = showBulkEditDialog,
         sortMenuVisibility = sortMenuVisibility,
         allSelectedBooksAreFavorites = allSelectedBooksAreFavorites,
         toggleSelectedBooksFavorite = toggleSelectedBooksFavorite,
+        allBooksSelected = allBooksSelected,
+        selectAllBooks = selectAllBooks,
         refreshState = refreshState,
         navigateToBrowse = navigateToBrowse,
         navigateToStorage = navigateToStorage,

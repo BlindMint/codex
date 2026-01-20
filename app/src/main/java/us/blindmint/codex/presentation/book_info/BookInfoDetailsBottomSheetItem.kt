@@ -32,23 +32,31 @@ fun BookInfoDetailsBottomSheetItem(
     editable: Boolean,
     showError: Boolean = false,
     errorMessage: String? = null,
-    onEdit: () -> Unit = {}
+    maxLines: Int = 1,
+    onEdit: () -> Unit = {},
+    onTextChange: (String) -> Unit = {},
+    onEditClick: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = if (maxLines == 1) Alignment.CenterVertically else Alignment.Top
     ) {
         OutlinedTextField(
             modifier = Modifier
                 .weight(1f)
-                .focusable(false),
+                .focusable(!editable),
             value = text,
-            onValueChange = {},
-            readOnly = true,
+            onValueChange = { newValue ->
+                if (editable) {
+                    onTextChange(newValue)
+                }
+            },
+            readOnly = !editable,
             isError = showError,
+            maxLines = maxLines,
             supportingText = if (!showError || errorMessage.isNullOrBlank()) null else {
                 {
                     StyledText(
@@ -64,7 +72,7 @@ fun BookInfoDetailsBottomSheetItem(
             }
         )
 
-        if (editable) {
+        if (!editable && onEditClick != null) {
             IconButton(
                 icon = Icons.Default.EditNote,
                 contentDescription = R.string.edit_content_desc,
@@ -72,7 +80,7 @@ fun BookInfoDetailsBottomSheetItem(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
             ) {
-                onEdit()
+                onEditClick()
             }
         }
     }
