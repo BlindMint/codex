@@ -72,6 +72,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.text.font.FontWeight
 
+// Find the nearest sentence or paragraph start before the given word index
+private fun findNearestSentenceStart(words: List<String>, targetIndex: Int): Int {
+    if (targetIndex <= 0) return targetIndex
+
+    // Look backwards up to 50 words to find a sentence boundary
+    val searchStart = maxOf(0, targetIndex - 50)
+
+    for (i in targetIndex downTo searchStart) {
+        val word = words.getOrNull(i) ?: continue
+
+        // Check for sentence endings (period, exclamation, question mark)
+        if (word.endsWith('.') || word.endsWith('!') || word.endsWith('?') ||
+            word.endsWith(".\"") || word.endsWith("!\"") || word.endsWith("?\"")) {
+            // Return the index after this sentence-ending word
+            return (i + 1).coerceAtMost(words.size - 1)
+        }
+    }
+
+    // If no sentence boundary found within 50 words, don't adjust the position
+    return targetIndex
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpeedReadingScaffold(
@@ -143,15 +165,19 @@ fun SpeedReadingScaffold(
     // Initialize selectedWordIndex based on current progress when text loads
     LaunchedEffect(text, currentProgress) {
         if (text.isNotEmpty()) {
-            // Calculate word index from progress percentage
             // Extract all words from text to determine starting position
             val allWords = text
                 .filterIsInstance<us.blindmint.codex.domain.reader.ReaderText.Text>()
                 .flatMap { it.line.text.split("\\s+".toRegex()) }
                 .filter { it.isNotBlank() }
-            val wordIndex = (currentProgress * allWords.size).toInt().coerceIn(0, (allWords.size - 1).coerceAtLeast(0))
-            Log.d("SPEED_READER", "Loading with progress=$currentProgress, calculated wordIndex=$wordIndex, totalWords=${allWords.size}")
-            selectedWordIndex = wordIndex
+
+            val rawWordIndex = (currentProgress * allWords.size).toInt().coerceIn(0, (allWords.size - 1).coerceAtLeast(0))
+
+            // For better UX when switching from normal reader, snap to nearest sentence/paragraph boundary
+            val adjustedWordIndex = findNearestSentenceStart(allWords, rawWordIndex)
+
+            Log.d("SPEED_READER", "Loading with progress=$currentProgress, raw wordIndex=$rawWordIndex, adjusted wordIndex=$adjustedWordIndex, totalWords=${allWords.size}")
+            selectedWordIndex = adjustedWordIndex
         }
     }
 
