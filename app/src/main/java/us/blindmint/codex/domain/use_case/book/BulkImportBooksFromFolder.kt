@@ -48,7 +48,7 @@ class BulkImportBooksFromFolder @Inject constructor(
                 cachedFile.name.endsWith(ext, ignoreCase = true)
             }
             val alreadyExists = existingPaths.any { existingPath ->
-                existingPath.equals(cachedFile.path, ignoreCase = true)
+                existingPath.equals(cachedFile.uri.toString(), ignoreCase = true)
             }
             val canAccess = cachedFile.canAccess()
 

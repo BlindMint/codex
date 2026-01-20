@@ -29,7 +29,7 @@ class TxtFileParser @Inject constructor() : FileParser {
                     scrollIndex = 0,
                     scrollOffset = 0,
                     progress = 0f,
-                    filePath = cachedFile.path,
+                    filePath = cachedFile.uri.toString(),
                     lastOpened = null,
                     category = Category.entries[0],
                     coverImage = null
