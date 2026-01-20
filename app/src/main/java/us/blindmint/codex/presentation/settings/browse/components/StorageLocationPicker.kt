@@ -9,12 +9,15 @@ package us.blindmint.codex.presentation.settings.browse.components
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,8 +28,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import us.blindmint.codex.domain.import_progress.ImportStatus
+import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
 import us.blindmint.codex.ui.settings.SettingsEvent
 import us.blindmint.codex.ui.settings.SettingsModel
 
@@ -39,7 +45,9 @@ fun StorageLocationPicker(
     modifier: Modifier = Modifier
 ) {
     val settingsModel = hiltViewModel<SettingsModel>()
+    val importProgressViewModel = hiltViewModel<ImportProgressViewModel>()
     val state by settingsModel.state.collectAsStateWithLifecycle()
+    val importOperations by importProgressViewModel.importOperations.collectAsStateWithLifecycle()
     var showPicker by remember { mutableStateOf(false) }
     var showRemoveConfirmation by remember { mutableStateOf(false) }
     var showInfoDialog by remember { mutableStateOf(false) }
@@ -53,44 +61,66 @@ fun StorageLocationPicker(
         showPicker = false
     }
 
-    ListItem(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable {
-                if (state.codexRootDisplayPath == null) {
-                    showInfoDialog = true
-                } else {
-                    showPicker = true
-                }
+    // Find import operation for Codex Directory if one is actively running
+    // Match by display path (the folder name shown in UI)
+    val codexImportOperation = importOperations.find { op ->
+        state.codexRootDisplayPath != null &&
+                op.folderPath.endsWith(state.codexRootDisplayPath!!) &&
+                (op.status == ImportStatus.IN_PROGRESS ||
+                 op.status == ImportStatus.SCANNING ||
+                 op.status == ImportStatus.STARTING)
+    }
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        ListItem(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    if (state.codexRootDisplayPath == null) {
+                        showInfoDialog = true
+                    } else {
+                        showPicker = true
+                    }
+                },
+            headlineContent = {
+                Text(
+                    text = "Codex Directory",
+                    style = MaterialTheme.typography.titleSmall
+                )
             },
-        headlineContent = {
-            Text(
-                text = "Codex Directory",
-                style = MaterialTheme.typography.titleSmall
-            )
-        },
-        supportingContent = {
-            Text(
-                text = state.codexRootDisplayPath ?: "Tap to configure",
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (state.codexRootDisplayPath != null) {
-                    MaterialTheme.colorScheme.onSurface
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                }
-            )
-        },
-        trailingContent = {
-            if (state.codexRootDisplayPath != null) {
-                IconButton(onClick = { showRemoveConfirmation = true }) {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = "Remove Codex Directory"
-                    )
+            supportingContent = {
+                Text(
+                    text = state.codexRootDisplayPath ?: "Tap to configure",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (state.codexRootDisplayPath != null) {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
+            },
+            trailingContent = {
+                if (state.codexRootDisplayPath != null) {
+                    IconButton(onClick = { showRemoveConfirmation = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Remove Codex Directory"
+                        )
+                    }
                 }
             }
+        )
+
+        // Show minimal progress bar when importing from Codex Directory
+        if (codexImportOperation != null && codexImportOperation.totalBooks > 0) {
+            LinearProgressIndicator(
+                progress = { codexImportOperation.currentProgress.toFloat() / codexImportOperation.totalBooks.toFloat() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
         }
-    )
+    }
 
     if (showPicker) {
         folderPicker.launch(null)

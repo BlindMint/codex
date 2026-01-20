@@ -54,7 +54,6 @@ import us.blindmint.codex.domain.use_case.book.BulkImportProgress
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.core.util.showToast
-import us.blindmint.codex.presentation.import_progress.ImportProgressBar
 import us.blindmint.codex.ui.browse.BrowseScreen
 import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
 import us.blindmint.codex.ui.library.LibraryScreen
@@ -147,16 +146,6 @@ fun BrowseScanOption() {
             .fillMaxWidth()
             .animateContentSize()
     ) {
-        // Display active import progress bars
-        importOperations.forEach { operation ->
-            ImportProgressBar(
-                operation = operation,
-                onCancel = {
-                    importProgressViewModel.cancelImport(operation.id)
-                }
-            )
-        }
-
         persistedUriPermissions.forEachIndexed { index, permission ->
             BrowseScanFolderItem(
                 index = index,
@@ -260,10 +249,13 @@ private fun BrowseScanFolderItem(
 ) {
     val permissionFile = DocumentFileCompat.fromUri(context, folderUri) ?: return
 
-    // Find import operation for this folder if one exists
+    // Find import operation for this folder if one exists and is still running
     val currentOperation = importOperations.find { op ->
-        // Match by folder path
-        op.folderPath == permissionFile.getRootPath(context)
+        // Match by folder path and only if actively importing
+        op.folderPath == permissionFile.getRootPath(context) &&
+                (op.status == us.blindmint.codex.domain.import_progress.ImportStatus.IN_PROGRESS ||
+                 op.status == us.blindmint.codex.domain.import_progress.ImportStatus.SCANNING ||
+                 op.status == us.blindmint.codex.domain.import_progress.ImportStatus.STARTING)
     }
 
     Column(
@@ -304,6 +296,7 @@ private fun BrowseScanFolderItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
+                // Only show progress text if actively importing
                 if (currentOperation != null && currentOperation.totalBooks > 0) {
                     StyledText(
                         text = stringResource(
@@ -346,6 +339,7 @@ private fun BrowseScanFolderItem(
             }
         }
 
+        // Only show progress bar if actively importing
         if (currentOperation != null && currentOperation.totalBooks > 0) {
             LinearProgressIndicator(
                 progress = { currentOperation.currentProgress.toFloat() / currentOperation.totalBooks.toFloat() },

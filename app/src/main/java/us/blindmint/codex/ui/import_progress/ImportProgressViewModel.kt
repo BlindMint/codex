@@ -10,6 +10,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -87,6 +88,10 @@ class ImportProgressViewModel @Inject constructor(
                         op
                     }
                 }
+
+                // Auto-clear completed operation after 2 seconds
+                delay(2000)
+                clearOperation(operationId)
             } catch (e: Exception) {
                 // Mark as failed with error message
                 _importOperations.value = _importOperations.value.map { op ->
@@ -99,6 +104,10 @@ class ImportProgressViewModel @Inject constructor(
                         op
                     }
                 }
+
+                // Auto-clear failed operation after 5 seconds
+                delay(5000)
+                clearOperation(operationId)
             } finally {
                 _isImporting.value = false
             }
@@ -137,5 +146,51 @@ class ImportProgressViewModel @Inject constructor(
      */
     fun getOperation(operationId: String): ImportOperation? {
         return _importOperations.value.find { it.id == operationId }
+    }
+
+    /**
+     * Update progress for Codex Directory import.
+     * Used for tracking OPDS book auto-imports from Codex Directory.
+     */
+    fun updateCodexImportProgress(
+        folderPath: String,
+        totalBooks: Int,
+        currentProgress: Int,
+        currentFile: String = ""
+    ) {
+        // Find existing operation for this folder or create a new one
+        val existingOp = _importOperations.value.find { op ->
+            op.folderPath.endsWith(folderPath.substringAfterLast("/")) &&
+            op.status == ImportStatus.IN_PROGRESS
+        }
+
+        if (existingOp != null) {
+            // Update existing operation
+            _importOperations.value = _importOperations.value.map { op ->
+                if (op.id == existingOp.id) {
+                    op.copy(
+                        totalBooks = totalBooks,
+                        currentProgress = currentProgress,
+                        currentFile = currentFile,
+                        status = ImportStatus.IN_PROGRESS
+                    )
+                } else {
+                    op
+                }
+            }
+        } else {
+            // Create new operation if doesn't exist
+            val operationId = UUID.randomUUID().toString()
+            val operation = ImportOperation(
+                id = operationId,
+                folderName = folderPath.substringAfterLast("/"),
+                folderPath = folderPath,
+                totalBooks = totalBooks,
+                currentProgress = currentProgress,
+                status = ImportStatus.IN_PROGRESS,
+                currentFile = currentFile
+            )
+            _importOperations.value = _importOperations.value + operation
+        }
     }
 }

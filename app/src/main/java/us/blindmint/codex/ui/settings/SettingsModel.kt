@@ -6,8 +6,10 @@
 
 package us.blindmint.codex.ui.settings
 
+import android.app.Application
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -41,13 +43,17 @@ import us.blindmint.codex.presentation.core.constants.provideDefaultColorPresets
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import us.blindmint.codex.presentation.core.util.showToast
+import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
+
 import us.blindmint.codex.ui.library.LibraryScreen
 import javax.inject.Inject
 import kotlin.random.Random
 import kotlinx.coroutines.delay
+import java.util.UUID
 
 @HiltViewModel
 class SettingsModel @Inject constructor(
+    private val application: Application,
     private val getColorPresets: GetColorPresets,
     private val updateColorPreset: UpdateColorPreset,
     private val selectColorPreset: SelectColorPreset,
@@ -60,12 +66,17 @@ class SettingsModel @Inject constructor(
     val bulkImportBooksFromFolder: BulkImportBooksFromFolder,
     private val autoImportCodexBooksUseCase: AutoImportCodexBooksUseCase,
     val codexDirectoryManager: CodexDirectoryManager,
+
 ) : ViewModel() {
 
     private val mutex = Mutex()
 
     private val _state = MutableStateFlow(SettingsState())
     val state = _state.asStateFlow()
+
+    private val importProgressViewModel by lazy {
+        ViewModelProvider(application as androidx.lifecycle.ViewModelStoreOwner)[ImportProgressViewModel::class.java]
+    }
 
     private val _isReady = MutableStateFlow(false)
     val isReady = _isReady.asStateFlow()
@@ -684,11 +695,21 @@ class SettingsModel @Inject constructor(
                         val isConfigured = codexDirectoryManager.isConfigured()
                         Log.i("SettingsModel", "Codex directory configured: $isConfigured")
 
-                        // Automatically import existing OPDS books from the downloads folder
-                        Log.i("SettingsModel", "Starting auto-import of existing OPDS books")
+                        // Start background import with progress tracking
+                        Log.i("SettingsModel", "Starting background auto-import of existing OPDS books")
+                        val operationId = UUID.randomUUID().toString()
+                        val folderName = displayPath?.substringAfterLast("/") ?: "Codex Directory"
+
                         try {
                             val importedCount = autoImportCodexBooksUseCase.execute { progress ->
                                 Log.d("SettingsModel", "Auto-import progress: ${progress.current}/${progress.total} - ${progress.currentFolder}")
+                                // For Codex Directory, we track the import operation with total books being number of folders processed
+                                importProgressViewModel.updateCodexImportProgress(
+                                    folderPath = displayPath ?: "",
+                                    totalBooks = progress.total,
+                                    currentProgress = progress.current,
+                                    currentFile = progress.currentFolder
+                                )
                             }
                             Log.i("SettingsModel", "Auto-import completed. Imported $importedCount books")
 
