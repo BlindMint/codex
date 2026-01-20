@@ -266,7 +266,7 @@ fun SpeedReadingContent(
     val osdBottomDp = osdTopDp + osdHeightDp
 
     // Bottom bar exclusion zone: approximately 60dp from bottom
-    val bottomBarHeightDp = 60.dp
+    val bottomBarHeightDp = 92.dp // 60.dp bar height + 32.dp bottom padding
 
     Box(
         modifier = modifier
