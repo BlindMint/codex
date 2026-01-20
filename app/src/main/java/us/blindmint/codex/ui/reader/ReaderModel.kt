@@ -134,6 +134,10 @@ class ReaderModel @Inject constructor(
                                 if (itemsCount == 0) return@collectLatest // Wait for list to start loading
 
                                 _state.value.book.apply {
+                                    // Debug logging for progress loading
+                                    Log.d("READER", "Loading book: progress=$progress, scrollIndex=$scrollIndex, scrollOffset=$scrollOffset")
+                                    Log.d("READER", "Text has ${_state.value.text.size} items (lastIndex: ${_state.value.text.lastIndex})")
+
                                     val finalScrollIndex: Int
                                     val finalScrollOffset: Int
 
@@ -141,12 +145,16 @@ class ReaderModel @Inject constructor(
                                         // Normal reader saved precise position - use it
                                         finalScrollIndex = scrollIndex
                                         finalScrollOffset = scrollOffset
+                                        Log.d("READER", "Using saved position: scrollIndex=$finalScrollIndex, scrollOffset=$finalScrollOffset")
                                     } else {
                                         // Speed reader saved progress - convert to position
                                         finalScrollIndex = (progress * _state.value.text.lastIndex).toInt()
                                             .coerceIn(0, _state.value.text.lastIndex)
                                         finalScrollOffset = 0
+                                        Log.d("READER", "Converting progress to position: progress=$progress * text.lastIndex=${_state.value.text.lastIndex} = $finalScrollIndex")
                                     }
+
+                                    Log.d("READER", "Final scroll position: index=$finalScrollIndex, offset=$finalScrollOffset")
 
                                     _state.value.listState.requestScrollToItem(
                                         finalScrollIndex,
