@@ -6,6 +6,7 @@
 
 package us.blindmint.codex.presentation.reader
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.Canvas
@@ -243,6 +244,7 @@ fun SpeedReadingContent(
             if (totalWords > 0 && wordsSinceLastSave > 0) {
                 // Store precise word-based progress - normal reader will convert when loading
                 val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                Log.d("SPEED_READER", "Saving progress: globalWordIndex=$globalWordIndex, totalWords=$totalWords, newProgress=$newProgress")
                 onProgressUpdate(newProgress)
                 lastProgressSaveIndex = globalWordIndex
             }

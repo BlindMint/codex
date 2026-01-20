@@ -7,6 +7,7 @@
 package us.blindmint.codex.ui.reader
 
 import android.app.Activity
+import android.util.Log
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -100,6 +101,7 @@ class SpeedReaderModel @Inject constructor(
 
     private suspend fun saveProgressToDatabase(progress: Float) {
         book.value?.let { currentBook ->
+            Log.d("SPEED_READER", "SpeedReaderModel saving to database: progress=$progress")
             val updatedBook = currentBook.copy(progress = progress)
             updateBook.execute(updatedBook)
             lastSavedProgress = progress
