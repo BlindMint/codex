@@ -139,6 +139,20 @@ fun SpeedReadingScaffold(
         realTimeProgress = currentProgress
     }
 
+    // Initialize selectedWordIndex based on current progress when text loads
+    LaunchedEffect(text, currentProgress) {
+        if (text.isNotEmpty()) {
+            // Calculate word index from progress percentage
+            // Extract all words from text to determine starting position
+            val allWords = text
+                .filterIsInstance<us.blindmint.codex.domain.reader.ReaderText.Text>()
+                .flatMap { it.line.text.split("\\s+".toRegex()) }
+                .filter { it.isNotBlank() }
+            val wordIndex = (allWords.size * currentProgress).toInt().coerceIn(0, (allWords.size - 1).coerceAtLeast(0))
+            selectedWordIndex = wordIndex
+        }
+    }
+
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     Scaffold(
         topBar = {

@@ -139,11 +139,9 @@ fun SpeedReadingContent(
         if (totalWords == 0) 0 else ((currentProgress * totalWords).toInt()).coerceIn(0, totalWords - 1)
     }
 
-    // Extract words from text starting from current position
-    val words = remember(text, currentProgress) {
-        val startIndex = (currentProgress * text.size).toInt()
-        text.drop(startIndex)
-            .filterIsInstance<ReaderText.Text>()
+    // Extract all words from text - navigation will start from initialWordIndex
+    val words = remember(text) {
+        text.filterIsInstance<ReaderText.Text>()
             .flatMap { it.line.text.split("\\s+".toRegex()) }
             .filter { it.isNotBlank() }
     }
