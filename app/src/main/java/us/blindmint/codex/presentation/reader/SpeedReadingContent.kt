@@ -124,15 +124,26 @@ fun SpeedReadingContent(
     wordPickerActive: Boolean = false,
     initialWordIndex: Int = 0,
     onShowWordPicker: () -> Unit = {},
+    filterCompoundWords: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     // Extract words from text starting from current position
-    val words = remember(text, currentProgress) {
+    val words = remember(text, currentProgress, filterCompoundWords) {
         val startIndex = (currentProgress * text.size).toInt()
         text.drop(startIndex)
             .filterIsInstance<ReaderText.Text>()
             .flatMap { it.line.text.split("\\s+".toRegex()) }
             .filter { it.isNotBlank() }
+            .let { wordList ->
+                if (filterCompoundWords) {
+                    wordList.filterNot { word ->
+                        // Filter out words containing dashes: hyphen (-), en dash (–), em dash (—)
+                        word.contains(Regex("[–—-]"))
+                    }
+                } else {
+                    wordList
+                }
+            }
     }
 
     var currentWordIndex by remember { mutableIntStateOf(0) }

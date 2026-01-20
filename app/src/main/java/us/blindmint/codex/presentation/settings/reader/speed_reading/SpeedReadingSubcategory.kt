@@ -112,6 +112,8 @@ fun LazyListScope.SpeedReadingSubcategory(
     onFocalPointPositionChange: (Float) -> Unit = {},
     centerWord: Boolean = false,
     onCenterWordChange: (Boolean) -> Unit = {},
+    filterCompoundWords: Boolean = false,
+    onFilterCompoundWordsChange: (Boolean) -> Unit = {},
     customFontEnabled: Boolean = false,
     selectedFontFamily: String = "default",
     onCustomFontChanged: (Boolean) -> Unit = {},
@@ -429,6 +431,14 @@ fun LazyListScope.SpeedReadingSubcategory(
                 SpeedReadingWordSizeOption(
                     wordSize = wordSize,
                     onWordSizeChange = onWordSizeChange
+                )
+            }
+
+            item {
+                SwitchWithTitle(
+                    selected = filterCompoundWords,
+                    title = stringResource(id = R.string.speed_reading_filter_compound_words),
+                    onClick = { onFilterCompoundWordsChange(!filterCompoundWords) }
                 )
             }
 

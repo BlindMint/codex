@@ -190,6 +190,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
     val speedReadingOsdHeight = remember { mutableFloatStateOf(0.2f) }
     val speedReadingOsdSeparation = remember { mutableFloatStateOf(0.5f) }
     val speedReadingCenterWord = remember { mutableStateOf(false) }
+    val speedReadingFilterCompoundWords = remember { mutableStateOf(false) }
     val speedReadingCustomFontEnabled = remember { mutableStateOf(false) }
     val speedReadingSelectedFontFamily = remember { mutableStateOf("default") }
 
@@ -759,6 +760,8 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             onOsdSeparationChange = { speedReadingOsdSeparation.floatValue = it },
             centerWord = speedReadingCenterWord.value,
             onCenterWordChange = { speedReadingCenterWord.value = it },
+            filterCompoundWords = speedReadingFilterCompoundWords.value,
+            onFilterCompoundWordsChange = { speedReadingFilterCompoundWords.value = it },
             verticalIndicatorType = speedReadingVerticalIndicatorType.value,
             onVerticalIndicatorTypeChange = { speedReadingVerticalIndicatorType.value = it },
             customFontEnabled = speedReadingCustomFontEnabled.value,
@@ -805,6 +808,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 osdHeight = speedReadingOsdHeight.floatValue,
                 osdSeparation = speedReadingOsdSeparation.floatValue,
                 centerWord = speedReadingCenterWord.value,
+                filterCompoundWords = speedReadingFilterCompoundWords.value,
                 progress = progress,
                 bottomBarPadding = bottomBarPadding,
                 showWpmIndicator = true,

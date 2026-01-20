@@ -61,11 +61,12 @@ fun SpeedReadingScaffold(
     bottomBarPadding: Dp,
     showWpmIndicator: Boolean,
     wpm: Int,
+    onWpmChange: (Int) -> Unit,
+    osdEnabled: Boolean,
     osdHeight: Float = 0.2f,
     osdSeparation: Float = 0.5f,
     centerWord: Boolean = false,
-    onWpmChange: (Int) -> Unit,
-    osdEnabled: Boolean,
+    filterCompoundWords: Boolean = false,
     onExitSpeedReading: () -> Unit,
     onShowSpeedReadingSettings: () -> Unit,
     onMenuVisibilityChanged: (Boolean) -> Unit = {},
@@ -182,6 +183,7 @@ fun SpeedReadingScaffold(
                 osdHeight = osdHeight,
                 osdSeparation = osdSeparation,
                 centerWord = centerWord,
+                filterCompoundWords = filterCompoundWords,
                 initialWordIndex = selectedWordIndex,
                 onShowWordPicker = { showWordPicker = true }
             )
