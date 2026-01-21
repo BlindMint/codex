@@ -716,7 +716,6 @@ class SettingsModel @Inject constructor(
                                 // Trigger library refresh to show imported books
                                 Log.i("SettingsModel", "Triggering library refresh after auto-import")
                                 try {
-                                    delay(500) // Wait for all database operations to complete
                                     withContext(Dispatchers.Main) {
                                         LibraryScreen.refreshListChannel.trySend(0)
                                     }
