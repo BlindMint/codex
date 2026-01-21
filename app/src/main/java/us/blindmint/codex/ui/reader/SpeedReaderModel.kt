@@ -63,7 +63,8 @@ class SpeedReaderModel @Inject constructor(
             // Mark that this book has been opened in speed reader
             val updatedBook = loadedBook.copy(speedReaderHasBeenOpened = true)
             book.value = updatedBook
-            currentProgress.floatValue = loadedBook.progress
+            // Set initial progress to 0; will be updated after text loads
+            currentProgress.floatValue = 0f
 
             // Update database to mark as opened
             viewModelScope.launch {
@@ -82,6 +83,11 @@ class SpeedReaderModel @Inject constructor(
                         isLoading.value = false
                     } else {
                         text.value = loadedText
+                        // Set progress from saved speed reader word index
+                        currentWordIndex.intValue = loadedBook.speedReaderWordIndex
+                        currentProgress.floatValue = if (loadedText.isNotEmpty()) {
+                            loadedBook.speedReaderWordIndex.toFloat() / loadedText.size
+                        } else 0f
                         isLoading.value = false
                     }
                 } catch (e: Exception) {

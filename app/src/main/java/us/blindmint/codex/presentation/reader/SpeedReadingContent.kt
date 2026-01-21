@@ -257,6 +257,17 @@ fun SpeedReadingContent(
         }
     }
 
+    // Save progress when pausing via OSD or other means
+    var wasPlaying by remember { mutableStateOf(false) }
+    LaunchedEffect(isPlaying) {
+        if (wasPlaying && !isPlaying && words.isNotEmpty()) {
+            val globalWordIndex = startingWordIndex + currentWordIndex
+            val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+            onSaveProgress(newProgress, globalWordIndex)
+        }
+        wasPlaying = isPlaying
+    }
+
     // Focal point position - configurable via settings
     // This creates a consistent focal point that words align to
     val accentOffsetRatio = if (centerWord) 0.5f else focalPointPosition
