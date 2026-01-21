@@ -41,11 +41,9 @@ data class Book(
     val publicationDate: Long? = null,
     val languages: List<String> = emptyList(),
     val publisher: String? = null,
-    val summary: String? = null,
     val uuid: String? = null,
     val isbn: String? = null,
     val source: BookSource = BookSource.LOCAL,
-    val remoteUrl: String? = null,
     val opdsSourceUrl: String? = null,
     val opdsSourceId: Int? = null,
     val metadataLastRefreshTime: Long? = null,
@@ -56,6 +54,5 @@ data class Book(
     val lastPageRead: Int = 0,
     val readingDirection: String = "LTR",
     val comicReaderMode: String = "PAGED",
-    val archiveFormat: String? = null,
     val isFavorite: Boolean = false
 ) : Parcelable

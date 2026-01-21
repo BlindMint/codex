@@ -9,6 +9,7 @@ package us.blindmint.codex.domain.repository
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.BookWithCover
 import us.blindmint.codex.domain.reader.ReaderText
+import us.blindmint.codex.domain.reader.SpeedReaderWord
 import us.blindmint.codex.domain.util.CoverImage
 
 interface BookRepository {
@@ -28,6 +29,10 @@ interface BookRepository {
     suspend fun getBookText(
         bookId: Int
     ): List<ReaderText>
+
+    suspend fun getSpeedReaderWords(
+        bookId: Int
+    ): List<SpeedReaderWord>
 
     suspend fun insertBook(
         bookWithCover: BookWithCover

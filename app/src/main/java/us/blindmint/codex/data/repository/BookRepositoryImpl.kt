@@ -20,12 +20,14 @@ import us.blindmint.codex.data.local.dto.BookProgressHistoryEntity
 import us.blindmint.codex.data.local.room.BookDao
 import us.blindmint.codex.data.mapper.book.BookMapper
 import us.blindmint.codex.data.parser.FileParser
+import us.blindmint.codex.data.parser.SpeedReaderWordExtractor
 import us.blindmint.codex.data.parser.TextParser
 import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.file.CachedFileCompat
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.BookWithCover
 import us.blindmint.codex.domain.reader.ReaderText
+import us.blindmint.codex.domain.reader.SpeedReaderWord
 import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.util.CoverImage
 import java.io.BufferedOutputStream
@@ -58,6 +60,9 @@ class BookRepositoryImpl @Inject constructor(
 
     // LRU cache for recently opened book text (100MB cache size for 3-5 books)
     private val textCache = LruCache<Int, List<ReaderText>>(1024 * 1024 * 100)
+
+    // LRU cache for speed reader words (50MB cache size for 10-15 books)
+    private val speedReaderWordCache = LruCache<Int, List<SpeedReaderWord>>(1024 * 1024 * 50)
 
     /**
      * Creates a CachedFile from book.filePath, handling both file paths and content URIs.
@@ -136,6 +141,47 @@ class BookRepositoryImpl @Inject constructor(
     }
 
     /**
+     * Get speed reader words for a book.
+     * Uses LRU cache for instant loading on subsequent opens.
+     */
+    override suspend fun getSpeedReaderWords(bookId: Int): List<SpeedReaderWord> {
+        Log.d("SPEED_READER_WORDS", "[START] getSpeedReaderWords called - bookId=$bookId")
+
+        if (bookId == -1) {
+            Log.w("SPEED_READER_WORDS", "[START] Invalid bookId, returning empty list")
+            return emptyList()
+        }
+
+        // Check cache first
+        speedReaderWordCache.get(bookId)?.let { cachedWords ->
+            Log.d("SPEED_READER_WORDS", "[CACHE HIT] Loaded words for [$bookId] from cache")
+            Log.d("SPEED_READER_WORDS", "[CACHE HIT]   cachedWords.size=${cachedWords.size}")
+            Log.d("SPEED_READER_WORDS", "[CACHE HIT]   Returning cached words immediately")
+            return cachedWords
+        }
+
+        Log.d("SPEED_READER_WORDS", "[CACHE MISS] Words not in cache, extracting from text...")
+        Log.d("SPEED_READER_WORDS", "[CACHE MISS] Calling getBookText($bookId)...")
+
+        // Load text and extract words
+        val readerText = getBookText(bookId)
+        if (readerText.isEmpty()) {
+            Log.e("SPEED_READER_WORDS", "[CACHE MISS] getBookText returned empty list!")
+            return emptyList()
+        }
+
+        Log.d("SPEED_READER_WORDS", "[EXTRACTION] readerText.size=${readerText.size}, extracting words...")
+        val words = SpeedReaderWordExtractor.extract(readerText)
+        speedReaderWordCache.put(bookId, words)
+
+        Log.d("SPEED_READER_WORDS", "[EXTRACTION] Extracted ${words.size} words for [$bookId]")
+        Log.d("SPEED_READER_WORDS", "[EXTRACTION] Cached words in speedReaderWordCache")
+        Log.d("SPEED_READER_WORDS", "[END] Returning ${words.size} words")
+
+        return words
+    }
+
+    /**
      * Get a book by its file path.
      * Returns null if no book with that path exists.
      */
@@ -151,36 +197,61 @@ class BookRepositoryImpl @Inject constructor(
      * Uses LRU cache for recently opened books to enable instant loading.
      */
     override suspend fun getBookText(bookId: Int): List<ReaderText> {
-        if (bookId == -1) return emptyList()
+        Log.d("SPEED_READER_GET_TEXT", "[START] getBookText called - bookId=$bookId")
 
-        // Check cache first for instant loading
-        textCache.get(bookId)?.let { cachedText ->
-            Log.i(GET_TEXT, "Loaded text of [$bookId] from cache.")
-            return cachedText
-        }
-
-        val book = database.findBookById(bookId)
-        val cachedFile = getCachedFile(book)
-
-        if (cachedFile == null || !cachedFile.canAccess()) {
-            Log.e(GET_TEXT, "File [$bookId] does not exist")
+        if (bookId == -1) {
+            Log.w("SPEED_READER_GET_TEXT", "[START] Invalid bookId, returning empty list")
             return emptyList()
         }
 
+        // Check cache first for instant loading
+        textCache.get(bookId)?.let { cachedText ->
+            Log.d("SPEED_READER_GET_TEXT", "[TEXT CACHE HIT] Loaded text of [$bookId] from cache")
+            Log.d("SPEED_READER_GET_TEXT", "[TEXT CACHE HIT]   cachedText.size=${cachedText.size}")
+            return cachedText
+        }
+
+        Log.d("SPEED_READER_GET_TEXT", "[TEXT CACHE MISS] Text not in cache, parsing file...")
+        val book = database.findBookById(bookId)
+        Log.d("SPEED_READER_GET_TEXT", "[TEXT CACHE MISS]   book.title=${book?.title}")
+        val cachedFile = getCachedFile(book)
+
+        if (cachedFile == null || !cachedFile.canAccess()) {
+            Log.e("SPEED_READER_GET_TEXT", "[TEXT CACHE MISS] File [$bookId] does not exist")
+            return emptyList()
+        }
+
+        Log.d("SPEED_READER_GET_TEXT", "[PARSING] Calling textParser.parse()...")
         val readerText = textParser.parse(cachedFile)
+        Log.d("SPEED_READER_GET_TEXT", "[PARSING]   readerText.size=${readerText.size}")
 
         if (
             readerText.filterIsInstance<ReaderText.Text>().isEmpty() ||
             readerText.filterIsInstance<ReaderText.Chapter>().isEmpty()
         ) {
-            Log.e(GET_TEXT, "Could not load text from [$bookId].")
+            Log.e("SPEED_READER_GET_TEXT", "[PARSING] Could not load text from [$bookId].")
             return emptyList()
         }
 
         // Cache the parsed text for future use
         textCache.put(bookId, readerText)
+        Log.d("SPEED_READER_GET_TEXT", "[CACHING] Cached text in textCache")
 
-        Log.i(GET_TEXT, "Successfully loaded and cached text of [$bookId] with markdown.")
+        // Extract and cache words for speed reader
+        val wordsAlreadyCached = speedReaderWordCache.get(bookId)
+        Log.d("SPEED_READER_GET_TEXT", "[WORD CACHE CHECK] wordsAlreadyCached=${wordsAlreadyCached != null}")
+
+        if (wordsAlreadyCached == null) {
+            Log.d("SPEED_READER_GET_TEXT", "[WORD EXTRACTION] Extracting words from readerText...")
+            val words = SpeedReaderWordExtractor.extract(readerText)
+            speedReaderWordCache.put(bookId, words)
+            Log.d("SPEED_READER_GET_TEXT", "[WORD EXTRACTION]   Extracted ${words.size} words")
+            Log.d("SPEED_READER_GET_TEXT", "[WORD EXTRACTION]   Cached in speedReaderWordCache")
+        } else {
+            Log.d("SPEED_READER_GET_TEXT", "[WORD CACHE] Words already cached, skipping extraction")
+        }
+
+        Log.i("SPEED_READER_GET_TEXT", "[END] Successfully loaded and cached text of [$bookId] with ${readerText.size} items")
         return readerText
     }
 

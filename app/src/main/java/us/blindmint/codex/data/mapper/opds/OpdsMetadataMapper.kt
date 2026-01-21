@@ -23,11 +23,9 @@ class OpdsMetadataMapper @Inject constructor() {
             series = if (opdsEntry.series != null) (book.series + opdsEntry.series).distinct() else book.series,
             languages = if (opdsEntry.language != null) (book.languages + opdsEntry.language).distinct() else book.languages,
             publisher = opdsEntry.publisher ?: book.publisher,
-            summary = opdsEntry.summary ?: book.summary,
             uuid = opdsEntry.identifiers.firstOrNull { it.startsWith("urn:uuid:") }?.substringAfter("urn:uuid:") ?: book.uuid,
             isbn = opdsEntry.identifiers.firstOrNull { it.startsWith("urn:isbn:") }?.substringAfter("urn:isbn:") ?: book.isbn,
-            source = BookSource.OPDS,
-            remoteUrl = opdsEntry.links.firstOrNull { it.rel == "http://opds-spec.org/acquisition" }?.href ?: book.remoteUrl
+            source = BookSource.OPDS
         )
     }
 

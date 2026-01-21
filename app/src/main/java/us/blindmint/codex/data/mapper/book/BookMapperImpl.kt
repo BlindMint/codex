@@ -33,11 +33,9 @@ class BookMapperImpl @Inject constructor() : BookMapper {
             publicationDate = book.publicationDate,
             languages = book.languages,
             publisher = book.publisher,
-            summary = book.summary,
             uuid = book.uuid,
             isbn = book.isbn,
             source = book.source,
-            remoteUrl = book.remoteUrl,
             opdsSourceUrl = book.opdsSourceUrl,
             opdsSourceId = book.opdsSourceId,
             metadataLastRefreshTime = book.metadataLastRefreshTime,
@@ -47,7 +45,6 @@ class BookMapperImpl @Inject constructor() : BookMapper {
             lastPageRead = book.lastPageRead,
             readingDirection = book.readingDirection,
             comicReaderMode = book.comicReaderMode,
-            archiveFormat = book.archiveFormat,
             isFavorite = book.isFavorite
         )
     }
@@ -72,11 +69,9 @@ class BookMapperImpl @Inject constructor() : BookMapper {
             publicationDate = bookEntity.publicationDate,
             languages = bookEntity.languages,
             publisher = bookEntity.publisher,
-            summary = bookEntity.summary,
             uuid = bookEntity.uuid,
             isbn = bookEntity.isbn,
             source = bookEntity.source,
-            remoteUrl = bookEntity.remoteUrl,
             opdsSourceUrl = bookEntity.opdsSourceUrl,
             opdsSourceId = bookEntity.opdsSourceId,
             metadataLastRefreshTime = bookEntity.metadataLastRefreshTime,
@@ -86,7 +81,6 @@ class BookMapperImpl @Inject constructor() : BookMapper {
             lastPageRead = bookEntity.lastPageRead,
             readingDirection = bookEntity.readingDirection,
             comicReaderMode = bookEntity.comicReaderMode,
-            archiveFormat = bookEntity.archiveFormat,
             isFavorite = bookEntity.isFavorite
         )
     }
