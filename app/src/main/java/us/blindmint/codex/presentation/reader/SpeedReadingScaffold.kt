@@ -207,8 +207,10 @@ fun SpeedReadingScaffold(
 
             val totalTextItems = text.size
 
-            // Detect if progress came from normal reader (at text item boundaries) or speed reader (word-based)
-            val isFromNormalReader = kotlin.math.abs(currentProgress * totalTextItems - (currentProgress * totalTextItems).toInt()) < 0.0001f
+            // Detect if progress came from normal reader by checking if it points to a Text item
+            val textItemIndex = kotlin.math.round(currentProgress * totalTextItems).toInt().coerceIn(0, text.lastIndex)
+            val textItem = text.getOrNull(textItemIndex)
+            val isFromNormalReader = textItem is us.blindmint.codex.domain.reader.ReaderText.Text
 
             val wordIndex = if (isFromNormalReader) {
                 // Normal reader progress: convert text item index to word index
