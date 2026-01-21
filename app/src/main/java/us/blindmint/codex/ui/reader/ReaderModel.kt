@@ -1065,9 +1065,11 @@ class ReaderModel @Inject constructor(
             snapshotFlow {
                 listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
             }.distinctUntilChanged().debounce(300).collectLatest { (index, offset) ->
-                val progress = calculateProgress(index)
+                // Snap to nearest paragraph start for better UX when switching to speed reader
+                val snappedIndex = findNearestParagraphStart(index)
+                val progress = calculateProgress(snappedIndex)
                 if (progress == _state.value.book.progress) return@collectLatest
-                val (currentChapter, currentChapterProgress) = calculateCurrentChapter(index)
+                val (currentChapter, currentChapterProgress) = calculateCurrentChapter(snappedIndex)
 
                 Log.i(
                     READER,
@@ -1077,7 +1079,7 @@ class ReaderModel @Inject constructor(
                     it.copy(
                         book = it.book.copy(
                             progress = progress,
-                            scrollIndex = index,
+                            scrollIndex = snappedIndex,
                             scrollOffset = offset
                         ),
                         currentChapter = currentChapter,
@@ -1182,6 +1184,27 @@ class ReaderModel @Inject constructor(
                 .div(text.lastIndex.toFloat())
                 .coerceAndPreventNaN()
         }
+    }
+
+    // Find the nearest paragraph start before the given index
+    private fun findNearestParagraphStart(targetIndex: Int): Int {
+        if (targetIndex <= 0) return targetIndex
+
+        // Look backwards through text items to find a paragraph boundary
+        // A paragraph boundary is typically a transition from one text item to another
+        // We'll go back up to 3 text items to find a suitable paragraph start
+        val searchStartItem = maxOf(0, targetIndex - 3)
+
+        for (itemIndex in targetIndex downTo searchStartItem) {
+            val textItem = _state.value.text.getOrNull(itemIndex)
+            if (textItem is ReaderText.Text) {
+                // Return the index of this text item (paragraph start)
+                return itemIndex
+            }
+        }
+
+        // If no paragraph boundary found, return the original target index
+        return targetIndex
     }
 
     private suspend fun systemBarsVisibility(

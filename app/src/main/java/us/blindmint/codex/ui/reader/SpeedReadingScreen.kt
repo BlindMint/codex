@@ -295,8 +295,12 @@ data class SpeedReadingScreen(
             onWpmChange = { wpm.intValue = it },
             osdEnabled = speedReadingOsdEnabled.value,
             onChangeProgress = { progress ->
-                // Wire progress updates to the model for database persistence
-                speedReaderModel.updateProgress(progress, speedReaderModel.currentWordIndex.intValue)
+                // Wire progress updates to the model for database persistence (throttled)
+                speedReaderModel.updateProgress(progress, speedReaderModel.currentWordIndex.intValue, forceSave = false)
+            },
+            onSaveProgress = { progress ->
+                // Immediate progress save for manual pauses (no throttling)
+                speedReaderModel.updateProgress(progress, speedReaderModel.currentWordIndex.intValue, forceSave = true)
             },
             onExitSpeedReading = {
                 // Save progress before exiting

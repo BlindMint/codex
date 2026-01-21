@@ -165,6 +165,7 @@ fun SpeedReadingScaffold(
     onToggleMenu: () -> Unit = {},
     navigateWord: (Int) -> Unit = {},
     onChangeProgress: (Float) -> Unit = {},
+    onSaveProgress: (Float) -> Unit = {},
     showOverlayMenu: Boolean = true,
     onPlayPause: () -> Unit = {},
     onShowWordPicker: () -> Unit = {}
@@ -177,6 +178,10 @@ fun SpeedReadingScaffold(
     var selectedProgress by remember { mutableFloatStateOf(currentProgress) }
     var selectedWordIndex by remember { mutableIntStateOf(0) }
     var realTimeProgress by remember { mutableFloatStateOf(currentProgress) } // Live progress updates
+
+    // Store parent callbacks to avoid name collision
+    val parentOnChangeProgress = onChangeProgress
+    val parentOnSaveProgress = onSaveProgress
 
     // Notify parent of menu visibility changes
     LaunchedEffect(showMenu) {
@@ -200,11 +205,9 @@ fun SpeedReadingScaffold(
 
             val rawWordIndex = (currentProgress * allWords.size).toInt().coerceIn(0, (allWords.size - 1).coerceAtLeast(0))
 
-            // For better UX when switching from normal reader, snap to nearest paragraph boundary
-            val adjustedWordIndex = findNearestParagraphStart(text, allWords, rawWordIndex)
-
-            Log.d("SPEED_READER", "Loading with progress=$currentProgress, raw wordIndex=$rawWordIndex, adjusted wordIndex=$adjustedWordIndex, totalWords=${allWords.size}")
-            selectedWordIndex = adjustedWordIndex
+            // For speed reader, resume at exact word for precise progress tracking
+            Log.d("SPEED_READER", "Loading with progress=$currentProgress, wordIndex=$rawWordIndex, totalWords=${allWords.size}")
+            selectedWordIndex = rawWordIndex
         }
     }
 
@@ -215,15 +218,15 @@ fun SpeedReadingScaffold(
                 // For independent speed reader: always show minimal top bar with back and settings icons
                 androidx.compose.material3.TopAppBar(
                     title = {},
-                    navigationIcon = {
-                        androidx.compose.material3.IconButton(onClick = onExitSpeedReading) {
-                            androidx.compose.material3.Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
-                                tint = fontColor
-                            )
-                        }
-                    },
+                     navigationIcon = {
+                         androidx.compose.material3.IconButton(onClick = { if (isPlaying) onPlayPause(); parentOnSaveProgress(realTimeProgress); onExitSpeedReading() }) {
+                             androidx.compose.material3.Icon(
+                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                 contentDescription = "Back",
+                                 tint = fontColor
+                             )
+                         }
+                     },
                     actions = {
                         androidx.compose.material3.IconButton(onClick = { if (isPlaying) onPlayPause(); onShowSpeedReadingSettings() }) {
                             androidx.compose.material3.Icon(
@@ -350,7 +353,12 @@ fun SpeedReadingScaffold(
                     // Update real-time progress for UI display
                     realTimeProgress = progress
                     // Also update the underlying book progress periodically
-                    onChangeProgress(progress)
+                    parentOnChangeProgress(progress)
+                },
+                onSaveProgress = { progress ->
+                    // Immediate progress save for manual pauses (no throttling)
+                    realTimeProgress = progress
+                    parentOnSaveProgress(progress)
                 },
                 showBottomBar = !showOverlayMenu
             )
@@ -359,19 +367,21 @@ fun SpeedReadingScaffold(
 
         // Word Picker Sheet - only show when not loading
         if (showWordPicker && !isLoading && text.isNotEmpty()) {
-            SpeedReadingWordPickerSheet(
-                text = text,
-                currentProgress = selectedProgress,
-                backgroundColor = backgroundColor,
-                fontColor = fontColor,
-                onDismiss = { showWordPicker = false },
-                onConfirm = { progress, wordIndexInText ->
-                    selectedProgress = progress
-                    selectedWordIndex = wordIndexInText
-                    onChangeProgress(progress)
-                    showWordPicker = false
-                }
-            )
+             SpeedReadingWordPickerSheet(
+                 text = text,
+                 currentProgress = selectedProgress,
+                 backgroundColor = backgroundColor,
+                 fontColor = fontColor,
+                 onDismiss = { showWordPicker = false },
+                 onConfirm = { progress, wordIndexInText ->
+                     if (isPlaying) onPlayPause()
+                     selectedProgress = progress
+                     selectedWordIndex = wordIndexInText
+                     realTimeProgress = progress
+                     parentOnSaveProgress(progress)
+                     showWordPicker = false
+                 }
+             )
         }
     }
 }
