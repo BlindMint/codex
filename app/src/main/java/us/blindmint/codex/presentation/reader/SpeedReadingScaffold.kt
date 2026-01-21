@@ -205,12 +205,39 @@ fun SpeedReadingScaffold(
                 .flatMap { it.line.text.split("\\s+".toRegex()) }
                 .filter { it.isNotBlank() }
 
-            // Convert progress to word index, then snap to paragraph start
-            val rawWordIndex = (currentProgress * allWords.size).toInt().coerceIn(0, (allWords.size - 1).coerceAtLeast(0))
-            val paragraphStartWordIndex = findNearestParagraphStart(text, allWords, rawWordIndex)
+            val totalTextItems = text.size
 
-            Log.d("SPEED_READER", "Loading with progress=$currentProgress, rawWordIndex=$rawWordIndex, paragraphStartWordIndex=$paragraphStartWordIndex, totalWords=${allWords.size}")
-            selectedWordIndex = paragraphStartWordIndex
+            // Detect if progress came from normal reader (at text item boundaries) or speed reader (word-based)
+            val isFromNormalReader = kotlin.math.abs(currentProgress * totalTextItems - (currentProgress * totalTextItems).toInt()) < 0.0001f
+
+            val wordIndex = if (isFromNormalReader) {
+                // Normal reader progress: convert text item index to word index
+                val textItemIndex = (currentProgress * totalTextItems).toInt().coerceIn(0, text.lastIndex)
+                // Find first word of this text item (paragraph start)
+                var wordCount = 0
+                for (i in 0 until textItemIndex) {
+                    when (val item = text[i]) {
+                        is us.blindmint.codex.domain.reader.ReaderText.Text -> {
+                            wordCount += item.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }.size
+                        }
+                        else -> {} // Skip non-text items
+                    }
+                }
+                wordCount
+            } else {
+                // Speed reader progress: direct word index
+                (currentProgress * allWords.size).toInt().coerceIn(0, allWords.size - 1)
+            }
+
+            // For normal reader progress, start at paragraph. For speed reader, maintain precision
+            val finalWordIndex = if (isFromNormalReader) {
+                wordIndex // Already at paragraph start
+            } else {
+                wordIndex // Keep exact word position
+            }
+
+            Log.d("SPEED_READER", "Loading with progress=$currentProgress, isFromNormalReader=$isFromNormalReader, wordIndex=$wordIndex, finalWordIndex=$finalWordIndex, totalWords=${allWords.size}")
+            selectedWordIndex = finalWordIndex
         }
     }
 
@@ -222,23 +249,7 @@ fun SpeedReadingScaffold(
                 androidx.compose.material3.TopAppBar(
                     title = {},
                       navigationIcon = {
-                          androidx.compose.material3.IconButton(onClick = {
-                              if (isPlaying) onPlayPause()
-                              // Snap to paragraph start before saving when exiting
-                              val snappedProgress = if (text.isNotEmpty()) {
-                                  val allWords = text
-                                      .filterIsInstance<us.blindmint.codex.domain.reader.ReaderText.Text>()
-                                      .flatMap { it.line.text.split("\\s+".toRegex()) }
-                                      .filter { it.isNotBlank() }
-                                  val rawWordIndex = (realTimeProgress * allWords.size).toInt().coerceIn(0, (allWords.size - 1).coerceAtLeast(0))
-                                  val paragraphStartWordIndex = findNearestParagraphStart(text, allWords, rawWordIndex)
-                                  paragraphStartWordIndex.toFloat() / allWords.size
-                              } else {
-                                  realTimeProgress
-                              }
-                              parentOnSaveProgress(snappedProgress)
-                              onExitSpeedReading()
-                          }) {
+                          androidx.compose.material3.IconButton(onClick = { if (isPlaying) onPlayPause(); parentOnSaveProgress(realTimeProgress); onExitSpeedReading() }) {
                              androidx.compose.material3.Icon(
                                  imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                  contentDescription = "Back",
