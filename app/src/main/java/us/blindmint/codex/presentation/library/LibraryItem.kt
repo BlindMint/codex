@@ -124,8 +124,10 @@ fun LibraryItem(
             }
 
             if (mainState.value.libraryShowProgress) {
+                // Normal reader progress (top-left)
                 Row(
                     modifier = Modifier
+                        .align(Alignment.TopStart)
                         .padding(6.dp)
                         .clip(MaterialTheme.shapes.small)
                         .background(MaterialTheme.colorScheme.secondary, MaterialTheme.shapes.small)
@@ -140,6 +142,39 @@ fun LibraryItem(
                             color = MaterialTheme.colorScheme.onSecondary,
                         )
                     )
+                }
+
+                // Speed reader progress (top-right, only if opened)
+                if (book.data.speedReaderHasBeenOpened) {
+                    val speedProgress = remember(book.data.speedReaderWordIndex) {
+                        // Placeholder calculation - in practice you'd calculate based on total words
+                        "${(book.data.speedReaderWordIndex / 1000f * 100).toInt()}%"
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(6.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .background(MaterialTheme.colorScheme.tertiary, MaterialTheme.shapes.small)
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Bolt,
+                            contentDescription = "Speed reader progress",
+                            tint = MaterialTheme.colorScheme.onTertiary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        StyledText(
+                            text = speedProgress,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onTertiary,
+                            )
+                        )
+                    }
                 }
             }
 

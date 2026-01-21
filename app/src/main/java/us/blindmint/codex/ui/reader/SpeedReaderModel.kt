@@ -60,8 +60,19 @@ class SpeedReaderModel @Inject constructor(
                 return@launch
             }
 
-            book.value = loadedBook
+            // Mark that this book has been opened in speed reader
+            val updatedBook = loadedBook.copy(speedReaderHasBeenOpened = true)
+            book.value = updatedBook
             currentProgress.floatValue = loadedBook.progress
+
+            // Update database to mark as opened
+            viewModelScope.launch {
+                try {
+                    updateBook.execute(updatedBook)
+                } catch (e: Exception) {
+                    Log.e("SPEED_READER", "Failed to mark book as opened in speed reader", e)
+                }
+            }
 
             if (!loadedBook.isComic) {
                 try {
@@ -107,19 +118,13 @@ class SpeedReaderModel @Inject constructor(
             val wordIndex = currentWordIndex.intValue
             Log.d("SPEED_READER", "SpeedReaderModel saving to database: progress=$progress, wordIndex=$wordIndex, bookId=${currentBook.id}")
 
-            // Store word index directly in scrollIndex for precision
-            val textSize = text.value.size
-            val scrollIndex = wordIndex // Store word index directly
-            val scrollOffset = -1 // Use -1 to indicate speed reader format
-
             val updatedBook = currentBook.copy(
-                progress = progress,
-                scrollIndex = scrollIndex,
-                scrollOffset = scrollOffset
+                speedReaderWordIndex = wordIndex,
+                speedReaderHasBeenOpened = true
             )
             try {
                 updateBook.execute(updatedBook)
-                Log.d("SPEED_READER", "Successfully saved progress to database: progress=${updatedBook.progress}, wordIndex=$wordIndex")
+                Log.d("SPEED_READER", "Successfully saved speed reader progress to database: wordIndex=$wordIndex")
                 lastSavedProgress = progress
                 lastDatabaseSaveWordIndex = wordIndex
 
@@ -127,9 +132,9 @@ class SpeedReaderModel @Inject constructor(
                 LibraryScreen.refreshListChannel.trySend(0)
                 HistoryScreen.refreshListChannel.trySend(0)
             } catch (e: Exception) {
-                Log.e("SPEED_READER", "Failed to save progress to database", e)
+                Log.e("SPEED_READER", "Failed to save speed reader progress to database", e)
             }
-        } ?: Log.w("SPEED_READER", "Cannot save progress: book is null")
+        } ?: Log.w("SPEED_READER", "Cannot save speed reader progress: book is null")
     }
 
     fun onLeave() {

@@ -31,7 +31,7 @@ import java.io.File
         BookmarkEntity::class,
         OpdsSourceEntity::class,
     ],
-    version = 17,
+    version = 18,
     exportSchema = false
 )
 abstract class BookDatabase : RoomDatabase() {
@@ -193,6 +193,14 @@ object DatabaseHelper {
         override fun migrate(db: SupportSQLiteDatabase) {
             // Add isFavorite column to BookEntity
             db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `isFavorite` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
+    val MIGRATION_17_18 = object : Migration(17, 18) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Add speed reader progress fields to BookEntity
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `speedReaderWordIndex` INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `speedReaderHasBeenOpened` INTEGER NOT NULL DEFAULT 0")
         }
     }
 }
