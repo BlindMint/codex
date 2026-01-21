@@ -205,41 +205,11 @@ fun SpeedReadingScaffold(
                 .flatMap { it.line.text.split("\\s+".toRegex()) }
                 .filter { it.isNotBlank() }
 
-            val totalTextItems = text.size
+            // Both readers now save word-based progress, so direct conversion works
+            val wordIndex = (currentProgress * allWords.size).toInt().coerceIn(0, allWords.size - 1)
 
-            // Detect if progress came from normal reader by checking if it points to a Text item
-            val textItemIndex = kotlin.math.round(currentProgress * totalTextItems).toInt().coerceIn(0, text.lastIndex)
-            val textItem = text.getOrNull(textItemIndex)
-            val isFromNormalReader = textItem is us.blindmint.codex.domain.reader.ReaderText.Text
-
-            val wordIndex = if (isFromNormalReader) {
-                // Normal reader progress: convert text item index to word index
-                val textItemIndex = (currentProgress * totalTextItems).toInt().coerceIn(0, text.lastIndex)
-                // Find first word of this text item (paragraph start)
-                var wordCount = 0
-                for (i in 0 until textItemIndex) {
-                    when (val item = text[i]) {
-                        is us.blindmint.codex.domain.reader.ReaderText.Text -> {
-                            wordCount += item.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }.size
-                        }
-                        else -> {} // Skip non-text items
-                    }
-                }
-                wordCount
-            } else {
-                // Speed reader progress: direct word index
-                (currentProgress * allWords.size).toInt().coerceIn(0, allWords.size - 1)
-            }
-
-            // For normal reader progress, start at paragraph. For speed reader, maintain precision
-            val finalWordIndex = if (isFromNormalReader) {
-                wordIndex // Already at paragraph start
-            } else {
-                wordIndex // Keep exact word position
-            }
-
-            Log.d("SPEED_READER", "Loading with progress=$currentProgress, isFromNormalReader=$isFromNormalReader, wordIndex=$wordIndex, finalWordIndex=$finalWordIndex, totalWords=${allWords.size}")
-            selectedWordIndex = finalWordIndex
+            Log.d("SPEED_READER", "Loading with progress=$currentProgress, wordIndex=$wordIndex, totalWords=${allWords.size}")
+            selectedWordIndex = wordIndex
         }
     }
 

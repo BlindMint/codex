@@ -1065,20 +1065,20 @@ class ReaderModel @Inject constructor(
             snapshotFlow {
                 listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
             }.distinctUntilChanged().debounce(300).collectLatest { (index, offset) ->
-                // Snap to nearest paragraph start for better UX when switching to speed reader
+                // Snap to nearest paragraph start and calculate word-based progress for speed reader compatibility
                 val snappedIndex = findNearestParagraphStart(index)
-                val progress = calculateProgress(snappedIndex)
-                if (progress == _state.value.book.progress) return@collectLatest
+                val wordBasedProgress = calculateWordBasedProgress(snappedIndex)
+                if (wordBasedProgress == _state.value.book.progress) return@collectLatest
                 val (currentChapter, currentChapterProgress) = calculateCurrentChapter(snappedIndex)
 
                 Log.i(
                     READER,
-                    "Changed progress|currentChapter: $progress; ${currentChapter?.title}"
+                    "Changed progress|currentChapter: $wordBasedProgress; ${currentChapter?.title}"
                 )
                 _state.update {
                     it.copy(
                         book = it.book.copy(
-                            progress = progress,
+                            progress = wordBasedProgress,
                             scrollIndex = snappedIndex,
                             scrollOffset = offset
                         ),
@@ -1184,6 +1184,31 @@ class ReaderModel @Inject constructor(
                 .div(text.lastIndex.toFloat())
                 .coerceAndPreventNaN()
         }
+    }
+
+    // Calculate word-based progress for speed reader compatibility
+    private fun calculateWordBasedProgress(textItemIndex: Int): Float {
+        val totalWords = _state.value.text.sumOf { readerText ->
+            when (readerText) {
+                is ReaderText.Text -> readerText.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }.size
+                else -> 0
+            }
+        }
+
+        if (totalWords == 0) return 0f
+
+        // Count words up to the target text item
+        var wordCount = 0
+        for (i in 0 until textItemIndex.coerceIn(0, _state.value.text.lastIndex)) {
+            when (val item = _state.value.text[i]) {
+                is ReaderText.Text -> {
+                    wordCount += item.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }.size
+                }
+                else -> {} // Skip non-text items
+            }
+        }
+
+        return wordCount.toFloat() / totalWords.toFloat()
     }
 
     // Find the nearest paragraph start before the given index
