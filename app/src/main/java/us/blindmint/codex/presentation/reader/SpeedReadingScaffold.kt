@@ -369,21 +369,21 @@ fun SpeedReadingScaffold(
 
         // Word Picker Sheet - only show when not loading
         if (showWordPicker && !isLoading && text.isNotEmpty()) {
-             SpeedReadingWordPickerSheet(
-                 text = text,
-                 currentProgress = selectedProgress,
-                 backgroundColor = backgroundColor,
-                 fontColor = fontColor,
-                 onDismiss = { showWordPicker = false },
-                 onConfirm = { progress, wordIndexInText ->
-                     if (isPlaying) onPlayPause()
-                     selectedProgress = progress
-                     selectedWordIndex = wordIndexInText
-                     realTimeProgress = progress
-                     parentOnSaveProgress(progress)
-                     showWordPicker = false
-                 }
-             )
+              SpeedReadingWordPickerSheet(
+                  text = text,
+                  currentProgress = realTimeProgress,  // Show current reading position
+                  backgroundColor = backgroundColor,
+                  fontColor = fontColor,
+                  onDismiss = { showWordPicker = false },
+                  onConfirm = { progress, wordIndexInText ->
+                      if (isPlaying) onPlayPause()
+                      selectedProgress = progress
+                      selectedWordIndex = wordIndexInText
+                      realTimeProgress = progress
+                      parentOnSaveProgress(progress)
+                      showWordPicker = false
+                  }
+              )
         }
     }
 }
