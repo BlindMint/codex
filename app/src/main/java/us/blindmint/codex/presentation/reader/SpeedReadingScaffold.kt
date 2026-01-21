@@ -166,8 +166,8 @@ fun SpeedReadingScaffold(
     onNavigateWord: (Int) -> Unit,
     onToggleMenu: () -> Unit = {},
     navigateWord: (Int) -> Unit = {},
-    onChangeProgress: (Float) -> Unit = {},
-    onSaveProgress: (Float) -> Unit = {},
+    onChangeProgress: (Float, Int) -> Unit = { _, _ -> },
+    onSaveProgress: (Float, Int) -> Unit = { _, _ -> },
     showOverlayMenu: Boolean = true,
     onPlayPause: () -> Unit = {},
     onShowWordPicker: () -> Unit = {}
@@ -221,7 +221,19 @@ fun SpeedReadingScaffold(
                 androidx.compose.material3.TopAppBar(
                     title = {},
                       navigationIcon = {
-                          androidx.compose.material3.IconButton(onClick = { if (isPlaying) onPlayPause(); parentOnSaveProgress(realTimeProgress); onExitSpeedReading() }) {
+                          androidx.compose.material3.IconButton(onClick = {
+                              if (isPlaying) onPlayPause()
+                              // Calculate current word index from progress for exit save
+                              val totalWords = text.sumOf { readerText ->
+                                  when (readerText) {
+                                      is us.blindmint.codex.domain.reader.ReaderText.Text -> readerText.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }.size
+                                      else -> 0
+                                  }
+                              }
+                              val currentWordIndex = (realTimeProgress * totalWords).toInt().coerceIn(0, totalWords - 1)
+                              parentOnSaveProgress(realTimeProgress, currentWordIndex)
+                              onExitSpeedReading()
+                          }) {
                              androidx.compose.material3.Icon(
                                  imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                  contentDescription = "Back",
@@ -274,7 +286,7 @@ fun SpeedReadingScaffold(
                         progressValue = realTimeProgress, // Use real-time progress for live updates
                         book = book, // Need to add book parameter
                         lockMenu = false, // For speed reading, allow seeking
-                        onChangeProgress = onChangeProgress,
+                        onChangeProgress = { progress -> onChangeProgress(progress, 0) },
                         wpm = wpm,
                         onWpmChange = onWpmChange,
                         isPlaying = isPlaying,
@@ -351,17 +363,17 @@ fun SpeedReadingScaffold(
                 centerWord = centerWord,
                 initialWordIndex = selectedWordIndex,
                 onShowWordPicker = { showWordPicker = true },
-                onProgressUpdate = { progress ->
-                    // Update real-time progress for UI display
-                    realTimeProgress = progress
-                    // Also update the underlying book progress periodically
-                    parentOnChangeProgress(progress)
-                },
-                onSaveProgress = { progress ->
-                    // Immediate progress save for manual pauses (no throttling)
-                    realTimeProgress = progress
-                    parentOnSaveProgress(progress)
-                },
+                 onProgressUpdate = { progress, wordIndex ->
+                     // Update real-time progress for UI display
+                     realTimeProgress = progress
+                     // Also update the underlying book progress periodically
+                     parentOnChangeProgress(progress, wordIndex)
+                 },
+                 onSaveProgress = { progress, wordIndex ->
+                     // Immediate progress save for manual pauses (no throttling)
+                     realTimeProgress = progress
+                     parentOnSaveProgress(progress, wordIndex)
+                 },
                 showBottomBar = !showOverlayMenu
             )
             }
@@ -380,7 +392,7 @@ fun SpeedReadingScaffold(
                       selectedProgress = progress
                       selectedWordIndex = wordIndexInText
                       realTimeProgress = progress
-                      parentOnSaveProgress(progress)
+                       parentOnSaveProgress(progress, wordIndexInText)
                       showWordPicker = false
                   }
               )

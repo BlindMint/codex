@@ -125,8 +125,8 @@ fun SpeedReadingContent(
     wordPickerActive: Boolean = false,
     initialWordIndex: Int = 0,
     onShowWordPicker: () -> Unit = {},
-    onProgressUpdate: (Float) -> Unit = {}, // Callback for word-based progress updates
-    onSaveProgress: (Float) -> Unit = {}, // Callback for immediate progress saves (no throttling)
+    onProgressUpdate: (Float, Int) -> Unit = { _, _ -> }, // Callback for word-based progress updates
+    onSaveProgress: (Float, Int) -> Unit = { _, _ -> }, // Callback for immediate progress saves (no throttling)
     showBottomBar: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -174,7 +174,7 @@ fun SpeedReadingContent(
                 // Save progress immediately when manually pausing
                 val globalWordIndex = startingWordIndex + currentWordIndex
                 val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-                onSaveProgress(newProgress)
+                onSaveProgress(newProgress, globalWordIndex)
             }
         }
     }
@@ -250,7 +250,7 @@ fun SpeedReadingContent(
             // Store precise word-based progress - normal reader will convert when loading
             val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
             Log.d("SPEED_READER", "Auto-saving progress: globalWordIndex=$globalWordIndex, totalWords=$totalWords, newProgress=$newProgress")
-            onProgressUpdate(newProgress)
+            onProgressUpdate(newProgress, globalWordIndex)
             lastProgressSaveIndex = globalWordIndex
         }
     }
@@ -308,41 +308,41 @@ fun SpeedReadingContent(
                             }
 
                               when {
-                                  position.x < tapZoneWidth -> {
-                                      // Left tap zone - navigate back (or pause if playing)
-                                      if (isPlaying) {
-                                          onPlayPause()
-                                          // Save progress immediately when manually pausing
-                                          val globalWordIndex = startingWordIndex + currentWordIndex
-                                          val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-                                          onSaveProgress(newProgress)
-                                      } else {
-                                          navigateWord(-1)
-                                      }
-                                  }
-                                  position.x > width - tapZoneWidth -> {
-                                      // Right tap zone - navigate forward (or pause if playing)
-                                      if (isPlaying) {
-                                          onPlayPause()
-                                          // Save progress immediately when manually pausing
-                                          val globalWordIndex = startingWordIndex + currentWordIndex
-                                          val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-                                          onSaveProgress(newProgress)
-                                      } else {
-                                          navigateWord(1)
-                                      }
-                                  }
-                                  else -> {
-                                      // Middle tap zone - always toggle play/pause
-                                      val wasPlaying = isPlaying
-                                      onPlayPause()
-                                      // Save progress immediately when manually pausing
-                                      if (wasPlaying && !isPlaying) {
-                                          val globalWordIndex = startingWordIndex + currentWordIndex
-                                          val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-                                          onSaveProgress(newProgress)
-                                      }
-                                  }
+                                   position.x < tapZoneWidth -> {
+                                       // Left tap zone - navigate back (or pause if playing)
+                                       if (isPlaying) {
+                                           onPlayPause()
+                                           // Save progress immediately when manually pausing
+                                           val globalWordIndex = startingWordIndex + currentWordIndex
+                                           val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                           onSaveProgress(newProgress, globalWordIndex)
+                                       } else {
+                                           navigateWord(-1)
+                                       }
+                                   }
+                                   position.x > width - tapZoneWidth -> {
+                                       // Right tap zone - navigate forward (or pause if playing)
+                                       if (isPlaying) {
+                                           onPlayPause()
+                                           // Save progress immediately when manually pausing
+                                           val globalWordIndex = startingWordIndex + currentWordIndex
+                                           val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                           onSaveProgress(newProgress, globalWordIndex)
+                                       } else {
+                                           navigateWord(1)
+                                       }
+                                   }
+                                   else -> {
+                                       // Middle tap zone - always toggle play/pause
+                                       val wasPlaying = isPlaying
+                                       onPlayPause()
+                                       // Save progress immediately when manually pausing
+                                       if (wasPlaying && !isPlaying) {
+                                           val globalWordIndex = startingWordIndex + currentWordIndex
+                                           val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                           onSaveProgress(newProgress, globalWordIndex)
+                                       }
+                                   }
                              }
                         }
                     }
@@ -617,16 +617,16 @@ fun SpeedReadingContent(
                         modifier = Modifier
                             .size(60.dp)
                             .padding(8.dp)
-                             .noRippleClickable {
-                                 val wasPlaying = isPlaying
-                                 onPlayPause()
-                                 // Save progress immediately when manually pausing
-                                 if (wasPlaying && !isPlaying) {
-                                     val globalWordIndex = startingWordIndex + currentWordIndex
-                                     val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-                                     onSaveProgress(newProgress)
-                                 }
-                             }
+                              .noRippleClickable {
+                                  val wasPlaying = isPlaying
+                                  onPlayPause()
+                                  // Save progress immediately when manually pausing
+                                  if (wasPlaying && !isPlaying) {
+                                      val globalWordIndex = startingWordIndex + currentWordIndex
+                                      val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                      onSaveProgress(newProgress, globalWordIndex)
+                                  }
+                              }
                     )
 
                     // Right arrow (>) - navigate to next word
@@ -682,16 +682,16 @@ fun SpeedReadingContent(
                          color = fontColor.copy(alpha = 0.8f),
                          fontWeight = FontWeight.Medium
                      ),
-                     modifier = Modifier.noRippleClickable {
-                         if (isPlaying) {
-                             onPlayPause()
-                             // Save progress immediately when manually pausing
-                             val globalWordIndex = startingWordIndex + currentWordIndex
-                             val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-                             onSaveProgress(newProgress)
-                         }
-                         showQuickWpmMenu = true
-                     }
+                      modifier = Modifier.noRippleClickable {
+                          if (isPlaying) {
+                              onPlayPause()
+                              // Save progress immediately when manually pausing
+                              val globalWordIndex = startingWordIndex + currentWordIndex
+                              val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                              onSaveProgress(newProgress, globalWordIndex)
+                          }
+                          showQuickWpmMenu = true
+                      }
                  )
 
                 // Spacer for consistent spacing
@@ -704,16 +704,16 @@ fun SpeedReadingContent(
                      tint = fontColor.copy(alpha = 0.7f),
                      modifier = Modifier
                          .size(20.dp)
-                         .noRippleClickable {
-                             if (isPlaying) {
-                                 onPlayPause()
-                                 // Save progress immediately when manually pausing
-                                 val globalWordIndex = startingWordIndex + currentWordIndex
-                                 val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-                                 onSaveProgress(newProgress)
-                             }
-                             onShowWordPicker()
-                         }
+                          .noRippleClickable {
+                              if (isPlaying) {
+                                  onPlayPause()
+                                  // Save progress immediately when manually pausing
+                                  val globalWordIndex = startingWordIndex + currentWordIndex
+                                  val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                  onSaveProgress(newProgress, globalWordIndex)
+                              }
+                              onShowWordPicker()
+                          }
                  )
             }
             }
