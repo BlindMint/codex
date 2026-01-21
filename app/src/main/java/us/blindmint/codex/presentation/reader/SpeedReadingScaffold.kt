@@ -205,10 +205,16 @@ fun SpeedReadingScaffold(
                 .flatMap { it.line.text.split("\\s+".toRegex()) }
                 .filter { it.isNotBlank() }
 
-            // Both readers now save word-based progress, so direct conversion works
-            val wordIndex = (currentProgress * allWords.size).toInt().coerceIn(0, allWords.size - 1)
+            // Check if this is a speed reader save with direct word index
+            val wordIndex = if (book.scrollOffset == -1) {
+                // Direct word index stored in scrollIndex
+                book.scrollIndex.coerceIn(0, allWords.size - 1)
+            } else {
+                // Word-based progress conversion
+                (currentProgress * allWords.size).toInt().coerceIn(0, allWords.size - 1)
+            }
 
-            Log.d("SPEED_READER", "Loading with progress=$currentProgress, wordIndex=$wordIndex, totalWords=${allWords.size}")
+            Log.d("SPEED_READER", "Loading: progress=$currentProgress, scrollOffset=${book.scrollOffset}, wordIndex=$wordIndex, totalWords=${allWords.size}")
             selectedWordIndex = wordIndex
         }
     }
