@@ -49,7 +49,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.anggrayudi.storage.file.DocumentFileCompat
 import com.anggrayudi.storage.file.getBasePath
 import com.anggrayudi.storage.file.getRootPath
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.import_progress.ImportOperation
@@ -137,12 +136,9 @@ fun BrowseScanOption() {
             folderUri = uri,
             folderName = folderName,
             folderPath = folderPath
-        )
-
-        // Schedule library refresh after import completes
-        coroutineScope.launch {
-            delay(300) // Wait for database operations to complete
-            LibraryScreen.refreshListChannel.trySend(0) // Refresh Library
+        ) {
+            // Trigger library refresh after import completes
+            LibraryScreen.refreshListChannel.trySend(0)
         }
     }
 
@@ -165,9 +161,8 @@ fun BrowseScanOption() {
                         folderUri = permission.uri,
                         folderName = folderName,
                         folderPath = folderPath
-                    )
-                    coroutineScope.launch {
-                        LibraryScreen.refreshListChannel.trySend(0) // Refresh Library
+                    ) {
+                        LibraryScreen.refreshListChannel.trySend(0)
                     }
                 },
                 onRemoveClick = {

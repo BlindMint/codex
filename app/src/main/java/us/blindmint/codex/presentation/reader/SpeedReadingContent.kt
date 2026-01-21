@@ -6,6 +6,7 @@
 
 package us.blindmint.codex.presentation.reader
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.Canvas
@@ -51,7 +52,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType
+import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -87,8 +88,8 @@ import kotlin.math.roundToInt
 @Composable
 fun SpeedReadingContent(
     text: List<ReaderText>,
-    currentProgress: Float,
-    totalProgress: Float, // Overall book progress
+    currentWordIndex: Int,
+    totalWords: Int,
     backgroundColor: Color,
     fontColor: Color,
     fontFamily: FontFamily,
@@ -99,7 +100,7 @@ fun SpeedReadingContent(
     accentOpacity: Float,
     showVerticalIndicators: Boolean,
     verticalIndicatorsSize: Int,
-    verticalIndicatorType: us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType,
+    verticalIndicatorType: us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType,
     showHorizontalBars: Boolean,
     horizontalBarsThickness: Int,
     horizontalBarsLength: Float,
@@ -124,18 +125,29 @@ fun SpeedReadingContent(
     wordPickerActive: Boolean = false,
     initialWordIndex: Int = 0,
     onShowWordPicker: () -> Unit = {},
+    onProgressUpdate: (Float, Int) -> Unit = { _, _ -> }, // Callback for word-based progress updates
+    onSaveProgress: (Float, Int) -> Unit = { _, _ -> }, // Callback for immediate progress saves (no throttling)
+    showBottomBar: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    // Extract words from text starting from current position
-    val words = remember(text, currentProgress) {
-        val startIndex = (currentProgress * text.size).toInt()
-        text.drop(startIndex)
-            .filterIsInstance<ReaderText.Text>()
+    // Calculate total words in entire book for progress tracking
+    val totalWords = remember(text) {
+        text.filterIsInstance<ReaderText.Text>()
+            .sumOf { it.line.text.split("\\s+".toRegex()).filter { w -> w.isNotBlank() }.size }
+    }
+
+    // Speed reader always starts from beginning of book
+    val startingWordIndex = 0
+
+    // Extract all words from text - navigation will start from initialWordIndex
+    val words = remember(text) {
+        text.filterIsInstance<ReaderText.Text>()
             .flatMap { it.line.text.split("\\s+".toRegex()) }
             .filter { it.isNotBlank() }
     }
 
-    var currentWordIndex by remember { mutableIntStateOf(0) }
+    var currentWordIndex by remember { mutableIntStateOf(initialWordIndex) }
+    var lastProgressSaveIndex by remember { mutableIntStateOf(startingWordIndex) }
     var lastNavigationDirection by remember { mutableIntStateOf(0) }
     var showQuickWpmMenu by remember { mutableStateOf(false) }
     var showCountdown by remember { mutableStateOf(false) }
@@ -158,7 +170,13 @@ fun SpeedReadingContent(
             lastNavigationDirection = direction
             // Pause auto-play when manually navigating
             if (isPlaying) {
+                Log.d("SPEED_READER", "Navigation pause: currentWordIndex=$currentWordIndex, totalWords=$totalWords")
                 onPlayPause()
+                // Save progress immediately when manually pausing
+                val globalWordIndex = startingWordIndex + currentWordIndex
+                val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                Log.d("SPEED_READER", "Navigation saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
+                onSaveProgress(newProgress, globalWordIndex)
             }
         }
     }
@@ -199,17 +217,55 @@ fun SpeedReadingContent(
     LaunchedEffect(isPlaying, currentWordIndex, wpm, words) {
         if (isPlaying && words.isNotEmpty() && currentWordIndex < words.size) {
             val currentWordText = words.getOrNull(currentWordIndex) ?: ""
+
+            // Check for sentence-ending punctuation (period, exclamation, question, colon)
             val isSentenceEnd = currentWordText.endsWith(".") ||
                                currentWordText.endsWith("!") ||
                                currentWordText.endsWith("?") ||
-                               currentWordText.endsWith(":") ||
-                               currentWordText.endsWith(";")
+                               currentWordText.endsWith(":")
+
+            // Check for comma/semicolon pause (medium length pause)
+            val isCommaPause = currentWordText.endsWith(",") ||
+                              currentWordText.endsWith(";")
 
             val wordDelay = (60.0 / wpm * 1000).toLong()
-            val delayTime = if (isSentenceEnd) sentencePauseMs.toLong() else wordDelay
+            val delayTime = when {
+                isSentenceEnd -> sentencePauseMs.toLong()
+                isCommaPause -> (wordDelay * 1.5).toLong() // 50% longer than normal word
+                else -> wordDelay
+            }
             delay(delayTime)
             currentWordIndex = if (currentWordIndex < words.size - 1) currentWordIndex + 1 else 0
         }
+    }
+
+    // Periodic progress tracking - save every 50 words during playback only (for crash recovery)
+    LaunchedEffect(isPlaying, currentWordIndex) {
+        val globalWordIndex = startingWordIndex + currentWordIndex
+        val wordsSinceLastSave = globalWordIndex - lastProgressSaveIndex
+
+        // Only auto-save during playback (every 50 words) for crash recovery
+        // Manual pauses are handled separately with immediate saves (no throttling)
+        val shouldSave = isPlaying && wordsSinceLastSave >= 50
+
+        if (shouldSave && totalWords > 0 && wordsSinceLastSave > 0) {
+            // Store precise word-based progress - normal reader will convert when loading
+            val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+            Log.d("SPEED_READER", "Auto-saving progress: globalWordIndex=$globalWordIndex, totalWords=$totalWords, newProgress=$newProgress")
+            onProgressUpdate(newProgress, globalWordIndex)
+            lastProgressSaveIndex = globalWordIndex
+        }
+    }
+
+    // Save progress when pausing via OSD or other means
+    var wasPlaying by remember { mutableStateOf(false) }
+    LaunchedEffect(isPlaying) {
+        if (wasPlaying && !isPlaying && words.isNotEmpty()) {
+            val globalWordIndex = startingWordIndex + currentWordIndex
+            val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+            onSaveProgress(newProgress, globalWordIndex)
+        }
+        wasPlaying = isPlaying
     }
 
     // Focal point position - configurable via settings
@@ -230,7 +286,7 @@ fun SpeedReadingContent(
     val osdBottomDp = osdTopDp + osdHeightDp
 
     // Bottom bar exclusion zone: approximately 60dp from bottom
-    val bottomBarHeightDp = 60.dp
+    val bottomBarHeightDp = 92.dp // 60.dp bar height + 32.dp bottom padding
 
     Box(
         modifier = modifier
@@ -264,24 +320,49 @@ fun SpeedReadingContent(
                                 continue
                             }
 
-                            when {
-                                position.x < tapZoneWidth -> {
-                                    // Left tap zone - navigate back
-                                    navigateWord(-1)
-                                }
-                                position.x > width - tapZoneWidth -> {
-                                    // Right tap zone - navigate forward
-                                    navigateWord(1)
-                                }
-                                else -> {
-                                    // Middle tap zone - pause if playing, otherwise toggle menu
-                                    if (isPlaying) {
-                                        onPlayPause()
-                                    } else {
-                                        onToggleMenu()
-                                    }
-                                }
-                            }
+                              when {
+                                   position.x < tapZoneWidth -> {
+                                       // Left tap zone - navigate back (or pause if playing)
+                                       if (isPlaying) {
+                                           Log.d("SPEED_READER", "Left tap pause: currentWordIndex=$currentWordIndex, totalWords=$totalWords")
+                                           onPlayPause()
+                                           // Save progress immediately when manually pausing
+                                           val globalWordIndex = startingWordIndex + currentWordIndex
+                                           val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                           Log.d("SPEED_READER", "Left tap saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
+                                           onSaveProgress(newProgress, globalWordIndex)
+                                       } else {
+                                           navigateWord(-1)
+                                       }
+                                   }
+                                   position.x > width - tapZoneWidth -> {
+                                       // Right tap zone - navigate forward (or pause if playing)
+                                       if (isPlaying) {
+                                           Log.d("SPEED_READER", "Right tap pause: currentWordIndex=$currentWordIndex, totalWords=$totalWords")
+                                           onPlayPause()
+                                           // Save progress immediately when manually pausing
+                                           val globalWordIndex = startingWordIndex + currentWordIndex
+                                           val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                           Log.d("SPEED_READER", "Right tap saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
+                                           onSaveProgress(newProgress, globalWordIndex)
+                                       } else {
+                                           navigateWord(1)
+                                       }
+                                   }
+                                   else -> {
+                                       // Middle tap zone - always toggle play/pause
+                                       val wasPlaying = isPlaying
+                                       Log.d("SPEED_READER", "Middle tap: wasPlaying=$wasPlaying, currentWordIndex=$currentWordIndex")
+                                       onPlayPause()
+                                       // Save progress immediately when manually pausing
+                                       if (wasPlaying && !isPlaying) {
+                                           val globalWordIndex = startingWordIndex + currentWordIndex
+                                           val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                           Log.d("SPEED_READER", "Middle tap saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
+                                           onSaveProgress(newProgress, globalWordIndex)
+                                       }
+                                   }
+                             }
                         }
                     }
                 }
@@ -426,9 +507,9 @@ fun SpeedReadingContent(
                                 start = Offset(focalPointX, bottomBarY),
                                 end = Offset(focalPointX, bottomBarY - verticalIndicatorHeight),
                                 strokeWidth = verticalIndicatorWidth
-                            )
-                        }
-                    }
+                )
+            }
+        }
 
                     // Vertical indicators as icons (for ARROWS and ARROWS_FILLED types)
                     if (showVerticalIndicators && verticalIndicatorType != SpeedReadingVerticalIndicatorType.LINE) {
@@ -555,9 +636,18 @@ fun SpeedReadingContent(
                         modifier = Modifier
                             .size(60.dp)
                             .padding(8.dp)
-                            .noRippleClickable {
-                                onPlayPause()
-                            }
+                              .noRippleClickable {
+                                  val wasPlaying = isPlaying
+                                  Log.d("SPEED_READER", "OSD play/pause: wasPlaying=$wasPlaying, currentWordIndex=$currentWordIndex")
+                                  onPlayPause()
+                                  // Save progress immediately when manually pausing
+                                  if (wasPlaying && !isPlaying) {
+                                      val globalWordIndex = startingWordIndex + currentWordIndex
+                                      val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                      Log.d("SPEED_READER", "OSD saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
+                                      onSaveProgress(newProgress, globalWordIndex)
+                                  }
+                              }
                     )
 
                     // Right arrow (>) - navigate to next word
@@ -579,24 +669,25 @@ fun SpeedReadingContent(
 
         // Bottom bar with progress bar and controls
         // The parent tap detector has an exclusion zone for this area
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .background(
-                    color = backgroundColor.copy(alpha = 0.8f),
-                    shape = MaterialTheme.shapes.small
-                )
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
+        if (showBottomBar) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 32.dp)
+                    .background(
+                        color = backgroundColor.copy(alpha = 0.8f),
+                        shape = MaterialTheme.shapes.small
+                    )
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Progress bar (takes available space)
                 LinearProgressIndicator(
-                    progress = { totalProgress },
+                    progress = { if (totalWords > 0) currentWordIndex.toFloat() / totalWords else 0f },
                     modifier = Modifier.weight(1f),
                     color = fontColor.copy(alpha = 0.7f),
                     trackColor = fontColor.copy(alpha = 0.2f)
@@ -605,32 +696,51 @@ fun SpeedReadingContent(
                 // Spacer for consistent spacing
                 Spacer(modifier = Modifier.width(24.dp))
 
-                // WPM indicator (tappable for quick menu)
-                Text(
-                    text = "$wpm wpm",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = fontColor.copy(alpha = 0.8f),
-                        fontWeight = FontWeight.Medium
-                    ),
-                    modifier = Modifier.noRippleClickable {
-                        showQuickWpmMenu = true
-                    }
-                )
+                 // WPM indicator (tappable for quick menu)
+                 Text(
+                     text = "$wpm wpm",
+                     style = MaterialTheme.typography.bodyMedium.copy(
+                         color = fontColor.copy(alpha = 0.8f),
+                         fontWeight = FontWeight.Medium
+                     ),
+                      modifier = Modifier.noRippleClickable {
+                          if (isPlaying) {
+                              Log.d("SPEED_READER", "WPM tap pause: currentWordIndex=$currentWordIndex, totalWords=$totalWords")
+                              onPlayPause()
+                              // Save progress immediately when manually pausing
+                              val globalWordIndex = startingWordIndex + currentWordIndex
+                              val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                              Log.d("SPEED_READER", "WPM tap saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
+                              onSaveProgress(newProgress, globalWordIndex)
+                          }
+                          showQuickWpmMenu = true
+                      }
+                 )
 
                 // Spacer for consistent spacing
                 Spacer(modifier = Modifier.width(24.dp))
 
-                // Book icon - opens word picker
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.MenuBook,
-                    contentDescription = "Select starting word",
-                    tint = fontColor.copy(alpha = 0.7f),
-                    modifier = Modifier
-                        .size(20.dp)
-                        .noRippleClickable {
-                            onShowWordPicker()
-                        }
-                )
+                 // Book icon - opens word picker
+                 Icon(
+                     imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                     contentDescription = "Select starting word",
+                     tint = fontColor.copy(alpha = 0.7f),
+                     modifier = Modifier
+                         .size(20.dp)
+                          .noRippleClickable {
+                              if (isPlaying) {
+                                  Log.d("SPEED_READER", "Book icon tap pause: currentWordIndex=$currentWordIndex, totalWords=$totalWords")
+                                  onPlayPause()
+                                  // Save progress immediately when manually pausing
+                                  val globalWordIndex = startingWordIndex + currentWordIndex
+                                  val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                  Log.d("SPEED_READER", "Book icon saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
+                                  onSaveProgress(newProgress, globalWordIndex)
+                              }
+                              onShowWordPicker()
+                          }
+                 )
+            }
             }
         }
 

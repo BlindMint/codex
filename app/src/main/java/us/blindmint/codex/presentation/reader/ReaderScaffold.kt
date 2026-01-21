@@ -121,7 +121,6 @@ fun ReaderScaffold(
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
     showBookmarksDrawer: (ReaderEvent.OnShowBookmarksDrawer) -> Unit,
-    showSpeedReading: (ReaderEvent.OnShowSpeedReading) -> Unit,
     showSearch: (ReaderEvent.OnShowSearchPersistent) -> Unit,
     hideSearch: (ReaderEvent.OnHideSearch) -> Unit,
     searchQuery: String,
@@ -169,26 +168,25 @@ fun ReaderScaffold(
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
-                    ReaderTopBar(
-                        book = book,
-                        currentChapter = currentChapter,
-                        fastColorPresetChange = fastColorPresetChange,
-                        currentChapterProgress = currentChapterProgress,
-                        isLoading = isLoading,
-                        lockMenu = lockMenu,
-                        leave = leave,
-                        selectPreviousPreset = selectPreviousPreset,
-                        selectNextPreset = selectNextPreset,
-                        showSettingsBottomSheet = showSettingsBottomSheet,
-                        showChaptersDrawer = showChaptersDrawer,
-                        showBookmarksDrawer = showBookmarksDrawer,
-                        showSpeedReading = showSpeedReading,
-                        isSearchVisible = isSearchVisible || (showMenu && searchBarPersistent),
-                        showSearch = showSearch,
-                        hideSearch = hideSearch,
-                        navigateBack = navigateBack,
-                        navigateToBookInfo = navigateToBookInfo
-                    )
+                     ReaderTopBar(
+                         book = book,
+                         currentChapter = currentChapter,
+                         fastColorPresetChange = fastColorPresetChange,
+                         currentChapterProgress = currentChapterProgress,
+                         isLoading = isLoading,
+                         lockMenu = lockMenu,
+                         leave = leave,
+                         selectPreviousPreset = selectPreviousPreset,
+                         selectNextPreset = selectNextPreset,
+                         showSettingsBottomSheet = showSettingsBottomSheet,
+                         showChaptersDrawer = showChaptersDrawer,
+                         showBookmarksDrawer = showBookmarksDrawer,
+                         isSearchVisible = isSearchVisible || (showMenu && searchBarPersistent),
+                         showSearch = showSearch,
+                         hideSearch = hideSearch,
+                         navigateBack = navigateBack,
+                         navigateToBookInfo = navigateToBookInfo
+                     )
                 }
 
                 AnimatedVisibility(

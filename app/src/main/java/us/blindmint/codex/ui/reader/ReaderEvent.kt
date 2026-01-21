@@ -128,13 +128,7 @@ sealed class ReaderEvent {
 
     data object OnShowBookmarksDrawer : ReaderEvent()
 
-    data object OnShowSpeedReading : ReaderEvent()
 
-    data object OnShowSpeedReadingSettings : ReaderEvent()
-
-    data object OnDismissSpeedReadingSettings : ReaderEvent()
-
-    data object OnDismissSpeedReading : ReaderEvent()
 
     data object OnDismissDrawer : ReaderEvent()
 

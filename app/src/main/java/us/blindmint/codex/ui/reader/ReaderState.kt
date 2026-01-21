@@ -20,6 +20,8 @@ import us.blindmint.codex.domain.util.BottomSheet
 import us.blindmint.codex.domain.util.Drawer
 import us.blindmint.codex.presentation.core.constants.provideEmptyBook
 
+
+
 @Immutable
 data class ReaderState(
     val book: Book = provideEmptyBook(),
@@ -36,12 +38,10 @@ data class ReaderState(
     val checkpoint: Checkpoint = Checkpoint(0, 0),
     val lockMenu: Boolean = false,
 
-    val speedReadingMode: Boolean = false,
-    val speedReadingFromBookInfo: Boolean = false,
+
 
     val bottomSheet: BottomSheet? = null,
     val drawer: Drawer? = null,
-    val speedReadingSettingsVisible: Boolean = false,
     val showComicSettingsInMenu: Boolean = false,
 
     val showSearch: Boolean = false,

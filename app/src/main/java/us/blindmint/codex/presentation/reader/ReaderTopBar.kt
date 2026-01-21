@@ -56,7 +56,6 @@ fun ReaderTopBar(
     selectNextPreset: (SettingsEvent.OnSelectNextPreset) -> Unit,
     showSettingsBottomSheet: (ReaderEvent.OnShowSettingsBottomSheet) -> Unit,
     showChaptersDrawer: (ReaderEvent.OnShowChaptersDrawer) -> Unit,
-    showSpeedReading: (ReaderEvent.OnShowSpeedReading) -> Unit,
     showBookmarksDrawer: (ReaderEvent.OnShowBookmarksDrawer) -> Unit = { },
     isSearchVisible: Boolean,
     showSearch: (ReaderEvent.OnShowSearchPersistent) -> Unit,
@@ -181,17 +180,7 @@ fun ReaderTopBar(
                     }
                 }
 
-                // Speed reading icon - only for books
-                if (!book.isComic) {
-                    IconButton(
-                        icon = Icons.Rounded.Bolt,
-                        contentDescription = R.string.speed_reading_content_desc,
-                        disableOnClick = false,
-                        enabled = !lockMenu
-                    ) {
-                        showSpeedReading(ReaderEvent.OnShowSpeedReading)
-                    }
-                }
+
 
                 IconButton(
                     icon = Icons.Default.Settings,

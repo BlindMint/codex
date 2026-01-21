@@ -1,0 +1,158 @@
+/*
+ * Codex — free and open-source Material You eBook reader.
+ * Copyright (C) 2024-2025 BlindMint
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
+
+package us.blindmint.codex.ui.reader
+
+import android.app.Activity
+import android.util.Log
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import us.blindmint.codex.domain.library.book.Book
+import us.blindmint.codex.domain.reader.ReaderText
+import us.blindmint.codex.domain.repository.BookRepository
+import us.blindmint.codex.domain.use_case.book.GetBookById
+import us.blindmint.codex.domain.use_case.book.GetTextForSpeedReader
+import us.blindmint.codex.ui.history.HistoryScreen
+import us.blindmint.codex.ui.library.LibraryScreen
+import javax.inject.Inject
+
+@HiltViewModel
+class SpeedReaderModel @Inject constructor(
+    private val getBookById: GetBookById,
+    private val getText: GetTextForSpeedReader,
+    private val bookRepository: BookRepository
+) : ViewModel() {
+
+    val book = mutableStateOf<Book?>(null)
+    val text = mutableStateOf<List<ReaderText>>(emptyList())
+    val isLoading = mutableStateOf(true)
+    val errorMessage = mutableStateOf<String?>(null)
+
+    // Progress tracking
+    val currentProgress = mutableFloatStateOf(0f)
+    val currentWordIndex = mutableIntStateOf(0)
+    private var lastSavedProgress = 0f
+    private var lastDatabaseSaveWordIndex = 0
+
+    fun loadBook(bookId: Int, activity: Activity, onError: () -> Unit) {
+        viewModelScope.launch {
+            // Clear previous state when loading a new book
+            if (book.value?.id != bookId) {
+                book.value = null
+                text.value = emptyList()
+                isLoading.value = true
+                errorMessage.value = null
+                currentProgress.floatValue = 0f
+                currentWordIndex.intValue = -1 // Invalid until book loads
+            }
+
+            val loadedBook = getBookById.execute(bookId)
+            if (loadedBook == null) {
+                onError()
+                return@launch
+            }
+
+            // Mark that this book has been opened in speed reader
+            val updatedBook = loadedBook.copy(speedReaderHasBeenOpened = true)
+            book.value = updatedBook
+
+            // Set initial progress to 0; will be updated after text loads
+            currentProgress.floatValue = 0f
+
+            // Update database to mark as opened
+            viewModelScope.launch {
+                try {
+                    bookRepository.markSpeedReaderOpened(updatedBook.id)
+                } catch (e: Exception) {
+                    Log.e("SPEED_READER", "Failed to mark book as opened in speed reader", e)
+                }
+            }
+
+            if (!loadedBook.isComic) {
+                try {
+                    val loadedText = getText.execute(bookId)
+                    if (loadedText.isEmpty()) {
+                        errorMessage.value = "Could not load text"
+                        isLoading.value = false
+                    } else {
+                        text.value = loadedText
+                         // Calculate total words for progress calculation
+                         val totalWords = loadedText
+                             .filterIsInstance<us.blindmint.codex.domain.reader.ReaderText.Text>()
+                             .flatMap { it.line.text.split("\\s+".toRegex()) }
+                             .size
+
+                          // Set the correct word index AFTER text is loaded
+                          Log.d("SPEED_READER", "Setting initial currentWordIndex to: ${loadedBook.speedReaderWordIndex} (after text loaded)")
+                          currentWordIndex.intValue = loadedBook.speedReaderWordIndex
+
+                          // Update progress based on current word index and total words
+                          currentProgress.floatValue = if (totalWords > 0) {
+                              currentWordIndex.intValue.toFloat() / totalWords
+                          } else 0f
+                        isLoading.value = false
+                    }
+                } catch (e: Exception) {
+                    errorMessage.value = "Error loading text: ${e.message}"
+                    isLoading.value = false
+                }
+            } else {
+                // Comics not supported in speed reader
+                errorMessage.value = "Comics not supported in speed reader"
+                isLoading.value = false
+            }
+        }
+    }
+
+    fun updateProgress(progress: Float, wordIndex: Int, forceSave: Boolean = false) {
+        viewModelScope.launch {
+            Log.d("SPEED_READER", "Model updateProgress: progress=$progress, wordIndex=$wordIndex, forceSave=$forceSave, lastSaved=$lastDatabaseSaveWordIndex")
+            // Always update UI state immediately for smooth progress bar
+            currentProgress.floatValue = progress
+            currentWordIndex.intValue = wordIndex
+
+            // Save to database every 50+ words during reading, or immediately for manual pauses
+            val wordsSinceLastSave = wordIndex - lastDatabaseSaveWordIndex
+            Log.d("SPEED_READER", "Model wordsSinceLastSave=$wordsSinceLastSave, willSave=${forceSave || wordsSinceLastSave >= 50}")
+            if (forceSave || wordsSinceLastSave >= 50) {
+                saveProgressToDatabase(progress)
+                lastDatabaseSaveWordIndex = wordIndex
+            }
+        }
+    }
+
+    private suspend fun saveProgressToDatabase(progress: Float) {
+        book.value?.let { currentBook ->
+            val wordIndex = currentWordIndex.intValue
+            Log.d("SPEED_READER", "SpeedReaderModel saving to database: progress=$progress, wordIndex=$wordIndex, bookId=${currentBook.id}")
+
+            try {
+                bookRepository.updateSpeedReaderProgress(currentBook.id, wordIndex)
+                Log.d("SPEED_READER", "Successfully saved speed reader progress to database: wordIndex=$wordIndex")
+                lastSavedProgress = progress
+                lastDatabaseSaveWordIndex = wordIndex
+
+                // Refresh library and history
+                LibraryScreen.refreshListChannel.trySend(0)
+                HistoryScreen.refreshListChannel.trySend(0)
+            } catch (e: Exception) {
+                Log.e("SPEED_READER", "Failed to save speed reader progress to database", e)
+            }
+        } ?: Log.w("SPEED_READER", "Cannot save speed reader progress: book is null")
+    }
+
+    fun onLeave() {
+        viewModelScope.launch {
+            // Always save final progress, even if < 50 words since last save
+            saveProgressToDatabase(currentProgress.floatValue)
+        }
+    }
+}

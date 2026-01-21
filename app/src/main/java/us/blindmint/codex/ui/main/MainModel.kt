@@ -824,6 +824,191 @@ class MainModel @Inject constructor(
                     it.copy(comicBackgroundColor = this)
                 }
             )
+
+            // Speed Reader Events
+            is MainEvent.OnChangeSpeedReadingWpm -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_WPM,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingWpm = this)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingManualSentencePauseEnabled -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_MANUAL_SENTENCE_PAUSE_ENABLED,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingManualSentencePauseEnabled = this)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingSentencePauseDuration -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_SENTENCE_PAUSE_DURATION,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingSentencePauseDuration = this)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingOsdEnabled -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_OSD_ENABLED,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingOsdEnabled = this)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingWordSize -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_WORD_SIZE,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingWordSize = this)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingAccentCharacterEnabled -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_ACCENT_CHARACTER_ENABLED,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingAccentCharacterEnabled = this)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingAccentColor -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_ACCENT_COLOR,
+                value = "%08X".format(event.value),
+                updateState = {
+                    it.copy(speedReadingAccentColor = this.toLongOrNull(16) ?: 0xFFFF0000)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingAccentOpacity -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_ACCENT_OPACITY,
+                value = event.value.toDouble(),
+                updateState = {
+                    it.copy(speedReadingAccentOpacity = this.toFloat())
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingShowVerticalIndicators -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_SHOW_VERTICAL_INDICATORS,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingShowVerticalIndicators = this)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingVerticalIndicatorsSize -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_VERTICAL_INDICATORS_SIZE,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingVerticalIndicatorsSize = this)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingVerticalIndicatorType -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_VERTICAL_INDICATOR_TYPE,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingVerticalIndicatorType = this)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingShowHorizontalBars -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_SHOW_HORIZONTAL_BARS,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingShowHorizontalBars = this)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingHorizontalBarsThickness -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_THICKNESS,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingHorizontalBarsThickness = this)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingHorizontalBarsLength -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_LENGTH,
+                value = event.value.toDouble(),
+                updateState = {
+                    it.copy(speedReadingHorizontalBarsLength = this.toFloat())
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingHorizontalBarsDistance -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_DISTANCE,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingHorizontalBarsDistance = this)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingHorizontalBarsColor -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_COLOR,
+                value = "%08X".format(event.value),
+                updateState = {
+                    it.copy(speedReadingHorizontalBarsColor = this.toLongOrNull(16) ?: 0xFF424242)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingHorizontalBarsOpacity -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_OPACITY,
+                value = event.value.toDouble(),
+                updateState = {
+                    it.copy(speedReadingHorizontalBarsOpacity = this.toFloat())
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingFocalPointPosition -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_FOCAL_POINT_POSITION,
+                value = event.value.toDouble(),
+                updateState = {
+                    it.copy(speedReadingFocalPointPosition = this.toFloat())
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingOsdHeight -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_OSD_HEIGHT,
+                value = event.value.toDouble(),
+                updateState = {
+                    it.copy(speedReadingOsdHeight = this.toFloat())
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingOsdSeparation -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_OSD_SEPARATION,
+                value = event.value.toDouble(),
+                updateState = {
+                    it.copy(speedReadingOsdSeparation = this.toFloat())
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingCenterWord -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_CENTER_WORD,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingCenterWord = this)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingCustomFontEnabled -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_CUSTOM_FONT_ENABLED,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingCustomFontEnabled = this)
+                }
+            )
+
+            is MainEvent.OnChangeSpeedReadingSelectedFontFamily -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_SELECTED_FONT_FAMILY,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingSelectedFontFamily = this)
+                }
+            )
         }
     }
 

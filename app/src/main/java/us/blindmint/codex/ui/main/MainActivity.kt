@@ -188,15 +188,31 @@ class MainActivity : AppCompatActivity() {
                         initialScreen = if (state.value.showStartScreen) StartScreen
                         else LibraryScreen,
                         transitionSpec = { lastEvent ->
+                            val targetScreen = this.targetState
+                            val isReaderScreen = targetScreen is us.blindmint.codex.ui.reader.ReaderScreen ||
+                                                 targetScreen is us.blindmint.codex.ui.reader.SpeedReadingScreen
+
                             when (lastEvent) {
                                 StackEvent.Default -> {
-                                    Transitions.SlidingTransitionIn
-                                        .togetherWith(Transitions.SlidingTransitionOut)
+                                    if (isReaderScreen) {
+                                        // Use fade transition for reader screens to avoid sliding animation during loading
+                                        Transitions.FadeTransitionIn
+                                            .togetherWith(Transitions.FadeTransitionOut)
+                                    } else {
+                                        Transitions.SlidingTransitionIn
+                                            .togetherWith(Transitions.SlidingTransitionOut)
+                                    }
                                 }
 
                                 StackEvent.Pop -> {
-                                    Transitions.BackSlidingTransitionIn
-                                        .togetherWith(Transitions.BackSlidingTransitionOut)
+                                    if (isReaderScreen) {
+                                        // Use fade transition for reader screens to avoid sliding animation during loading
+                                        Transitions.FadeTransitionIn
+                                            .togetherWith(Transitions.FadeTransitionOut)
+                                    } else {
+                                        Transitions.BackSlidingTransitionIn
+                                            .togetherWith(Transitions.BackSlidingTransitionOut)
+                                    }
                                 }
                             }
                         },

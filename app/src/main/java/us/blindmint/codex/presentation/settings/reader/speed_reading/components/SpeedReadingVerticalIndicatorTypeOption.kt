@@ -24,7 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
-import us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType
+import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 
 @Composable
 fun SpeedReadingVerticalIndicatorTypeOption(

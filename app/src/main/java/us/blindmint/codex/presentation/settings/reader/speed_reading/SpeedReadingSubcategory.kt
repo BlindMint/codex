@@ -54,7 +54,7 @@ import us.blindmint.codex.presentation.settings.reader.speed_reading.components.
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsToggleOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingOsdHeightOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingOsdSeparationOption
-import us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType
+import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 
 import us.blindmint.codex.presentation.core.components.settings.SwitchWithTitle
 
@@ -94,8 +94,8 @@ fun LazyListScope.SpeedReadingSubcategory(
      onShowVerticalIndicatorsChange: (Boolean) -> Unit = {},
      verticalIndicatorsSize: Int = 8,
      onVerticalIndicatorsSizeChange: (Int) -> Unit = {},
-     verticalIndicatorType: us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType = us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType.LINE,
-     onVerticalIndicatorTypeChange: (us.blindmint.codex.ui.reader.SpeedReadingVerticalIndicatorType) -> Unit = {},
+     verticalIndicatorType: us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType = us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.LINE,
+     onVerticalIndicatorTypeChange: (us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType) -> Unit = {},
      showHorizontalBars: Boolean = true,
     onShowHorizontalBarsChange: (Boolean) -> Unit = {},
      horizontalBarsThickness: Int = 2,

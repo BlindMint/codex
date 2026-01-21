@@ -28,6 +28,8 @@ fun provideEmptyBook() = Book(
     scrollIndex = 0,
     scrollOffset = 0,
     progress = 0f,
+    speedReaderWordIndex = 0,
+    speedReaderHasBeenOpened = false,
     lastOpened = null,
     category = Category.READING
 )

@@ -25,6 +25,7 @@ import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.ui.history.HistoryScreen
 import us.blindmint.codex.ui.library.LibraryScreen
 import us.blindmint.codex.ui.reader.ReaderScreen
+import us.blindmint.codex.ui.reader.SpeedReadingScreen
 
 @Parcelize
 data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
@@ -133,7 +134,7 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 navigateToSpeedReading = {
                     if (state.value.book.id != -1 && !state.value.book.isComic) {
                         HistoryScreen.insertHistoryChannel.trySend(state.value.book.id)
-                        navigator.push(ReaderScreen(state.value.book.id, startInSpeedReading = true))
+                        navigator.push(SpeedReadingScreen(state.value.book.id))
                     }
                 },
                 navigateToLibrary = {

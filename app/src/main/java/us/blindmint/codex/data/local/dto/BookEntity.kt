@@ -24,6 +24,10 @@ data class BookEntity(
     val scrollIndex: Int,
     val scrollOffset: Int,
     val progress: Float,
+
+    // Speed reader progress (separate from normal reader)
+    val speedReaderWordIndex: Int = 0,
+    val speedReaderHasBeenOpened: Boolean = false,
     val image: String? = null,
     val category: Category = Category.PLANNING, // TODO: remove when UI updated
     val tags: List<String> = emptyList(),

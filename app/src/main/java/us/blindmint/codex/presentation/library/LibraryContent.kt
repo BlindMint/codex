@@ -62,7 +62,8 @@ fun LibraryContent(
     navigateToBrowse: () -> Unit,
     navigateToStorage: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
-    navigateToReader: (id: Int) -> Unit
+    navigateToReader: (id: Int) -> Unit,
+    navigateToSpeedReading: (id: Int) -> Unit
 ) {
     LibraryDialog(
         dialog = dialog,
@@ -117,7 +118,8 @@ fun LibraryContent(
         navigateToBrowse = navigateToBrowse,
         navigateToStorage = navigateToStorage,
         navigateToBookInfo = navigateToBookInfo,
-        navigateToReader = navigateToReader
+        navigateToReader = navigateToReader,
+        navigateToSpeedReading = navigateToSpeedReading
     )
 
     LibrarySortMenu(

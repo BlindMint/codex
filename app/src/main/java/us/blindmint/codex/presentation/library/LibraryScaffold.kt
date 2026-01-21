@@ -57,6 +57,7 @@ fun LibraryScaffold(
     navigateToStorage: () -> Unit,
     navigateToBookInfo: (id: Int) -> Unit,
     navigateToReader: (id: Int) -> Unit,
+    navigateToSpeedReading: (id: Int) -> Unit,
 ) {
     Scaffold(
         Modifier
@@ -111,6 +112,7 @@ fun LibraryScaffold(
                 navigateToStorage = navigateToStorage,
                 navigateToReader = navigateToReader,
                 navigateToBookInfo = navigateToBookInfo,
+                navigateToSpeedReading = navigateToSpeedReading,
             )
 
             LibraryRefreshIndicator(

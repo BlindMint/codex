@@ -6,60 +6,29 @@
 
 package us.blindmint.codex.presentation.reader
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import us.blindmint.codex.domain.reader.ReaderText
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 
 /**
  * Data class representing a word's position in the text.
@@ -82,11 +51,12 @@ data class WordParagraph(
 /**
  * Bottom sheet for selecting a word as the starting point for speed reading.
  */
-@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, FlowPreview::class)
 @Composable
 fun SpeedReadingWordPickerSheet(
     text: List<ReaderText>,
-    currentProgress: Float,
+    currentWordIndex: Int,
+    totalWords: Int,
     backgroundColor: Color,
     fontColor: Color,
     onDismiss: () -> Unit,
@@ -97,36 +67,36 @@ fun SpeedReadingWordPickerSheet(
     val listState = rememberLazyListState()
 
     // Extract all words from text
-    val allWords = remember(text) {
+    val allWords: List<WordPosition> = remember(text) {
         extractWords(text)
     }
 
+    // Calculate total words for progress calculation
+    val totalWords: Int = allWords.size
+
     // Group words by paragraph (textIndex)
-    val paragraphs = remember(allWords) {
-        allWords.groupBy { it.textIndex }
-            .map { (textIndex, words) -> WordParagraph(textIndex, words) }
-            .sortedBy { it.textIndex }
+    val paragraphs: List<WordParagraph> = remember(allWords) {
+        allWords.groupBy { it: WordPosition -> it.textIndex }
+            .map { (textIndex: Int, words: List<WordPosition>) -> WordParagraph(textIndex, words) }
+            .sortedBy { it: WordParagraph -> it.textIndex }
     }
 
-    // Calculate current word index based on progress
-    val currentTextIndex = remember(currentProgress, text) {
-        (currentProgress * text.lastIndex).toInt().coerceIn(0, text.lastIndex)
+    // Current word index is passed directly
+    val currentProgress = remember(currentWordIndex, totalWords) {
+        if (totalWords > 0) currentWordIndex.toFloat() / totalWords else 0f
     }
 
-    // Find the current word position (first word in current text)
-    val currentWordPosition = remember(currentTextIndex, allWords) {
-        allWords.firstOrNull { it.textIndex == currentTextIndex }
+    // Find the current word position
+    val currentWordPosition: WordPosition? = remember(currentWordIndex, allWords) {
+        allWords.getOrNull(currentWordIndex)
     }
 
     // State for selected word
-    var selectedWord by remember { mutableStateOf(currentWordPosition) }
-
-    // Sentence start checkbox state (when true, starts from beginning of sentence)
-    var sentenceStart by remember { mutableStateOf(false) }
+    var selectedWord: WordPosition? by remember { mutableStateOf(currentWordPosition) }
 
     // Search state
-    var searchQuery by remember { mutableStateOf("") }
-    var debouncedSearchQuery by remember { mutableStateOf("") }
+    var searchQuery: String by remember { mutableStateOf("") }
+    var debouncedSearchQuery: String by remember { mutableStateOf("") }
 
     // Debounce search input
     LaunchedEffect(searchQuery) {
@@ -136,20 +106,20 @@ fun SpeedReadingWordPickerSheet(
     }
 
     // Find search matches
-    val searchMatches by remember(debouncedSearchQuery, allWords) {
+    val searchMatches: List<WordPosition> by remember(debouncedSearchQuery, allWords) {
         derivedStateOf {
             if (debouncedSearchQuery.isBlank()) {
-                emptyList()
+                emptyList<WordPosition>()
             } else {
-                allWords.filter {
-                    it.word.contains(debouncedSearchQuery, ignoreCase = true)
+                allWords.filter { wordPosition: WordPosition ->
+                    wordPosition.word.contains(debouncedSearchQuery, ignoreCase = true)
                 }
             }
         }
     }
 
     // Current search result index
-    var currentSearchIndex by remember { mutableIntStateOf(0) }
+    var currentSearchIndex: Int by remember { mutableIntStateOf(0) }
 
     // Reset search index when matches change
     LaunchedEffect(searchMatches) {
@@ -158,8 +128,8 @@ fun SpeedReadingWordPickerSheet(
 
     // Auto-scroll to current word on open
     LaunchedEffect(currentWordPosition, paragraphs) {
-        currentWordPosition?.let { position ->
-            val paragraphIndex = paragraphs.indexOfFirst { it.textIndex == position.textIndex }
+        currentWordPosition?.let { position: WordPosition ->
+            val paragraphIndex = paragraphs.indexOfFirst { paragraph: WordParagraph -> paragraph.textIndex == position.textIndex }
             if (paragraphIndex >= 0) {
                 listState.scrollToItem(paragraphIndex)
             }
@@ -170,7 +140,7 @@ fun SpeedReadingWordPickerSheet(
     fun scrollToSearchResult(index: Int) {
         if (searchMatches.isNotEmpty() && index in searchMatches.indices) {
             val match = searchMatches[index]
-            val paragraphIndex = paragraphs.indexOfFirst { it.textIndex == match.textIndex }
+            val paragraphIndex = paragraphs.indexOfFirst { paragraph: WordParagraph -> paragraph.textIndex == match.textIndex }
             if (paragraphIndex >= 0) {
                 scope.launch {
                     listState.animateScrollToItem(paragraphIndex)
@@ -190,6 +160,21 @@ fun SpeedReadingWordPickerSheet(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
         ) {
+            // Top Row with Back Button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = fontColor
+                    )
+                }
+            }
+
             // Search Bar Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -314,36 +299,14 @@ fun SpeedReadingWordPickerSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-            HorizontalDivider(color = fontColor.copy(alpha = 0.2f))
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Bottom Row with Sentence start checkbox, Cancel, and Confirm buttons
+            // Bottom Row with Cancel and Confirm buttons
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .padding(top = 8.dp, bottom = 8.dp),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Sentence start checkbox
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                ) {
-                    Checkbox(
-                        checked = sentenceStart,
-                        onCheckedChange = { sentenceStart = it }
-                    )
-                    Text(
-                        text = "Sentence start",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = fontColor
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
                 TextButton(onClick = onDismiss) {
                     Text("Cancel", color = fontColor)
                 }
@@ -353,15 +316,14 @@ fun SpeedReadingWordPickerSheet(
                 Button(
                     onClick = {
                         selectedWord?.let { word ->
-                            // Calculate progress from textIndex
-                            val newProgress = if (text.lastIndex > 0) {
-                                word.textIndex.toFloat() / text.lastIndex.toFloat()
+                            // Calculate progress from global word index
+                            val totalWords = allWords.size
+                            val newProgress = if (totalWords > 0) {
+                                word.globalWordIndex.toFloat() / totalWords.toFloat()
                             } else {
                                 0f
                             }
-                            // Pass word index: 0 if sentence start enabled, otherwise exact word position
-                            val wordIndex = if (sentenceStart) 0 else word.wordIndexInText
-                            onConfirm(newProgress, wordIndex)
+                            onConfirm(newProgress, word.globalWordIndex)
                         }
                     },
                     enabled = selectedWord != null
@@ -372,7 +334,6 @@ fun SpeedReadingWordPickerSheet(
         }
     }
 }
-
 /**
  * A tappable word chip with different highlights for current, selected, and search matches.
  */
@@ -409,7 +370,7 @@ private fun WordChip(
     ) {
         Text(
             text = word,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyLarge,
             color = textColor
         )
     }
@@ -441,3 +402,4 @@ private fun extractWords(text: List<ReaderText>): List<WordPosition> {
 
     return words
 }
+

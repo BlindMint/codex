@@ -19,16 +19,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,6 +58,7 @@ fun LibraryItem(
     selectBook: (select: Boolean?) -> Unit,
     navigateToBookInfo: () -> Unit,
     navigateToReader: () -> Unit,
+    navigateToSpeedReading: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val backgroundColor = if (book.selected) MaterialTheme.colorScheme.secondary
@@ -121,8 +125,10 @@ fun LibraryItem(
             }
 
             if (mainState.value.libraryShowProgress) {
+                // Normal reader progress (top-left)
                 Row(
                     modifier = Modifier
+                        .align(Alignment.TopStart)
                         .padding(6.dp)
                         .clip(MaterialTheme.shapes.small)
                         .background(MaterialTheme.colorScheme.secondary, MaterialTheme.shapes.small)
@@ -138,9 +144,96 @@ fun LibraryItem(
                         )
                     )
                 }
+
+                // Speed reader progress (top-right, only if opened)
+                if (book.data.speedReaderHasBeenOpened) {
+                    val speedProgress = remember(book.data.speedReaderWordIndex) {
+                        // Placeholder calculation - in practice you'd calculate based on total words
+                        "${(book.data.speedReaderWordIndex / 1000f * 100).toInt()}%"
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(6.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .background(MaterialTheme.colorScheme.tertiary, MaterialTheme.shapes.small)
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Bolt,
+                            contentDescription = "Speed reader progress",
+                            tint = MaterialTheme.colorScheme.onTertiary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        StyledText(
+                            text = speedProgress,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onTertiary,
+                            )
+                        )
+                    }
+                }
             }
 
-            if (mainState.value.libraryShowReadButton) {
+            if (mainState.value.libraryShowReadButton && !book.data.isComic) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(6.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = MaterialTheme.shapes.small
+                        )
+                ) {
+                    // Main button - Normal Reading
+                    FilledIconButton(
+                        onClick = { navigateToReader() },
+                        modifier = Modifier.size(32.dp),
+                        shape = MaterialTheme.shapes.small,
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.PlayArrow,
+                            contentDescription = stringResource(id = R.string.continue_reading_content_desc),
+                            Modifier.size(20.dp)
+                        )
+                    }
+
+                    // Separator
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(32.dp * 0.6f)
+                            .align(Alignment.CenterVertically)
+                            .background(MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.3f))
+                    )
+
+                    // Trailing button - Speed Reading
+                    FilledIconButton(
+                        onClick = { navigateToSpeedReading() },
+                        modifier = Modifier.size(24.dp),
+                        shape = MaterialTheme.shapes.small,
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Bolt,
+                            contentDescription = "Speed Read",
+                            Modifier.size(16.dp)
+                        )
+                    }
+                }
+            } else if (mainState.value.libraryShowReadButton && book.data.isComic) {
+                // Keep existing single button for comics
                 FilledIconButton(
                     onClick = { navigateToReader() },
                     modifier = Modifier

@@ -35,8 +35,8 @@ class ImportProgressViewModelWrapper @Inject constructor(
     val importOperations = importProgressService.importOperations
     val isImporting = importProgressService.isImporting
 
-    fun startImport(folderUri: Uri, folderName: String, folderPath: String) =
-        importProgressService.startImport(folderUri, folderName, folderPath)
+    fun startImport(folderUri: Uri, folderName: String, folderPath: String, onComplete: (suspend () -> Unit)? = null) =
+        importProgressService.startImport(folderUri, folderName, folderPath, onComplete)
 
     fun startCodexImport(folderPath: String, folderName: String) =
         importProgressService.startCodexImport(folderPath, folderName)
@@ -82,7 +82,7 @@ class ImportProgressViewModel @Inject constructor(
      * Start importing books from a folder.
      * Creates a new import operation and begins the import process.
      */
-    fun startImport(folderUri: Uri, folderName: String, folderPath: String) {
+    fun startImport(folderUri: Uri, folderName: String, folderPath: String, onComplete: (suspend () -> Unit)? = null) {
         viewModelScope.launch {
             val operationId = UUID.randomUUID().toString()
             val operation = ImportOperation(
@@ -128,6 +128,9 @@ class ImportProgressViewModel @Inject constructor(
                         op
                     }
                 }
+
+                // Call completion callback after successful import
+                onComplete?.invoke()
 
                 // Auto-clear completed operation after 2 seconds
                 delay(2000)
