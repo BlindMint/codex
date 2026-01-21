@@ -104,7 +104,7 @@ class SpeedReaderModel @Inject constructor(
 
     private suspend fun saveProgressToDatabase(progress: Float) {
         book.value?.let { currentBook ->
-            Log.d("SPEED_READER", "SpeedReaderModel saving to database: progress=$progress")
+            Log.d("SPEED_READER", "SpeedReaderModel saving to database: progress=$progress, bookId=${currentBook.id}")
 
             // Calculate corresponding scroll position for normal reader compatibility
             val textSize = text.value.size
@@ -116,14 +116,19 @@ class SpeedReaderModel @Inject constructor(
                 scrollIndex = scrollIndex,
                 scrollOffset = scrollOffset
             )
-            updateBook.execute(updatedBook)
-            lastSavedProgress = progress
-            lastDatabaseSaveWordIndex = currentWordIndex.intValue
+            try {
+                updateBook.execute(updatedBook)
+                Log.d("SPEED_READER", "Successfully saved progress to database: ${updatedBook.progress}")
+                lastSavedProgress = progress
+                lastDatabaseSaveWordIndex = currentWordIndex.intValue
 
-            // Refresh library and history
-            LibraryScreen.refreshListChannel.trySend(0)
-            HistoryScreen.refreshListChannel.trySend(0)
-        }
+                // Refresh library and history
+                LibraryScreen.refreshListChannel.trySend(0)
+                HistoryScreen.refreshListChannel.trySend(0)
+            } catch (e: Exception) {
+                Log.e("SPEED_READER", "Failed to save progress to database", e)
+            }
+        } ?: Log.w("SPEED_READER", "Cannot save progress: book is null")
     }
 
     fun onLeave() {
