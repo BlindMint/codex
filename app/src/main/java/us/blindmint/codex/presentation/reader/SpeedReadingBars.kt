@@ -38,12 +38,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.animation.core.animateFloatAsState
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.core.components.common.IconButton
 import us.blindmint.codex.presentation.core.components.common.StyledText
@@ -56,12 +62,17 @@ import us.blindmint.codex.presentation.reader.ReaderBottomBarSliderIndicator
 fun SpeedReadingTopBar(
     bookTitle: String,
     chapterTitle: String?,
-    currentProgress: Float,
+    currentWordIndex: Int,
+    totalWords: Int,
     onExitSpeedReading: () -> Unit,
     onShowSettings: () -> Unit
 ) {
+    val progress = remember(currentWordIndex, totalWords) {
+        if (totalWords > 0) currentWordIndex.toFloat() / totalWords else 0f
+    }
+
     val animatedProgress = animateFloatAsState(
-        targetValue = currentProgress,
+        targetValue = progress,
         label = "progress"
     )
 

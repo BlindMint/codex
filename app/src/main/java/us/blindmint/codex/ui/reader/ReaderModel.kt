@@ -141,34 +141,38 @@ class ReaderModel @Inject constructor(
                                     val finalScrollIndex: Int
                                     val finalScrollOffset: Int
 
-                                    if (scrollOffset > 0) {
-                                        // Normal reader saved precise position - use it
-                                        finalScrollIndex = scrollIndex
-                                        finalScrollOffset = scrollOffset
-                                        Log.d("READER", "Using saved position: scrollIndex=$finalScrollIndex, scrollOffset=$finalScrollOffset")
-                                    } else {
-                                        // Speed reader saved progress - convert to position
-                                        finalScrollIndex = (progress * _state.value.text.lastIndex).toInt()
-                                            .coerceIn(0, _state.value.text.lastIndex)
-                                        finalScrollOffset = 0
-                                        Log.d("READER", "Converting progress to position: progress=$progress * text.lastIndex=${_state.value.text.lastIndex} = $finalScrollIndex")
-                                    }
+                                 if (scrollOffset > 0) {
+                                     // Normal reader saved precise position - use it
+                                     finalScrollIndex = scrollIndex
+                                     finalScrollOffset = scrollOffset
+                                     Log.d("READER", "Using saved position: scrollIndex=$finalScrollIndex, scrollOffset=$finalScrollOffset")
+                                 } else {
+                                     // Use progress as fraction of total text items
+                                     finalScrollIndex = (progress * _state.value.text.lastIndex).toInt()
+                                         .coerceIn(0, _state.value.text.lastIndex)
+                                     finalScrollOffset = 0
+                                     Log.d("READER", "Converting progress to position: progress=$progress * text.lastIndex=${_state.value.text.lastIndex} = $finalScrollIndex")
+                                 }
 
                                     Log.d("READER", "Final scroll position: index=$finalScrollIndex, offset=$finalScrollOffset")
 
-                                    _state.value.listState.requestScrollToItem(
-                                        finalScrollIndex,
-                                        finalScrollOffset
-                                    )
-                                    updateChapter(index = finalScrollIndex)
-                                }
+                                 _state.value.listState.requestScrollToItem(
+                                     finalScrollIndex,
+                                     finalScrollOffset
+                                 )
+                                 updateChapter(index = finalScrollIndex)
 
-                                _state.update {
-                                    it.copy(
-                                        isLoading = false,
-                                        errorMessage = null
-                                    )
-                                }
+                                 // Add a small delay to allow the scroll animation to complete
+                                 // before hiding the loading animation
+                                 delay(300)
+                             }
+
+                             _state.update {
+                                 it.copy(
+                                     isLoading = false,
+                                     errorMessage = null
+                                 )
+                             }
 
                                 // Load bookmarks for the current book
                                 launch(Dispatchers.IO) {

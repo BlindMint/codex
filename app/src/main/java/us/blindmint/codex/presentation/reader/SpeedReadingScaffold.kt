@@ -37,7 +37,12 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -130,8 +135,9 @@ fun SpeedReadingScaffold(
     book: us.blindmint.codex.domain.library.book.Book,
     bookTitle: String,
     chapterTitle: String?,
-    currentProgress: Float,
-    totalProgress: Float,
+    currentWordIndex: Int,
+    totalWords: Int,
+    initialWordIndex: Int = -1,
     backgroundColor: Color,
     fontColor: Color,
     accentCharacterEnabled: Boolean,
@@ -177,9 +183,39 @@ fun SpeedReadingScaffold(
     var isPlaying by remember { mutableStateOf(false) }
     var navigateWordCallback: ((Int) -> Unit)? by remember { mutableStateOf(null) }
     var showWordPicker by remember { mutableStateOf(false) }
+    // Calculate current progress from word index and total words
+    val currentProgress = remember(currentWordIndex, totalWords) {
+        if (totalWords > 0) currentWordIndex.toFloat() / totalWords else 0f
+    }
+
     var selectedProgress by remember { mutableFloatStateOf(currentProgress) }
-    var selectedWordIndex by remember { mutableIntStateOf(0) }
+    var selectedWordIndex by remember { mutableIntStateOf(-1) } // Start invalid, set when ready
     var realTimeProgress by remember { mutableFloatStateOf(currentProgress) } // Live progress updates
+
+    // Debounce WPM updates to prevent excessive screen re-renders
+    val coroutineScope = rememberCoroutineScope()
+    var localWpm by remember { mutableIntStateOf(wpm) }
+    var debounceJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
+
+    // Update local WPM when parent changes (e.g., loading settings)
+    LaunchedEffect(wpm) {
+        localWpm = wpm
+    }
+
+    // Debounce WPM updates during slider dragging to prevent excessive re-renders
+    LaunchedEffect(localWpm) {
+        debounceJob?.cancel()
+        debounceJob = coroutineScope.launch {
+            delay(300) // 300ms debounce
+            onWpmChange(localWpm)
+            debounceJob = null
+        }
+    }
+
+    // Local WPM change handler for immediate UI responsiveness
+    val localOnWpmChange = { newWpm: Int ->
+        localWpm = newWpm
+    }
 
     // Store parent callbacks to avoid name collision
     val parentOnChangeProgress = onChangeProgress
@@ -196,25 +232,20 @@ fun SpeedReadingScaffold(
         realTimeProgress = currentProgress
     }
 
-    // Initialize selectedWordIndex based on current progress when text loads
-    LaunchedEffect(text, currentProgress) {
-        if (text.isNotEmpty()) {
+    // Initialize selectedWordIndex based on initial word index when text loads
+    LaunchedEffect(text, initialWordIndex) {
+        Log.d("SPEED_READER", "LaunchedEffect triggered: text.size=${text.size}, currentWordIndex=$currentWordIndex, totalWords=$totalWords, initialWordIndex=$initialWordIndex, isLoading=$isLoading")
+        if (text.isNotEmpty() && initialWordIndex >= 0) {
             // Extract all words from text to determine starting position
             val allWords = text
                 .filterIsInstance<us.blindmint.codex.domain.reader.ReaderText.Text>()
                 .flatMap { it.line.text.split("\\s+".toRegex()) }
                 .filter { it.isNotBlank() }
 
-            // Check if this is a speed reader save with direct word index
-            val wordIndex = if (book.scrollOffset == -1) {
-                // Direct word index stored in scrollIndex
-                book.scrollIndex.coerceIn(0, allWords.size - 1)
-            } else {
-                // Word-based progress conversion
-                (currentProgress * allWords.size).toInt().coerceIn(0, allWords.size - 1)
-            }
+            // For speed reader, we use direct word index
+            val wordIndex = initialWordIndex.coerceIn(0, allWords.size - 1)
 
-            Log.d("SPEED_READER", "Loading: progress=$currentProgress, scrollOffset=${book.scrollOffset}, wordIndex=$wordIndex, totalWords=${allWords.size}")
+            Log.d("SPEED_READER", "Loading: currentWordIndex=$currentWordIndex, totalWords=$totalWords, initialWordIndex=$initialWordIndex, wordIndex=$wordIndex, allWords.size=${allWords.size}")
             selectedWordIndex = wordIndex
         }
     }
@@ -222,7 +253,7 @@ fun SpeedReadingScaffold(
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     Scaffold(
         topBar = {
-            if (!isLoading && !showOverlayMenu) {
+            if (!isLoading && !showOverlayMenu && selectedWordIndex >= 0) {
                 // For independent speed reader: always show minimal top bar with back and settings icons
                 androidx.compose.material3.TopAppBar(
                     title = {},
@@ -265,7 +296,7 @@ fun SpeedReadingScaffold(
                         containerColor = backgroundColor.copy(alpha = 0.9f)
                     )
                 )
-            } else if (!isLoading && showOverlayMenu) {
+            } else if (!isLoading && showOverlayMenu && selectedWordIndex >= 0) {
                 // For integrated speed reader: show overlay menu when tapped
                 AnimatedVisibility(
                     modifier = Modifier.fillMaxWidth(),
@@ -276,7 +307,8 @@ fun SpeedReadingScaffold(
                     SpeedReadingTopBar(
                         bookTitle = bookTitle,
                         chapterTitle = chapterTitle,
-                        currentProgress = currentProgress,
+                        currentWordIndex = currentWordIndex,
+                        totalWords = totalWords,
                         onExitSpeedReading = onExitSpeedReading,
                         onShowSettings = onShowSpeedReadingSettings
                     )
@@ -284,7 +316,7 @@ fun SpeedReadingScaffold(
             }
         },
         bottomBar = {
-            if (!isLoading && showOverlayMenu) {
+            if (!isLoading && showOverlayMenu && selectedWordIndex >= 0) {
                 // For integrated speed reader: show overlay menu when tapped
                 AnimatedVisibility(
                     modifier = Modifier.fillMaxWidth(),
@@ -298,8 +330,8 @@ fun SpeedReadingScaffold(
                         book = book, // Need to add book parameter
                         lockMenu = false, // For speed reading, allow seeking
                         onChangeProgress = { progress -> onChangeProgress(progress, 0) },
-                        wpm = wpm,
-                        onWpmChange = onWpmChange,
+                        wpm = localWpm,
+                        onWpmChange = localOnWpmChange,
                         isPlaying = isPlaying,
                         onPlayPause = { isPlaying = !isPlaying },
                         onNavigateWord = onNavigateWord,
@@ -320,8 +352,8 @@ fun SpeedReadingScaffold(
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
-            if (isLoading || text.isEmpty()) {
-                // Show loading indicator when text is not ready
+            if (isLoading || text.isEmpty() || initialWordIndex < 0 || selectedWordIndex < 0) {
+                // Show loading indicator until text is ready AND word index is synchronized
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -336,8 +368,8 @@ fun SpeedReadingScaffold(
             } else {
                 SpeedReadingContent(
                 text = text,
-                currentProgress = currentProgress,
-                totalProgress = realTimeProgress,
+                currentWordIndex = currentWordIndex,
+                totalWords = totalWords,
                 backgroundColor = backgroundColor,
                 fontColor = fontColor,
                 fontFamily = fontFamily,
@@ -356,9 +388,9 @@ fun SpeedReadingScaffold(
                 horizontalBarsColor = horizontalBarsColor,
                 horizontalBarsOpacity = horizontalBarsOpacity,
                 focalPointPosition = focalPointPosition,
-                wpm = wpm,
+                wpm = localWpm,
                 isPlaying = isPlaying,
-                onWpmChange = onWpmChange,
+                onWpmChange = localOnWpmChange,
                 onPlayPause = { isPlaying = !isPlaying },
                 onNavigateWord = onNavigateWord,
                 onToggleMenu = { showMenu = !showMenu },
@@ -394,7 +426,8 @@ fun SpeedReadingScaffold(
         if (showWordPicker && !isLoading && text.isNotEmpty()) {
               SpeedReadingWordPickerSheet(
                   text = text,
-                  currentProgress = realTimeProgress,  // Show current reading position
+                  currentWordIndex = currentWordIndex,
+                  totalWords = totalWords,
                   backgroundColor = backgroundColor,
                   fontColor = fontColor,
                   onDismiss = { showWordPicker = false },

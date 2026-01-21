@@ -88,8 +88,8 @@ import kotlin.math.roundToInt
 @Composable
 fun SpeedReadingContent(
     text: List<ReaderText>,
-    currentProgress: Float,
-    totalProgress: Float, // Overall book progress
+    currentWordIndex: Int,
+    totalWords: Int,
     backgroundColor: Color,
     fontColor: Color,
     fontFamily: FontFamily,
@@ -146,7 +146,7 @@ fun SpeedReadingContent(
             .filter { it.isNotBlank() }
     }
 
-    var currentWordIndex by remember { mutableIntStateOf(0) }
+    var currentWordIndex by remember { mutableIntStateOf(initialWordIndex) }
     var lastProgressSaveIndex by remember { mutableIntStateOf(startingWordIndex) }
     var lastNavigationDirection by remember { mutableIntStateOf(0) }
     var showQuickWpmMenu by remember { mutableStateOf(false) }
@@ -687,7 +687,7 @@ fun SpeedReadingContent(
             ) {
                 // Progress bar (takes available space)
                 LinearProgressIndicator(
-                    progress = { totalProgress },
+                    progress = { if (totalWords > 0) currentWordIndex.toFloat() / totalWords else 0f },
                     modifier = Modifier.weight(1f),
                     color = fontColor.copy(alpha = 0.7f),
                     trackColor = fontColor.copy(alpha = 0.2f)

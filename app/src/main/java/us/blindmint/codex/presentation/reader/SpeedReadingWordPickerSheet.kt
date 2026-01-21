@@ -55,7 +55,8 @@ data class WordParagraph(
 @Composable
 fun SpeedReadingWordPickerSheet(
     text: List<ReaderText>,
-    currentProgress: Float,
+    currentWordIndex: Int,
+    totalWords: Int,
     backgroundColor: Color,
     fontColor: Color,
     onDismiss: () -> Unit,
@@ -80,9 +81,9 @@ fun SpeedReadingWordPickerSheet(
             .sortedBy { it: WordParagraph -> it.textIndex }
     }
 
-    // Calculate current word index based on progress (now word-based)
-    val currentWordIndex: Int = remember(currentProgress, totalWords) {
-        (currentProgress * totalWords).toInt().coerceIn(0, totalWords - 1)
+    // Current word index is passed directly
+    val currentProgress = remember(currentWordIndex, totalWords) {
+        if (totalWords > 0) currentWordIndex.toFloat() / totalWords else 0f
     }
 
     // Find the current word position

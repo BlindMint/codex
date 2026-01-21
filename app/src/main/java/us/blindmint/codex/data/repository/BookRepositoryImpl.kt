@@ -123,6 +123,7 @@ class BookRepositoryImpl @Inject constructor(
         val books = database.findBooksById(ids)
 
         return books.map { entity ->
+            Log.d("SPEED_READER_DB", "Loading book ${entity.id}, speedReaderWordIndex=${entity.speedReaderWordIndex}")
             val book = bookMapper.toBook(entity)
             val lastHistory = database.getLatestHistoryForBook(
                 book.id
@@ -279,7 +280,11 @@ class BookRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateSpeedReaderProgress(bookId: Int, wordIndex: Int) {
+        Log.d("SPEED_READER_DB", "Updating speed reader progress: bookId=$bookId, wordIndex=$wordIndex")
         database.updateSpeedReaderProgress(bookId, wordIndex)
+        // Verify the update worked
+        val updatedBook = database.findBookById(bookId)
+        Log.d("SPEED_READER_DB", "After update, speedReaderWordIndex=${updatedBook?.speedReaderWordIndex}")
     }
 
     override suspend fun markSpeedReaderOpened(bookId: Int) {

@@ -51,7 +51,7 @@ class SpeedReaderModel @Inject constructor(
                 isLoading.value = true
                 errorMessage.value = null
                 currentProgress.floatValue = 0f
-                currentWordIndex.intValue = 0
+                currentWordIndex.intValue = -1 // Invalid until book loads
             }
 
             val loadedBook = getBookById.execute(bookId)
@@ -63,6 +63,7 @@ class SpeedReaderModel @Inject constructor(
             // Mark that this book has been opened in speed reader
             val updatedBook = loadedBook.copy(speedReaderHasBeenOpened = true)
             book.value = updatedBook
+
             // Set initial progress to 0; will be updated after text loads
             currentProgress.floatValue = 0f
 
@@ -83,16 +84,20 @@ class SpeedReaderModel @Inject constructor(
                         isLoading.value = false
                     } else {
                         text.value = loadedText
-                        // Calculate total words for progress calculation
-                        val totalWords = loadedText
-                            .filterIsInstance<us.blindmint.codex.domain.reader.ReaderText.Text>()
-                            .flatMap { it.line.text.split("\\s+".toRegex()) }
-                            .size
-                        // Set progress from saved speed reader word index
-                        currentWordIndex.intValue = loadedBook.speedReaderWordIndex
-                        currentProgress.floatValue = if (totalWords > 0) {
-                            loadedBook.speedReaderWordIndex.toFloat() / totalWords
-                        } else 0f
+                         // Calculate total words for progress calculation
+                         val totalWords = loadedText
+                             .filterIsInstance<us.blindmint.codex.domain.reader.ReaderText.Text>()
+                             .flatMap { it.line.text.split("\\s+".toRegex()) }
+                             .size
+
+                          // Set the correct word index AFTER text is loaded
+                          Log.d("SPEED_READER", "Setting initial currentWordIndex to: ${loadedBook.speedReaderWordIndex} (after text loaded)")
+                          currentWordIndex.intValue = loadedBook.speedReaderWordIndex
+
+                          // Update progress based on current word index and total words
+                          currentProgress.floatValue = if (totalWords > 0) {
+                              currentWordIndex.intValue.toFloat() / totalWords
+                          } else 0f
                         isLoading.value = false
                     }
                 } catch (e: Exception) {

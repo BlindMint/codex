@@ -234,12 +234,6 @@ data class SpeedReadingScreen(
         // Use empty book as fallback when book hasn't loaded yet
         val displayBook = book ?: us.blindmint.codex.presentation.core.constants.provideEmptyBook()
 
-        val bookProgress = androidx.compose.runtime.remember(
-            speedReaderModel.currentProgress.floatValue
-        ) {
-            "${speedReaderModel.currentProgress.floatValue.calculateProgress(2)}%"
-        }
-
         val bottomBarPadding = androidx.compose.runtime.remember(mainState.value.bottomBarPadding) {
             (mainState.value.bottomBarPadding * 4f).dp
         }
@@ -252,13 +246,30 @@ data class SpeedReadingScreen(
             targetValue = settingsState.value.selectedColorPreset.fontColor
         )
 
+        // Calculate total words for speed reader progress calculations
+        val totalWords = if (text.isNotEmpty()) {
+            text.filterIsInstance<us.blindmint.codex.domain.reader.ReaderText.Text>()
+                .flatMap { it.line.text.split("\\s+".toRegex()) }
+                .size
+        } else {
+            0
+        }
+
+        val bookProgress = androidx.compose.runtime.remember(
+            speedReaderModel.currentWordIndex.intValue, totalWords
+        ) {
+            val progress = if (totalWords > 0) speedReaderModel.currentWordIndex.intValue.toFloat() / totalWords else 0f
+            "${progress.calculateProgress(2)}%"
+        }
+
         SpeedReadingScaffold(
             text = text,
             book = displayBook,
             bookTitle = displayBook.title,
             chapterTitle = null, // Speed reader doesn't track chapters
-            currentProgress = displayBook.progress,
-            totalProgress = displayBook.progress,
+            currentWordIndex = speedReaderModel.currentWordIndex.intValue,
+            totalWords = totalWords,
+            initialWordIndex = speedReaderModel.currentWordIndex.intValue,
             backgroundColor = backgroundColor.value,
             fontColor = fontColor.value,
             isLoading = isLoading,
@@ -305,9 +316,7 @@ data class SpeedReadingScreen(
                 speedReaderModel.updateProgress(progress, wordIndex, forceSave = true)
             },
             onExitSpeedReading = {
-                // Save progress before exiting
-                speedReaderModel.onLeave()
-
+                // Progress is already saved by the exit button logic above
                 // Always return to library for a completely fresh state
                 // This ensures the book can be opened fresh from library with latest progress
                 navigator.push(
