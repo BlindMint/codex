@@ -228,8 +228,17 @@ data class SpeedReadingScreen(
 
         // Calculate progress for display
         val book = speedReaderModel.book.value
-        val text = speedReaderModel.text.value
+        val words = speedReaderModel.words.value
+        val totalWords = speedReaderModel.totalWords.intValue
         val isLoading = speedReaderModel.isLoading.value
+
+        Log.d("SPEED_READER_SCREEN", "[COMPOSITION] Rendering SpeedReadingScaffold")
+        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   book.id=${book?.id}, book.title=${book?.title}")
+        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   words.size=${words.size}")
+        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   totalWords=$totalWords")
+        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   isLoading=$isLoading")
+        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   speedReaderModel.currentWordIndex.intValue=${speedReaderModel.currentWordIndex.intValue}")
+        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   speedReaderModel.currentProgress.floatValue=${speedReaderModel.currentProgress.floatValue}")
 
         // Use empty book as fallback when book hasn't loaded yet
         val displayBook = book ?: us.blindmint.codex.presentation.core.constants.provideEmptyBook()
@@ -246,15 +255,6 @@ data class SpeedReadingScreen(
             targetValue = settingsState.value.selectedColorPreset.fontColor
         )
 
-        // Calculate total words for speed reader progress calculations
-        val totalWords = if (text.isNotEmpty()) {
-            text.filterIsInstance<us.blindmint.codex.domain.reader.ReaderText.Text>()
-                .flatMap { it.line.text.split("\\s+".toRegex()) }
-                .size
-        } else {
-            0
-        }
-
         val bookProgress = androidx.compose.runtime.remember(
             speedReaderModel.currentWordIndex.intValue, totalWords
         ) {
@@ -263,7 +263,7 @@ data class SpeedReadingScreen(
         }
 
         SpeedReadingScaffold(
-            text = text,
+            words = words,
             book = displayBook,
             bookTitle = displayBook.title,
             chapterTitle = null, // Speed reader doesn't track chapters

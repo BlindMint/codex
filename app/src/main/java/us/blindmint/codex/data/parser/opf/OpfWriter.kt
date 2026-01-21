@@ -42,7 +42,7 @@ class OpfWriter @Inject constructor(
     fun generateOpfContent(book: Book, opdsEntry: OpdsEntry? = null): String {
         val title = escapeXml(book.title)
         val author = escapeXml(book.authors.firstOrNull() ?: opdsEntry?.author ?: "")
-        val description = escapeXml(book.description ?: book.summary ?: "")
+        val description = escapeXml(book.description ?: "")
         val uuid = book.uuid ?: opdsEntry?.identifiers?.find { it.startsWith("urn:uuid:") }
             ?.removePrefix("urn:uuid:") ?: UUID.randomUUID().toString()
         val isbn = book.isbn ?: opdsEntry?.identifiers?.find { it.startsWith("urn:isbn:") }

@@ -67,6 +67,9 @@ object AppModule {
                 DatabaseHelper.MIGRATION_11_12, // creates BookmarkEntity table
                 DatabaseHelper.MIGRATION_12_13, // adds selectedText, customName, pageNumber to BookmarkEntity
                 DatabaseHelper.MIGRATION_13_14, // adds isLocked to ColorPresetEntity
+                DatabaseHelper.MIGRATION_17_18, // adds speedReaderWordIndex and speedReaderHasBeenOpened
+                DatabaseHelper.MIGRATION_18_19, // adds totalWordCount
+                DatabaseHelper.MIGRATION_19_20, // removes totalWordCount, summary, remoteUrl, archiveFormat
             )
             .allowMainThreadQueries()
             .build()

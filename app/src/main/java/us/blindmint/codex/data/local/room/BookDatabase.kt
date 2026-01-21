@@ -31,7 +31,7 @@ import java.io.File
         BookmarkEntity::class,
         OpdsSourceEntity::class,
     ],
-    version = 18,
+    version = 20,
     exportSchema = false
 )
 abstract class BookDatabase : RoomDatabase() {
@@ -201,6 +201,23 @@ object DatabaseHelper {
             // Add speed reader progress fields to BookEntity
             db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `speedReaderWordIndex` INTEGER NOT NULL DEFAULT 0")
             db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `speedReaderHasBeenOpened` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
+    val MIGRATION_18_19 = object : Migration(18, 19) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Add totalWordCount field to BookEntity for cached word count
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `totalWordCount` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
+    val MIGRATION_19_20 = object : Migration(19, 20) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Remove unused fields from BookEntity
+            db.execSQL("ALTER TABLE `BookEntity` DROP COLUMN `totalWordCount`")
+            db.execSQL("ALTER TABLE `BookEntity` DROP COLUMN `summary`")
+            db.execSQL("ALTER TABLE `BookEntity` DROP COLUMN `remoteUrl`")
+            db.execSQL("ALTER TABLE `BookEntity` DROP COLUMN `archiveFormat`")
         }
     }
 }

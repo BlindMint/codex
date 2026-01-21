@@ -80,14 +80,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.onSizeChanged
 import kotlinx.coroutines.delay
-import us.blindmint.codex.domain.reader.ReaderText
+import us.blindmint.codex.domain.reader.SpeedReaderWord
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpeedReadingContent(
-    text: List<ReaderText>,
+    words: List<SpeedReaderWord>,
     currentWordIndex: Int,
     totalWords: Int,
     backgroundColor: Color,
@@ -130,23 +130,14 @@ fun SpeedReadingContent(
     showBottomBar: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    // Calculate total words in entire book for progress tracking
-    val totalWords = remember(text) {
-        text.filterIsInstance<ReaderText.Text>()
-            .sumOf { it.line.text.split("\\s+".toRegex()).filter { w -> w.isNotBlank() }.size }
-    }
+    // Log initial composition
+    Log.d("SPEED_READER_CONTENT", "[COMPOSITION START] words.size=${words.size}, currentWordIndex=$currentWordIndex, totalWords=$totalWords, initialWordIndex=$initialWordIndex, isPlaying=$isPlaying")
 
     // Speed reader always starts from beginning of book
     val startingWordIndex = 0
 
-    // Extract all words from text - navigation will start from initialWordIndex
-    val words = remember(text) {
-        text.filterIsInstance<ReaderText.Text>()
-            .flatMap { it.line.text.split("\\s+".toRegex()) }
-            .filter { it.isNotBlank() }
-    }
-
     var currentWordIndex by remember { mutableIntStateOf(initialWordIndex) }
+    Log.d("SPEED_READER_CONTENT", "[INIT] currentWordIndex initialized from initialWordIndex=$initialWordIndex")
     var lastProgressSaveIndex by remember { mutableIntStateOf(startingWordIndex) }
     var lastNavigationDirection by remember { mutableIntStateOf(0) }
     var showQuickWpmMenu by remember { mutableStateOf(false) }
@@ -156,11 +147,9 @@ fun SpeedReadingContent(
     val density = LocalDensity.current
     val textMeasurer = rememberTextMeasurer()
 
-    // Reset word index when words change, using initialWordIndex if provided
-    LaunchedEffect(words, initialWordIndex) {
-        currentWordIndex = initialWordIndex.coerceIn(0, (words.size - 1).coerceAtLeast(0))
-        lastNavigationDirection = 0
-    }
+    // Note: currentWordIndex is initialized with initialWordIndex and will be updated
+    // by user navigation. We don't reset it here to avoid race conditions
+    // with the parent SpeedReadingScaffold's selectedWordIndex management.
 
     // Handle word navigation
     val handleNavigateWord: (Int) -> Unit = { direction ->
@@ -216,7 +205,7 @@ fun SpeedReadingContent(
     // Auto-advance words when playing
     LaunchedEffect(isPlaying, currentWordIndex, wpm, words) {
         if (isPlaying && words.isNotEmpty() && currentWordIndex < words.size) {
-            val currentWordText = words.getOrNull(currentWordIndex) ?: ""
+            val currentWordText = words.getOrNull(currentWordIndex)?.text ?: ""
 
             // Check for sentence-ending punctuation (period, exclamation, question, colon)
             val isSentenceEnd = currentWordText.endsWith(".") ||
@@ -370,7 +359,7 @@ fun SpeedReadingContent(
         contentAlignment = Alignment.Center
     ) {
         if (words.isNotEmpty() && currentWordIndex < words.size) {
-            val currentWord = words[currentWordIndex]
+            val currentWord = words[currentWordIndex].text
             val accentIndex = findAccentCharIndex(currentWord)
 
             // Measure text parts for proper positioning

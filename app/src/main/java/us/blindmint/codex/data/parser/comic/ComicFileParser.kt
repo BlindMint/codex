@@ -67,8 +67,7 @@ class ComicFileParser @Inject constructor(
                         lastOpened = null,
                         // Comic fields
                         isComic = true,
-                        pageCount = pageCount,
-                        archiveFormat = getArchiveFormat(cachedFile)
+                        pageCount = pageCount
                     )
 
                     BookWithCover(book, coverImage)
@@ -83,15 +82,5 @@ class ComicFileParser @Inject constructor(
     private fun isComicFile(cachedFile: CachedFile): Boolean {
         val extension = cachedFile.name.substringAfterLast('.').lowercase()
         return extension in supportedExtensions
-    }
-
-    private fun getArchiveFormat(cachedFile: CachedFile): String? {
-        val extension = cachedFile.name.substringAfterLast('.').lowercase()
-        return when (extension) {
-            "cbz" -> "CBZ"
-            "cbr" -> "CBR"
-            "cb7" -> "CB7"
-            else -> null
-        }
     }
 }

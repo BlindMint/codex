@@ -23,7 +23,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import us.blindmint.codex.domain.reader.ReaderText
+import us.blindmint.codex.domain.reader.SpeedReaderWord
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
@@ -35,8 +35,8 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
  */
 data class WordPosition(
     val word: String,
-    val textIndex: Int,          // Index in List<ReaderText>
-    val wordIndexInText: Int,    // Word position within that text
+    val textIndex: Int,          // Index in List<ReaderText> (now paragraphIndex from SpeedReaderWord)
+    val wordIndexInText: Int,    // Word position within that text (always 0 for SpeedReaderWord)
     val globalWordIndex: Int     // Global word index across book
 )
 
@@ -54,7 +54,7 @@ data class WordParagraph(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, FlowPreview::class)
 @Composable
 fun SpeedReadingWordPickerSheet(
-    text: List<ReaderText>,
+    words: List<SpeedReaderWord>,
     currentWordIndex: Int,
     totalWords: Int,
     backgroundColor: Color,
@@ -66,13 +66,17 @@ fun SpeedReadingWordPickerSheet(
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
 
-    // Extract all words from text
-    val allWords: List<WordPosition> = remember(text) {
-        extractWords(text)
+    // Convert SpeedReaderWord to WordPosition for display
+    val allWords: List<WordPosition> = remember(words) {
+        words.map { speedReaderWord ->
+            WordPosition(
+                word = speedReaderWord.text,
+                textIndex = speedReaderWord.paragraphIndex,
+                wordIndexInText = 0,
+                globalWordIndex = speedReaderWord.globalIndex
+            )
+        }
     }
-
-    // Calculate total words for progress calculation
-    val totalWords: Int = allWords.size
 
     // Group words by paragraph (textIndex)
     val paragraphs: List<WordParagraph> = remember(allWords) {
@@ -374,32 +378,5 @@ private fun WordChip(
             color = textColor
         )
     }
-}
-
-/**
- * Extract all words from the text list.
- */
-private fun extractWords(text: List<ReaderText>): List<WordPosition> {
-    val words = mutableListOf<WordPosition>()
-    var globalIndex = 0
-
-    text.forEachIndexed { textIndex, readerText ->
-        if (readerText is ReaderText.Text) {
-            val lineWords = readerText.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }
-            lineWords.forEachIndexed { wordIndex, word ->
-                words.add(
-                    WordPosition(
-                        word = word,
-                        textIndex = textIndex,
-                        wordIndexInText = wordIndex,
-                        globalWordIndex = globalIndex
-                    )
-                )
-                globalIndex++
-            }
-        }
-    }
-
-    return words
 }
 

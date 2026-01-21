@@ -66,7 +66,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.R
-import us.blindmint.codex.domain.reader.ReaderText
+import us.blindmint.codex.domain.reader.SpeedReaderWord
 import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
 import us.blindmint.codex.presentation.core.components.progress_indicator.SkullProgressIndicator
 import us.blindmint.codex.presentation.core.util.noRippleClickable
@@ -80,58 +80,17 @@ import androidx.compose.ui.text.font.FontWeight
 
 
 // Find the nearest paragraph start before the given word index
-private fun findNearestParagraphStart(text: List<us.blindmint.codex.domain.reader.ReaderText>, words: List<String>, targetIndex: Int): Int {
+private fun findNearestParagraphStart(words: List<SpeedReaderWord>, targetIndex: Int): Int {
     if (targetIndex <= 0) return targetIndex
 
-    // Find which text item contains the target word
-    var currentWordCount = 0
-    var targetItemIndex = -1
-
-    for ((itemIndex, textItem) in text.withIndex()) {
-        if (textItem is us.blindmint.codex.domain.reader.ReaderText.Text) {
-            val itemWords = textItem.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }
-            currentWordCount += itemWords.size
-
-            if (currentWordCount > targetIndex) {
-                targetItemIndex = itemIndex
-                break
-            }
-        }
-    }
-
-    if (targetItemIndex <= 0) return targetIndex
-
-    // Look backwards through text items to find a paragraph boundary
-    // A paragraph boundary is typically a transition from one text item to another
-    // We'll go back up to 3 text items to find a suitable paragraph start
-    val searchStartItem = maxOf(0, targetItemIndex - 3)
-
-    for (itemIndex in targetItemIndex downTo searchStartItem) {
-        val textItem = text.getOrNull(itemIndex)
-        if (textItem is us.blindmint.codex.domain.reader.ReaderText.Text) {
-            // Count words up to this text item
-            var wordCountUpToItem = 0
-            for (i in 0 until itemIndex) {
-                if (text[i] is us.blindmint.codex.domain.reader.ReaderText.Text) {
-                    val itemWords = (text[i] as us.blindmint.codex.domain.reader.ReaderText.Text)
-                        .line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }
-                    wordCountUpToItem += itemWords.size
-                }
-            }
-
-            // Return the word index at the start of this text item (paragraph)
-            return wordCountUpToItem
-        }
-    }
-
-    // If no paragraph boundary found, return the original target index
-    return targetIndex
+    val targetWord = words.getOrNull(targetIndex) ?: return targetIndex
+    return words.indexOfFirst { it.paragraphIndex == targetWord.paragraphIndex && it.globalIndex <= targetIndex }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpeedReadingScaffold(
-    text: List<ReaderText>,
+    words: List<SpeedReaderWord>,
     book: us.blindmint.codex.domain.library.book.Book,
     bookTitle: String,
     chapterTitle: String?,
@@ -232,22 +191,28 @@ fun SpeedReadingScaffold(
         realTimeProgress = currentProgress
     }
 
-    // Initialize selectedWordIndex based on initial word index when text loads
-    LaunchedEffect(text, initialWordIndex) {
-        Log.d("SPEED_READER", "LaunchedEffect triggered: text.size=${text.size}, currentWordIndex=$currentWordIndex, totalWords=$totalWords, initialWordIndex=$initialWordIndex, isLoading=$isLoading")
-        if (text.isNotEmpty() && initialWordIndex >= 0) {
-            // Extract all words from text to determine starting position
-            val allWords = text
-                .filterIsInstance<us.blindmint.codex.domain.reader.ReaderText.Text>()
-                .flatMap { it.line.text.split("\\s+".toRegex()) }
-                .filter { it.isNotBlank() }
+    // Initialize selectedWordIndex based on initial word index when words load
+    LaunchedEffect(words, initialWordIndex) {
+        Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect START] words.size=${words.size}, initialWordIndex=$initialWordIndex, isLoading=$isLoading")
+        Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect START] currentWordIndex=$currentWordIndex, totalWords=$totalWords")
 
-            // For speed reader, we use direct word index
-            val wordIndex = initialWordIndex.coerceIn(0, allWords.size - 1)
+        if (words.isNotEmpty() && initialWordIndex >= 0) {
+            val wordIndex = initialWordIndex.coerceIn(0, words.size - 1)
 
-            Log.d("SPEED_READER", "Loading: currentWordIndex=$currentWordIndex, totalWords=$totalWords, initialWordIndex=$initialWordIndex, wordIndex=$wordIndex, allWords.size=${allWords.size}")
+            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect] Setting selectedWordIndex:")
+            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   initialWordIndex = $initialWordIndex")
+            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   words.size = ${words.size}")
+            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   coerced wordIndex = $wordIndex")
+            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   BEFORE: selectedWordIndex = $selectedWordIndex")
+
             selectedWordIndex = wordIndex
+
+            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   AFTER: selectedWordIndex = $selectedWordIndex")
+        } else {
+            Log.w("SPEED_READER_SCAFFOLD", "[LaunchedEffect] Skipping - words.isEmpty=${words.isEmpty()}, initialWordIndex=$initialWordIndex")
         }
+
+        Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect END] completed")
     }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -260,12 +225,7 @@ fun SpeedReadingScaffold(
                       navigationIcon = {
                           androidx.compose.material3.IconButton(onClick = {
                               // Always save current progress on exit
-                              val totalWords = text.sumOf { readerText ->
-                                  when (readerText) {
-                                      is us.blindmint.codex.domain.reader.ReaderText.Text -> readerText.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }.size
-                                      else -> 0
-                                  }
-                              }
+                              val totalWords = words.size
                               // If playing, pause first to ensure progress is saved
                               val wasPlaying = isPlaying
                               if (isPlaying) {
@@ -352,7 +312,7 @@ fun SpeedReadingScaffold(
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
-            if (isLoading || text.isEmpty() || initialWordIndex < 0 || selectedWordIndex < 0) {
+            if (isLoading || words.isEmpty() || initialWordIndex < 0 || selectedWordIndex < 0) {
                 // Show loading indicator until text is ready AND word index is synchronized
                 Box(
                     modifier = Modifier
@@ -366,8 +326,15 @@ fun SpeedReadingScaffold(
                     )
                 }
             } else {
+                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL] Calling SpeedReadingContent with:")
+                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   words.size=${words.size}")
+                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   currentWordIndex=$currentWordIndex")
+                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   totalWords=$totalWords")
+                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   initialWordIndex=$initialWordIndex")
+                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   selectedWordIndex=$selectedWordIndex")
+
                 SpeedReadingContent(
-                text = text,
+                words = words,
                 currentWordIndex = currentWordIndex,
                 totalWords = totalWords,
                 backgroundColor = backgroundColor,
@@ -423,9 +390,9 @@ fun SpeedReadingScaffold(
         }
 
         // Word Picker Sheet - only show when not loading
-        if (showWordPicker && !isLoading && text.isNotEmpty()) {
+        if (showWordPicker && !isLoading && words.isNotEmpty()) {
               SpeedReadingWordPickerSheet(
-                  text = text,
+                  words = words,
                   currentWordIndex = currentWordIndex,
                   totalWords = totalWords,
                   backgroundColor = backgroundColor,
