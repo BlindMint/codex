@@ -80,14 +80,14 @@ fun SpeedReadingWordPickerSheet(
             .sortedBy { it: WordParagraph -> it.textIndex }
     }
 
-    // Calculate current word index based on progress
-    val currentTextIndex: Int = remember(currentProgress, text) {
-        (currentProgress * text.lastIndex).toInt().coerceIn(0, text.lastIndex)
+    // Calculate current word index based on progress (now word-based)
+    val currentWordIndex: Int = remember(currentProgress, totalWords) {
+        (currentProgress * totalWords).toInt().coerceIn(0, totalWords - 1)
     }
 
-    // Find the current word position (first word in current text)
-    val currentWordPosition: WordPosition? = remember(currentTextIndex, allWords) {
-        allWords.firstOrNull { it: WordPosition -> it.textIndex == currentTextIndex }
+    // Find the current word position
+    val currentWordPosition: WordPosition? = remember(currentWordIndex, allWords) {
+        allWords.getOrNull(currentWordIndex)
     }
 
     // State for selected word

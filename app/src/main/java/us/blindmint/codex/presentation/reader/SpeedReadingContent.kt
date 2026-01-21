@@ -194,15 +194,9 @@ fun SpeedReadingContent(
     }
 
 
-    // Call the parent's onNavigateWord callback and update progress when word changes
+    // Call the parent's onNavigateWord callback
     LaunchedEffect(currentWordIndex) {
         onNavigateWord(lastNavigationDirection)
-        // Update progress tracking with current word index
-        if (totalWords > 0) {
-            val globalWordIndex = startingWordIndex + currentWordIndex
-            val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-            onProgressUpdate(newProgress)
-        }
     }
 
     // Countdown animation
