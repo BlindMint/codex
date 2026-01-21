@@ -223,15 +223,7 @@ fun SpeedReadingScaffold(
                       navigationIcon = {
                           androidx.compose.material3.IconButton(onClick = {
                               if (isPlaying) onPlayPause()
-                              // Calculate current word index from progress for exit save
-                              val totalWords = text.sumOf { readerText ->
-                                  when (readerText) {
-                                      is us.blindmint.codex.domain.reader.ReaderText.Text -> readerText.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }.size
-                                      else -> 0
-                                  }
-                              }
-                              val currentWordIndex = (realTimeProgress * totalWords).toInt().coerceIn(0, totalWords - 1)
-                              parentOnSaveProgress(realTimeProgress, currentWordIndex)
+                              parentOnSaveProgress(realTimeProgress, 0) // Word index not available here, use 0 as placeholder
                               onExitSpeedReading()
                           }) {
                              androidx.compose.material3.Icon(

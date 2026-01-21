@@ -87,14 +87,17 @@ class SpeedReaderModel @Inject constructor(
 
     fun updateProgress(progress: Float, wordIndex: Int, forceSave: Boolean = false) {
         viewModelScope.launch {
+            Log.d("SPEED_READER", "Model updateProgress: progress=$progress, wordIndex=$wordIndex, forceSave=$forceSave, lastSaved=$lastDatabaseSaveWordIndex")
             // Always update UI state immediately for smooth progress bar
             currentProgress.floatValue = progress
             currentWordIndex.intValue = wordIndex
 
             // Save to database every 50+ words during reading, or immediately for manual pauses
             val wordsSinceLastSave = wordIndex - lastDatabaseSaveWordIndex
+            Log.d("SPEED_READER", "Model wordsSinceLastSave=$wordsSinceLastSave, willSave=${forceSave || wordsSinceLastSave >= 50}")
             if (forceSave || wordsSinceLastSave >= 50) {
                 saveProgressToDatabase(progress)
+                lastDatabaseSaveWordIndex = wordIndex
             }
         }
     }

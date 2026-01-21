@@ -7,6 +7,7 @@
 package us.blindmint.codex.ui.reader
 
 import android.os.Parcelable
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -300,6 +301,7 @@ data class SpeedReadingScreen(
             },
             onSaveProgress = { progress, wordIndex ->
                 // Immediate progress save for manual pauses (no throttling)
+                Log.d("SPEED_READER", "Screen onSaveProgress: progress=$progress, wordIndex=$wordIndex")
                 speedReaderModel.updateProgress(progress, wordIndex, forceSave = true)
             },
             onExitSpeedReading = {

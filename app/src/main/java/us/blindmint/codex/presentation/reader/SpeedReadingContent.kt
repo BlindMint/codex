@@ -170,10 +170,12 @@ fun SpeedReadingContent(
             lastNavigationDirection = direction
             // Pause auto-play when manually navigating
             if (isPlaying) {
+                Log.d("SPEED_READER", "Navigation pause: currentWordIndex=$currentWordIndex, totalWords=$totalWords")
                 onPlayPause()
                 // Save progress immediately when manually pausing
                 val globalWordIndex = startingWordIndex + currentWordIndex
                 val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                Log.d("SPEED_READER", "Navigation saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
                 onSaveProgress(newProgress, globalWordIndex)
             }
         }
@@ -311,10 +313,12 @@ fun SpeedReadingContent(
                                    position.x < tapZoneWidth -> {
                                        // Left tap zone - navigate back (or pause if playing)
                                        if (isPlaying) {
+                                           Log.d("SPEED_READER", "Left tap pause: currentWordIndex=$currentWordIndex, totalWords=$totalWords")
                                            onPlayPause()
                                            // Save progress immediately when manually pausing
                                            val globalWordIndex = startingWordIndex + currentWordIndex
                                            val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                           Log.d("SPEED_READER", "Left tap saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
                                            onSaveProgress(newProgress, globalWordIndex)
                                        } else {
                                            navigateWord(-1)
@@ -323,10 +327,12 @@ fun SpeedReadingContent(
                                    position.x > width - tapZoneWidth -> {
                                        // Right tap zone - navigate forward (or pause if playing)
                                        if (isPlaying) {
+                                           Log.d("SPEED_READER", "Right tap pause: currentWordIndex=$currentWordIndex, totalWords=$totalWords")
                                            onPlayPause()
                                            // Save progress immediately when manually pausing
                                            val globalWordIndex = startingWordIndex + currentWordIndex
                                            val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                           Log.d("SPEED_READER", "Right tap saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
                                            onSaveProgress(newProgress, globalWordIndex)
                                        } else {
                                            navigateWord(1)
@@ -335,11 +341,13 @@ fun SpeedReadingContent(
                                    else -> {
                                        // Middle tap zone - always toggle play/pause
                                        val wasPlaying = isPlaying
+                                       Log.d("SPEED_READER", "Middle tap: wasPlaying=$wasPlaying, currentWordIndex=$currentWordIndex")
                                        onPlayPause()
                                        // Save progress immediately when manually pausing
                                        if (wasPlaying && !isPlaying) {
                                            val globalWordIndex = startingWordIndex + currentWordIndex
                                            val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                           Log.d("SPEED_READER", "Middle tap saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
                                            onSaveProgress(newProgress, globalWordIndex)
                                        }
                                    }
@@ -619,11 +627,13 @@ fun SpeedReadingContent(
                             .padding(8.dp)
                               .noRippleClickable {
                                   val wasPlaying = isPlaying
+                                  Log.d("SPEED_READER", "OSD play/pause: wasPlaying=$wasPlaying, currentWordIndex=$currentWordIndex")
                                   onPlayPause()
                                   // Save progress immediately when manually pausing
                                   if (wasPlaying && !isPlaying) {
                                       val globalWordIndex = startingWordIndex + currentWordIndex
                                       val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                      Log.d("SPEED_READER", "OSD saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
                                       onSaveProgress(newProgress, globalWordIndex)
                                   }
                               }
@@ -684,10 +694,12 @@ fun SpeedReadingContent(
                      ),
                       modifier = Modifier.noRippleClickable {
                           if (isPlaying) {
+                              Log.d("SPEED_READER", "WPM tap pause: currentWordIndex=$currentWordIndex, totalWords=$totalWords")
                               onPlayPause()
                               // Save progress immediately when manually pausing
                               val globalWordIndex = startingWordIndex + currentWordIndex
                               val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                              Log.d("SPEED_READER", "WPM tap saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
                               onSaveProgress(newProgress, globalWordIndex)
                           }
                           showQuickWpmMenu = true
@@ -706,10 +718,12 @@ fun SpeedReadingContent(
                          .size(20.dp)
                           .noRippleClickable {
                               if (isPlaying) {
+                                  Log.d("SPEED_READER", "Book icon tap pause: currentWordIndex=$currentWordIndex, totalWords=$totalWords")
                                   onPlayPause()
                                   // Save progress immediately when manually pausing
                                   val globalWordIndex = startingWordIndex + currentWordIndex
                                   val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                  Log.d("SPEED_READER", "Book icon saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
                                   onSaveProgress(newProgress, globalWordIndex)
                               }
                               onShowWordPicker()
