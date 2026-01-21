@@ -18,3 +18,12 @@ class GetText @Inject constructor(
         return repository.getBookText(bookId = bookId)
     }
 }
+
+class GetTextForSpeedReader @Inject constructor(
+    private val repository: BookRepository
+) {
+
+    suspend fun execute(bookId: Int): List<ReaderText> {
+        return repository.getBookText(bookId = bookId)
+    }
+}

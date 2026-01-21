@@ -19,7 +19,7 @@ import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.use_case.book.GetBookById
-import us.blindmint.codex.domain.use_case.book.GetText
+import us.blindmint.codex.domain.use_case.book.GetTextForSpeedReader
 import us.blindmint.codex.ui.history.HistoryScreen
 import us.blindmint.codex.ui.library.LibraryScreen
 import javax.inject.Inject
@@ -27,7 +27,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SpeedReaderModel @Inject constructor(
     private val getBookById: GetBookById,
-    private val getText: GetText,
+    private val getText: GetTextForSpeedReader,
     private val bookRepository: BookRepository
 ) : ViewModel() {
 
