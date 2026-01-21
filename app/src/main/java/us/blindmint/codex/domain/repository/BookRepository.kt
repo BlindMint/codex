@@ -42,6 +42,15 @@ interface BookRepository {
         newCoverImage: CoverImage?
     )
 
+    suspend fun updateSpeedReaderProgress(
+        bookId: Int,
+        wordIndex: Int
+    )
+
+    suspend fun markSpeedReaderOpened(
+        bookId: Int
+    )
+
     suspend fun deleteBooks(
         books: List<Book>
     )

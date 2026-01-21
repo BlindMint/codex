@@ -17,9 +17,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.reader.ReaderText
+import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.use_case.book.GetBookById
 import us.blindmint.codex.domain.use_case.book.GetText
-import us.blindmint.codex.domain.use_case.book.UpdateBook
 import us.blindmint.codex.ui.history.HistoryScreen
 import us.blindmint.codex.ui.library.LibraryScreen
 import javax.inject.Inject
@@ -28,7 +28,7 @@ import javax.inject.Inject
 class SpeedReaderModel @Inject constructor(
     private val getBookById: GetBookById,
     private val getText: GetText,
-    private val updateBook: UpdateBook
+    private val bookRepository: BookRepository
 ) : ViewModel() {
 
     val book = mutableStateOf<Book?>(null)
@@ -69,7 +69,7 @@ class SpeedReaderModel @Inject constructor(
             // Update database to mark as opened
             viewModelScope.launch {
                 try {
-                    updateBook.execute(updatedBook)
+                    bookRepository.markSpeedReaderOpened(updatedBook.id)
                 } catch (e: Exception) {
                     Log.e("SPEED_READER", "Failed to mark book as opened in speed reader", e)
                 }
@@ -129,12 +129,8 @@ class SpeedReaderModel @Inject constructor(
             val wordIndex = currentWordIndex.intValue
             Log.d("SPEED_READER", "SpeedReaderModel saving to database: progress=$progress, wordIndex=$wordIndex, bookId=${currentBook.id}")
 
-            val updatedBook = currentBook.copy(
-                speedReaderWordIndex = wordIndex,
-                speedReaderHasBeenOpened = true
-            )
             try {
-                updateBook.execute(updatedBook)
+                bookRepository.updateSpeedReaderProgress(currentBook.id, wordIndex)
                 Log.d("SPEED_READER", "Successfully saved speed reader progress to database: wordIndex=$wordIndex")
                 lastSavedProgress = progress
                 lastDatabaseSaveWordIndex = wordIndex
