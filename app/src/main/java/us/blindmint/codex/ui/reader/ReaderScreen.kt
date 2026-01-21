@@ -67,7 +67,6 @@ import us.blindmint.codex.presentation.reader.ReaderContent
 
 import us.blindmint.codex.ui.book_info.BookInfoScreen
 import us.blindmint.codex.ui.library.LibraryScreen
-import us.blindmint.codex.ui.reader.SpeedReadingScreen
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.settings.SettingsModel
 import kotlin.math.roundToInt
@@ -586,18 +585,16 @@ data class ReaderScreen(
             showSettingsBottomSheet = screenModel::onEvent,
             dismissBottomSheet = screenModel::onEvent,
             showChaptersDrawer = screenModel::onEvent,
-              showSpeedReading = {
-                  // Navigate to fresh speed reader instance with new sessionId to force new ViewModel
-                  navigator.push(SpeedReadingScreen(bookId, sessionId = System.currentTimeMillis()))
-              },
             scrollToBookmark = screenModel::onEvent,
             dismissDrawer = screenModel::onEvent,
+            onReaderEvent = screenModel::onEvent,
             onDeleteBookmark = { bookmark ->
                 screenModel.deleteBookmarkItem(bookmark)
             },
             onClearAllBookmarks = {
                 screenModel.clearAllBookmarks()
             },
+            showBookmarksDrawer = screenModel::onEvent,
             showSearch = screenModel::onEvent,
             hideSearch = screenModel::onEvent,
             searchQuery = state.value.searchQuery,
@@ -641,9 +638,8 @@ data class ReaderScreen(
                      popping = true,
                      saveInBackStack = false
                  )
-             },
-            onReaderEvent = screenModel::onEvent,
-              currentComicPage = state.value.currentComicPage,
+              },
+               currentComicPage = state.value.currentComicPage,
               totalComicPages = state.value.totalComicPages,
               onComicPageSelected = { page ->
                   screenModel.onEvent(ReaderEvent.OnComicPageSelected(page))
