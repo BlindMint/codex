@@ -134,7 +134,7 @@ sealed class ReaderEvent {
 
     data object OnDismissSpeedReadingSettings : ReaderEvent()
 
-    data object OnDismissSpeedReading : ReaderEvent()
+    data class OnDismissSpeedReading(val currentWordIndex: Int = 0) : ReaderEvent()
 
     data object OnDismissDrawer : ReaderEvent()
 

@@ -66,13 +66,15 @@ fun SpeedReadingScaffold(
     centerWord: Boolean = false,
     onWpmChange: (Int) -> Unit,
     osdEnabled: Boolean,
-    onExitSpeedReading: () -> Unit,
+    onExitSpeedReading: (Int) -> Unit,
     onShowSpeedReadingSettings: () -> Unit,
     onMenuVisibilityChanged: (Boolean) -> Unit = {},
     onNavigateWord: (Int) -> Unit,
     onToggleMenu: () -> Unit = {},
     navigateWord: (Int) -> Unit = {},
-    onChangeProgress: (Float) -> Unit = {}
+    onSpeedReadingProgressChange: (Int) -> Unit = {},
+    onChangeProgress: (Float) -> Unit = {},
+    initialWordIndex: Int = 0
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) } // Start with menu hidden
@@ -80,7 +82,8 @@ fun SpeedReadingScaffold(
     var navigateWordCallback: ((Int) -> Unit)? by remember { mutableStateOf(null) }
     var showWordPicker by remember { mutableStateOf(false) }
     var selectedProgress by remember { mutableFloatStateOf(currentProgress) }
-    var selectedWordIndex by remember { mutableIntStateOf(0) }
+    var selectedWordIndex by remember { mutableIntStateOf(initialWordIndex) }
+    var currentSpeedReadingWordIndex by remember { mutableIntStateOf(initialWordIndex) }
 
     // Notify parent of menu visibility changes
     LaunchedEffect(showMenu) {
@@ -105,7 +108,7 @@ fun SpeedReadingScaffold(
                     bookTitle = bookTitle,
                     chapterTitle = chapterTitle,
                     currentProgress = currentProgress,
-                    onExitSpeedReading = onExitSpeedReading,
+                    onExitSpeedReading = { onExitSpeedReading(currentSpeedReadingWordIndex) },
                     onShowSettings = onShowSpeedReadingSettings
                 )
             }
@@ -176,6 +179,10 @@ fun SpeedReadingScaffold(
                 onRegisterNavigationCallback = { callback ->
                     navigateWordCallback = callback
                 },
+                onSpeedReadingProgressChange = { wordIndex ->
+                    currentSpeedReadingWordIndex = wordIndex
+                    onSpeedReadingProgressChange(wordIndex)
+                },
                 alwaysShowPlayPause = alwaysShowPlayPause,
                 showWpmIndicator = showWpmIndicator,
                 osdEnabled = osdEnabled,
@@ -198,7 +205,7 @@ fun SpeedReadingScaffold(
                 onConfirm = { progress, wordIndexInText ->
                     selectedProgress = progress
                     selectedWordIndex = wordIndexInText
-                    onChangeProgress(progress)
+                    onSpeedReadingProgressChange(wordIndexInText)
                     showWordPicker = false
                 }
             )

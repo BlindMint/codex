@@ -192,6 +192,7 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
     val speedReadingCenterWord = remember { mutableStateOf(false) }
     val speedReadingCustomFontEnabled = remember { mutableStateOf(false) }
     val speedReadingSelectedFontFamily = remember { mutableStateOf("default") }
+    val speedReadingInitialWordIndex = remember { mutableIntStateOf(0) }
 
     // Resolve speed reading font based on custom font setting
     val speedReadingFontFamily = remember(
@@ -508,6 +509,13 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
             )
         }
 
+        // Load speed reading progress when entering speed reading
+        LaunchedEffect(state.value.speedReadingMode) {
+            if (state.value.speedReadingMode && !state.value.isLoading) {
+                speedReadingInitialWordIndex.intValue = screenModel.getSpeedReadingWordIndex(state.value.book.id)
+            }
+        }
+
         // Enable speed reading mode if requested
         LaunchedEffect(state.value.isLoading, startInSpeedReading) {
             if (!state.value.isLoading && startInSpeedReading && !state.value.speedReadingMode) {
@@ -811,15 +819,13 @@ data class ReaderScreen(val bookId: Int, val startInSpeedReading: Boolean = fals
                 wpm = speedReadingWpm.intValue,
                 onWpmChange = { speedReadingWpm.intValue = it },
                 osdEnabled = speedReadingOsdEnabled.value,
-                onChangeProgress = { progress ->
-                    screenModel.onEvent(ReaderEvent.OnChangeProgress(
-                        progress = progress,
-                        firstVisibleItemIndex = 0,
-                        firstVisibleItemOffset = 0
-                    ))
+                onSpeedReadingProgressChange = { wordIndex ->
+                    // Speed reading progress is handled separately, not affecting book progress
+                    screenModel.onSpeedReadingProgressChanged(wordIndex)
                 },
-                onExitSpeedReading = {
-                    screenModel.onEvent(ReaderEvent.OnDismissSpeedReading)
+                initialWordIndex = speedReadingInitialWordIndex.intValue,
+                onExitSpeedReading = { currentWordIndex ->
+                    screenModel.onEvent(ReaderEvent.OnDismissSpeedReading(currentWordIndex))
                     // Reset menu visibility to normal state when exiting speed reading
                     screenModel.onEvent(
                         ReaderEvent.OnMenuVisibility(

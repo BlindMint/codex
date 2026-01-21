@@ -124,13 +124,12 @@ fun SpeedReadingContent(
     wordPickerActive: Boolean = false,
     initialWordIndex: Int = 0,
     onShowWordPicker: () -> Unit = {},
+    onSpeedReadingProgressChange: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    // Extract words from text starting from current position
-    val words = remember(text, currentProgress) {
-        val startIndex = (currentProgress * text.size).toInt()
-        text.drop(startIndex)
-            .filterIsInstance<ReaderText.Text>()
+    // Extract all words from text for speed reading
+    val words = remember(text) {
+        text.filterIsInstance<ReaderText.Text>()
             .flatMap { it.line.text.split("\\s+".toRegex()) }
             .filter { it.isNotBlank() }
     }
@@ -140,6 +139,7 @@ fun SpeedReadingContent(
     var showQuickWpmMenu by remember { mutableStateOf(false) }
     var showCountdown by remember { mutableStateOf(false) }
     var countdownValue by remember { mutableIntStateOf(3) }
+    var lastSavedWordIndex by remember { mutableIntStateOf(-1) }
     val wordFontSize = wordSize.sp
     val density = LocalDensity.current
     val textMeasurer = rememberTextMeasurer()
@@ -181,6 +181,11 @@ fun SpeedReadingContent(
     // Call the parent's onNavigateWord callback
     LaunchedEffect(currentWordIndex) {
         onNavigateWord(lastNavigationDirection)
+        // Save speed reading progress every 50 words (disaster mitigation)
+        if (currentWordIndex - lastSavedWordIndex >= 50 || lastSavedWordIndex == -1) {
+            onSpeedReadingProgressChange(currentWordIndex)
+            lastSavedWordIndex = currentWordIndex
+        }
     }
 
     // Countdown animation

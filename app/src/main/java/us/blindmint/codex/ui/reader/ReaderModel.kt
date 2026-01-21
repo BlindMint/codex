@@ -16,6 +16,7 @@ import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -48,7 +49,10 @@ import us.blindmint.codex.domain.use_case.bookmark.GetBookmarksByBookId
 import us.blindmint.codex.domain.use_case.bookmark.InsertBookmark
 import us.blindmint.codex.domain.use_case.bookmark.DeleteBookmark
 import us.blindmint.codex.domain.use_case.bookmark.DeleteBookmarksByBookId
+import us.blindmint.codex.domain.use_case.data_store.SetDatastore
 import us.blindmint.codex.domain.use_case.history.GetLatestHistory
+import us.blindmint.codex.data.local.data_store.DataStore
+import us.blindmint.codex.presentation.core.constants.DataStoreConstants
 import us.blindmint.codex.presentation.core.util.coerceAndPreventNaN
 import us.blindmint.codex.presentation.core.util.launchActivity
 import us.blindmint.codex.presentation.core.util.setBrightness
@@ -70,7 +74,9 @@ class ReaderModel @Inject constructor(
     private val getBookmarksByBookId: GetBookmarksByBookId,
     private val insertBookmark: InsertBookmark,
     private val deleteBookmark: DeleteBookmark,
-    private val deleteBookmarksByBookId: DeleteBookmarksByBookId
+    private val deleteBookmarksByBookId: DeleteBookmarksByBookId,
+    private val setDatastore: SetDatastore,
+    private val dataStore: DataStore
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -714,6 +720,8 @@ class ReaderModel @Inject constructor(
                 }
 
                 is ReaderEvent.OnDismissSpeedReading -> {
+                    // Save speed reading progress when exiting
+                    onSpeedReadingProgressChanged(event.currentWordIndex)
                     _state.update {
                         it.copy(
                             speedReadingMode = false,
@@ -1176,6 +1184,19 @@ class ReaderModel @Inject constructor(
             _state.update {
                 it.copy(bookmarks = emptyList())
             }
+        }
+    }
+
+    suspend fun getSpeedReadingWordIndex(bookId: Int): Int {
+        val key = stringPreferencesKey("speed_reading_word_index_$bookId")
+        return dataStore.getNullableData(key)?.toIntOrNull() ?: 0
+    }
+
+    fun onSpeedReadingProgressChanged(wordIndex: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // Save speed reading progress per book
+            val key = stringPreferencesKey("speed_reading_word_index_${_state.value.book.id}")
+            dataStore.putData(key, wordIndex.toString())
         }
     }
 
