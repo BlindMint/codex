@@ -72,36 +72,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.text.font.FontWeight
 
-// Check if progress value came from normal reader (at text item boundaries)
-private fun isNormalReaderProgress(progress: Float, text: List<us.blindmint.codex.domain.reader.ReaderText>): Boolean {
-    // Normal reader progress = textItemIndex / totalTextItems
-    // If progress * totalTextItems is an integer (within float precision), it came from normal reader
-    val totalTextItems = text.size.toFloat()
-    val textItemIndex = progress * totalTextItems
-    return kotlin.math.abs(textItemIndex - textItemIndex.toInt().toFloat()) < 0.0001f
-}
 
-// Convert normal reader progress (text item based) to first word of that paragraph
-private fun findFirstWordOfParagraph(text: List<us.blindmint.codex.domain.reader.ReaderText>, progress: Float, totalWords: Int): Int {
-    // Normal reader progress = textItemIndex / totalTextItems
-    // Convert back to text item index
-    val totalTextItems = text.size
-    val textItemIndex = (progress * totalTextItems).toInt().coerceIn(0, text.lastIndex)
-
-    // Find the first word index of this text item
-    var wordIndex = 0
-    for (i in 0 until textItemIndex) {
-        when (val item = text[i]) {
-            is us.blindmint.codex.domain.reader.ReaderText.Text -> {
-                val wordsInItem = item.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }.size
-                wordIndex += wordsInItem
-            }
-            else -> {} // Skip non-text items
-        }
-    }
-
-    return wordIndex.coerceIn(0, totalWords - 1)
-}
 
 // Find the nearest paragraph start before the given word index
 private fun findNearestParagraphStart(text: List<us.blindmint.codex.domain.reader.ReaderText>, words: List<String>, targetIndex: Int): Int {
@@ -234,20 +205,12 @@ fun SpeedReadingScaffold(
                 .flatMap { it.line.text.split("\\s+".toRegex()) }
                 .filter { it.isNotBlank() }
 
+            // Convert progress to word index, then snap to paragraph start
             val rawWordIndex = (currentProgress * allWords.size).toInt().coerceIn(0, (allWords.size - 1).coerceAtLeast(0))
+            val paragraphStartWordIndex = findNearestParagraphStart(text, allWords, rawWordIndex)
 
-            // If this is a speed reader resume (progress was saved by speed reader), use exact word
-            // If this is from normal reader (progress saved at paragraph start), start at paragraph
-            val finalWordIndex = if (isNormalReaderProgress(currentProgress, text)) {
-                // Normal reader progress: find first word of the paragraph that was saved
-                findFirstWordOfParagraph(text, currentProgress, allWords.size)
-            } else {
-                // Speed reader progress: resume at exact word
-                rawWordIndex
-            }
-
-            Log.d("SPEED_READER", "Loading with progress=$currentProgress, rawWordIndex=$rawWordIndex, finalWordIndex=$finalWordIndex, totalWords=${allWords.size}")
-            selectedWordIndex = finalWordIndex
+            Log.d("SPEED_READER", "Loading with progress=$currentProgress, rawWordIndex=$rawWordIndex, paragraphStartWordIndex=$paragraphStartWordIndex, totalWords=${allWords.size}")
+            selectedWordIndex = paragraphStartWordIndex
         }
     }
 
@@ -258,8 +221,24 @@ fun SpeedReadingScaffold(
                 // For independent speed reader: always show minimal top bar with back and settings icons
                 androidx.compose.material3.TopAppBar(
                     title = {},
-                     navigationIcon = {
-                         androidx.compose.material3.IconButton(onClick = { if (isPlaying) onPlayPause(); parentOnSaveProgress(realTimeProgress); onExitSpeedReading() }) {
+                      navigationIcon = {
+                          androidx.compose.material3.IconButton(onClick = {
+                              if (isPlaying) onPlayPause()
+                              // Snap to paragraph start before saving when exiting
+                              val snappedProgress = if (text.isNotEmpty()) {
+                                  val allWords = text
+                                      .filterIsInstance<us.blindmint.codex.domain.reader.ReaderText.Text>()
+                                      .flatMap { it.line.text.split("\\s+".toRegex()) }
+                                      .filter { it.isNotBlank() }
+                                  val rawWordIndex = (realTimeProgress * allWords.size).toInt().coerceIn(0, (allWords.size - 1).coerceAtLeast(0))
+                                  val paragraphStartWordIndex = findNearestParagraphStart(text, allWords, rawWordIndex)
+                                  paragraphStartWordIndex.toFloat() / allWords.size
+                              } else {
+                                  realTimeProgress
+                              }
+                              parentOnSaveProgress(snappedProgress)
+                              onExitSpeedReading()
+                          }) {
                              androidx.compose.material3.Icon(
                                  imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                  contentDescription = "Back",
