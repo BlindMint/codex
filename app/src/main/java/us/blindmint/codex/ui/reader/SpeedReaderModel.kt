@@ -83,10 +83,15 @@ class SpeedReaderModel @Inject constructor(
                         isLoading.value = false
                     } else {
                         text.value = loadedText
+                        // Calculate total words for progress calculation
+                        val totalWords = loadedText
+                            .filterIsInstance<us.blindmint.codex.domain.reader.ReaderText.Text>()
+                            .flatMap { it.line.text.split("\\s+".toRegex()) }
+                            .size
                         // Set progress from saved speed reader word index
                         currentWordIndex.intValue = loadedBook.speedReaderWordIndex
-                        currentProgress.floatValue = if (loadedText.isNotEmpty()) {
-                            loadedBook.speedReaderWordIndex.toFloat() / loadedText.size
+                        currentProgress.floatValue = if (totalWords > 0) {
+                            loadedBook.speedReaderWordIndex.toFloat() / totalWords
                         } else 0f
                         isLoading.value = false
                     }
