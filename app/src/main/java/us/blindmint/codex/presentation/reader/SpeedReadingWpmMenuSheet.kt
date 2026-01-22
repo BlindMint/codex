@@ -37,7 +37,6 @@ fun SpeedReadingWpmMenuSheet(
 ) {
     if (show) {
         ModalBottomSheet(
-            hasFixedHeight = true,
             scrimColor = BottomSheetDefaults.ScrimColor,
             onDismissRequest = onDismiss,
             sheetGesturesEnabled = true,
