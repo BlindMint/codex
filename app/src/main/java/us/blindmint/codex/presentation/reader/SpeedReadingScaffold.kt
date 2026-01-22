@@ -84,7 +84,7 @@ fun SpeedReadingScaffold(
     onExitSpeedReading: () -> Unit,
     onShowSpeedReadingSettings: () -> Unit,
     onMenuVisibilityChanged: (Boolean) -> Unit = {},
-    onCurrentWordIndexChange: (Int) -> Unit = {},
+    onWordPicked: (Int) -> Unit = {},
     onNavigateWord: (Int) -> Unit,
     onChangeProgress: (Float, Int) -> Unit = { _, _ -> },
     onSaveProgress: (Float, Int) -> Unit = { _, _ -> },
@@ -353,8 +353,8 @@ fun SpeedReadingScaffold(
                       selectedWordIndex = wordIndexInText
                       realTimeProgress = progress
                       onSaveProgress(progress, wordIndexInText)
-                      // Notify parent to update current word index for reader
-                      onCurrentWordIndexChange(wordIndexInText)
+                      // Notify parent that user picked a word - use global index directly
+                      onWordPicked(wordIndexInText)
                       // Also notify parent to ensure proper state update
                       parentOnChangeProgress(progress, wordIndexInText)
                   }

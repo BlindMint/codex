@@ -347,8 +347,9 @@ data class SpeedReadingScreen(
             onNavigateWord = { direction ->
                 // Speed reading handles word navigation internally
             },
-            onCurrentWordIndexChange = { newWordIndex ->
+            onWordPicked = { newWordIndex ->
                 // Update model when user confirms new word in picker
+                // Use global word index directly - both reader and picker use same word list
                 speedReaderModel.updateProgress(0f, newWordIndex, forceSave = true)
             },
             onShowSpeedReadingSettings = {
