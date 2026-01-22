@@ -22,6 +22,10 @@ import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 import us.blindmint.codex.presentation.reader.SpeedReadingSettingsBottomSheet
 import us.blindmint.codex.ui.library.LibraryScreen
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
 @Parcelize
 data class SpeedReadingScreen(
@@ -37,9 +41,23 @@ data class SpeedReadingScreen(
         val settingsModel = hiltViewModel<us.blindmint.codex.ui.settings.SettingsModel>()
 
         val activity = LocalActivity.current
+        val view = LocalView.current
 
         val mainState = mainModel.state.collectAsStateWithLifecycle()
         val settingsState = settingsModel.state.collectAsStateWithLifecycle()
+
+        // Lock status bar appearance to prevent icon color shift when bottom sheets open
+        SideEffect {
+            val window = activity.window
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            // Calculate luminance to determine if theme is dark
+            val r = settingsState.value.selectedColorPreset.backgroundColor.red
+            val g = settingsState.value.selectedColorPreset.backgroundColor.green
+            val b = settingsState.value.selectedColorPreset.backgroundColor.blue
+            val luminance = 0.299f * r + 0.587f * g + 0.114f * b
+            val isDarkTheme = luminance <= 0.5f
+            insetsController.isAppearanceLightStatusBars = !isDarkTheme
+        }
 
         // Speed reading settings state
         val wpm = androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(mainState.value.speedReadingWpm) }
