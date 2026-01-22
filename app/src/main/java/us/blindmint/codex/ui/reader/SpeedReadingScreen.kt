@@ -93,32 +93,29 @@ data class SpeedReadingScreen(
 
         // Settings visibility state
         val speedReadingSettingsVisible = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-
-        // Keep system bars hidden while speed reader is active (including when panels are open)
-        // Use rememberCoroutineScope to ensure we can cancel this when leaving
-        val scope = rememberCoroutineScope()
-
-        // Hide system bars for full screen experience in speed reader
-        // Use LaunchedEffect with Unit key to ensure bars stay hidden even when panels open
-        val keepBarsHiddenJob = remember { androidx.compose.runtime.mutableStateOf<kotlinx.coroutines.Job?>(null) }
+  
         androidx.compose.runtime.LaunchedEffect(Unit) {
-            val window = activity.window
-            val insetsController = WindowCompat.getInsetsController(window, view)
-            // Hide immediately
-            insetsController.hide(WindowInsetsCompat.Type.systemBars())
-            insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-
-            // Keep hiding to prevent panels from re-showing system bars
-            keepBarsHiddenJob.value = scope.launch {
-                while (true) {
-                    kotlinx.coroutines.delay(500)
-                    try {
-                        insetsController.hide(WindowInsetsCompat.Type.systemBars())
-                    } catch (e: Exception) {
-                        // Window might be disposed
-                        break
-                    }
-                }
+            speedReaderModel.loadBook(bookId, activity) {
+                navigator.pop()
+            }
+        }
+  
+        // Handle cleanup when exiting speed reader
+        val onExitWithSystemBars = remember {
+            {
+                // Navigate without manually showing system bars
+                // SpeedReadingScaffold will show them when isPlaying becomes false
+                navigator.pop()
+            }
+        }
+  
+        androidx.compose.runtime.DisposableEffect(Unit) {
+            onDispose {
+                speedReaderModel.onLeave()
+                // Ensure system bars are shown when leaving speed reader
+                val window = activity.window
+                val insetsController = WindowCompat.getInsetsController(window, view)
+                insetsController.show(WindowInsetsCompat.Type.systemBars())
             }
         }
         androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingManualSentencePauseEnabled) {
@@ -271,26 +268,7 @@ data class SpeedReadingScreen(
                 navigator.pop()
             }
         }
-
-        // Handle cleanup when exiting speed reader
-        val onExitWithSystemBars = remember {
-            {
-                // Cancel the job that keeps hiding system bars
-                keepBarsHiddenJob.value?.cancel()
-
-                // Navigate without manually showing system bars - let navigation handle it naturally
-                navigator.pop()
-            }
-        }
-
-        androidx.compose.runtime.DisposableEffect(Unit) {
-            onDispose {
-                // Cancel the keep-bars-hidden job
-                keepBarsHiddenJob.value?.cancel()
-                speedReaderModel.onLeave()
-            }
-        }
-
+ 
         // Calculate progress for display
         val book = speedReaderModel.book.value
         val words = speedReaderModel.words.value
