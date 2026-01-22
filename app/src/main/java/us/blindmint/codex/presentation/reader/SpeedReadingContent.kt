@@ -113,7 +113,6 @@ fun SpeedReadingContent(
     onWpmChange: (Int) -> Unit,
     onPlayPause: () -> Unit,
     onNavigateWord: (Int) -> Unit = {}, // -1 for back, +1 for forward
-    onToggleMenu: () -> Unit = {},
     navigateWord: (Int) -> Unit = {},
     onRegisterNavigationCallback: ((Int) -> Unit) -> Unit = {},
     alwaysShowPlayPause: Boolean,

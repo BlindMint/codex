@@ -288,11 +288,6 @@ data class SpeedReadingScreen(
                 // Cancel the keep-bars-hidden job
                 keepBarsHiddenJob.value?.cancel()
                 speedReaderModel.onLeave()
-                // Show system bars when leaving speed reader
-                WindowCompat.getInsetsController(
-                    activity.window,
-                    activity.window.decorView
-                ).show(WindowInsetsCompat.Type.systemBars())
             }
         }
 
@@ -381,9 +376,6 @@ data class SpeedReadingScreen(
             onShowSpeedReadingSettings = {
                 speedReadingSettingsVisible.value = true
             },
-            onMenuVisibilityChanged = { showMenu ->
-                // Handle menu visibility for speed reading screen
-            },
             onNavigateWord = { direction ->
                 // Speed reading handles word navigation internally
             },
@@ -391,8 +383,7 @@ data class SpeedReadingScreen(
                 // Update model when user confirms new word in picker
                 // Use global word index directly - both reader and picker use same word list
                 speedReaderModel.updateProgress(0f, newWordIndex, forceSave = true)
-            },
-            showOverlayMenu = false
+            }
         )
 
         // Speed reading settings bottom sheet

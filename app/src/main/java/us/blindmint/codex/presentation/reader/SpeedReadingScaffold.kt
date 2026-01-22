@@ -47,6 +47,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.domain.reader.SpeedReaderWord
 import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import us.blindmint.codex.presentation.core.util.LocalActivity
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -90,16 +94,13 @@ fun SpeedReadingScaffold(
     osdEnabled: Boolean,
     onExitSpeedReading: () -> Unit,
     onShowSpeedReadingSettings: () -> Unit,
-    onMenuVisibilityChanged: (Boolean) -> Unit = {},
     onWordPicked: (Int) -> Unit = {},
     onNavigateWord: (Int) -> Unit,
     onChangeProgress: (Float, Int) -> Unit = { _, _ -> },
     onSaveProgress: (Float, Int) -> Unit = { _, _ -> },
-    showOverlayMenu: Boolean = true,
     onPlayPause: () -> Unit = {}
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
-    var showMenu by remember { mutableStateOf(false) } // Start with menu hidden
     var isPlaying by remember { mutableStateOf(false) }
     var navigateWordCallback: ((Int) -> Unit)? by remember { mutableStateOf(null) }
     var showWordPicker by remember { mutableStateOf(false) }
@@ -108,6 +109,8 @@ fun SpeedReadingScaffold(
     val currentProgress = remember(currentWordIndex, totalWords) {
         if (totalWords > 0) currentWordIndex.toFloat() / totalWords else 0f
     }
+
+    val activity = LocalActivity.current
 
     var selectedWordIndex by remember { mutableIntStateOf(-1) } // Start invalid, set when ready
     var realTimeProgress by remember { mutableFloatStateOf(currentProgress) } // Live progress updates
@@ -138,15 +141,27 @@ fun SpeedReadingScaffold(
 
     // Store parent callbacks to avoid name collision
     val parentOnChangeProgress = onChangeProgress
-
-    // Notify parent of menu visibility changes
-    LaunchedEffect(showMenu) {
-        onMenuVisibilityChanged(showMenu)
-    }
-
+ 
     // Update realTimeProgress when currentProgress changes (for UI display)
     LaunchedEffect(currentProgress) {
         realTimeProgress = currentProgress
+    }
+
+    // Control system bar visibility based on play state
+    // When paused: show system bars (so exit transition is smooth)
+    // When playing: hide system bars (immersive reading)
+    LaunchedEffect(isPlaying) {
+        val window = activity.window
+        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+        insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
+        if (isPlaying) {
+            // Hide system bars when playing for immersive reading
+            insetsController.hide(WindowInsetsCompat.Type.systemBars())
+        } else {
+            // Show system bars when paused
+            insetsController.show(WindowInsetsCompat.Type.systemBars())
+        }
     }
 
     // Initialize selectedWordIndex based on initial word index when words load
@@ -174,99 +189,59 @@ fun SpeedReadingScaffold(
     }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-     Scaffold(
-         topBar = {
-             if (!isLoading && !showOverlayMenu && selectedWordIndex >= 0) {
-                 // For independent speed reader: always show minimal top bar with back and settings icons
-                 val osdOpacity by animateFloatAsState(
-                     targetValue = if (autoHideOsd && isPlaying) 0f else 1f,
-                     animationSpec = SpringSpec(
-                         dampingRatio = DampingRatioMediumBouncy,
-                         stiffness = StiffnessMedium
-                     ),
-                     label = "osdOpacity"
-                 )
-                androidx.compose.material3.TopAppBar(
-                    title = {},
-                      navigationIcon = {
-                          androidx.compose.material3.IconButton(onClick = {
-                              // Always save current progress on exit
-                              val totalWords = words.size
-                              // If playing, pause first to ensure progress is saved
-                              val wasPlaying = isPlaying
-                              if (isPlaying) {
-                                  onPlayPause()
+      Scaffold(
+          topBar = {
+              if (!isLoading && selectedWordIndex >= 0) {
+                  // Show minimal top bar when PAUSED (system bars visible)
+                  // Hide when PLAYING for immersive reading
+                  if (!isPlaying) {
+                      androidx.compose.material3.TopAppBar(
+                          title = {},
+                            navigationIcon = {
+                                androidx.compose.material3.IconButton(onClick = {
+                                    // Always save current progress on exit
+                                    val totalWords = words.size
+                                    val currentWordIndex = (realTimeProgress * totalWords).toInt().coerceIn(0, totalWords - 1)
+                                    Log.d("SPEED_READER", "Exit: saving progress=$realTimeProgress, wordIndex=$currentWordIndex")
+                                    onSaveProgress(realTimeProgress, currentWordIndex)
+                                    onExitSpeedReading()
+                                }) {
+                                   androidx.compose.material3.Icon(
+                                       imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                       contentDescription = "Back",
+                                       tint = fontColor
+                                   )
+                               }
+                           },
+                           actions = {
+                              androidx.compose.material3.IconButton(onClick = {
+                                  if (isPlaying) onPlayPause()
+                                  onShowSpeedReadingSettings()
+                              }) {
+                                  androidx.compose.material3.Icon(
+                                      imageVector = Icons.Filled.Settings,
+                                      contentDescription = "Settings",
+                                      tint = fontColor
+                                  )
                               }
-                              val currentWordIndex = (realTimeProgress * totalWords).toInt().coerceIn(0, totalWords - 1)
-                              Log.d("SPEED_READER", "Exit: wasPlaying=$wasPlaying, saving progress=$realTimeProgress, wordIndex=$currentWordIndex")
-                              onSaveProgress(realTimeProgress, currentWordIndex)
-                              onExitSpeedReading()
-                          }, modifier = Modifier.graphicsLayer { alpha = osdOpacity }) {
-                             androidx.compose.material3.Icon(
-                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                 contentDescription = "Back",
-                                 tint = fontColor
-                             )
-                         }
-                     },
-                     actions = {
-                        androidx.compose.material3.IconButton(onClick = { if (isPlaying) onPlayPause(); onShowSpeedReadingSettings() }, modifier = Modifier.graphicsLayer { alpha = osdOpacity }) {
-                            androidx.compose.material3.Icon(
-                                imageVector = Icons.Filled.Settings,
-                                contentDescription = "Settings",
-                                tint = fontColor
-                            )
-                        }
-                    },
-                    colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
-                        containerColor = backgroundColor.copy(alpha = 0.9f)
-                    )
-                )
-            } else if (!isLoading && showOverlayMenu && selectedWordIndex >= 0) {
-                // For integrated speed reader: show overlay menu when tapped
-                AnimatedVisibility(
-                    modifier = Modifier.fillMaxWidth(),
-                    visible = showMenu,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    SpeedReadingTopBar(
-                        bookTitle = bookTitle,
-                        chapterTitle = chapterTitle,
-                        currentWordIndex = currentWordIndex,
-                        totalWords = totalWords,
-                        onExitSpeedReading = onExitSpeedReading,
-                        onShowSettings = onShowSpeedReadingSettings
-                    )
-                }
+                          },
+                          colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                              containerColor = backgroundColor.copy(alpha = 0.9f)
+                          )
+                      )
+                  }
             }
         },
         bottomBar = {
-            if (!isLoading && showOverlayMenu && selectedWordIndex >= 0) {
-                // For integrated speed reader: show overlay menu when tapped
-                AnimatedVisibility(
-                    modifier = Modifier.fillMaxWidth(),
-                    visible = showMenu,
-                    enter = fadeIn(),
-                    exit = fadeOut()
+            if (!isLoading && !isPlaying && selectedWordIndex >= 0) {
+                // Minimal bottom bar when PAUSED (just placeholder for Android nav bar area)
+                // This ensures Android nav bar has space and doesn't overlay content
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(backgroundColor.copy(alpha = 0.9f))
                 ) {
-                    SpeedReadingBottomBar(
-                        progress = progress,
-                        progressValue = realTimeProgress, // Use real-time progress for live updates
-                        book = book, // Need to add book parameter
-                        lockMenu = false, // For speed reading, allow seeking
-                        onChangeProgress = { progress -> onChangeProgress(progress, 0) },
-                        wpm = localWpm,
-                        onWpmChange = localOnWpmChange,
-                        isPlaying = isPlaying,
-                        onPlayPause = { isPlaying = !isPlaying },
-                        onNavigateWord = onNavigateWord,
-                        navigateWord = { direction ->
-                            navigateWordCallback?.invoke(direction)
-                        },
-                        onCloseMenu = { showMenu = false },
-                        bottomBarPadding = bottomBarPadding
-                    )
+                    // Empty box - just reserves space for Android nav bar
                 }
             }
         },
@@ -326,7 +301,6 @@ fun SpeedReadingScaffold(
                 onWpmChange = localOnWpmChange,
                 onPlayPause = { isPlaying = !isPlaying },
                 onNavigateWord = onNavigateWord,
-                onToggleMenu = { showMenu = !showMenu },
                 navigateWord = navigateWordCallback ?: {},
                 onRegisterNavigationCallback = { callback ->
                     navigateWordCallback = callback
@@ -351,7 +325,7 @@ fun SpeedReadingScaffold(
                       realTimeProgress = progress
                       onSaveProgress(progress, wordIndex)
                   },
-                  showBottomBar = !showOverlayMenu
+                  showBottomBar = !isPlaying
               )
             }
         }
