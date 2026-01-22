@@ -96,6 +96,7 @@ fun SpeedReadingScaffold(
     var isPlaying by remember { mutableStateOf(false) }
     var navigateWordCallback: ((Int) -> Unit)? by remember { mutableStateOf(null) }
     var showWordPicker by remember { mutableStateOf(false) }
+    var wordPickerRefreshKey by remember { mutableIntStateOf(0) }
     // Calculate current progress from word index and total words
     val currentProgress = remember(currentWordIndex, totalWords) {
         if (totalWords > 0) currentWordIndex.toFloat() / totalWords else 0f
@@ -322,20 +323,23 @@ fun SpeedReadingScaffold(
                 osdSeparation = osdSeparation,
                 centerWord = centerWord,
                 initialWordIndex = selectedWordIndex,
-                onShowWordPicker = { showWordPicker = true },
-                 onProgressUpdate = { progress, wordIndex ->
-                     // Update real-time progress for UI display
-                     realTimeProgress = progress
-                     // Also update the underlying book progress periodically
-                     parentOnChangeProgress(progress, wordIndex)
-                 },
-                 onSaveProgress = { progress, wordIndex ->
-                     // Immediate progress save for manual pauses (no throttling)
-                     realTimeProgress = progress
-                     onSaveProgress(progress, wordIndex)
-                 },
-                showBottomBar = !showOverlayMenu
-            )
+                onShowWordPicker = {
+                    wordPickerRefreshKey++
+                    showWordPicker = true
+                },
+                  onProgressUpdate = { progress, wordIndex ->
+                      // Update real-time progress for UI display
+                      realTimeProgress = progress
+                      // Also update the underlying book progress periodically
+                      parentOnChangeProgress(progress, wordIndex)
+                  },
+                  onSaveProgress = { progress, wordIndex ->
+                      // Immediate progress save for manual pauses (no throttling)
+                      realTimeProgress = progress
+                      onSaveProgress(progress, wordIndex)
+                  },
+                  showBottomBar = !showOverlayMenu
+              )
             }
         }
 
@@ -347,6 +351,7 @@ fun SpeedReadingScaffold(
                   totalWords = totalWords,
                   backgroundColor = backgroundColor,
                   fontColor = fontColor,
+                  refreshKey = wordPickerRefreshKey,
                   onDismiss = { showWordPicker = false },
                   onConfirm = { progress, wordIndexInText ->
                       if (isPlaying) onPlayPause()

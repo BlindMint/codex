@@ -60,7 +60,8 @@ fun SpeedReadingWordPickerSheet(
     backgroundColor: Color,
     fontColor: Color,
     onDismiss: () -> Unit,
-    onConfirm: (progress: Float, wordIndexInText: Int) -> Unit
+    onConfirm: (progress: Float, wordIndexInText: Int) -> Unit,
+    refreshKey: Int = 0 // Increment each time sheet opens to trigger scroll
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
@@ -128,6 +129,24 @@ fun SpeedReadingWordPickerSheet(
     // Reset search index when matches change
     LaunchedEffect(searchMatches) {
         currentSearchIndex = 0
+    }
+
+    // Track previous refresh key to only scroll on sheet open, not on selection change
+    val prevRefreshKey = remember { mutableIntStateOf(refreshKey) }
+
+    // Scroll to current word when sheet opens (refreshKey changes)
+    LaunchedEffect(refreshKey, currentWordPosition, paragraphs) {
+        // Only scroll if this is a fresh sheet open (refreshKey changed)
+        // Don't re-scroll when user changes selection
+        if (refreshKey != prevRefreshKey.intValue) {
+            currentWordPosition?.let { position: WordPosition ->
+                val paragraphIndex = paragraphs.indexOfFirst { paragraph: WordParagraph -> paragraph.textIndex == position.textIndex }
+                if (paragraphIndex >= 0) {
+                    listState.scrollToItem(paragraphIndex)
+                }
+            }
+            prevRefreshKey.intValue = refreshKey
+        }
     }
 
     // Scroll to search result
