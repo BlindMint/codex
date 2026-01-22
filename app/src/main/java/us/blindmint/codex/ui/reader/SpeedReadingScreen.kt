@@ -14,7 +14,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.parcelize.Parcelize
 import us.blindmint.codex.domain.navigator.Screen
-import androidx.compose.ui.unit.dp
 import us.blindmint.codex.presentation.core.util.LocalActivity
 import us.blindmint.codex.presentation.core.util.calculateProgress
 import us.blindmint.codex.presentation.navigator.LocalNavigator
@@ -334,10 +333,7 @@ data class SpeedReadingScreen(
             onMenuVisibilityChanged = { showMenu ->
                 // Handle menu visibility for speed reading screen
             },
-            showOverlayMenu = false,
-            onShowWordPicker = {
-                // Speed reading handles word picker internally
-            }
+            showOverlayMenu = false
         )
 
         // Speed reading settings bottom sheet

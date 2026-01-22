@@ -19,17 +19,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import us.blindmint.codex.presentation.core.components.progress_indicator.CircularProgressIndicator
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,42 +35,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import us.blindmint.codex.R
 import us.blindmint.codex.domain.reader.SpeedReaderWord
 import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
-import us.blindmint.codex.presentation.core.components.progress_indicator.SkullProgressIndicator
-import us.blindmint.codex.presentation.core.util.noRippleClickable
-import androidx.compose.ui.text.font.FontWeight
 
-
-
-// Find the nearest paragraph start before the given word index
-private fun findNearestParagraphStart(words: List<SpeedReaderWord>, targetIndex: Int): Int {
-    if (targetIndex <= 0) return targetIndex
-
-    val targetWord = words.getOrNull(targetIndex) ?: return targetIndex
-    return words.indexOfFirst { it.paragraphIndex == targetWord.paragraphIndex && it.globalIndex <= targetIndex }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -122,13 +85,10 @@ fun SpeedReadingScaffold(
     onShowSpeedReadingSettings: () -> Unit,
     onMenuVisibilityChanged: (Boolean) -> Unit = {},
     onNavigateWord: (Int) -> Unit,
-    onToggleMenu: () -> Unit = {},
-    navigateWord: (Int) -> Unit = {},
     onChangeProgress: (Float, Int) -> Unit = { _, _ -> },
     onSaveProgress: (Float, Int) -> Unit = { _, _ -> },
     showOverlayMenu: Boolean = true,
-    onPlayPause: () -> Unit = {},
-    onShowWordPicker: () -> Unit = {}
+    onPlayPause: () -> Unit = {}
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) } // Start with menu hidden
@@ -140,7 +100,6 @@ fun SpeedReadingScaffold(
         if (totalWords > 0) currentWordIndex.toFloat() / totalWords else 0f
     }
 
-    var selectedProgress by remember { mutableFloatStateOf(currentProgress) }
     var selectedWordIndex by remember { mutableIntStateOf(-1) } // Start invalid, set when ready
     var realTimeProgress by remember { mutableFloatStateOf(currentProgress) } // Live progress updates
 
@@ -160,7 +119,6 @@ fun SpeedReadingScaffold(
         debounceJob = coroutineScope.launch {
             delay(300) // 300ms debounce
             onWpmChange(localWpm)
-            debounceJob = null
         }
     }
 
@@ -171,16 +129,14 @@ fun SpeedReadingScaffold(
 
     // Store parent callbacks to avoid name collision
     val parentOnChangeProgress = onChangeProgress
-    val parentOnSaveProgress = onSaveProgress
 
     // Notify parent of menu visibility changes
     LaunchedEffect(showMenu) {
         onMenuVisibilityChanged(showMenu)
     }
 
-    // Update selectedProgress when currentProgress changes (to start from current position in word picker)
+    // Update realTimeProgress when currentProgress changes (for UI display)
     LaunchedEffect(currentProgress) {
-        selectedProgress = currentProgress
         realTimeProgress = currentProgress
     }
 
@@ -226,7 +182,7 @@ fun SpeedReadingScaffold(
                               }
                               val currentWordIndex = (realTimeProgress * totalWords).toInt().coerceIn(0, totalWords - 1)
                               Log.d("SPEED_READER", "Exit: wasPlaying=$wasPlaying, saving progress=$realTimeProgress, wordIndex=$currentWordIndex")
-                              parentOnSaveProgress(realTimeProgress, currentWordIndex)
+                              onSaveProgress(realTimeProgress, currentWordIndex)
                               onExitSpeedReading()
                           }) {
                              androidx.compose.material3.Icon(
@@ -375,7 +331,7 @@ fun SpeedReadingScaffold(
                  onSaveProgress = { progress, wordIndex ->
                      // Immediate progress save for manual pauses (no throttling)
                      realTimeProgress = progress
-                     parentOnSaveProgress(progress, wordIndex)
+                     onSaveProgress(progress, wordIndex)
                  },
                 showBottomBar = !showOverlayMenu
             )
@@ -393,11 +349,9 @@ fun SpeedReadingScaffold(
                   onDismiss = { showWordPicker = false },
                   onConfirm = { progress, wordIndexInText ->
                       if (isPlaying) onPlayPause()
-                      selectedProgress = progress
                       selectedWordIndex = wordIndexInText
                       realTimeProgress = progress
-                       parentOnSaveProgress(progress, wordIndexInText)
-                      showWordPicker = false
+                      onSaveProgress(progress, wordIndexInText)
                   }
               )
         }
