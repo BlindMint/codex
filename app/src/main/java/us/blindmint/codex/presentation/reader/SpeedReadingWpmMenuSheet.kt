@@ -49,11 +49,7 @@ fun SpeedReadingWpmMenuSheet(
     var visibleShow by remember { mutableStateOf(false) }
 
     LaunchedEffect(show) {
-        if (show) {
-            visibleShow = true
-        } else {
-            visibleShow = false
-        }
+        visibleShow = show
     }
 
     LaunchedEffect(visibleShow) {
@@ -71,7 +67,7 @@ fun SpeedReadingWpmMenuSheet(
 
         ModalBottomSheet(
             hasFixedHeight = true,
-            scrimColor = animatedScrimColor,
+            scrimColor = BottomSheetDefaults.ScrimColor,
             onDismissRequest = onDismiss,
             sheetGesturesEnabled = true,
             dragHandle = { BottomSheetDefaults.DragHandle() },
