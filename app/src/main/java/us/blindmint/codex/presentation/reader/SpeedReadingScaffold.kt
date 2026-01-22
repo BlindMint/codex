@@ -41,8 +41,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -70,11 +68,6 @@ import us.blindmint.codex.domain.reader.SpeedReaderWord
 import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
 import us.blindmint.codex.presentation.core.components.progress_indicator.SkullProgressIndicator
 import us.blindmint.codex.presentation.core.util.noRippleClickable
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.ui.text.font.FontWeight
 
 
