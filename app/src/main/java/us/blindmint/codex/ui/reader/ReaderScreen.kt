@@ -451,11 +451,7 @@ data class ReaderScreen(
                 fullscreenMode = mainState.value.fullscreen,
                 activity = activity,
                 navigateBack = {
-                    navigator.push(
-                        LibraryScreen,
-                        popping = true,
-                        saveInBackStack = false
-                    )
+                    navigator.pop()
                 },
                 skipTextLoading = startInSpeedReading
             )

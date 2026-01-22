@@ -278,12 +278,7 @@ data class SpeedReadingScreen(
                 // Cancel the job that keeps hiding system bars
                 keepBarsHiddenJob.value?.cancel()
 
-                // Show system bars BEFORE navigating (like normal reader does)
-                val window = activity.window
-                val insetsController = WindowCompat.getInsetsController(window, activity.window.decorView)
-                insetsController.show(WindowInsetsCompat.Type.systemBars())
-
-                // Now navigate using pop() to match system back button behavior
+                // Navigate without manually showing system bars - let navigation handle it naturally
                 navigator.pop()
             }
         }
@@ -293,6 +288,11 @@ data class SpeedReadingScreen(
                 // Cancel the keep-bars-hidden job
                 keepBarsHiddenJob.value?.cancel()
                 speedReaderModel.onLeave()
+                // Show system bars when leaving speed reader
+                WindowCompat.getInsetsController(
+                    activity.window,
+                    activity.window.decorView
+                ).show(WindowInsetsCompat.Type.systemBars())
             }
         }
 
