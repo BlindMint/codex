@@ -283,12 +283,8 @@ data class SpeedReadingScreen(
                 val insetsController = WindowCompat.getInsetsController(window, activity.window.decorView)
                 insetsController.show(WindowInsetsCompat.Type.systemBars())
 
-                // Now navigate (system bars are already shown)
-                navigator.push(
-                    LibraryScreen,
-                    popping = true,  // Replace current navigation stack
-                    saveInBackStack = false
-                )
+                // Now navigate using pop() to match system back button behavior
+                navigator.pop()
             }
         }
 
