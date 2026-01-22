@@ -151,6 +151,14 @@ fun SpeedReadingContent(
     // by user navigation. We don't reset it here to avoid race conditions
     // with the parent SpeedReadingScaffold's selectedWordIndex management.
 
+    // Sync local state with initialWordIndex when it changes (e.g., from word picker)
+    LaunchedEffect(initialWordIndex) {
+        if (currentWordIndex != initialWordIndex) {
+            currentWordIndex = initialWordIndex
+            Log.d("SPEED_READER_CONTENT", "[SYNC] Synced currentWordIndex to initialWordIndex=$initialWordIndex")
+        }
+    }
+
     // Handle word navigation
     val handleNavigateWord: (Int) -> Unit = { direction ->
         val newIndex = (currentWordIndex + direction).coerceIn(0, words.size - 1)
