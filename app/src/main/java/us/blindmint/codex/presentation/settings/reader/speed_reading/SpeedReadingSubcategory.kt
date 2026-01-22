@@ -81,6 +81,8 @@ fun LazyListScope.SpeedReadingSubcategory(
     onOsdHeightChange: (Float) -> Unit = {},
     osdSeparation: Float = 0.5f, // 0.0 = close, 1.0 = far, 0.5 = current spacing
     onOsdSeparationChange: (Float) -> Unit = {},
+    autoHideOsd: Boolean = true,
+    onAutoHideOsdChange: (Boolean) -> Unit = {},
     wordSize: Int = 48,
     onWordSizeChange: (Int) -> Unit = {},
     accentCharacterEnabled: Boolean = true,
@@ -388,6 +390,14 @@ fun LazyListScope.SpeedReadingSubcategory(
                         onSentencePauseDurationChange = onSentencePauseDurationChange
                     )
                 }
+            }
+
+            item {
+                SwitchWithTitle(
+                    selected = autoHideOsd,
+                    title = stringResource(id = R.string.speed_reading_auto_hide_osd),
+                    onClick = { onAutoHideOsdChange(!autoHideOsd) }
+                )
             }
 
             item {

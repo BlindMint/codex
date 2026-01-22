@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import us.blindmint.codex.presentation.core.components.modal_bottom_sheet.ModalBottomSheet
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 
@@ -125,7 +126,8 @@ fun SpeedReadingWpmMenuSheet(
                     Text(
                         text = "-",
                         style = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            fontSize = 32.sp
                         ),
                         modifier = Modifier.noRippleClickable {
                             onWpmChange((currentWpm - 10).coerceAtLeast(200))
@@ -134,7 +136,7 @@ fun SpeedReadingWpmMenuSheet(
 
                     Slider(
                         value = currentWpm.toFloat(),
-                        onValueChange = { onWpmChange((it / 5).toInt() * 5) },
+                        onValueChange = { onWpmChange((it / 10).toInt() * 10) },
                         valueRange = 200f..1200f,
                         modifier = Modifier.weight(1f),
                         colors = SliderDefaults.colors(
@@ -147,7 +149,8 @@ fun SpeedReadingWpmMenuSheet(
                     Text(
                         text = "+",
                         style = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            fontSize = 32.sp
                         ),
                         modifier = Modifier.noRippleClickable {
                             onWpmChange((currentWpm + 10).coerceAtMost(1200))

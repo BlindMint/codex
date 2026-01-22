@@ -206,6 +206,7 @@ data class MainState(
     val speedReadingFocalPointPosition: Float = provideDefaultValue { 0.38f },
     val speedReadingOsdHeight: Float = provideDefaultValue { 0.2f },
     val speedReadingOsdSeparation: Float = provideDefaultValue { 0.5f },
+    val speedReadingAutoHideOsd: Boolean = provideDefaultValue { true },
     val speedReadingCenterWord: Boolean = provideDefaultValue { false },
     val speedReadingCustomFontEnabled: Boolean = provideDefaultValue { false },
     val speedReadingSelectedFontFamily: String = provideDefaultValue { "default" },
@@ -660,6 +661,10 @@ data class MainState(
                     speedReadingOsdSeparation = provideValue(
                         SPEED_READING_OSD_SEPARATION, convert = { toFloat() }
                     ) { speedReadingOsdSeparation },
+
+                    speedReadingAutoHideOsd = provideValue(
+                        SPEED_READING_AUTO_HIDE_OSD
+                    ) { speedReadingAutoHideOsd },
 
                     speedReadingCenterWord = provideValue(
                         SPEED_READING_CENTER_WORD

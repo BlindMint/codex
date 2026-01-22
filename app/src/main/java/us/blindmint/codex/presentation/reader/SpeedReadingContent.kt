@@ -388,9 +388,9 @@ fun SpeedReadingContent(
                 val focalPointX = containerWidth * accentOffsetRatio
 
                 // Measure text before accent to calculate offset
-                val beforeAccent = if (accentIndex > 0) currentWord.substring(0, accentIndex) else ""
-                val accentChar = if (accentIndex >= 0 && accentIndex < currentWord.length)
-                    currentWord[accentIndex].toString() else ""
+                 val beforeAccent = if (accentIndex > 0) currentWord.take(accentIndex) else ""
+                 val accentChar = if (accentIndex >= 0 && accentIndex < currentWord.length)
+                     currentWord[accentIndex].toString() else ""
 
                 val beforeAccentWidth = if (beforeAccent.isNotEmpty()) {
                     with(density) {
@@ -565,7 +565,7 @@ fun SpeedReadingContent(
                             withStyle(style = SpanStyle(color = fontColor)) {
                                 if (accentCharacterEnabled && accentIndex >= 0) {
                                     if (accentIndex > 0) {
-                                        append(currentWord.substring(0, accentIndex))
+                                        append(currentWord.take(accentIndex))
                                     }
                                     if (accentIndex < currentWord.length) {
                                         withStyle(style = SpanStyle(color = accentColor.copy(alpha = accentOpacity))) {
@@ -573,7 +573,7 @@ fun SpeedReadingContent(
                                         }
                                     }
                                     if (accentIndex < currentWord.length - 1) {
-                                        append(currentWord.substring(accentIndex + 1))
+                                        append(currentWord.drop(accentIndex + 1))
                                     }
                                 } else {
                                     append(currentWord)

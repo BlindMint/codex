@@ -986,6 +986,14 @@ class MainModel @Inject constructor(
                 }
             )
 
+            is MainEvent.OnChangeSpeedReadingAutoHideOsd -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_AUTO_HIDE_OSD,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingAutoHideOsd = this)
+                }
+            )
+
             is MainEvent.OnChangeSpeedReadingCenterWord -> handleDatastoreUpdate(
                 key = DataStoreConstants.SPEED_READING_CENTER_WORD,
                 value = event.value,

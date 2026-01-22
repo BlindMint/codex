@@ -14,6 +14,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.parcelize.Parcelize
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.presentation.core.util.LocalActivity
 import us.blindmint.codex.presentation.core.util.calculateProgress
@@ -24,9 +27,10 @@ import us.blindmint.codex.presentation.reader.SpeedReadingSettingsBottomSheet
 import us.blindmint.codex.ui.library.LibraryScreen
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsControllerCompat
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @Parcelize
 data class SpeedReadingScreen(
@@ -82,6 +86,7 @@ data class SpeedReadingScreen(
         val speedReadingFocalPointPosition = androidx.compose.runtime.remember { androidx.compose.runtime.mutableFloatStateOf(mainState.value.speedReadingFocalPointPosition) }
         val speedReadingOsdHeight = androidx.compose.runtime.remember { androidx.compose.runtime.mutableFloatStateOf(mainState.value.speedReadingOsdHeight) }
         val speedReadingOsdSeparation = androidx.compose.runtime.remember { androidx.compose.runtime.mutableFloatStateOf(mainState.value.speedReadingOsdSeparation) }
+        val speedReadingAutoHideOsd = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingAutoHideOsd) }
         val speedReadingCenterWord = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingCenterWord) }
         val speedReadingCustomFontEnabled = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingCustomFontEnabled) }
         val speedReadingSelectedFontFamily = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingSelectedFontFamily) }
@@ -89,9 +94,32 @@ data class SpeedReadingScreen(
         // Settings visibility state
         val speedReadingSettingsVisible = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
 
-        // Update settings when mainState changes
-        androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingWpm) {
-            wpm.intValue = mainState.value.speedReadingWpm
+        // Keep system bars hidden while speed reader is active (including when panels are open)
+        // Use rememberCoroutineScope to ensure we can cancel this when leaving
+        val scope = rememberCoroutineScope()
+
+        // Hide system bars for full screen experience in speed reader
+        // Use LaunchedEffect with Unit key to ensure bars stay hidden even when panels open
+        val keepBarsHiddenJob = remember { androidx.compose.runtime.mutableStateOf<kotlinx.coroutines.Job?>(null) }
+        androidx.compose.runtime.LaunchedEffect(Unit) {
+            val window = activity.window
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            // Hide immediately
+            insetsController.hide(WindowInsetsCompat.Type.systemBars())
+            insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
+            // Keep hiding to prevent panels from re-showing system bars
+            keepBarsHiddenJob.value = scope.launch {
+                while (true) {
+                    kotlinx.coroutines.delay(500)
+                    try {
+                        insetsController.hide(WindowInsetsCompat.Type.systemBars())
+                    } catch (e: Exception) {
+                        // Window might be disposed
+                        break
+                    }
+                }
+            }
         }
         androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingManualSentencePauseEnabled) {
             speedReadingManualSentencePauseEnabled.value = mainState.value.speedReadingManualSentencePauseEnabled
@@ -150,6 +178,9 @@ data class SpeedReadingScreen(
         }
         androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingOsdSeparation) {
             speedReadingOsdSeparation.floatValue = mainState.value.speedReadingOsdSeparation
+        }
+        androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingAutoHideOsd) {
+            speedReadingAutoHideOsd.value = mainState.value.speedReadingAutoHideOsd
         }
         androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingCenterWord) {
             speedReadingCenterWord.value = mainState.value.speedReadingCenterWord
@@ -222,6 +253,9 @@ data class SpeedReadingScreen(
         androidx.compose.runtime.LaunchedEffect(speedReadingOsdSeparation.floatValue) {
             mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingOsdSeparation(speedReadingOsdSeparation.floatValue))
         }
+        androidx.compose.runtime.LaunchedEffect(speedReadingAutoHideOsd.value) {
+            mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingAutoHideOsd(speedReadingAutoHideOsd.value))
+        }
         androidx.compose.runtime.LaunchedEffect(speedReadingCenterWord.value) {
             mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingCenterWord(speedReadingCenterWord.value))
         }
@@ -239,8 +273,29 @@ data class SpeedReadingScreen(
         }
 
         // Handle cleanup when exiting speed reader
+        val onExitWithSystemBars = remember {
+            {
+                // Cancel the job that keeps hiding system bars
+                keepBarsHiddenJob.value?.cancel()
+
+                // Show system bars BEFORE navigating (like normal reader does)
+                val window = activity.window
+                val insetsController = WindowCompat.getInsetsController(window, activity.window.decorView)
+                insetsController.show(WindowInsetsCompat.Type.systemBars())
+
+                // Now navigate (system bars are already shown)
+                navigator.push(
+                    LibraryScreen,
+                    popping = true,  // Replace current navigation stack
+                    saveInBackStack = false
+                )
+            }
+        }
+
         androidx.compose.runtime.DisposableEffect(Unit) {
             onDispose {
+                // Cancel the keep-bars-hidden job
+                keepBarsHiddenJob.value?.cancel()
                 speedReaderModel.onLeave()
             }
         }
@@ -318,6 +373,7 @@ data class SpeedReadingScreen(
             focalPointPosition = speedReadingFocalPointPosition.floatValue,
             osdHeight = speedReadingOsdHeight.floatValue,
             osdSeparation = speedReadingOsdSeparation.floatValue,
+            autoHideOsd = speedReadingAutoHideOsd.value,
             centerWord = speedReadingCenterWord.value,
             progress = bookProgress,
             bottomBarPadding = bottomBarPadding,
@@ -325,24 +381,12 @@ data class SpeedReadingScreen(
             wpm = wpm.intValue,
             onWpmChange = { wpm.intValue = it },
             osdEnabled = speedReadingOsdEnabled.value,
-            onChangeProgress = { progress, wordIndex ->
-                // Wire progress updates to the model for database persistence (throttled)
-                speedReaderModel.updateProgress(progress, wordIndex, forceSave = false)
+            onExitSpeedReading = onExitWithSystemBars,
+            onShowSpeedReadingSettings = {
+                speedReadingSettingsVisible.value = true
             },
-            onSaveProgress = { progress, wordIndex ->
-                // Immediate progress save for manual pauses (no throttling)
-                Log.d("SPEED_READER", "Screen onSaveProgress: progress=$progress, wordIndex=$wordIndex")
-                speedReaderModel.updateProgress(progress, wordIndex, forceSave = true)
-            },
-            onExitSpeedReading = {
-                // Progress is already saved by the exit button logic above
-                // Always return to library for a completely fresh state
-                // This ensures the book can be opened fresh from library with latest progress
-                navigator.push(
-                    LibraryScreen,
-                    popping = true,  // Replace current navigation stack
-                    saveInBackStack = false
-                )
+            onMenuVisibilityChanged = { showMenu ->
+                // Handle menu visibility for speed reading screen
             },
             onNavigateWord = { direction ->
                 // Speed reading handles word navigation internally
@@ -351,12 +395,6 @@ data class SpeedReadingScreen(
                 // Update model when user confirms new word in picker
                 // Use global word index directly - both reader and picker use same word list
                 speedReaderModel.updateProgress(0f, newWordIndex, forceSave = true)
-            },
-            onShowSpeedReadingSettings = {
-                speedReadingSettingsVisible.value = true
-            },
-            onMenuVisibilityChanged = { showMenu ->
-                // Handle menu visibility for speed reading screen
             },
             showOverlayMenu = false
         )
@@ -405,6 +443,8 @@ data class SpeedReadingScreen(
             onOsdHeightChange = { speedReadingOsdHeight.floatValue = it },
             osdSeparation = speedReadingOsdSeparation.floatValue,
             onOsdSeparationChange = { speedReadingOsdSeparation.floatValue = it },
+            autoHideOsd = speedReadingAutoHideOsd.value,
+            onAutoHideOsdChange = { speedReadingAutoHideOsd.value = it },
             centerWord = speedReadingCenterWord.value,
             onCenterWordChange = { speedReadingCenterWord.value = it },
             verticalIndicatorType = SpeedReadingVerticalIndicatorType.valueOf(speedReadingVerticalIndicatorType.value),

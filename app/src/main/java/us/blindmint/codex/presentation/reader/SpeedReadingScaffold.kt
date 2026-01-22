@@ -31,10 +31,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.animation.core.SpringSpec
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.Spring.DampingRatioMediumBouncy
+import androidx.compose.animation.core.Spring.StiffnessMedium
+import androidx.compose.animation.core.animateFloatAsState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.text.font.FontFamily
@@ -78,6 +84,7 @@ fun SpeedReadingScaffold(
     isLoading: Boolean = false,
     osdHeight: Float = 0.2f,
     osdSeparation: Float = 0.5f,
+    autoHideOsd: Boolean = true,
     centerWord: Boolean = false,
     onWpmChange: (Int) -> Unit,
     osdEnabled: Boolean,
@@ -167,10 +174,18 @@ fun SpeedReadingScaffold(
     }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-    Scaffold(
-        topBar = {
-            if (!isLoading && !showOverlayMenu && selectedWordIndex >= 0) {
-                // For independent speed reader: always show minimal top bar with back and settings icons
+     Scaffold(
+         topBar = {
+             if (!isLoading && !showOverlayMenu && selectedWordIndex >= 0) {
+                 // For independent speed reader: always show minimal top bar with back and settings icons
+                 val osdOpacity by animateFloatAsState(
+                     targetValue = if (autoHideOsd && isPlaying) 0f else 1f,
+                     animationSpec = SpringSpec(
+                         dampingRatio = DampingRatioMediumBouncy,
+                         stiffness = StiffnessMedium
+                     ),
+                     label = "osdOpacity"
+                 )
                 androidx.compose.material3.TopAppBar(
                     title = {},
                       navigationIcon = {
@@ -186,7 +201,7 @@ fun SpeedReadingScaffold(
                               Log.d("SPEED_READER", "Exit: wasPlaying=$wasPlaying, saving progress=$realTimeProgress, wordIndex=$currentWordIndex")
                               onSaveProgress(realTimeProgress, currentWordIndex)
                               onExitSpeedReading()
-                          }) {
+                          }, modifier = Modifier.graphicsLayer { alpha = osdOpacity }) {
                              androidx.compose.material3.Icon(
                                  imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                  contentDescription = "Back",
@@ -194,8 +209,8 @@ fun SpeedReadingScaffold(
                              )
                          }
                      },
-                    actions = {
-                        androidx.compose.material3.IconButton(onClick = { if (isPlaying) onPlayPause(); onShowSpeedReadingSettings() }) {
+                     actions = {
+                        androidx.compose.material3.IconButton(onClick = { if (isPlaying) onPlayPause(); onShowSpeedReadingSettings() }, modifier = Modifier.graphicsLayer { alpha = osdOpacity }) {
                             androidx.compose.material3.Icon(
                                 imageVector = Icons.Filled.Settings,
                                 contentDescription = "Settings",
@@ -319,8 +334,6 @@ fun SpeedReadingScaffold(
                 alwaysShowPlayPause = alwaysShowPlayPause,
                 showWpmIndicator = showWpmIndicator,
                 osdEnabled = osdEnabled,
-                osdHeight = osdHeight,
-                osdSeparation = osdSeparation,
                 centerWord = centerWord,
                 initialWordIndex = selectedWordIndex,
                 onShowWordPicker = {
