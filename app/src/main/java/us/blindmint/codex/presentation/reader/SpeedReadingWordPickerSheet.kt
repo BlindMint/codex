@@ -23,6 +23,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import us.blindmint.codex.domain.reader.SpeedReaderWord
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -131,21 +132,23 @@ fun SpeedReadingWordPickerSheet(
         currentSearchIndex = 0
     }
 
-    // Track previous refresh key to only scroll on sheet open, not on selection change
-    val prevRefreshKey = remember { mutableIntStateOf(refreshKey) }
+    // Track which refreshKey we've already scrolled for
+    var scrolledRefreshKey by remember { mutableIntStateOf(-1) }
 
     // Scroll to current word when sheet opens (refreshKey changes)
-    LaunchedEffect(refreshKey, currentWordPosition, paragraphs) {
+    LaunchedEffect(refreshKey) {
         // Only scroll if this is a fresh sheet open (refreshKey changed)
         // Don't re-scroll when user changes selection
-        if (refreshKey != prevRefreshKey.intValue) {
+        if (refreshKey > scrolledRefreshKey) {
+            // Small delay to ensure sheet is fully rendered
+            delay(100)
             currentWordPosition?.let { position: WordPosition ->
                 val paragraphIndex = paragraphs.indexOfFirst { paragraph: WordParagraph -> paragraph.textIndex == position.textIndex }
                 if (paragraphIndex >= 0) {
-                    listState.scrollToItem(paragraphIndex)
+                    listState.animateScrollToItem(paragraphIndex)
                 }
             }
-            prevRefreshKey.intValue = refreshKey
+            scrolledRefreshKey = refreshKey
         }
     }
 
