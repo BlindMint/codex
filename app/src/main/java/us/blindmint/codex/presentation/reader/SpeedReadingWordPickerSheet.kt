@@ -132,13 +132,7 @@ fun SpeedReadingWordPickerSheet(
     // State for selected word
     var selectedWord: WordPosition? by remember { mutableStateOf(currentWordPosition) }
 
-    // Track if selection is user-initiated (vs. scroll-initiated)
-    var isUserSelected by remember { mutableStateOf(false) }
 
-    // Reset user selection when sheet opens (new refreshKey)
-    LaunchedEffect(refreshKey) {
-        isUserSelected = false
-    }
 
     // Progress slider state (derived from selected word)
     val sliderProgress: Float by remember(selectedWord, allWords) {
@@ -191,21 +185,39 @@ fun SpeedReadingWordPickerSheet(
     // Track if user is currently dragging slider to prevent circular updates
     var isDraggingSlider by remember { mutableStateOf(false) }
 
-    // Update selectedWord when user scrolls (but not when dragging slider or when user has selected a word)
-    LaunchedEffect(isDraggingSlider, isUserSelected) {
+    // Track the scroll position where current word was located
+    var currentWordScrollIndex by remember { mutableIntStateOf(-1) }
+
+    // Update current word scroll index when refreshKey changes
+    LaunchedEffect(refreshKey, currentWordPosition) {
+        currentWordPosition?.let { position ->
+            val paragraphIndex = paragraphs.indexOfFirst { paragraph: WordParagraph -> paragraph.textIndex == position.textIndex }
+            currentWordScrollIndex = paragraphIndex
+        }
+    }
+
+    // Update selectedWord when user scrolls (but not when dragging slider and not during initial open)
+    LaunchedEffect(isDraggingSlider, scrolledRefreshKey, currentWordScrollIndex) {
         if (!isDraggingSlider) {
             snapshotFlow { listState.firstVisibleItemIndex }
                 .debounce(150)
                 .collect { visibleIndex ->
-                    if (visibleIndex in paragraphs.indices) {
+                    // Only update if:
+                    // 1. Initial scroll is complete (scrolledRefreshKey matches current refreshKey)
+                    // 2. We've scrolled away from the current word's paragraph
+                    val initialScrollComplete = (scrolledRefreshKey >= refreshKey)
+                    val scrolledAwayFromCurrent = currentWordScrollIndex >= 0 && visibleIndex != currentWordScrollIndex
+
+                    if (visibleIndex in paragraphs.indices && initialScrollComplete && scrolledAwayFromCurrent) {
                         val firstWord = paragraphs[visibleIndex].words.firstOrNull()
-                        if (firstWord != null && !isUserSelected) {
+                        if (firstWord != null) {
                             selectedWord = firstWord
                         }
                     }
                 }
         }
     }
+
 
     // Scroll to current word when sheet opens (refreshKey changes)
     LaunchedEffect(refreshKey) {
@@ -218,9 +230,15 @@ fun SpeedReadingWordPickerSheet(
                 val paragraphIndex = paragraphs.indexOfFirst { paragraph: WordParagraph -> paragraph.textIndex == position.textIndex }
                 if (paragraphIndex >= 0) {
                     listState.animateScrollToItem(paragraphIndex)
+                    // Wait for scroll to complete, then mark as done
+                    scope.launch {
+                        delay(300)
+                        scrolledRefreshKey = refreshKey
+                    }
+                } else {
+                    scrolledRefreshKey = refreshKey
                 }
             }
-            scrolledRefreshKey = refreshKey
         }
     }
 
@@ -384,10 +402,7 @@ fun SpeedReadingWordPickerSheet(
                                 isSelectedWord = isSelectedWord,
                                 isSearchMatch = isSearchMatch,
                                 isCurrentSearchResult = isCurrentSearchResult,
-                                onClick = {
-                                    selectedWord = wordPosition
-                                    isUserSelected = true
-                                }
+                                onClick = { selectedWord = wordPosition }
                             )
 
                             Spacer(modifier = Modifier.width(12.dp))
@@ -407,7 +422,6 @@ fun SpeedReadingWordPickerSheet(
                 value = sliderProgress,
                 onValueChange = { progress ->
                     isDraggingSlider = true
-                    isUserSelected = false
                     val wordIndex = (progress * allWords.size).toInt().coerceIn(0, allWords.size - 1)
                     val wordPosition = paragraphs.flatMap { it.words }
                         .find { it.globalWordIndex == wordIndex }
@@ -486,7 +500,7 @@ private fun WordChip(
 ) {
     val backgroundColor = when {
         isSelectedWord -> MaterialTheme.colorScheme.tertiaryContainer
-        isCurrentWord -> MaterialTheme.colorScheme.primaryContainer
+        isCurrentWord && !isSelectedWord -> MaterialTheme.colorScheme.primaryContainer
         isCurrentSearchResult -> MaterialTheme.colorScheme.secondaryContainer
         isSearchMatch -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
         else -> Color.Transparent
