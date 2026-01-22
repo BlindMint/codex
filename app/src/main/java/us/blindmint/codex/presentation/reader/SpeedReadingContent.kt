@@ -58,7 +58,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -264,8 +264,8 @@ fun SpeedReadingContent(
     var boxSize by remember { mutableStateOf(0 to 0) }
 
     // Get screen dimensions for calculating exclusion zones
-    val configuration = LocalConfiguration.current
-    val screenHeightDp = configuration.screenHeightDp.dp
+    val windowInfo = LocalWindowInfo.current
+    val screenHeightDp = with(LocalDensity.current) { windowInfo.containerSize.height.toDp() }
 
     // Calculate OSD exclusion zone bounds in dp
     // OSD is positioned at (screenHeight * (1 - osdHeight)) from top
@@ -283,9 +283,9 @@ fun SpeedReadingContent(
             .onSizeChanged { boxSize = it.width to it.height }
             .pointerInput(isPlaying, osdEnabled, osdHeight) {
                 // Convert dp to pixels for tap detection
-                val osdTopPx = osdTopDp.toPx()
-                val osdBottomPx = osdBottomDp.toPx()
-                val bottomBarTopPx = boxSize.second - bottomBarHeightDp.toPx()
+                val osdTopPx = with(density) { osdTopDp.toPx() }
+                val osdBottomPx = with(density) { osdBottomDp.toPx() }
+                val bottomBarTopPx = boxSize.second - with(density) { bottomBarHeightDp.toPx() }
 
                 awaitPointerEventScope {
                     while (true) {

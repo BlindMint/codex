@@ -14,6 +14,7 @@ import us.blindmint.codex.core.crash.CrashHandler
 class Application : Application() {
     override fun onCreate() {
         super.onCreate()
-        Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this))
+        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this, defaultHandler))
     }
 }

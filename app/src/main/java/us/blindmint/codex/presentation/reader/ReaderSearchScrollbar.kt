@@ -76,13 +76,18 @@ fun ReaderSearchScrollbar(
     }
 
     // Calculate viewport indicator position and size
-    val viewportStartRatio = remember(listState.firstVisibleItemIndex, text.size) {
-        if (text.isEmpty()) 0f else listState.firstVisibleItemIndex.toFloat() / text.size.toFloat()
+    val firstVisibleItemIndex by remember {
+        derivedStateOf { listState.firstVisibleItemIndex }
+    }
+    val viewportStartRatio = remember(firstVisibleItemIndex, text.size) {
+        if (text.isEmpty()) 0f else firstVisibleItemIndex.toFloat() / text.size.toFloat()
     }
 
-    val visibleItems = listState.layoutInfo.visibleItemsInfo.size
-    val viewportHeightRatio = remember(visibleItems, text.size) {
-        if (text.isEmpty()) 0f else min(visibleItems.toFloat() / text.size.toFloat(), 1f)
+    val visibleItemsCount by remember {
+        derivedStateOf { listState.layoutInfo.visibleItemsInfo.size }
+    }
+    val viewportHeightRatio = remember(visibleItemsCount, text.size) {
+        if (text.isEmpty()) 0f else min(visibleItemsCount.toFloat() / text.size.toFloat(),1f)
     }
 
     Box(
