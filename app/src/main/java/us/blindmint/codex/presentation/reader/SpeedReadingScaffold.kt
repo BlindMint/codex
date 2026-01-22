@@ -344,26 +344,23 @@ fun SpeedReadingScaffold(
         }
 
         // Word Picker Sheet - only show when not loading
-        if (showWordPicker && !isLoading && words.isNotEmpty()) {
-              SpeedReadingWordPickerSheet(
-                  words = words,
-                  currentWordIndex = currentWordIndex,
-                  totalWords = totalWords,
-                  backgroundColor = backgroundColor,
-                  fontColor = fontColor,
-                  refreshKey = wordPickerRefreshKey,
-                  onDismiss = { showWordPicker = false },
-                  onConfirm = { progress, wordIndexInText ->
-                      if (isPlaying) onPlayPause()
-                      selectedWordIndex = wordIndexInText
-                      realTimeProgress = progress
-                      onSaveProgress(progress, wordIndexInText)
-                      // Notify parent that user picked a word - use global index directly
-                      onWordPicked(wordIndexInText)
-                      // Also notify parent to ensure proper state update
-                      parentOnChangeProgress(progress, wordIndexInText)
-                  }
-              )
-        }
+        SpeedReadingWordPickerSheet(
+            show = showWordPicker && !isLoading && words.isNotEmpty(),
+            words = words,
+            currentWordIndex = currentWordIndex,
+            totalWords = totalWords,
+            refreshKey = wordPickerRefreshKey,
+            onDismiss = { showWordPicker = false },
+            onConfirm = { progress, wordIndexInText ->
+                if (isPlaying) onPlayPause()
+                selectedWordIndex = wordIndexInText
+                realTimeProgress = progress
+                onSaveProgress(progress, wordIndexInText)
+                // Notify parent that user picked a word - use global index directly
+                onWordPicked(wordIndexInText)
+                // Also notify parent to ensure proper state update
+                parentOnChangeProgress(progress, wordIndexInText)
+            }
+        )
     }
 }

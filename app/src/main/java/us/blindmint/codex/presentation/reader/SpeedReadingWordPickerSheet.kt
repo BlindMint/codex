@@ -6,6 +6,9 @@
 
 package us.blindmint.codex.presentation.reader
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.*
@@ -18,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
@@ -27,9 +31,11 @@ import kotlinx.coroutines.delay
 import us.blindmint.codex.domain.reader.SpeedReaderWord
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import us.blindmint.codex.presentation.core.components.modal_bottom_sheet.ModalBottomSheet
 
 /**
  * Data class representing a word's position in the text.
@@ -55,18 +61,44 @@ data class WordParagraph(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, FlowPreview::class)
 @Composable
 fun SpeedReadingWordPickerSheet(
+    show: Boolean,
     words: List<SpeedReaderWord>,
     currentWordIndex: Int,
     totalWords: Int,
-    backgroundColor: Color,
-    fontColor: Color,
     onDismiss: () -> Unit,
     onConfirm: (progress: Float, wordIndexInText: Int) -> Unit,
     refreshKey: Int = 0 // Increment each time sheet opens to trigger scroll
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var visibleShow by remember { mutableStateOf(false) }
+
+    LaunchedEffect(show) {
+        if (show) {
+            visibleShow = true
+        } else {
+            visibleShow = false
+        }
+    }
+
+    LaunchedEffect(visibleShow) {
+        if (!visibleShow && show) {
+            delay(300)
+            onDismiss()
+        }
+    }
+
+    if (visibleShow) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
+
+    val animatedScrimColor by animateColorAsState(
+        targetValue = if (visibleShow) BottomSheetDefaults.ScrimColor else Color.Transparent,
+        animationSpec = tween(300)
+    )
+    val animatedHeight by animateFloatAsState(
+        targetValue = if (visibleShow) 1.0f else 0.0f,
+        animationSpec = tween(300)
+    )
 
     // Convert SpeedReaderWord to WordPosition for display
     val allWords: List<WordPosition> = remember(words) {
@@ -99,6 +131,27 @@ fun SpeedReadingWordPickerSheet(
 
     // State for selected word
     var selectedWord: WordPosition? by remember { mutableStateOf(currentWordPosition) }
+
+    // Track if selection is user-initiated (vs. scroll-initiated)
+    var isUserSelected by remember { mutableStateOf(false) }
+
+    // Reset user selection when sheet opens (new refreshKey)
+    LaunchedEffect(refreshKey) {
+        isUserSelected = false
+    }
+
+    // Progress slider state (derived from selected word)
+    val sliderProgress: Float by remember(selectedWord, allWords) {
+        derivedStateOf {
+            if (selectedWord != null && allWords.isNotEmpty()) {
+                selectedWord!!.globalWordIndex.toFloat() / allWords.size.toFloat()
+            } else if (allWords.isNotEmpty()) {
+                currentWordIndex.toFloat() / allWords.size.toFloat()
+            } else {
+                0f
+            }
+        }
+    }
 
     // Search state
     var searchQuery: String by remember { mutableStateOf("") }
@@ -135,6 +188,25 @@ fun SpeedReadingWordPickerSheet(
     // Track which refreshKey we've already scrolled for
     var scrolledRefreshKey by remember { mutableIntStateOf(-1) }
 
+    // Track if user is currently dragging slider to prevent circular updates
+    var isDraggingSlider by remember { mutableStateOf(false) }
+
+    // Update selectedWord when user scrolls (but not when dragging slider or when user has selected a word)
+    LaunchedEffect(isDraggingSlider, isUserSelected) {
+        if (!isDraggingSlider) {
+            snapshotFlow { listState.firstVisibleItemIndex }
+                .debounce(150)
+                .collect { visibleIndex ->
+                    if (visibleIndex in paragraphs.indices) {
+                        val firstWord = paragraphs[visibleIndex].words.firstOrNull()
+                        if (firstWord != null && !isUserSelected) {
+                            selectedWord = firstWord
+                        }
+                    }
+                }
+        }
+    }
+
     // Scroll to current word when sheet opens (refreshKey changes)
     LaunchedEffect(refreshKey) {
         // Only scroll if this is a fresh sheet open (refreshKey changed)
@@ -166,27 +238,37 @@ fun SpeedReadingWordPickerSheet(
     }
 
     ModalBottomSheet(
+        hasFixedHeight = true,
+        scrimColor = animatedScrimColor,
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = backgroundColor,
-        modifier = Modifier.fillMaxHeight(0.9f)
+        sheetGesturesEnabled = false,
+        dragHandle = null,
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(animatedHeight)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
         ) {
-            // Top Row with Back Button
+            // Status bar padding
+            Spacer(
+                modifier = Modifier
+                    .height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
+            )
+
+            // Top Row with Close Button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                IconButton(onClick = onDismiss) {
+                IconButton(onClick = { visibleShow = false }) {
                     Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = fontColor
+                        Icons.Filled.Close,
+                        contentDescription = "Close",
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -201,12 +283,12 @@ fun SpeedReadingWordPickerSheet(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("Search...", color = fontColor.copy(alpha = 0.5f)) },
+                    placeholder = { Text("Search...", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)) },
                     leadingIcon = {
                         Icon(
                             Icons.Filled.Search,
                             contentDescription = "Search",
-                            tint = fontColor.copy(alpha = 0.7f)
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
                     },
                     singleLine = true
@@ -221,7 +303,7 @@ fun SpeedReadingWordPickerSheet(
                             "0/0"
                         },
                         style = MaterialTheme.typography.bodyMedium,
-                        color = fontColor.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
 
                     // Previous result
@@ -241,7 +323,7 @@ fun SpeedReadingWordPickerSheet(
                         Icon(
                             Icons.Filled.KeyboardArrowUp,
                             contentDescription = "Previous result",
-                            tint = fontColor.copy(alpha = if (searchMatches.isNotEmpty()) 0.7f else 0.3f)
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = if (searchMatches.isNotEmpty()) 0.7f else 0.3f)
                         )
                     }
 
@@ -262,17 +344,17 @@ fun SpeedReadingWordPickerSheet(
                         Icon(
                             Icons.Filled.KeyboardArrowDown,
                             contentDescription = "Next result",
-                            tint = fontColor.copy(alpha = if (searchMatches.isNotEmpty()) 0.7f else 0.3f)
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = if (searchMatches.isNotEmpty()) 0.7f else 0.3f)
                         )
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-            HorizontalDivider(color = fontColor.copy(alpha = 0.2f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Word content in LazyColumn
+            // Word content in LazyColumn (no scrollbar - progress slider shows position)
             LazyColumn(
                 state = listState,
                 modifier = Modifier
@@ -302,8 +384,10 @@ fun SpeedReadingWordPickerSheet(
                                 isSelectedWord = isSelectedWord,
                                 isSearchMatch = isSearchMatch,
                                 isCurrentSearchResult = isCurrentSearchResult,
-                                fontColor = fontColor,
-                                onClick = { selectedWord = wordPosition }
+                                onClick = {
+                                    selectedWord = wordPosition
+                                    isUserSelected = true
+                                }
                             )
 
                             Spacer(modifier = Modifier.width(12.dp))
@@ -314,16 +398,52 @@ fun SpeedReadingWordPickerSheet(
                 }
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Progress slider (matches main reader style)
+            Slider(
+                value = sliderProgress,
+                onValueChange = { progress ->
+                    isDraggingSlider = true
+                    isUserSelected = false
+                    val wordIndex = (progress * allWords.size).toInt().coerceIn(0, allWords.size - 1)
+                    val wordPosition = paragraphs.flatMap { it.words }
+                        .find { it.globalWordIndex == wordIndex }
+                    if (wordPosition != null) {
+                        selectedWord = wordPosition
+                        val paragraphIndex = paragraphs.indexOfFirst { paragraph: WordParagraph -> paragraph.textIndex == wordPosition.textIndex }
+                        if (paragraphIndex >= 0) {
+                            scope.launch {
+                                listState.animateScrollToItem(paragraphIndex)
+                            }
+                        }
+                    }
+                },
+                onValueChangeFinished = {
+                    isDraggingSlider = false
+                },
+                colors = SliderDefaults.colors(
+                    inactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(0.15f),
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                    thumbColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             // Bottom Row with Cancel and Confirm buttons
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp, bottom = 8.dp),
+                    .padding(top = 8.dp, bottom = 16.dp),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = onDismiss) {
-                    Text("Cancel", color = fontColor)
+                TextButton(onClick = { visibleShow = false }) {
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurface)
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -339,7 +459,7 @@ fun SpeedReadingWordPickerSheet(
                                 0f
                             }
                             onConfirm(newProgress, word.globalWordIndex)
-                            onDismiss()
+                            visibleShow = false
                         }
                     },
                     enabled = selectedWord != null
@@ -349,7 +469,9 @@ fun SpeedReadingWordPickerSheet(
             }
         }
     }
+    }
 }
+
 /**
  * A tappable word chip with different highlights for current, selected, and search matches.
  */
@@ -360,7 +482,6 @@ private fun WordChip(
     isSelectedWord: Boolean,
     isSearchMatch: Boolean,
     isCurrentSearchResult: Boolean,
-    fontColor: Color,
     onClick: () -> Unit
 ) {
     val backgroundColor = when {
@@ -375,12 +496,31 @@ private fun WordChip(
         isSelectedWord -> MaterialTheme.colorScheme.onTertiaryContainer
         isCurrentWord -> MaterialTheme.colorScheme.onPrimaryContainer
         isCurrentSearchResult || isSearchMatch -> MaterialTheme.colorScheme.onSecondaryContainer
-        else -> fontColor
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+
+    val borderColor = when {
+        isSelectedWord -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.7f)
+        isCurrentWord -> MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+        isCurrentSearchResult -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f)
+        else -> Color.Transparent
+    }
+
+    val borderWidth = when {
+        isSelectedWord -> 2.dp
+        isCurrentWord -> 1.dp
+        isCurrentSearchResult -> 1.dp
+        else -> 0.dp
     }
 
     Box(
         modifier = Modifier
             .background(backgroundColor, RoundedCornerShape(4.dp))
+            .border(
+                width = borderWidth,
+                color = borderColor,
+                shape = RoundedCornerShape(4.dp)
+            )
             .clickable(onClick = onClick)
             .padding(horizontal = 4.dp, vertical = 2.dp)
     ) {
