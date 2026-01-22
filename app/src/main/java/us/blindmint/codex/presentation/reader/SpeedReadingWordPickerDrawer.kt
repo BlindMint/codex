@@ -63,7 +63,7 @@ fun SpeedReadingWordPickerDrawer(
                 word = word.text,
                 textIndex = word.paragraphIndex,
                 wordIndexInText = index,
-                globalWordIndex = index
+                globalWordIndex = word.globalIndex
             )
         }
     }
@@ -323,43 +323,6 @@ fun SpeedReadingWordPickerDrawer(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Progress",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = fontColor.copy(alpha = 0.7f),
-                            modifier = Modifier.width(60.dp)
-                        )
-                        var sliderValue by remember { mutableFloatStateOf(currentProgress) }
-
-                         LaunchedEffect(selectedWord?.globalWordIndex, allWords.size) {
-                             sliderValue = if (selectedWord != null) {
-                                 currentProgress
-                             } else {
-                                 0f
-                             }
-                         }
-
-                         Slider(
-                            value = sliderValue,
-                            onValueChange = { newProgress ->
-                                sliderValue = newProgress
-                                val newIndex = (newProgress * allWords.size).toInt().coerceIn(0, allWords.size - 1)
-                                val word = allWords.getOrNull(newIndex)
-                                if (word != null) {
-                                    selectedWord = word
-                                }
-                            },
-                            valueRange = 0f..1f,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
                         horizontalArrangement = Arrangement.End
                     ) {
                         TextButton(onClick = onDismiss) {
@@ -385,6 +348,52 @@ fun SpeedReadingWordPickerDrawer(
                         ) {
                             Text("Confirm")
                         }
+                    }
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        color = fontColor.copy(alpha = 0.2f)
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Progress",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = fontColor.copy(alpha = 0.7f),
+                            modifier = Modifier.width(60.dp)
+                        )
+                        var sliderValue by remember { mutableFloatStateOf(currentProgress) }
+
+                         LaunchedEffect(selectedWord?.globalWordIndex, allWords.size) {
+                             val currentSelectedWord = selectedWord
+                             sliderValue = if (currentSelectedWord != null) {
+                                 (currentSelectedWord.globalWordIndex.toFloat() / allWords.size).coerceIn(0f, 1f)
+                             } else {
+                                 currentProgress
+                             }
+                         }
+
+                         Slider(
+                             value = sliderValue,
+                             onValueChange = { newProgress ->
+                                 sliderValue = newProgress
+                                 val newIndex = (newProgress * allWords.size).toInt().coerceIn(0, allWords.size - 1)
+                                 val word = allWords.getOrNull(newIndex)
+                                 if (word != null) {
+                                     selectedWord = word
+                                     scope.launch {
+                                         listState.animateScrollToItem(0)
+                                     }
+                                 }
+                             },
+                             valueRange = 0f..1f,
+                             modifier = Modifier.weight(1f)
+                         )
                     }
                 }
             }
