@@ -130,16 +130,6 @@ fun SpeedReadingWordPickerSheet(
         currentSearchIndex = 0
     }
 
-    // Auto-scroll to current word on open
-    LaunchedEffect(currentWordPosition, paragraphs) {
-        currentWordPosition?.let { position: WordPosition ->
-            val paragraphIndex = paragraphs.indexOfFirst { paragraph: WordParagraph -> paragraph.textIndex == position.textIndex }
-            if (paragraphIndex >= 0) {
-                listState.scrollToItem(paragraphIndex)
-            }
-        }
-    }
-
     // Scroll to search result
     fun scrollToSearchResult(index: Int) {
         if (searchMatches.isNotEmpty() && index in searchMatches.indices) {
@@ -327,6 +317,7 @@ fun SpeedReadingWordPickerSheet(
                                 0f
                             }
                             onConfirm(newProgress, word.globalWordIndex)
+                            onDismiss()
                         }
                     },
                     enabled = selectedWord != null
