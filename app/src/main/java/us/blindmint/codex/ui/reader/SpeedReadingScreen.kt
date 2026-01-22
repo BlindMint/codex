@@ -10,6 +10,7 @@ import android.os.Parcelable
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.parcelize.Parcelize
@@ -47,7 +48,8 @@ data class SpeedReadingScreen(
         val settingsState = settingsModel.state.collectAsStateWithLifecycle()
 
         // Lock status bar appearance to prevent icon color shift when bottom sheets open
-        SideEffect {
+        // Use LaunchedEffect with colorPreset as key to ensure it re-runs and overrides Theme.kt
+        LaunchedEffect(settingsState.value.selectedColorPreset) {
             val window = activity.window
             val insetsController = WindowCompat.getInsetsController(window, view)
             // Calculate luminance to determine if theme is dark

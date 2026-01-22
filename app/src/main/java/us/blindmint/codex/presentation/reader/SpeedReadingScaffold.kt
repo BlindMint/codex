@@ -352,6 +352,8 @@ fun SpeedReadingScaffold(
                       selectedWordIndex = wordIndexInText
                       realTimeProgress = progress
                       onSaveProgress(progress, wordIndexInText)
+                      // Also notify parent to ensure proper state update
+                      parentOnChangeProgress(progress, wordIndexInText)
                   }
               )
         }

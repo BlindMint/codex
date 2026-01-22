@@ -276,9 +276,8 @@ fun SpeedReadingWordPickerSheet(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         paragraph.words.forEach { wordPosition ->
-                            val isCurrentWord = wordPosition.textIndex == currentWordPosition?.textIndex &&
-                                    wordPosition.wordIndexInText == currentWordPosition?.wordIndexInText
-                            val isSelectedWord = wordPosition == selectedWord
+                            val isCurrentWord = wordPosition.globalWordIndex == currentWordPosition?.globalWordIndex
+                            val isSelectedWord = wordPosition.globalWordIndex == selectedWord?.globalWordIndex
                             val isSearchMatch = searchMatches.any {
                                 it.globalWordIndex == wordPosition.globalWordIndex
                             }
