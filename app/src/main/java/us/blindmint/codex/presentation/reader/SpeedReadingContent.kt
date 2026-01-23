@@ -465,14 +465,21 @@ fun SpeedReadingContent(
                 val (topBarY, bottomBarY, centerY) = barPositions
 
                 // Calculate arrow positions (relative to word area for better spacing)
-                val arrowPositions = remember(frameHeight, wordAreaHeight, density) {
+                val arrowPositions = remember(frameHeight, wordAreaHeight, derivedVerticalIndicatorsSize, density) {
                     with(density) {
                         val centerY = frameHeight.toPx() / 2f
                         val wordAreaTop = centerY - (wordAreaHeight.toPx() / 2f)
                         val wordAreaBottom = centerY + (wordAreaHeight.toPx() / 2f)
-                        val arrowGap = 24.dp.toPx() // Gap between arrows and word area
-                        val topArrowY = wordAreaTop - arrowGap
-                        val bottomArrowY = wordAreaBottom + arrowGap
+                        val verticalIndicatorHeight = derivedVerticalIndicatorsSize.dp.toPx()
+                        val iconSize = verticalIndicatorHeight * 3.5f
+                        val arrowGap = 32.dp.toPx() // Gap between arrow tips and word area
+
+                        // Position arrows so their tips point towards the word area
+                        // Top arrow (pointing down): tip at bottom of icon should be above word area
+                        val topArrowY = wordAreaTop - arrowGap - (iconSize / 2f)
+                        // Bottom arrow (pointing up): tip at top of icon should be below word area
+                        val bottomArrowY = wordAreaBottom + arrowGap + (iconSize / 2f)
+
                         Pair(topArrowY, bottomArrowY)
                     }
                 }
@@ -575,7 +582,7 @@ fun SpeedReadingContent(
                                 .size(iconSize)
                                 .offset(
                                     x = with(density) { (focalPointX - iconSize.toPx() / 2).toDp() },
-                                    y = with(density) { (bottomArrowY - iconSize.toPx()).toDp() }
+                                    y = with(density) { bottomArrowY.toDp() }
                                 )
                         )
                     }
