@@ -29,6 +29,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 
@@ -312,6 +313,19 @@ data class SpeedReadingScreen(
             "${progress.calculateProgress(2)}%"
         }
 
+        // Screen-size-aware focal point position defaults
+        val configuration = LocalConfiguration.current
+        val isTablet = configuration.smallestScreenWidthDp >= 600
+        val screenAwareFocalPointPosition = remember(speedReadingFocalPointPosition.floatValue, isTablet) {
+            // If the stored value is the old default (0.38f), use screen-aware defaults
+            // Otherwise, use the stored value (user has customized it)
+            if (speedReadingFocalPointPosition.floatValue == 0.38f) {
+                if (isTablet) 0.45f else 0.38f
+            } else {
+                speedReadingFocalPointPosition.floatValue
+            }
+        }
+
         SpeedReadingScaffold(
             words = words,
             book = displayBook,
@@ -346,7 +360,7 @@ data class SpeedReadingScreen(
             horizontalBarsDistance = speedReadingHorizontalBarsDistance.intValue,
             horizontalBarsColor = speedReadingHorizontalBarsColor.value,
             horizontalBarsOpacity = speedReadingHorizontalBarsOpacity.floatValue,
-            focalPointPosition = speedReadingFocalPointPosition.floatValue,
+            focalPointPosition = screenAwareFocalPointPosition,
             osdHeight = speedReadingOsdHeight.floatValue,
             osdSeparation = speedReadingOsdSeparation.floatValue,
              autoHideOsd = speedReadingAutoHideOsd.value,
@@ -410,7 +424,7 @@ data class SpeedReadingScreen(
             onHorizontalBarsColorChange = { speedReadingHorizontalBarsColor.value = it },
             horizontalBarsOpacity = speedReadingHorizontalBarsOpacity.floatValue,
             onHorizontalBarsOpacityChange = { speedReadingHorizontalBarsOpacity.floatValue = it },
-            focalPointPosition = speedReadingFocalPointPosition.floatValue,
+            focalPointPosition = screenAwareFocalPointPosition,
             onFocalPointPositionChange = { speedReadingFocalPointPosition.floatValue = it },
             osdHeight = speedReadingOsdHeight.floatValue,
             onOsdHeightChange = { speedReadingOsdHeight.floatValue = it },
@@ -420,6 +434,8 @@ data class SpeedReadingScreen(
             onAutoHideOsdChange = { speedReadingAutoHideOsd.value = it },
             centerWord = speedReadingCenterWord.value,
             onCenterWordChange = { speedReadingCenterWord.value = it },
+            focusIndicators = speedReadingFocusIndicators.value,
+            onFocusIndicatorsChange = { speedReadingFocusIndicators.value = it },
             verticalIndicatorType = SpeedReadingVerticalIndicatorType.valueOf(speedReadingVerticalIndicatorType.value),
             onVerticalIndicatorTypeChange = { speedReadingVerticalIndicatorType.value = it.name },
             customFontEnabled = speedReadingCustomFontEnabled.value,

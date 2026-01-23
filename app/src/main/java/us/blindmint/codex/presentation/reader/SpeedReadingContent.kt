@@ -282,8 +282,10 @@ fun SpeedReadingContent(
     // Derive focus indicator settings based on focusIndicators parameter
     // Default thickness: 3dp (3rd option in original slider)
     // Default length: 2nd option (16dp) for vertical indicators
+    // Default distance: 32dp for lines, 65dp for arrows (moved further away)
     val derivedShowHorizontalBars = focusIndicators != us.blindmint.codex.domain.reader.FocusIndicatorsType.OFF
     val derivedHorizontalBarsThickness = 3
+    val derivedHorizontalBarsDistance = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) 65 else 32
     val derivedShowVerticalIndicators = focusIndicators != us.blindmint.codex.domain.reader.FocusIndicatorsType.OFF
     val derivedVerticalIndicatorsSize = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) 24 else 16
     val derivedVerticalIndicatorType = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.ARROWS else us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.LINE
@@ -445,7 +447,7 @@ fun SpeedReadingContent(
                 // Frame dimensions
                 val frameHeight = 120.dp
                 val wordAreaHeight = 60.dp // Height reserved for word display
-                val barToWordGap = horizontalBarsDistance.dp // Configurable gap between horizontal bar and word area
+                val barToWordGap = derivedHorizontalBarsDistance.dp // Configurable gap between horizontal bar and word area
 
                 val barColorWithOpacity = horizontalBarsColor.copy(alpha = horizontalBarsOpacity)
 

@@ -78,10 +78,6 @@ fun LazyListScope.SpeedReadingSubcategory(
     onSentencePauseDurationChange: (Int) -> Unit = {},
     osdEnabled: Boolean = true,
     onOsdEnabledChange: (Boolean) -> Unit = {},
-    osdHeight: Float = 0.2f, // 0.0 = top, 1.0 = bottom, 0.2 = ~20% from top
-    onOsdHeightChange: (Float) -> Unit = {},
-    osdSeparation: Float = 0.5f, // 0.0 = close, 1.0 = far, 0.5 = current spacing
-    onOsdSeparationChange: (Float) -> Unit = {},
     autoHideOsd: Boolean = true,
     onAutoHideOsdChange: (Boolean) -> Unit = {},
     wordSize: Int = 48,
@@ -165,45 +161,22 @@ fun LazyListScope.SpeedReadingSubcategory(
                 }
             }
 
-            item {
-                SwitchWithTitle(
-                    selected = osdEnabled,
-                    title = stringResource(id = R.string.speed_reading_osd),
-                    onClick = { onOsdEnabledChange(!osdEnabled) }
-                )
-            }
+             item {
+                 SwitchWithTitle(
+                     selected = osdEnabled,
+                     title = stringResource(id = R.string.speed_reading_osd),
+                     onClick = { onOsdEnabledChange(!osdEnabled) }
+                 )
+             }
 
-            item {
-                SpeedReadingWordSizeOption(
-                    wordSize = wordSize,
-                    onWordSizeChange = onWordSizeChange
-                )
-            }
+             item {
+                 SpeedReadingWordSizeOption(
+                     wordSize = wordSize,
+                     onWordSizeChange = onWordSizeChange
+                 )
+             }
 
-            item {
-                SwitchWithTitle(
-                    selected = osdEnabled,
-                    title = stringResource(id = R.string.speed_reading_osd),
-                    onClick = { onOsdEnabledChange(!osdEnabled) }
-                )
-            }
 
-            // OSD Height and Separation sliders (only when OSD is enabled)
-            if (osdEnabled) {
-                item {
-                    SpeedReadingOsdHeightOption(
-                        osdHeight = osdHeight,
-                        onOsdHeightChange = onOsdHeightChange
-                    )
-                }
-
-                item {
-                    SpeedReadingOsdSeparationOption(
-                        osdSeparation = osdSeparation,
-                        onOsdSeparationChange = onOsdSeparationChange
-                    )
-                }
-            }
 
             item {
                 SpeedReadingWordSizeOption(
@@ -464,15 +437,6 @@ fun LazyListScope.SpeedReadingSubcategory(
                 )
             }
 
-            // Focal Point section
-            item {
-                SpeedReadingFocalPointPositionOption(
-                    position = focalPointPosition,
-                    onPositionChange = onFocalPointPositionChange,
-                    enabled = !centerWord
-                )
-            }
-
             // Focal Point position slider
             item {
                 SpeedReadingFocalPointPositionOption(
@@ -490,18 +454,23 @@ fun LazyListScope.SpeedReadingSubcategory(
                 )
             }
 
-            // Focus Indicators Colors section
+            // Focus Indicators Colors section (only shown when focus indicators are enabled)
             item {
-                HorizontalDivider()
-            }
-
-            item {
-                SpeedReadingHorizontalBarsColorOption(
-                    color = horizontalBarsColor,
-                    opacity = horizontalBarsOpacity,
-                    onColorChange = onHorizontalBarsColorChange,
-                    onOpacityChange = onHorizontalBarsOpacityChange
-                )
+                AnimatedVisibility(
+                    visible = focusIndicators != "OFF",
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Column {
+                        HorizontalDivider()
+                        SpeedReadingHorizontalBarsColorOption(
+                            color = horizontalBarsColor,
+                            opacity = horizontalBarsOpacity,
+                            onColorChange = onHorizontalBarsColorChange,
+                            onOpacityChange = onHorizontalBarsOpacityChange
+                        )
+                    }
+                }
             }
 
             // Accent Character section
