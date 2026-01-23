@@ -464,7 +464,7 @@ fun SpeedReadingContent(
                 }
                 val (topBarY, bottomBarY, centerY) = barPositions
 
-                // Calculate arrow positions (relative to word area for better spacing)
+                // Calculate arrow positions (symmetric 32dp from word area)
                 val arrowPositions = remember(frameHeight, wordAreaHeight, derivedVerticalIndicatorsSize, density) {
                     with(density) {
                         val centerY = frameHeight.toPx() / 2f
@@ -472,16 +472,16 @@ fun SpeedReadingContent(
                         val wordAreaBottom = centerY + (wordAreaHeight.toPx() / 2f)
                         val verticalIndicatorHeight = derivedVerticalIndicatorsSize.dp.toPx()
                         val iconSize = verticalIndicatorHeight * 3.5f
-                        val arrowGap = 32.dp.toPx() // Gap between arrow tips and word area
+                        val arrowGap = 32.dp.toPx()
 
-                        // Position arrows so their tips point towards the word area
-                        // Top arrow (pointing down): tip at bottom of icon should be above word area
-                        val topArrowY = wordAreaTop - arrowGap - (iconSize / 2f)
-                        // Bottom arrow (pointing up): tip at top of icon should be below word area
-                        val bottomArrowY = wordAreaBottom + arrowGap + (iconSize / 2f)
+                        // Top arrow center - 32dp above word area, then up by half icon size
+                        val topArrowY = (wordAreaTop - arrowGap) - (iconSize / 2f)
+                        // Bottom arrow center - 32dp below word area, then down by half icon size
+                        val bottomArrowY = (wordAreaBottom + arrowGap) + (iconSize / 2f)
 
                         Pair(topArrowY, bottomArrowY)
                     }
+                }
                 }
                 val (topArrowY, bottomArrowY) = arrowPositions
 
