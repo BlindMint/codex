@@ -6,6 +6,7 @@
 
 package us.blindmint.codex.presentation.reader
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -85,6 +86,7 @@ import us.blindmint.codex.domain.reader.SpeedReaderWord
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import kotlin.math.roundToInt
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpeedReadingContent(
@@ -397,7 +399,7 @@ fun SpeedReadingContent(
                     .padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                val containerWidth = constraints.maxWidth.toFloat()
+                val containerWidth = remember(constraints) { constraints.maxWidth.toFloat() }
                 // Fixed focal point - offset to the left of center
                 val focalPointX = containerWidth * accentOffsetRatio
 
