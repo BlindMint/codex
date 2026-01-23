@@ -72,13 +72,6 @@ fun SpeedReadingScaffold(
     sentencePauseMs: Int,
     wordSize: Int,
     accentOpacity: Float,
-    showVerticalIndicators: Boolean,
-    verticalIndicatorsSize: Int,
-    verticalIndicatorType: us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType,
-    showHorizontalBars: Boolean,
-    horizontalBarsThickness: Int,
-    horizontalBarsLength: Float,
-    horizontalBarsDistance: Int,
     horizontalBarsColor: Color,
     horizontalBarsOpacity: Float,
     focalPointPosition: Float,
@@ -288,13 +281,6 @@ fun SpeedReadingScaffold(
                 accentCharacterEnabled = accentCharacterEnabled,
                 accentColor = accentColor,
                 accentOpacity = accentOpacity,
-                showVerticalIndicators = showVerticalIndicators,
-                verticalIndicatorsSize = verticalIndicatorsSize,
-                verticalIndicatorType = verticalIndicatorType,
-                showHorizontalBars = showHorizontalBars,
-                horizontalBarsThickness = horizontalBarsThickness,
-                horizontalBarsLength = horizontalBarsLength,
-                horizontalBarsDistance = horizontalBarsDistance,
                 horizontalBarsColor = horizontalBarsColor,
                 horizontalBarsOpacity = horizontalBarsOpacity,
                 focalPointPosition = focalPointPosition,
@@ -307,27 +293,26 @@ fun SpeedReadingScaffold(
                 onRegisterNavigationCallback = { callback ->
                     navigateWordCallback = callback
                 },
-                alwaysShowPlayPause = alwaysShowPlayPause,
                   playbackControlsEnabled = osdEnabled,
                  focusIndicators = FocusIndicatorsType.valueOf(focusIndicators),
                  centerWord = centerWord,
-                initialWordIndex = selectedWordIndex,
-                onShowWordPicker = {
-                    wordPickerRefreshKey++
-                    showWordPicker = true
-                },
-                  onProgressUpdate = { progress, wordIndex ->
-                      // Update real-time progress for UI display
-                      realTimeProgress = progress
-                      // Also update the underlying book progress periodically
-                      parentOnChangeProgress(progress, wordIndex)
-                  },
-                  onSaveProgress = { progress, wordIndex ->
-                      // Immediate progress save for manual pauses (no throttling)
-                      realTimeProgress = progress
-                      onSaveProgress(progress, wordIndex)
-                  },
-                  showBottomBar = !isPlaying
+                 initialWordIndex = selectedWordIndex,
+                 onShowWordPicker = {
+                     wordPickerRefreshKey++
+                     showWordPicker = true
+                 },
+                   onProgressUpdate = { progress, wordIndex ->
+                       // Update real-time progress for UI display
+                       realTimeProgress = progress
+                       // Also update the underlying book progress periodically
+                       parentOnChangeProgress(progress, wordIndex)
+                   },
+                   onSaveProgress = { progress, wordIndex ->
+                       // Immediate progress save for manual pauses (no throttling)
+                       realTimeProgress = progress
+                       onSaveProgress(progress, wordIndex)
+                   },
+                   showBottomBar = !isPlaying
               )
             }
         }
