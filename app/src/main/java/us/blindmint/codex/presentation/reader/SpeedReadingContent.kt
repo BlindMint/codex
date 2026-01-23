@@ -274,10 +274,10 @@ fun SpeedReadingContent(
     // Derive focus indicator settings based on focusIndicators parameter
     // Default thickness: 3dp (3rd option in original slider)
     // Default length: 2nd option (16dp) for vertical indicators
-    // Default distance: 32dp for lines, 65dp for arrows (moved further away)
+    // Default distance: 32dp for lines, 40dp for arrows
     val derivedShowHorizontalBars = focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.LINES
     val derivedHorizontalBarsThickness = 3
-    val derivedHorizontalBarsDistance = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) 65 else 32
+    val derivedHorizontalBarsDistance = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) 40 else 32
     val derivedShowVerticalIndicators = focusIndicators != us.blindmint.codex.domain.reader.FocusIndicatorsType.OFF
     val derivedVerticalIndicatorsSize = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) 24 else 16
     val derivedVerticalIndicatorType = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.ARROWS else us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.LINE
@@ -460,7 +460,7 @@ fun SpeedReadingContent(
                     with(density) {
                         val centerY = frameHeight.toPx() / 2f
                         val verticalIndicatorHeight = derivedVerticalIndicatorsSize.dp.toPx()
-                        val iconSize = verticalIndicatorHeight * 3.5f
+                        val iconSize = verticalIndicatorHeight * 2.5f
                         val arrowGap = derivedHorizontalBarsDistance.dp.toPx()
 
                         // Top arrow: offset y is top-left corner, arrow tip is at bottom
@@ -536,7 +536,7 @@ fun SpeedReadingContent(
                     // Vertical indicators as icons (for ARROWS and ARROWS_FILLED types)
                     if (derivedShowVerticalIndicators && derivedVerticalIndicatorType != SpeedReadingVerticalIndicatorType.LINE) {
                         val verticalIndicatorHeight = derivedVerticalIndicatorsSize.dp
-                        val iconSize = verticalIndicatorHeight * 3.5f
+                        val iconSize = verticalIndicatorHeight * 2.5f
 
                         // Top arrow (pointing down, positioned above word area)
                         val topIcon = when (derivedVerticalIndicatorType) {
