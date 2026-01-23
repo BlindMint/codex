@@ -266,9 +266,11 @@ fun SpeedReadingContent(
     // Default thickness: 3dp (3rd option in original slider)
     // Default length: 2nd option (16dp) for vertical indicators
     // Default distance: 32dp for lines, 30dp for arrows
+    // Default horizontal bar length: 50% of screen width
     val derivedShowHorizontalBars = focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.LINES
     val derivedHorizontalBarsThickness = 3
     val derivedHorizontalBarsDistance = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) 30 else 32
+    val derivedHorizontalBarsLength = 0.5f
     val derivedShowVerticalIndicators = focusIndicators != us.blindmint.codex.domain.reader.FocusIndicatorsType.OFF
     val derivedVerticalIndicatorsSize = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) 24 else 16
     val derivedVerticalIndicatorType = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.ARROWS else us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.LINE
@@ -480,7 +482,7 @@ fun SpeedReadingContent(
                         // Horizontal bars (only if enabled) - TOP and BOTTOM borders
                         if (derivedShowHorizontalBars) {
                             val lineThickness = derivedHorizontalBarsThickness.dp.toPx()
-                            val barWidth = size.width * horizontalBarsLength
+                            val barWidth = size.width * derivedHorizontalBarsLength
                             val barStartX = (size.width - barWidth) / 2f
                             val barEndX = barStartX + barWidth
 
