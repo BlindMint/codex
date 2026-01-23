@@ -44,7 +44,7 @@ import us.blindmint.codex.presentation.core.constants.provideDefaultColorPresets
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import us.blindmint.codex.presentation.core.util.showToast
-import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
+import us.blindmint.codex.ui.import_progress.ImportProgressService
 
 import us.blindmint.codex.ui.library.LibraryScreen
 import javax.inject.Inject
@@ -54,7 +54,7 @@ import java.util.UUID
 
 @HiltViewModel
 class SettingsModel @Inject constructor(
-    private val importProgressViewModel: ImportProgressViewModel,
+    private val importProgressService: ImportProgressService,
     private val getColorPresets: GetColorPresets,
     private val updateColorPreset: UpdateColorPreset,
     private val selectColorPreset: SelectColorPreset,
@@ -697,13 +697,13 @@ class SettingsModel @Inject constructor(
                         val folderName = displayPath?.substringAfterLast("/") ?: "Codex Directory"
 
                         // Create initial import operation for Codex Directory
-                        importProgressViewModel.startCodexImport(displayPath ?: "", folderName)
+                        importProgressService.startCodexImport(displayPath ?: "", folderName)
 
                         try {
                             val importedCount = autoImportCodexBooksUseCase.execute { progress ->
                                 Log.d("SettingsModel", "Auto-import progress: ${progress.current}/${progress.total} - ${progress.currentFolder}")
                                 // Update the Codex Directory import progress
-                                importProgressViewModel.updateCodexImportProgress(
+                                importProgressService.updateCodexImportProgress(
                                     folderPath = displayPath ?: "",
                                     totalBooks = progress.total,
                                     currentProgress = progress.current,

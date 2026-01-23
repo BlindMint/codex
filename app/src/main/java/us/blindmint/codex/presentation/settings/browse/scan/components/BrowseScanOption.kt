@@ -209,6 +209,43 @@ fun BrowseScanOption() {
             }
         }
     )
+
+    // Informational dialog about Local folders
+    if (showLocalFolderInfoDialog) {
+        AlertDialog(
+            onDismissRequest = { showLocalFolderInfoDialog = false },
+            title = { androidx.compose.material3.Text("Local Folders") },
+            text = {
+                androidx.compose.material3.Text(
+                    "Local folders allow you to add books from folders on your device. " +
+                    "These folders will be scanned for eBook files and added to your library. " +
+                    "Unlike Codex Directory, local folders are for one-time imports and " +
+                    "don't automatically sync with the folder contents.\n\n" +
+                    "You can add multiple local folders and refresh them individually."
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    showLocalFolderInfoDialog = false
+                    // Now launch the folder picker
+                    try {
+                        persistedUriIntent.launch(null)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        context.getString(R.string.error_no_file_manager_app)
+                            .showToast(context, longToast = false)
+                    }
+                }) {
+                    androidx.compose.material3.Text("Continue")
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { showLocalFolderInfoDialog = false }) {
+                    androidx.compose.material3.Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
