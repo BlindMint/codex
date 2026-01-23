@@ -482,7 +482,6 @@ fun SpeedReadingContent(
                         Pair(topArrowY, bottomArrowY)
                     }
                 }
-                }
                 val (topArrowY, bottomArrowY) = arrowPositions
 
                 // Draw the RSVP frame - horizontal bars above and below the word
@@ -767,10 +766,10 @@ fun SpeedReadingContent(
                               }
                               onShowWordPicker()
                           }
-                 )
-            }
+                   )
             }
         }
+    }
 
 
 
