@@ -8,42 +8,36 @@ package us.blindmint.codex.presentation.reader
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.Slider
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,36 +47,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.layout.onSizeChanged
 import kotlinx.coroutines.delay
+import us.blindmint.codex.domain.reader.FocusIndicatorsType
 import us.blindmint.codex.domain.reader.SpeedReaderWord
+import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import kotlin.math.roundToInt
 
@@ -103,7 +94,7 @@ fun SpeedReadingContent(
     accentOpacity: Float,
     showVerticalIndicators: Boolean,
     verticalIndicatorsSize: Int,
-    verticalIndicatorType: us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType,
+    verticalIndicatorType: SpeedReadingVerticalIndicatorType,
     showHorizontalBars: Boolean,
     horizontalBarsThickness: Int,
     horizontalBarsLength: Float,
@@ -119,9 +110,8 @@ fun SpeedReadingContent(
     navigateWord: (Int) -> Unit = {},
     onRegisterNavigationCallback: ((Int) -> Unit) -> Unit = {},
     alwaysShowPlayPause: Boolean,
-    showWpmIndicator: Boolean = true,
     playbackControlsEnabled: Boolean = true,
-    focusIndicators: us.blindmint.codex.domain.reader.FocusIndicatorsType = us.blindmint.codex.domain.reader.FocusIndicatorsType.LINES,
+    focusIndicators: FocusIndicatorsType = FocusIndicatorsType.LINES,
     centerWord: Boolean = false,
     wordPickerActive: Boolean = false,
     initialWordIndex: Int = 0,
@@ -434,7 +424,6 @@ fun SpeedReadingContent(
                     ).size
                 }
                 val fullWordWidth = fullWordSize.width.toFloat()
-                val fullWordHeight = fullWordSize.height.toFloat()
 
                 // Calculate offset to position the word at the focal point
                 val wordOffsetX = if (centerWord) {
@@ -553,7 +542,7 @@ fun SpeedReadingContent(
                         val topIcon = when (derivedVerticalIndicatorType) {
                             SpeedReadingVerticalIndicatorType.ARROWS -> Icons.Filled.KeyboardArrowDown
                             SpeedReadingVerticalIndicatorType.ARROWS_FILLED -> Icons.Filled.ArrowDropDown
-                            else -> Icons.Filled.KeyboardArrowDown
+                            SpeedReadingVerticalIndicatorType.LINE -> Icons.Filled.KeyboardArrowDown // Unreachable but required for exhaustive when
                         }
 
                         Icon(
@@ -572,7 +561,7 @@ fun SpeedReadingContent(
                         val bottomIcon = when (derivedVerticalIndicatorType) {
                             SpeedReadingVerticalIndicatorType.ARROWS -> Icons.Filled.KeyboardArrowUp
                             SpeedReadingVerticalIndicatorType.ARROWS_FILLED -> Icons.Filled.ArrowDropUp
-                            else -> Icons.Filled.KeyboardArrowUp
+                            SpeedReadingVerticalIndicatorType.LINE -> Icons.Filled.KeyboardArrowUp // Unreachable but required for exhaustive when
                         }
 
                         Icon(

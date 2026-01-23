@@ -307,9 +307,8 @@ fun SpeedReadingScaffold(
                 onRegisterNavigationCallback = { callback ->
                     navigateWordCallback = callback
                 },
-                 alwaysShowPlayPause = alwaysShowPlayPause,
-                 showWpmIndicator = showWpmIndicator,
-                 playbackControlsEnabled = osdEnabled,
+                alwaysShowPlayPause = alwaysShowPlayPause,
+                  playbackControlsEnabled = osdEnabled,
                  focusIndicators = FocusIndicatorsType.valueOf(focusIndicators),
                  centerWord = centerWord,
                 initialWordIndex = selectedWordIndex,
