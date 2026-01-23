@@ -63,10 +63,6 @@ fun ReaderSearchBar(
     // Local state for debounced input
     var localQuery by remember(searchQuery) { mutableStateOf(searchQuery) }
 
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-    }
-
     // Debounce search query changes
     LaunchedEffect(localQuery) {
         snapshotFlow { localQuery }

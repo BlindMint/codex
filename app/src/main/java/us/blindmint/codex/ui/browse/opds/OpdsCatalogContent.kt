@@ -276,8 +276,14 @@ fun OpdsCatalogContent(
                     progress = { state.downloadProgress },
                     modifier = Modifier.fillMaxWidth(0.8f)
                 )
+                val currentBookIndex = (state.downloadProgress * (state.selectedBooks.size)).toInt()
+                val totalBooks = state.selectedBooks.size
                 Text(
-                    text = "Downloading book... ${(state.downloadProgress * 100).toInt()}%",
+                    text = if (totalBooks > 1) {
+                        "Downloading books... $currentBookIndex/$totalBooks"
+                    } else {
+                        "Downloading book... ${(state.downloadProgress * 100).toInt()}%"
+                    },
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center
                 )

@@ -47,40 +47,27 @@ fun BookInfoLayoutButton(
         "${book.progress.calculateProgress(1)}%"
     )
 
-    // Material 3 Split Button - Custom implementation
+    // Material 3 Split Buttons - Two separate buttons
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 18.dp)
             .height(48.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Leading button area (main action) - takes most of the space
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = if (!book.isComic && navigateToSpeedReading != null) {
-                        androidx.compose.foundation.shape.RoundedCornerShape(
-                            topStart = 24.dp,
-                            bottomStart = 24.dp,
-                            topEnd = 0.dp,
-                            bottomEnd = 0.dp
-                        )
-                    } else {
-                        CircleShape
-                    }
-                )
-                .clickable(
-                    onClick = {
-                        if (book.id != -1) {
-                            navigateToReader()
-                        }
-                    }
-                ),
-            contentAlignment = Alignment.Center
+        // Main button (start/continue reading) - takes most of the space
+        Button(
+            onClick = {
+                if (book.id != -1) {
+                    navigateToReader()
+                }
+            },
+            modifier = Modifier.weight(1f).height(48.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
         ) {
             androidx.compose.material3.Text(
                 text = buttonText,
@@ -89,44 +76,26 @@ fun BookInfoLayoutButton(
             )
         }
 
-        // Trailing button (speed reading) - only for books
+        // Speed reading button - only for books, smaller size
         if (!book.isComic && navigateToSpeedReading != null) {
-            // Visual separator
-            Box(
-                modifier = Modifier
-                    .width(2.dp)
-                    .fillMaxHeight(0.6f)
-                    .background(
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)
-                    )
-            )
-
-            // Trailing button area
-            Box(
-                modifier = Modifier
-                    .size(96.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(
-                            topStart = 0.dp,
-                            bottomStart = 0.dp,
-                            topEnd = 24.dp,
-                            bottomEnd = 24.dp
-                        )
-                    )
-                    .clickable(
-                        onClick = {
-                            if (book.id != -1) {
-                                navigateToSpeedReading()
-                            }
-                        }
-                    ),
-                contentAlignment = Alignment.Center
+            Button(
+                onClick = {
+                    if (book.id != -1) {
+                        navigateToSpeedReading()
+                    }
+                },
+                modifier = Modifier.size(48.dp),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Bolt,
                     contentDescription = stringResource(id = R.string.speed_reading_content_desc),
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }

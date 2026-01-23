@@ -13,11 +13,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import us.blindmint.codex.presentation.settings.appearance.colors.ColorsSubcategory
+import us.blindmint.codex.presentation.settings.appearance.components.ScreenOrientationOption
 import us.blindmint.codex.presentation.settings.appearance.theme_preferences.ThemePreferencesSubcategory
 
 fun LazyListScope.AppearanceSettingsCategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary }
 ) {
+    item {
+        ScreenOrientationOption()
+    }
     ThemePreferencesSubcategory(
         titleColor = titleColor
     )

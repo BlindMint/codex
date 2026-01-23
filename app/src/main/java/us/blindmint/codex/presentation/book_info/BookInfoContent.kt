@@ -46,7 +46,7 @@ fun BookInfoContent(
     showDeleteDialog: (BookInfoEvent.OnShowDeleteDialog) -> Unit,
     showResetProgressDialog: (BookInfoEvent.OnShowResetProgressDialog) -> Unit,
     actionDeleteDialog: (BookInfoEvent.OnActionDeleteDialog) -> Unit,
-    actionResetProgressDialog: (BookInfoEvent.OnActionResetProgressDialog) -> Unit,
+    actionResetReadingProgress: (BookInfoEvent.OnActionResetReadingProgress) -> Unit,
     changeCover: (BookInfoEvent.OnChangeCover) -> Unit,
     resetCover: (BookInfoEvent.OnResetCover) -> Unit,
     deleteCover: (BookInfoEvent.OnDeleteCover) -> Unit,
@@ -78,7 +78,7 @@ fun BookInfoContent(
         actionDescriptionDialog = actionDescriptionDialog,
         actionPathDialog = actionPathDialog,
         actionDeleteDialog = actionDeleteDialog,
-        actionResetProgressDialog = actionResetProgressDialog,
+        actionResetReadingProgress = actionResetReadingProgress,
         dismissDialog = dismissDialog,
         navigateToLibrary = navigateToLibrary,
         navigateBack = navigateBack

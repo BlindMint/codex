@@ -363,7 +363,7 @@ fun BookInfoDetailsBottomSheet(
             item {
                 BookInfoDetailsBottomSheetItem(
                     label = stringResource(id = R.string.file_path),
-                    text = cachedFile?.path ?: displayBook.filePath,
+                    text = cachedFile?.let { "${it.path}/${it.name}" } ?: displayBook.filePath,
                     editable = false,
                     showError = !fileExists,
                     errorMessage = stringResource(id = R.string.error_no_file)

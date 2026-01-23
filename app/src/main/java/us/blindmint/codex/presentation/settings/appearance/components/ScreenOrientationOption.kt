@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 
-package us.blindmint.codex.presentation.settings.reader.system.components
+package us.blindmint.codex.presentation.settings.appearance.components
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -24,7 +24,7 @@ fun ScreenOrientationOption() {
     val state = mainModel.state.collectAsStateWithLifecycle()
 
     ChipsWithTitle(
-        title = stringResource(id = R.string.screen_orientation_option),
+        title = "Screen Orientation",
         chips = ReaderScreenOrientation.entries.map {
             ButtonItem(
                 id = it.toString(),

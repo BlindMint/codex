@@ -89,11 +89,6 @@ fun ReaderSettingsBottomSheet(
 
     DisposableEffect(Unit) { onDispose { initialPage = pagerState.currentPage } }
 
-    val animatedScrimColor by animateColorAsState(
-        targetValue = if (showComicSettings || pagerState.currentPage < 2) BottomSheetDefaults.ScrimColor
-        else Color.Transparent,
-        animationSpec = tween(300)
-    )
     val animatedHeight by animateFloatAsState(
         targetValue = 0.7f,
         animationSpec = tween(300)
@@ -101,10 +96,10 @@ fun ReaderSettingsBottomSheet(
 
     LaunchedEffect(pagerState.currentPage) {
         if (!showComicSettings) {
-            // For books, show menu on all tabs except Colors (page 2)
+            // For books, show menu on all tabs
             menuVisibility(
                 ReaderEvent.OnMenuVisibility(
-                    show = pagerState.currentPage != 2,
+                    show = true,
                     fullscreenMode = fullscreenMode,
                     saveCheckpoint = false,
                     activity = activity
@@ -116,7 +111,6 @@ fun ReaderSettingsBottomSheet(
 
     ModalBottomSheet(
         hasFixedHeight = true,
-        scrimColor = animatedScrimColor,
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(animatedHeight)

@@ -441,7 +441,9 @@ class BookInfoModel @Inject constructor(
                             scrollOffset = 0,
                             progress = 0f,
                             currentPage = 0,
-                            lastPageRead = 0
+                            lastPageRead = 0,
+                            speedReaderWordIndex = 0,
+                            speedReaderHasBeenOpened = false
                         )
                         updateBook.execute(updatedBook)
                         _state.update {
@@ -449,8 +451,48 @@ class BookInfoModel @Inject constructor(
                         }
 
                         withContext(Dispatchers.Main) {
-                            event.context.getString(R.string.reading_progress_reset)
-                                .showToast(context = event.context)
+                            event.context.getString(R.string.reading_progress_reset).showToast(context = event.context)
+                        }
+                    }
+                }
+
+                is BookInfoEvent.OnActionResetReadingProgress -> {
+                    launch {
+                        val baseBook = _state.value.book.copy(
+                            scrollIndex = 0,
+                            scrollOffset = 0
+                        )
+
+                        val finalBook = if (event.resetNormalReading && event.resetSpeedReading) {
+                            baseBook.copy(
+                                progress = 0f,
+                                currentPage = 0,
+                                lastPageRead = 0,
+                                speedReaderWordIndex = 0,
+                                speedReaderHasBeenOpened = false
+                            )
+                        } else if (event.resetNormalReading) {
+                            baseBook.copy(
+                                progress = 0f,
+                                currentPage = 0,
+                                lastPageRead = 0
+                            )
+                        } else if (event.resetSpeedReading) {
+                            baseBook.copy(
+                                speedReaderWordIndex = 0,
+                                speedReaderHasBeenOpened = false
+                            )
+                        } else {
+                            baseBook
+                        }
+
+                        updateBook.execute(finalBook)
+                        _state.update {
+                            it.copy(book = finalBook)
+                        }
+
+                        withContext(Dispatchers.Main) {
+                            event.context.getString(R.string.reading_progress_reset).showToast(context = event.context)
                         }
                     }
                 }

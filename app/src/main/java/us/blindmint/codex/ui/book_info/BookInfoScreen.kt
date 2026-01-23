@@ -114,7 +114,7 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 showDeleteDialog = screenModel::onEvent,
                 showResetProgressDialog = screenModel::onEvent,
                 actionDeleteDialog = screenModel::onEvent,
-                actionResetProgressDialog = screenModel::onEvent,
+                actionResetReadingProgress = screenModel::onEvent,
                 onEnterEditMode = { screenModel.onEvent(BookInfoEvent.OnEnterEditMode) },
                 onConfirmEditMetadata = { screenModel.onEvent(BookInfoEvent.OnConfirmEditMetadata) },
                 onCancelEditMetadata = { screenModel.onEvent(BookInfoEvent.OnCancelEditMetadata) },

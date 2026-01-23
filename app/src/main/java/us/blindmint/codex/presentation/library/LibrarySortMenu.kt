@@ -83,8 +83,7 @@ fun LibrarySortMenu(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf(
         stringResource(R.string.sort_settings),
-        stringResource(R.string.filter_settings),
-        stringResource(R.string.display_settings)
+        stringResource(R.string.filter_settings)
     )
 
     // Subpanel state and data for filters
@@ -233,7 +232,6 @@ fun LibrarySortMenu(
                          updateFilterState()
                      }
                  )
-                2 -> LibraryDisplayTabContent(state, mainModel)
             }
         }
     }
@@ -352,6 +350,9 @@ private fun LibrarySortTabContent(
             }
         }
     }
+
+    // Display options below sort options
+    LibraryDisplayTabContent(state, mainModel)
 }
 
 @Composable
@@ -405,8 +406,8 @@ private fun LibraryFilterTabContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -417,12 +418,11 @@ private fun LibraryFilterTabContent(
                 "Status Presets",
                 style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
             )
-            OutlinedButton(
-                onClick = onClearAllFilters,
-                modifier = Modifier.padding(0.dp)
-            ) {
-                Text("Clear")
-            }
+            Text(
+                text = "Clear",
+                style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.primary),
+                modifier = Modifier.clickable(onClick = onClearAllFilters)
+            )
         }
         StatusChipsRow(
             selectedStatuses = selectedStatuses.map {

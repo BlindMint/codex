@@ -25,7 +25,7 @@ fun BookInfoDialog(
     actionDescriptionDialog: (BookInfoEvent.OnActionDescriptionDialog) -> Unit,
     actionPathDialog: (BookInfoEvent.OnActionPathDialog) -> Unit,
     actionDeleteDialog: (BookInfoEvent.OnActionDeleteDialog) -> Unit,
-    actionResetProgressDialog: (BookInfoEvent.OnActionResetProgressDialog) -> Unit,
+    actionResetReadingProgress: (BookInfoEvent.OnActionResetReadingProgress) -> Unit,
     dismissDialog: (BookInfoEvent.OnDismissDialog) -> Unit,
     navigateBack: () -> Unit,
     navigateToLibrary: () -> Unit
@@ -41,7 +41,7 @@ fun BookInfoDialog(
 
         BookInfoScreen.RESET_PROGRESS_DIALOG -> {
             BookInfoResetProgressDialog(
-                actionResetProgressDialog = actionResetProgressDialog,
+                actionResetReadingProgress = actionResetReadingProgress,
                 dismissDialog = dismissDialog
             )
         }
