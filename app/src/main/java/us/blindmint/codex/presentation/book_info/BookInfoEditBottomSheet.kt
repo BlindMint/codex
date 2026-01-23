@@ -206,7 +206,7 @@ fun BookInfoEditBottomSheet(
             item {
                 BookInfoEditBottomSheetItem(
                     label = stringResource(id = R.string.file_path),
-                    text = cachedFile?.let { "${it.path}/${it.name}" } ?: book.filePath,
+                    text = cachedFile?.path ?: book.filePath,
                     onEdit = {
                         showPathDialog(BookInfoEvent.OnShowPathDialog)
                         hasChanges = true

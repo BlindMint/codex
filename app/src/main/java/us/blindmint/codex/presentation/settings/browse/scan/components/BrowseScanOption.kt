@@ -54,7 +54,6 @@ import us.blindmint.codex.domain.use_case.book.BulkImportProgress
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.core.util.showToast
-import us.blindmint.codex.presentation.import_progress.ImportProgressBar
 import us.blindmint.codex.ui.browse.BrowseScreen
 import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
 import us.blindmint.codex.ui.library.LibraryScreen
@@ -73,6 +72,7 @@ fun BrowseScanOption() {
     val coroutineScope = rememberCoroutineScope()
 
     var showLocalFolderInfoDialog by remember { mutableStateOf(false) }
+    var folderToRemove: android.content.UriPermission? by remember { mutableStateOf(null) }
 
     suspend fun getPersistedUriPermissions(): List<UriPermission> {
         return context.contentResolver?.persistedUriPermissions.let { permissions ->
@@ -147,16 +147,6 @@ fun BrowseScanOption() {
             .fillMaxWidth()
             .animateContentSize()
     ) {
-        // Display active import progress bars
-        importOperations.forEach { operation ->
-            ImportProgressBar(
-                operation = operation,
-                onCancel = {
-                    importProgressViewModel.cancelImport(operation.id)
-                }
-            )
-        }
-
         persistedUriPermissions.forEachIndexed { index, permission ->
             BrowseScanFolderItem(
                 index = index,
@@ -177,16 +167,7 @@ fun BrowseScanOption() {
                     }
                 },
                 onRemoveClick = {
-                    settingsModel.onEvent(
-                        SettingsEvent.OnReleasePersistableUriPermission(
-                            uri = permission.uri
-                        )
-                    )
-
-                    coroutineScope.launch {
-                        persistedUriPermissions = getPersistedUriPermissions()
-                    }
-                    BrowseScreen.refreshListChannel.trySend(Unit)
+                    folderToRemove = permission
                 },
                 importOperations = importOperations,
                 folderUri = permission.uri
@@ -241,6 +222,42 @@ fun BrowseScanOption() {
             },
             dismissButton = {
                 androidx.compose.material3.TextButton(onClick = { showLocalFolderInfoDialog = false }) {
+                    androidx.compose.material3.Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // Confirmation dialog for removing a folder
+    if (folderToRemove != null) {
+        AlertDialog(
+            onDismissRequest = { folderToRemove = null },
+            title = { androidx.compose.material3.Text("Remove Folder") },
+            text = {
+                androidx.compose.material3.Text(
+                    "Are you sure you want to remove this folder? " +
+                    "This will remove those books and comics from the library."
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    settingsModel.onEvent(
+                        SettingsEvent.OnReleasePersistableUriPermission(
+                            uri = folderToRemove!!.uri
+                        )
+                    )
+
+                    coroutineScope.launch {
+                        persistedUriPermissions = getPersistedUriPermissions()
+                    }
+                    BrowseScreen.refreshListChannel.trySend(Unit)
+                    folderToRemove = null
+                }) {
+                    androidx.compose.material3.Text("Remove")
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { folderToRemove = null }) {
                     androidx.compose.material3.Text("Cancel")
                 }
             }
