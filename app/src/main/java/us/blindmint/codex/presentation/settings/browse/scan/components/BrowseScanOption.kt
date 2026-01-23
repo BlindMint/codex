@@ -133,13 +133,11 @@ fun BrowseScanOption() {
         importProgressViewModel.startImport(
             folderUri = uri,
             folderName = folderName,
-            folderPath = folderPath
+            folderPath = folderPath,
+            onComplete = {
+                LibraryScreen.refreshListChannel.trySend(0) // Refresh Library after import completes
+            }
         )
-
-        // Schedule library refresh after import completes
-        coroutineScope.launch {
-            LibraryScreen.refreshListChannel.trySend(0) // Refresh Library
-        }
     }
 
     Column(
@@ -160,11 +158,11 @@ fun BrowseScanOption() {
                     importProgressViewModel.startImport(
                         folderUri = permission.uri,
                         folderName = folderName,
-                        folderPath = folderPath
+                        folderPath = folderPath,
+                        onComplete = {
+                            LibraryScreen.refreshListChannel.trySend(0) // Refresh Library after import completes
+                        }
                     )
-                    coroutineScope.launch {
-                        LibraryScreen.refreshListChannel.trySend(0) // Refresh Library
-                    }
                 },
                 onRemoveClick = {
                     folderToRemove = permission
