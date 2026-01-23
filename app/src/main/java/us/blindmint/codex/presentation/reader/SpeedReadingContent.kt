@@ -455,20 +455,20 @@ fun SpeedReadingContent(
                 }
                 val (topBarY, bottomBarY, centerY) = barPositions
 
-                // Calculate arrow positions (symmetric 32dp from word area)
-                val arrowPositions = remember(frameHeight, wordAreaHeight, derivedVerticalIndicatorsSize, density) {
+                // Calculate arrow positions (symmetric around centerY where word is centered)
+                val arrowPositions = remember(frameHeight, derivedVerticalIndicatorsSize, derivedHorizontalBarsDistance, density) {
                     with(density) {
                         val centerY = frameHeight.toPx() / 2f
-                        val wordAreaTop = centerY - (wordAreaHeight.toPx() / 2f)
-                        val wordAreaBottom = centerY + (wordAreaHeight.toPx() / 2f)
                         val verticalIndicatorHeight = derivedVerticalIndicatorsSize.dp.toPx()
                         val iconSize = verticalIndicatorHeight * 3.5f
-                        val arrowGap = 32.dp.toPx()
+                        val arrowGap = derivedHorizontalBarsDistance.dp.toPx()
 
-                        // Top arrow center - 32dp above word area, then up by half icon size
-                        val topArrowY = (wordAreaTop - arrowGap) - (iconSize / 2f)
-                        // Bottom arrow center - 32dp below word area, then down by half icon size
-                        val bottomArrowY = (wordAreaBottom + arrowGap) + (iconSize / 2f)
+                        // Top arrow: offset y is top-left corner, arrow tip is at bottom
+                        // We want tip at (centerY - gap), so top is (centerY - gap) - iconSize
+                        val topArrowY = (centerY - arrowGap) - iconSize
+                        // Bottom arrow: offset y is top-left corner, arrow tip is at top
+                        // We want tip at (centerY + gap), so top is (centerY + gap)
+                        val bottomArrowY = (centerY + arrowGap)
 
                         Pair(topArrowY, bottomArrowY)
                     }
