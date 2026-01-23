@@ -366,7 +366,8 @@ fun BookInfoDetailsBottomSheet(
                     text = cachedFile?.path ?: displayBook.filePath,
                     editable = false,
                     showError = !fileExists,
-                    errorMessage = stringResource(id = R.string.error_no_file)
+                    errorMessage = stringResource(id = R.string.error_no_file),
+                    maxLines = Int.MAX_VALUE
                 )
             }
 

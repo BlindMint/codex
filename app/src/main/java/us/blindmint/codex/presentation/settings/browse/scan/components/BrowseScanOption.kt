@@ -321,19 +321,6 @@ private fun BrowseScanFolderItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
-                if (currentOperation != null && currentOperation.totalBooks > 0) {
-                    StyledText(
-                        text = stringResource(
-                            R.string.importing_progress,
-                            currentOperation.currentProgress,
-                            currentOperation.totalBooks,
-                            currentOperation.currentFile
-                        ),
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                }
             }
 
             Row(
@@ -364,11 +351,22 @@ private fun BrowseScanFolderItem(
         }
 
         if (currentOperation != null && currentOperation.totalBooks > 0) {
+            StyledText(
+                text = "Importing: ${currentOperation.currentFile}",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = MaterialTheme.colorScheme.primary
+                ),
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Visible
+            )
+        }
+
+        if (currentOperation != null && currentOperation.totalBooks > 0) {
             LinearProgressIndicator(
                 progress = { currentOperation.currentProgress.toFloat() / currentOperation.totalBooks.toFloat() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = 4.dp),
             )
         }
     }
