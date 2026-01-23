@@ -627,27 +627,27 @@ fun SpeedReadingContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Left arrow (<) - navigate to previous word
-                    Text(
-                        text = "<",
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            color = fontColor.copy(alpha = 0.7f),
-                            fontSize = 28.sp
-                        ),
+                    Box(
                         modifier = Modifier
-                            .padding(12.dp)
+                            .size(56.dp)
                             .noRippleClickable {
                                 navigateWord(-1)
-                            }
-                    )
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "<",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                color = fontColor.copy(alpha = 0.7f),
+                                fontSize = 28.sp
+                            )
+                        )
+                    }
 
                     // Play/Pause button - centered and larger
-                    Icon(
-                        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                        contentDescription = if (isPlaying) "Pause" else "Play",
-                        tint = fontColor,
+                    Box(
                         modifier = Modifier
                             .size(72.dp)
-                            .padding(8.dp)
                             .noRippleClickable {
                                 val wasPlaying = isPlaying
                                 Log.d("SPEED_READER", "Playback controls play/pause: wasPlaying=$wasPlaying, currentWordIndex=$currentWordIndex")
@@ -658,22 +658,33 @@ fun SpeedReadingContent(
                                     Log.d("SPEED_READER", "Playback controls saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
                                     onSaveProgress(newProgress, globalWordIndex)
                                 }
-                            }
-                    )
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                            contentDescription = if (isPlaying) "Pause" else "Play",
+                            tint = fontColor
+                        )
+                    }
 
                     // Right arrow (>) - navigate to next word
-                    Text(
-                        text = ">",
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            color = fontColor.copy(alpha = 0.7f),
-                            fontSize = 28.sp
-                        ),
+                    Box(
                         modifier = Modifier
-                            .padding(12.dp)
+                            .size(56.dp)
                             .noRippleClickable {
                                 navigateWord(1)
-                            }
-                    )
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = ">",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                color = fontColor.copy(alpha = 0.7f),
+                                fontSize = 28.sp
+                            )
+                        )
+                    }
                 }
             }
         }
