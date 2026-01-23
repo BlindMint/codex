@@ -54,6 +54,7 @@ import us.blindmint.codex.presentation.settings.reader.speed_reading.components.
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsToggleOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingOsdHeightOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingOsdSeparationOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.FocusIndicatorsOption
 import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 
 import us.blindmint.codex.presentation.core.components.settings.SwitchWithTitle
@@ -114,6 +115,8 @@ fun LazyListScope.SpeedReadingSubcategory(
     onFocalPointPositionChange: (Float) -> Unit = {},
     centerWord: Boolean = false,
     onCenterWordChange: (Boolean) -> Unit = {},
+    focusIndicators: String = "LINES",
+    onFocusIndicatorsChange: (String) -> Unit = {},
     customFontEnabled: Boolean = false,
     selectedFontFamily: String = "default",
     onCustomFontChanged: (Boolean) -> Unit = {},
@@ -403,36 +406,9 @@ fun LazyListScope.SpeedReadingSubcategory(
             item {
                 SwitchWithTitle(
                     selected = osdEnabled,
-                    title = stringResource(id = R.string.speed_reading_osd),
+                    title = stringResource(id = R.string.speed_reading_playback_controls),
                     onClick = { onOsdEnabledChange(!osdEnabled) }
                 )
-            }
-
-            // OSD Height and Separation sliders (only when OSD is enabled)
-            item {
-                AnimatedVisibility(
-                    visible = osdEnabled,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingOsdHeightOption(
-                        osdHeight = osdHeight,
-                        onOsdHeightChange = onOsdHeightChange
-                    )
-                }
-            }
-
-            item {
-                AnimatedVisibility(
-                    visible = osdEnabled,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingOsdSeparationOption(
-                        osdSeparation = osdSeparation,
-                        onOsdSeparationChange = onOsdSeparationChange
-                    )
-                }
             }
 
             item {
@@ -497,43 +473,35 @@ fun LazyListScope.SpeedReadingSubcategory(
                 )
             }
 
-            // Vertical Indicators toggle
+            // Focal Point position slider
             item {
-                SpeedReadingVerticalIndicatorsToggleOption(
-                    selected = showVerticalIndicators,
-                    onSelectionChange = onShowVerticalIndicatorsChange,
+                SpeedReadingFocalPointPositionOption(
+                    position = focalPointPosition,
+                    onPositionChange = onFocalPointPositionChange,
                     enabled = !centerWord
                 )
             }
 
-            // Vertical indicator type (only when toggle is enabled)
+            // Focus Indicators segmented button
             item {
-                AnimatedVisibility(
-                    visible = showVerticalIndicators && !centerWord,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingVerticalIndicatorTypeOption(
-                        selectedType = verticalIndicatorType,
-                        onTypeChange = onVerticalIndicatorTypeChange,
-                        enabled = !centerWord
-                    )
-                }
+                FocusIndicatorsOption(
+                    selected = focusIndicators,
+                    onSelectionChange = onFocusIndicatorsChange
+                )
             }
 
-            // Vertical indicators length (only when toggle is enabled)
+            // Focus Indicators Colors section
             item {
-                AnimatedVisibility(
-                    visible = showVerticalIndicators && !centerWord,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingVerticalIndicatorsLengthOption(
-                        verticalIndicatorsSize = verticalIndicatorsSize,
-                        onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange,
-                        enabled = !centerWord
-                    )
-                }
+                HorizontalDivider()
+            }
+
+            item {
+                SpeedReadingHorizontalBarsColorOption(
+                    color = horizontalBarsColor,
+                    opacity = horizontalBarsOpacity,
+                    onColorChange = onHorizontalBarsColorChange,
+                    onOpacityChange = onHorizontalBarsOpacityChange
+                )
             }
 
             // Accent Character section
@@ -556,77 +524,11 @@ fun LazyListScope.SpeedReadingSubcategory(
                     enter = expandVertically() + fadeIn(),
                     exit = shrinkVertically() + fadeOut()
                 ) {
-                    SpeedReadingColorsOption( // Accent color with RGB sliders and opacity
+                    SpeedReadingColorsOption(
                         color = accentColor,
                         opacity = accentOpacity,
                         onColorChange = onAccentColorChange,
                         onOpacityChange = onAccentOpacityChange
-                    )
-                }
-            }
-
-            // Horizontal Bars section
-            item {
-                HorizontalDivider()
-            }
-
-            item {
-                SpeedReadingHorizontalBarsOption(
-                    selected = showHorizontalBars,
-                    onSelectionChange = onShowHorizontalBarsChange
-                )
-            }
-
-            item {
-                AnimatedVisibility(
-                    visible = showHorizontalBars,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingHorizontalBarsThicknessOption(
-                        thickness = horizontalBarsThickness,
-                        onThicknessChange = onHorizontalBarsThicknessChange
-                    )
-                }
-            }
-
-            item {
-                AnimatedVisibility(
-                    visible = showHorizontalBars,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingHorizontalBarLengthOption(
-                        length = horizontalBarsLength,
-                        onLengthChange = onHorizontalBarsLengthChange
-                    )
-                }
-            }
-
-            item {
-                AnimatedVisibility(
-                    visible = showHorizontalBars,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingHorizontalBarsDistanceOption(
-                        distance = horizontalBarsDistance,
-                        onDistanceChange = onHorizontalBarsDistanceChange
-                    )
-                }
-            }
-
-            item {
-                AnimatedVisibility(
-                    visible = showHorizontalBars,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingHorizontalBarsColorOption(
-                        color = horizontalBarsColor,
-                        opacity = horizontalBarsOpacity,
-                        onColorChange = onHorizontalBarsColorChange,
-                        onOpacityChange = onHorizontalBarsOpacityChange
                     )
                 }
             }

@@ -146,6 +146,7 @@ sealed class MainEvent {
     data class OnChangeSpeedReadingOsdSeparation(val value: Float) : MainEvent()
     data class OnChangeSpeedReadingAutoHideOsd(val value: Boolean) : MainEvent()
     data class OnChangeSpeedReadingCenterWord(val value: Boolean) : MainEvent()
+    data class OnChangeSpeedReadingFocusIndicators(val value: String) : MainEvent()
     data class OnChangeSpeedReadingCustomFontEnabled(val value: Boolean) : MainEvent()
     data class OnChangeSpeedReadingSelectedFontFamily(val value: String) : MainEvent()
 }

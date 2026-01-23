@@ -26,13 +26,13 @@ fun SpeedReadingHorizontalBarsColorOption(
     val combinedColor = color.copy(alpha = opacity)
 
     ExpandableColorPicker(
-        title = stringResource(id = R.string.speed_reading_horizontal_bars_color),
+        title = stringResource(id = R.string.speed_reading_focus_indicators_colors),
         value = combinedColor,
         presetId = "speed_reading_bars",
         initialColor = combinedColor,
         onValueChange = { newColor ->
-            onColorChange(newColor.copy(alpha = 1.0f)) // Pass RGB without alpha
-            onOpacityChange(newColor.alpha) // Pass alpha separately
+            onColorChange(newColor.copy(alpha = 1.0f))
+            onOpacityChange(newColor.alpha)
         }
     )
 }

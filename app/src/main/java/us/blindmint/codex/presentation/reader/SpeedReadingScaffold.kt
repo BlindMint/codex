@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.domain.reader.SpeedReaderWord
+import us.blindmint.codex.domain.reader.FocusIndicatorsType
 import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -90,6 +91,7 @@ fun SpeedReadingScaffold(
     osdSeparation: Float = 0.5f,
     autoHideOsd: Boolean = true,
     centerWord: Boolean = false,
+    focusIndicators: String = "LINES",
     onWpmChange: (Int) -> Unit,
     osdEnabled: Boolean,
     onExitSpeedReading: () -> Unit,
@@ -305,10 +307,11 @@ fun SpeedReadingScaffold(
                 onRegisterNavigationCallback = { callback ->
                     navigateWordCallback = callback
                 },
-                alwaysShowPlayPause = alwaysShowPlayPause,
-                showWpmIndicator = showWpmIndicator,
-                osdEnabled = osdEnabled,
-                centerWord = centerWord,
+                 alwaysShowPlayPause = alwaysShowPlayPause,
+                 showWpmIndicator = showWpmIndicator,
+                 playbackControlsEnabled = osdEnabled,
+                 focusIndicators = FocusIndicatorsType.valueOf(focusIndicators),
+                 centerWord = centerWord,
                 initialWordIndex = selectedWordIndex,
                 onShowWordPicker = {
                     wordPickerRefreshKey++

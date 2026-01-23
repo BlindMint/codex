@@ -1002,6 +1002,14 @@ class MainModel @Inject constructor(
                 }
             )
 
+            is MainEvent.OnChangeSpeedReadingFocusIndicators -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_FOCUS_INDICATORS,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingFocusIndicators = this)
+                }
+            )
+
             is MainEvent.OnChangeSpeedReadingCustomFontEnabled -> handleDatastoreUpdate(
                 key = DataStoreConstants.SPEED_READING_CUSTOM_FONT_ENABLED,
                 value = event.value,

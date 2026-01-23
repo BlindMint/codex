@@ -208,6 +208,7 @@ data class MainState(
     val speedReadingOsdSeparation: Float = provideDefaultValue { 0.5f },
     val speedReadingAutoHideOsd: Boolean = provideDefaultValue { true },
     val speedReadingCenterWord: Boolean = provideDefaultValue { false },
+    val speedReadingFocusIndicators: String = provideDefaultValue { "LINES" },
     val speedReadingCustomFontEnabled: Boolean = provideDefaultValue { false },
     val speedReadingSelectedFontFamily: String = provideDefaultValue { "default" },
 ) : Parcelable {
@@ -669,6 +670,10 @@ data class MainState(
                     speedReadingCenterWord = provideValue(
                         SPEED_READING_CENTER_WORD
                     ) { speedReadingCenterWord },
+
+                    speedReadingFocusIndicators = provideValue(
+                        SPEED_READING_FOCUS_INDICATORS
+                    ) { speedReadingFocusIndicators },
 
                     speedReadingCustomFontEnabled = provideValue(
                         SPEED_READING_CUSTOM_FONT_ENABLED

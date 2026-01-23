@@ -59,6 +59,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -117,9 +118,8 @@ fun SpeedReadingContent(
     onRegisterNavigationCallback: ((Int) -> Unit) -> Unit = {},
     alwaysShowPlayPause: Boolean,
     showWpmIndicator: Boolean = true,
-    osdEnabled: Boolean = true,
-    osdHeight: Float = 0.5f, // 0.0 = top, 1.0 = bottom
-    osdSeparation: Float = 0.5f, // 0.0 = close, 1.0 = far
+    playbackControlsEnabled: Boolean = true,
+    focusIndicators: us.blindmint.codex.domain.reader.FocusIndicatorsType = us.blindmint.codex.domain.reader.FocusIndicatorsType.LINES,
     centerWord: Boolean = false,
     wordPickerActive: Boolean = false,
     initialWordIndex: Int = 0,
@@ -272,26 +272,39 @@ fun SpeedReadingContent(
 
     // Get screen dimensions for calculating exclusion zones
     val windowInfo = LocalWindowInfo.current
+    val configuration = LocalConfiguration.current
     val screenHeightDp = with(LocalDensity.current) { windowInfo.containerSize.height.toDp() }
+    val screenWidthDp = with(LocalDensity.current) { windowInfo.containerSize.width.toDp() }
 
-    // Calculate OSD exclusion zone bounds in dp
-    // OSD is positioned at (screenHeight * (1 - osdHeight)) from top
-    // OSD height is approximately 60dp (play button) + 16dp vertical padding = ~80dp
-    val osdTopDp = (screenHeightDp.value * (1f - osdHeight)).dp - 8.dp // Account for padding
-    val osdHeightDp = 80.dp // Approximate height of OSD controls with padding
-    val osdBottomDp = osdTopDp + osdHeightDp
+    // Detect tablet vs phone based on smallest screen width (600dp is typical Android tablet threshold)
+    val isTablet = configuration.smallestScreenWidthDp >= 600
+
+    // Derive focus indicator settings based on focusIndicators parameter
+    // Default thickness: 3dp (3rd option in original slider)
+    // Default length: 2nd option (16dp) for vertical indicators
+    val derivedShowHorizontalBars = focusIndicators != us.blindmint.codex.domain.reader.FocusIndicatorsType.OFF
+    val derivedHorizontalBarsThickness = 3
+    val derivedShowVerticalIndicators = focusIndicators != us.blindmint.codex.domain.reader.FocusIndicatorsType.OFF
+    val derivedVerticalIndicatorsSize = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) 24 else 16
+    val derivedVerticalIndicatorType = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.ARROWS else us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.LINE
+
+    // Calculate static playback controls position: ~20% from bottom on phone, ~25% on tablet
+    val playbackControlsBottomPercent = if (isTablet) 0.75f else 0.80f
+    val playbackControlsTopDp = (screenHeightDp.value * playbackControlsBottomPercent).dp
+    val playbackControlsHeightDp = 80.dp
+    val playbackControlsBottomDp = playbackControlsTopDp + playbackControlsHeightDp
 
     // Bottom bar exclusion zone: approximately 60dp from bottom
-    val bottomBarHeightDp = 92.dp // 60.dp bar height + 32.dp bottom padding
+    val bottomBarHeightDp = 92.dp
 
     Box(
         modifier = modifier
             .fillMaxSize()
             .onSizeChanged { boxSize = it.width to it.height }
-            .pointerInput(isPlaying, osdEnabled, osdHeight) {
+            .pointerInput(isPlaying, playbackControlsEnabled, playbackControlsTopDp) {
                 // Convert dp to pixels for tap detection
-                val osdTopPx = with(density) { osdTopDp.toPx() }
-                val osdBottomPx = with(density) { osdBottomDp.toPx() }
+                val playbackControlsTopPx = with(density) { playbackControlsTopDp.toPx() }
+                val playbackControlsBottomPx = with(density) { playbackControlsBottomDp.toPx() }
                 val bottomBarTopPx = boxSize.second - with(density) { bottomBarHeightDp.toPx() }
 
                 awaitPointerEventScope {
@@ -301,18 +314,18 @@ fun SpeedReadingContent(
                             val position = event.changes.first().position
                             val width = boxSize.first.toFloat()
                             val height = boxSize.second.toFloat()
-                            val tapZoneWidth = width * 0.2f // 20% edge zones
+                            val tapZoneWidth = width * 0.2f
 
-                            // Check if tap is in OSD exclusion zone (only if OSD is enabled)
-                            val inOsdZone = osdEnabled &&
-                                position.y >= osdTopPx &&
-                                position.y <= osdBottomPx
+                            // Check if tap is in playback controls exclusion zone (only if enabled)
+                            val inPlaybackControlsZone = playbackControlsEnabled &&
+                                position.y >= playbackControlsTopPx &&
+                                position.y <= playbackControlsBottomPx
 
                             // Check if tap is in bottom bar exclusion zone
                             val inBottomBarZone = position.y >= bottomBarTopPx
 
                             // Skip processing if tap is in an exclusion zone
-                            if (inOsdZone || inBottomBarZone) {
+                            if (inPlaybackControlsZone || inBottomBarZone) {
                                 continue
                             }
 
@@ -461,8 +474,8 @@ fun SpeedReadingContent(
                             .height(frameHeight)
                     ) {
                         // Horizontal bars (only if enabled) - TOP and BOTTOM borders
-                        if (showHorizontalBars) {
-                            val lineThickness = horizontalBarsThickness.dp.toPx()
+                        if (derivedShowHorizontalBars) {
+                            val lineThickness = derivedHorizontalBarsThickness.dp.toPx()
                             val barWidth = size.width * horizontalBarsLength
                             val barStartX = (size.width - barWidth) / 2f
                             val barEndX = barStartX + barWidth
@@ -485,9 +498,9 @@ fun SpeedReadingContent(
                         }
 
                         // For LINE type, draw vertical indicators in canvas
-                        if (showVerticalIndicators && verticalIndicatorType == SpeedReadingVerticalIndicatorType.LINE) {
-                            val verticalIndicatorHeight = verticalIndicatorsSize.dp.toPx()
-                            val verticalIndicatorWidth = 1.5.dp.toPx()
+                        if (derivedShowVerticalIndicators && derivedVerticalIndicatorType == SpeedReadingVerticalIndicatorType.LINE) {
+                            val verticalIndicatorHeight = derivedVerticalIndicatorsSize.dp.toPx()
+                            val verticalIndicatorWidth = derivedHorizontalBarsThickness.dp.toPx()
 
                             // Top vertical indicator - starts at top bar, points DOWN toward word
                             drawLine(
@@ -508,12 +521,13 @@ fun SpeedReadingContent(
         }
 
                     // Vertical indicators as icons (for ARROWS and ARROWS_FILLED types)
-                    if (showVerticalIndicators && verticalIndicatorType != SpeedReadingVerticalIndicatorType.LINE) {
-                        val verticalIndicatorHeight = verticalIndicatorsSize.dp
-                        val iconSize = verticalIndicatorHeight * 3.5f // Much larger than the indicator height (3-4x)
+                    if (derivedShowVerticalIndicators && derivedVerticalIndicatorType != SpeedReadingVerticalIndicatorType.LINE) {
+                        val verticalIndicatorHeight = derivedVerticalIndicatorsSize.dp
+                        val iconSize = verticalIndicatorHeight * 3.5f
+                        val arrowOffset = 65.dp // Further distance for ARROWS mode
 
                         // Top arrow (pointing down from top bar)
-                        val topIcon = when (verticalIndicatorType) {
+                        val topIcon = when (derivedVerticalIndicatorType) {
                             SpeedReadingVerticalIndicatorType.ARROWS -> Icons.Filled.KeyboardArrowDown
                             SpeedReadingVerticalIndicatorType.ARROWS_FILLED -> Icons.Filled.ArrowDropDown
                             else -> Icons.Filled.KeyboardArrowDown
@@ -527,12 +541,12 @@ fun SpeedReadingContent(
                                 .size(iconSize)
                                 .offset(
                                     x = with(density) { (focalPointX - iconSize.toPx() / 2).toDp() },
-                                    y = with(density) { topBarY.toDp() }
+                                    y = with(density) { (topBarY.toDp() + arrowOffset) }
                                 )
                         )
 
                         // Bottom arrow (pointing up from bottom bar)
-                        val bottomIcon = when (verticalIndicatorType) {
+                        val bottomIcon = when (derivedVerticalIndicatorType) {
                             SpeedReadingVerticalIndicatorType.ARROWS -> Icons.Filled.KeyboardArrowUp
                             SpeedReadingVerticalIndicatorType.ARROWS_FILLED -> Icons.Filled.ArrowDropUp
                             else -> Icons.Filled.KeyboardArrowUp
@@ -546,7 +560,7 @@ fun SpeedReadingContent(
                                 .size(iconSize)
                                 .offset(
                                     x = with(density) { (focalPointX - iconSize.toPx() / 2).toDp() },
-                                    y = with(density) { (bottomBarY - iconSize.toPx()).toDp() }
+                                    y = with(density) { (bottomBarY - iconSize.toPx() - arrowOffset.toPx()).toDp() }
                                 )
                         )
                     }
@@ -592,20 +606,17 @@ fun SpeedReadingContent(
             }
         }
 
-        // OSD controls positioned based on settings
+        // Playback controls positioned at fixed position from bottom
         // The parent tap detector has an exclusion zone for this area
-        if (osdEnabled) {
-            // osdHeight: 0.0 = top, 1.0 = bottom, 0.5 = middle
-            val verticalPosition = (screenHeightDp.value * (1f - osdHeight)).dp
-
+        if (playbackControlsEnabled) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = verticalPosition)
+                    .padding(top = playbackControlsTopDp)
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
-                val separationDp = (12f + (osdSeparation * 36f)).dp // 12dp to 48dp
+                val separationDp = 16.dp
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(separationDp),
                     verticalAlignment = Alignment.CenterVertically
@@ -620,30 +631,29 @@ fun SpeedReadingContent(
                         modifier = Modifier
                             .padding(12.dp)
                             .noRippleClickable {
-                                navigateWord(-1) // Navigate to previous word
+                                navigateWord(-1)
                             }
                     )
 
-                    // Play/Pause button - centered and larger, minimal icon
+                    // Play/Pause button - centered and larger
                     Icon(
                         imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                         contentDescription = if (isPlaying) "Pause" else "Play",
                         tint = fontColor,
                         modifier = Modifier
-                            .size(60.dp)
+                            .size(72.dp)
                             .padding(8.dp)
-                              .noRippleClickable {
-                                  val wasPlaying = isPlaying
-                                  Log.d("SPEED_READER", "OSD play/pause: wasPlaying=$wasPlaying, currentWordIndex=$currentWordIndex")
-                                  onPlayPause()
-                                  // Save progress immediately when manually pausing
-                                  if (wasPlaying && !isPlaying) {
-                                      val globalWordIndex = startingWordIndex + currentWordIndex
-                                      val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-                                      Log.d("SPEED_READER", "OSD saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
-                                      onSaveProgress(newProgress, globalWordIndex)
-                                  }
-                              }
+                            .noRippleClickable {
+                                val wasPlaying = isPlaying
+                                Log.d("SPEED_READER", "Playback controls play/pause: wasPlaying=$wasPlaying, currentWordIndex=$currentWordIndex")
+                                onPlayPause()
+                                if (wasPlaying && !isPlaying) {
+                                    val globalWordIndex = startingWordIndex + currentWordIndex
+                                    val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                    Log.d("SPEED_READER", "Playback controls saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
+                                    onSaveProgress(newProgress, globalWordIndex)
+                                }
+                            }
                     )
 
                     // Right arrow (>) - navigate to next word
@@ -656,7 +666,7 @@ fun SpeedReadingContent(
                         modifier = Modifier
                             .padding(12.dp)
                             .noRippleClickable {
-                                navigateWord(1) // Navigate to next word
+                                navigateWord(1)
                             }
                     )
                 }

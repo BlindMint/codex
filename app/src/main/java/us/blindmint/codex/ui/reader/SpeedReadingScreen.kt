@@ -88,6 +88,7 @@ data class SpeedReadingScreen(
         val speedReadingOsdSeparation = androidx.compose.runtime.remember { androidx.compose.runtime.mutableFloatStateOf(mainState.value.speedReadingOsdSeparation) }
         val speedReadingAutoHideOsd = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingAutoHideOsd) }
         val speedReadingCenterWord = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingCenterWord) }
+        val speedReadingFocusIndicators = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingFocusIndicators) }
         val speedReadingCustomFontEnabled = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingCustomFontEnabled) }
         val speedReadingSelectedFontFamily = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingSelectedFontFamily) }
 
@@ -179,6 +180,9 @@ data class SpeedReadingScreen(
         androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingAutoHideOsd) {
             speedReadingAutoHideOsd.value = mainState.value.speedReadingAutoHideOsd
         }
+        androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingFocusIndicators) {
+            speedReadingFocusIndicators.value = mainState.value.speedReadingFocusIndicators
+        }
         androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingCenterWord) {
             speedReadingCenterWord.value = mainState.value.speedReadingCenterWord
         }
@@ -255,6 +259,9 @@ data class SpeedReadingScreen(
         }
         androidx.compose.runtime.LaunchedEffect(speedReadingCenterWord.value) {
             mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingCenterWord(speedReadingCenterWord.value))
+        }
+        androidx.compose.runtime.LaunchedEffect(speedReadingFocusIndicators.value) {
+            mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingFocusIndicators(speedReadingFocusIndicators.value))
         }
         androidx.compose.runtime.LaunchedEffect(speedReadingCustomFontEnabled.value) {
             mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingCustomFontEnabled(speedReadingCustomFontEnabled.value))
@@ -342,9 +349,10 @@ data class SpeedReadingScreen(
             focalPointPosition = speedReadingFocalPointPosition.floatValue,
             osdHeight = speedReadingOsdHeight.floatValue,
             osdSeparation = speedReadingOsdSeparation.floatValue,
-            autoHideOsd = speedReadingAutoHideOsd.value,
-            centerWord = speedReadingCenterWord.value,
-            progress = bookProgress,
+             autoHideOsd = speedReadingAutoHideOsd.value,
+             centerWord = speedReadingCenterWord.value,
+             focusIndicators = speedReadingFocusIndicators.value,
+             progress = bookProgress,
             bottomBarPadding = bottomBarPadding,
             showWpmIndicator = true,
             wpm = wpm.intValue,
