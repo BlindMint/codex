@@ -283,7 +283,7 @@ fun SpeedReadingContent(
     // Default thickness: 3dp (3rd option in original slider)
     // Default length: 2nd option (16dp) for vertical indicators
     // Default distance: 32dp for lines, 65dp for arrows (moved further away)
-    val derivedShowHorizontalBars = focusIndicators != us.blindmint.codex.domain.reader.FocusIndicatorsType.OFF
+    val derivedShowHorizontalBars = focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.LINES
     val derivedHorizontalBarsThickness = 3
     val derivedHorizontalBarsDistance = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) 65 else 32
     val derivedShowVerticalIndicators = focusIndicators != us.blindmint.codex.domain.reader.FocusIndicatorsType.OFF
@@ -451,7 +451,7 @@ fun SpeedReadingContent(
 
                 val barColorWithOpacity = horizontalBarsColor.copy(alpha = horizontalBarsOpacity)
 
-                // Calculate bar positions
+                // Calculate bar positions and word area boundaries
                 val barPositions = remember(frameHeight, wordAreaHeight, barToWordGap, density) {
                     with(density) {
                         val centerY = frameHeight.toPx() / 2f
@@ -463,6 +463,20 @@ fun SpeedReadingContent(
                     }
                 }
                 val (topBarY, bottomBarY, centerY) = barPositions
+
+                // Calculate arrow positions (relative to word area for better spacing)
+                val arrowPositions = remember(frameHeight, wordAreaHeight, density) {
+                    with(density) {
+                        val centerY = frameHeight.toPx() / 2f
+                        val wordAreaTop = centerY - (wordAreaHeight.toPx() / 2f)
+                        val wordAreaBottom = centerY + (wordAreaHeight.toPx() / 2f)
+                        val arrowGap = 24.dp.toPx() // Gap between arrows and word area
+                        val topArrowY = wordAreaTop - arrowGap
+                        val bottomArrowY = wordAreaBottom + arrowGap
+                        Pair(topArrowY, bottomArrowY)
+                    }
+                }
+                val (topArrowY, bottomArrowY) = arrowPositions
 
                 // Draw the RSVP frame - horizontal bars above and below the word
                 Box(
@@ -526,9 +540,8 @@ fun SpeedReadingContent(
                     if (derivedShowVerticalIndicators && derivedVerticalIndicatorType != SpeedReadingVerticalIndicatorType.LINE) {
                         val verticalIndicatorHeight = derivedVerticalIndicatorsSize.dp
                         val iconSize = verticalIndicatorHeight * 3.5f
-                        val arrowOffset = 65.dp // Further distance for ARROWS mode
 
-                        // Top arrow (pointing down from top bar)
+                        // Top arrow (pointing down, positioned above word area)
                         val topIcon = when (derivedVerticalIndicatorType) {
                             SpeedReadingVerticalIndicatorType.ARROWS -> Icons.Filled.KeyboardArrowDown
                             SpeedReadingVerticalIndicatorType.ARROWS_FILLED -> Icons.Filled.ArrowDropDown
@@ -543,11 +556,11 @@ fun SpeedReadingContent(
                                 .size(iconSize)
                                 .offset(
                                     x = with(density) { (focalPointX - iconSize.toPx() / 2).toDp() },
-                                    y = with(density) { (topBarY.toDp() + arrowOffset) }
+                                    y = with(density) { topArrowY.toDp() }
                                 )
                         )
 
-                        // Bottom arrow (pointing up from bottom bar)
+                        // Bottom arrow (pointing up, positioned below word area)
                         val bottomIcon = when (derivedVerticalIndicatorType) {
                             SpeedReadingVerticalIndicatorType.ARROWS -> Icons.Filled.KeyboardArrowUp
                             SpeedReadingVerticalIndicatorType.ARROWS_FILLED -> Icons.Filled.ArrowDropUp
@@ -562,7 +575,7 @@ fun SpeedReadingContent(
                                 .size(iconSize)
                                 .offset(
                                     x = with(density) { (focalPointX - iconSize.toPx() / 2).toDp() },
-                                    y = with(density) { (bottomBarY - iconSize.toPx() - arrowOffset.toPx()).toDp() }
+                                    y = with(density) { (bottomArrowY - iconSize.toPx()).toDp() }
                                 )
                         )
                     }
