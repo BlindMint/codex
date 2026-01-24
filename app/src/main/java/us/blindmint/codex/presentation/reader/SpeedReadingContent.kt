@@ -664,7 +664,8 @@ fun SpeedReadingContent(
                         Icon(
                             imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                             contentDescription = if (isPlaying) "Pause" else "Play",
-                            tint = fontColor
+                            tint = fontColor,
+                            modifier = Modifier.size(72.dp)
                         )
                     }
 
