@@ -639,7 +639,7 @@ fun SpeedReadingContent(
                             text = "<",
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 color = fontColor.copy(alpha = 0.7f),
-                                fontSize = 28.sp
+                                fontSize = 32.sp
                             )
                         )
                     }
@@ -682,7 +682,7 @@ fun SpeedReadingContent(
                             text = ">",
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 color = fontColor.copy(alpha = 0.7f),
-                                fontSize = 28.sp
+                                fontSize = 32.sp
                             )
                         )
                     }
