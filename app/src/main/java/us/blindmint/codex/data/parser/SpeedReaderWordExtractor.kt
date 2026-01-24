@@ -138,23 +138,31 @@ object SpeedReaderWordExtractor {
 
     private fun cleanWordForSpeedReader(word: String): String {
         val trimmed = word.trim()
+
+        if (trimmed.isEmpty()) return ""
+
         val result = buildString(trimmed.length) {
             for (char in trimmed) {
-                val allowed = char.isLetterOrDigit() ||
-                            char == '.' ||
-                            char == ',' ||
-                            char == ';' ||
-                            char == ':' ||
-                            char == '!' ||
-                            char == '?' ||
-                            char == '"' ||
-                            char == '\'' ||
-                            char == '-' ||
-                            char == '—' ||
-                            char == '…'
+                val isLetterOrDigit = char.isLetterOrDigit()
 
-                if (allowed) {
-                    append(char)
+                when {
+                    isLetterOrDigit -> append(char)
+                    char.isWhitespace() -> Unit
+                    else -> {
+                        val isPunctuation = char == '.' ||
+                                          char == ',' ||
+                                          char == ';' ||
+                                          char == ':' ||
+                                          char == '!' ||
+                                          char == '?' ||
+                                          char == '"' ||
+                                          char == '\'' ||
+                                          char == '-' ||
+                                          char == '—' ||
+                                          char == '…'
+
+                        if (isPunctuation) append(char)
+                    }
                 }
             }
         }
