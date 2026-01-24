@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -29,7 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -40,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -58,7 +55,7 @@ import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.browse.BrowseScreen
-import us.blindmint.codex.ui.import_progress.ImportProgressViewModelWrapper
+import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
 import us.blindmint.codex.ui.library.LibraryScreen
 import us.blindmint.codex.ui.settings.SettingsEvent
 import us.blindmint.codex.ui.settings.SettingsModel
@@ -68,13 +65,14 @@ import androidx.compose.material3.AlertDialog
 @Composable
 fun BrowseScanOption() {
     val settingsModel = hiltViewModel<SettingsModel>()
-    val importProgressViewModel = hiltViewModel<ImportProgressViewModelWrapper>()
+    val importProgressViewModel = hiltViewModel<ImportProgressViewModel>()
     val state by settingsModel.state.collectAsStateWithLifecycle()
     val importOperations by importProgressViewModel.importOperations.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
     var showLocalFolderInfoDialog by remember { mutableStateOf(false) }
+    var folderToRemove: android.content.UriPermission? by remember { mutableStateOf(null) }
 
     suspend fun getPersistedUriPermissions(): List<UriPermission> {
         return context.contentResolver?.persistedUriPermissions.let { permissions ->
@@ -135,11 +133,11 @@ fun BrowseScanOption() {
         importProgressViewModel.startImport(
             folderUri = uri,
             folderName = folderName,
-            folderPath = folderPath
-        ) {
-            // Trigger library refresh after import completes
-            LibraryScreen.refreshListChannel.trySend(0)
-        }
+            folderPath = folderPath,
+            onComplete = {
+                LibraryScreen.refreshListChannel.trySend(0) // Refresh Library after import completes
+            }
+        )
     }
 
     Column(
@@ -160,22 +158,14 @@ fun BrowseScanOption() {
                     importProgressViewModel.startImport(
                         folderUri = permission.uri,
                         folderName = folderName,
-                        folderPath = folderPath
-                    ) {
-                        LibraryScreen.refreshListChannel.trySend(0)
-                    }
+                        folderPath = folderPath,
+                        onComplete = {
+                            LibraryScreen.refreshListChannel.trySend(0) // Refresh Library after import completes
+                        }
+                    )
                 },
                 onRemoveClick = {
-                    settingsModel.onEvent(
-                        SettingsEvent.OnReleasePersistableUriPermission(
-                            uri = permission.uri
-                        )
-                    )
-
-                    coroutineScope.launch {
-                        persistedUriPermissions = getPersistedUriPermissions()
-                    }
-                    BrowseScreen.refreshListChannel.trySend(Unit)
+                    folderToRemove = permission
                 },
                 importOperations = importOperations,
                 folderUri = permission.uri
@@ -235,6 +225,42 @@ fun BrowseScanOption() {
             }
         )
     }
+
+    // Confirmation dialog for removing a folder
+    if (folderToRemove != null) {
+        AlertDialog(
+            onDismissRequest = { folderToRemove = null },
+            title = { androidx.compose.material3.Text("Remove Folder") },
+            text = {
+                androidx.compose.material3.Text(
+                    "Are you sure you want to remove this folder? " +
+                    "This will remove those books and comics from the library."
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    settingsModel.onEvent(
+                        SettingsEvent.OnReleasePersistableUriPermission(
+                            uri = folderToRemove!!.uri
+                        )
+                    )
+
+                    coroutineScope.launch {
+                        persistedUriPermissions = getPersistedUriPermissions()
+                    }
+                    BrowseScreen.refreshListChannel.trySend(Unit)
+                    folderToRemove = null
+                }) {
+                    androidx.compose.material3.Text("Remove")
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { folderToRemove = null }) {
+                    androidx.compose.material3.Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -249,13 +275,10 @@ private fun BrowseScanFolderItem(
 ) {
     val permissionFile = DocumentFileCompat.fromUri(context, folderUri) ?: return
 
-    // Find import operation for this folder if one exists and is still running
+    // Find import operation for this folder if one exists
     val currentOperation = importOperations.find { op ->
-        // Match by folder path and only if actively importing
-        op.folderPath == permissionFile.getRootPath(context) &&
-                (op.status == us.blindmint.codex.domain.import_progress.ImportStatus.IN_PROGRESS ||
-                 op.status == us.blindmint.codex.domain.import_progress.ImportStatus.SCANNING ||
-                 op.status == us.blindmint.codex.domain.import_progress.ImportStatus.STARTING)
+        // Match by folder path
+        op.folderPath == permissionFile.getRootPath(context)
     }
 
     Column(
@@ -325,61 +348,23 @@ private fun BrowseScanFolderItem(
             }
         }
 
-        // Show import details below the main row (doesn't affect icon positioning)
-        if (currentOperation != null) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp)
-            ) {
-                // Show current filename with strict height constraint (single line)
-                if (currentOperation.currentFile.isNotEmpty()) {
-                    val displayName = currentOperation.currentFile.let { name ->
-                        val maxLength = 35 // Character limit for folder item filename display
-                        if (name.length > maxLength) {
-                            name.take(maxLength - 3) + "..."
-                        } else {
-                            name
-                        }
-                    }
-
-                    Text(
-                        text = "Processing: $displayName",
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(14.dp) // Strict height to prevent layout expansion
-                    )
-                }
-
-                // Only show progress text if actively importing
-                if (currentOperation.totalBooks > 0) {
-                    StyledText(
-                        text = stringResource(
-                            R.string.importing_progress_no_file,
-                            currentOperation.currentProgress,
-                            currentOperation.totalBooks
-                        ),
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.primary
-                        ),
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
-                }
-            }
+        if (currentOperation != null && currentOperation.totalBooks > 0) {
+            StyledText(
+                text = "Importing: ${currentOperation.currentFile}",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = MaterialTheme.colorScheme.primary
+                ),
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Visible
+            )
         }
 
-        // Only show progress bar if actively importing
         if (currentOperation != null && currentOperation.totalBooks > 0) {
             LinearProgressIndicator(
                 progress = { currentOperation.currentProgress.toFloat() / currentOperation.totalBooks.toFloat() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = 4.dp),
             )
         }
     }

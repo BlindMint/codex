@@ -335,9 +335,6 @@ class ReaderModel @Inject constructor(
                                     }
 
                                 updateBook.execute(_state.value.book)
-
-                                LibraryScreen.refreshListChannel.trySend(0)
-                                HistoryScreen.refreshListChannel.trySend(0)
                             }
                         }
 
@@ -357,9 +354,6 @@ class ReaderModel @Inject constructor(
                                     }
 
                                     updateBook.execute(_state.value.book)
-
-                            LibraryScreen.refreshListChannel.trySend(0)
-                            HistoryScreen.refreshListChannel.trySend(0)
                         }
 
                         WindowCompat.getInsetsController(

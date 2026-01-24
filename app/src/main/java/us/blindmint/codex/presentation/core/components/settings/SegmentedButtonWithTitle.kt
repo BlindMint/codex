@@ -140,7 +140,7 @@ private fun SegmentedButton(
         modifier = Modifier
             .height(40.dp)
             .clip(shape)
-            .clickable(enabled = enabled && !button.selected) {
+            .clickable(enabled = enabled) {
                 onClick()
             }
             .border(

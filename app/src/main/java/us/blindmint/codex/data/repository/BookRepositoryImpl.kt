@@ -171,7 +171,7 @@ class BookRepositoryImpl @Inject constructor(
         }
 
         Log.d("SPEED_READER_WORDS", "[EXTRACTION] readerText.size=${readerText.size}, extracting words...")
-        val words = SpeedReaderWordExtractor.extract(readerText)
+        val words = SpeedReaderWordExtractor.extractWithPreprocessing(readerText)
         speedReaderWordCache.put(bookId, words)
 
         Log.d("SPEED_READER_WORDS", "[EXTRACTION] Extracted ${words.size} words for [$bookId]")
@@ -243,7 +243,7 @@ class BookRepositoryImpl @Inject constructor(
 
         if (wordsAlreadyCached == null) {
             Log.d("SPEED_READER_GET_TEXT", "[WORD EXTRACTION] Extracting words from readerText...")
-            val words = SpeedReaderWordExtractor.extract(readerText)
+            val words = SpeedReaderWordExtractor.extractWithPreprocessing(readerText)
             speedReaderWordCache.put(bookId, words)
             Log.d("SPEED_READER_GET_TEXT", "[WORD EXTRACTION]   Extracted ${words.size} words")
             Log.d("SPEED_READER_GET_TEXT", "[WORD EXTRACTION]   Cached in speedReaderWordCache")

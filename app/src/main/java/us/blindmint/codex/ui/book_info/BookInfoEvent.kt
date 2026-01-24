@@ -80,6 +80,12 @@ sealed class BookInfoEvent {
         val context: Context
     ) : BookInfoEvent()
 
+    data class OnActionResetReadingProgress(
+        val context: Context,
+        val resetNormalReading: Boolean,
+        val resetSpeedReading: Boolean
+    ) : BookInfoEvent()
+
     data object OnShowMoveDialog : BookInfoEvent()
 
     data class OnActionMoveDialog(

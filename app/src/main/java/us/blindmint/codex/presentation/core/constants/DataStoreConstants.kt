@@ -149,7 +149,9 @@ object DataStoreConstants {
     val SPEED_READING_FOCAL_POINT_POSITION = doublePreferencesKey("speed_reading_focal_point_position")
     val SPEED_READING_OSD_HEIGHT = doublePreferencesKey("speed_reading_osd_height")
     val SPEED_READING_OSD_SEPARATION = doublePreferencesKey("speed_reading_osd_separation")
+    val SPEED_READING_AUTO_HIDE_OSD = booleanPreferencesKey("speed_reading_auto_hide_osd")
     val SPEED_READING_CENTER_WORD = booleanPreferencesKey("speed_reading_center_word")
+    val SPEED_READING_FOCUS_INDICATORS = stringPreferencesKey("speed_reading_focus_indicators")
     val SPEED_READING_CUSTOM_FONT_ENABLED = booleanPreferencesKey("speed_reading_custom_font_enabled")
     val SPEED_READING_SELECTED_FONT_FAMILY = stringPreferencesKey("speed_reading_selected_font_family")
 }

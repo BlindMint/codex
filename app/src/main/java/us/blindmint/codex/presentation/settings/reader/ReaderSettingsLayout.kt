@@ -11,17 +11,20 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import us.blindmint.codex.domain.reader.ReaderSettingsTab
+import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
 
 @Composable
 fun ReaderSettingsLayout(
     paddingValues: PaddingValues
 ) {
     val pagerState = rememberPagerState(pageCount = { ReaderSettingsTab.entries.size })
+    val listState = rememberLazyListState()
 
     Column(
         modifier = Modifier
@@ -34,8 +37,9 @@ fun ReaderSettingsLayout(
             state = pagerState,
             modifier = Modifier.fillMaxSize()
         ) { page ->
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
+            LazyColumnWithScrollbar(
+                modifier = Modifier.fillMaxSize(),
+                state = listState
             ) {
                 when (ReaderSettingsTab.entries[page]) {
                     ReaderSettingsTab.BOOKS -> BooksReaderSettingsCategory()

@@ -836,7 +836,7 @@
     <string name="speed_reading_background_image">Use background image</string>
     <string name="speed_reading_horizontal_bars_thickness">Horizontal bars thickness</string>
     <string name="speed_reading_vertical_indicators_size">Vertical indicators size</string>
-    <string name="speed_reading_horizontal_bars_color">Horizontal bars color</string>
+
     <string name="speed_reading_horizontal_bars_distance">Bar distance from word</string>
     <string name="speed_reading_horizontal_bars_length">Horizontal bar length</string>
     <string name="speed_reading_focal_point_position">Focal point position</string>
@@ -845,12 +845,19 @@
     <string name="speed_reading_vertical_indicator_type_line">Line</string>
     <string name="speed_reading_vertical_indicator_type_arrows">Arrows</string>
     <string name="speed_reading_vertical_indicator_type_arrows_filled">Arrows (filled)</string>
+    <string name="speed_reading_playback_controls">Playback controls</string>
+    <string name="speed_reading_auto_hide_osd">Auto hide OSD</string>
+    <string name="speed_reading_center_word">Center word</string>
+    <string name="speed_reading_focus_indicators">Focus indicators</string>
+    <string name="speed_reading_focus_indicators_off">Off</string>
+    <string name="speed_reading_focus_indicators_lines">Lines</string>
+    <string name="speed_reading_focus_indicators_arrows">Arrows</string>
+    <string name="speed_reading_focus_indicators_colors">Focus indicators colors</string>
+    <string name="previous_word">Previous word</string>
+    <string name="next_word">Next word</string>
     <string name="speed_reading_osd">OSD</string>
     <string name="speed_reading_osd_height">OSD height</string>
     <string name="speed_reading_osd_separation">OSD separation</string>
-    <string name="speed_reading_center_word">Center word</string>
-    <string name="previous_word">Previous word</string>
-    <string name="next_word">Next word</string>
 
     <string name="delete_bookmark_content_desc">Delete bookmark</string>
     <string name="more_content_desc">More</string>

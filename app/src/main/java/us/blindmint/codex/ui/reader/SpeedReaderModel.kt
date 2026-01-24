@@ -168,10 +168,6 @@ class SpeedReaderModel @Inject constructor(
                 Log.d("SPEED_READER", "Successfully saved speed reader progress to database: wordIndex=$wordIndex")
                 lastSavedProgress = progress
                 lastDatabaseSaveWordIndex = wordIndex
-
-                // Refresh library and history
-                LibraryScreen.refreshListChannel.trySend(0)
-                HistoryScreen.refreshListChannel.trySend(0)
             } catch (e: Exception) {
                 Log.e("SPEED_READER", "Failed to save speed reader progress to database", e)
             }

@@ -11,6 +11,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,56 +23,20 @@ import us.blindmint.codex.domain.import_progress.ImportStatus
 import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
 import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Singleton
 
 private const val TAG = "ImportProgressViewModel"
 
 /**
- * ViewModel wrapper for composables to access ImportProgressViewModel service.
- */
-@HiltViewModel
-class ImportProgressViewModelWrapper @Inject constructor(
-    val importProgressService: ImportProgressViewModel
-) : ViewModel() {
-
-    val importOperations = importProgressService.importOperations
-    val isImporting = importProgressService.isImporting
-
-    fun startImport(folderUri: Uri, folderName: String, folderPath: String, onComplete: (suspend () -> Unit)? = null) =
-        importProgressService.startImport(folderUri, folderName, folderPath, onComplete)
-
-    fun startCodexImport(folderPath: String, folderName: String) =
-        importProgressService.startCodexImport(folderPath, folderName)
-
-    fun updateCodexImportProgress(
-        folderPath: String,
-        totalBooks: Int,
-        currentProgress: Int,
-        currentFile: String = ""
-    ) = importProgressService.updateCodexImportProgress(
-        folderPath, totalBooks, currentProgress, currentFile
-    )
-
-    fun cancelImport(operationId: String) =
-        importProgressService.cancelImport(operationId)
-
-    fun clearOperation(operationId: String) =
-        importProgressService.clearOperation(operationId)
-
-    fun clearAllOperations() =
-        importProgressService.clearAllOperations()
-
-    fun getOperation(operationId: String) =
-        importProgressService.getOperation(operationId)
-}
-
-/**
- * App-level ViewModel for managing import operations.
+ * App-level service for managing import operations.
  * Maintains import state across screen transitions and configuration changes.
  * Singleton-scoped to survive throughout app lifecycle.
  */
-class ImportProgressViewModel @Inject constructor(
+@Singleton
+class ImportProgressService @Inject constructor(
     private val bulkImportBooksFromFolder: BulkImportBooksFromFolder
-) : ViewModel() {
+) {
+    private val coroutineScope = CoroutineScope(SupervisorJob())
 
     private val _importOperations = MutableStateFlow<List<ImportOperation>>(emptyList())
     val importOperations: StateFlow<List<ImportOperation>> = _importOperations.asStateFlow()
@@ -83,7 +49,7 @@ class ImportProgressViewModel @Inject constructor(
      * Creates a new import operation and begins the import process.
      */
     fun startImport(folderUri: Uri, folderName: String, folderPath: String, onComplete: (suspend () -> Unit)? = null) {
-        viewModelScope.launch {
+        coroutineScope.launch {
             val operationId = UUID.randomUUID().toString()
             val operation = ImportOperation(
                 id = operationId,
@@ -252,4 +218,43 @@ class ImportProgressViewModel @Inject constructor(
             _importOperations.value = _importOperations.value + operation
         }
     }
+}
+
+/**
+ * ViewModel wrapper for composables to access ImportProgressService.
+ */
+@HiltViewModel
+class ImportProgressViewModel @Inject constructor(
+    private val importProgressService: ImportProgressService
+) : ViewModel() {
+
+    val importOperations = importProgressService.importOperations
+    val isImporting = importProgressService.isImporting
+
+    fun startImport(folderUri: Uri, folderName: String, folderPath: String, onComplete: (suspend () -> Unit)? = null) =
+        importProgressService.startImport(folderUri, folderName, folderPath, onComplete)
+
+    fun startCodexImport(folderPath: String, folderName: String) =
+        importProgressService.startCodexImport(folderPath, folderName)
+
+    fun updateCodexImportProgress(
+        folderPath: String,
+        totalBooks: Int,
+        currentProgress: Int,
+        currentFile: String = ""
+    ) = importProgressService.updateCodexImportProgress(
+        folderPath, totalBooks, currentProgress, currentFile
+    )
+
+    fun cancelImport(operationId: String) =
+        importProgressService.cancelImport(operationId)
+
+    fun clearOperation(operationId: String) =
+        importProgressService.clearOperation(operationId)
+
+    fun clearAllOperations() =
+        importProgressService.clearAllOperations()
+
+    fun getOperation(operationId: String) =
+        importProgressService.getOperation(operationId)
 }

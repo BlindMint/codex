@@ -6,43 +6,38 @@
 
 package us.blindmint.codex.presentation.reader
 
+import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.Slider
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,38 +47,37 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.layout.onSizeChanged
 import kotlinx.coroutines.delay
+import us.blindmint.codex.domain.reader.FocusIndicatorsType
 import us.blindmint.codex.domain.reader.SpeedReaderWord
+import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import kotlin.math.roundToInt
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpeedReadingContent(
@@ -98,13 +92,6 @@ fun SpeedReadingContent(
     accentCharacterEnabled: Boolean,
     accentColor: Color,
     accentOpacity: Float,
-    showVerticalIndicators: Boolean,
-    verticalIndicatorsSize: Int,
-    verticalIndicatorType: us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType,
-    showHorizontalBars: Boolean,
-    horizontalBarsThickness: Int,
-    horizontalBarsLength: Float,
-    horizontalBarsDistance: Int,
     horizontalBarsColor: Color,
     horizontalBarsOpacity: Float,
     focalPointPosition: Float,
@@ -113,16 +100,11 @@ fun SpeedReadingContent(
     onWpmChange: (Int) -> Unit,
     onPlayPause: () -> Unit,
     onNavigateWord: (Int) -> Unit = {}, // -1 for back, +1 for forward
-    onToggleMenu: () -> Unit = {},
     navigateWord: (Int) -> Unit = {},
     onRegisterNavigationCallback: ((Int) -> Unit) -> Unit = {},
-    alwaysShowPlayPause: Boolean,
-    showWpmIndicator: Boolean = true,
-    osdEnabled: Boolean = true,
-    osdHeight: Float = 0.5f, // 0.0 = top, 1.0 = bottom
-    osdSeparation: Float = 0.5f, // 0.0 = close, 1.0 = far
+    playbackControlsEnabled: Boolean = true,
+    focusIndicators: FocusIndicatorsType = FocusIndicatorsType.LINES,
     centerWord: Boolean = false,
-    wordPickerActive: Boolean = false,
     initialWordIndex: Int = 0,
     onShowWordPicker: () -> Unit = {},
     onProgressUpdate: (Float, Int) -> Unit = { _, _ -> }, // Callback for word-based progress updates
@@ -150,6 +132,14 @@ fun SpeedReadingContent(
     // Note: currentWordIndex is initialized with initialWordIndex and will be updated
     // by user navigation. We don't reset it here to avoid race conditions
     // with the parent SpeedReadingScaffold's selectedWordIndex management.
+
+    // Sync local state with initialWordIndex when it changes (e.g., from word picker)
+    LaunchedEffect(initialWordIndex) {
+        if (currentWordIndex != initialWordIndex) {
+            currentWordIndex = initialWordIndex
+            Log.d("SPEED_READER_CONTENT", "[SYNC] Synced currentWordIndex to initialWordIndex=$initialWordIndex")
+        }
+    }
 
     // Handle word navigation
     val handleNavigateWord: (Int) -> Unit = { direction ->
@@ -264,28 +254,45 @@ fun SpeedReadingContent(
     var boxSize by remember { mutableStateOf(0 to 0) }
 
     // Get screen dimensions for calculating exclusion zones
+    val windowInfo = LocalWindowInfo.current
     val configuration = LocalConfiguration.current
-    val screenHeightDp = configuration.screenHeightDp.dp
+    val screenHeightDp = with(LocalDensity.current) { windowInfo.containerSize.height.toDp() }
+    val screenWidthDp = with(LocalDensity.current) { windowInfo.containerSize.width.toDp() }
 
-    // Calculate OSD exclusion zone bounds in dp
-    // OSD is positioned at (screenHeight * (1 - osdHeight)) from top
-    // OSD height is approximately 60dp (play button) + 16dp vertical padding = ~80dp
-    val osdTopDp = (screenHeightDp.value * (1f - osdHeight)).dp - 8.dp // Account for padding
-    val osdHeightDp = 80.dp // Approximate height of OSD controls with padding
-    val osdBottomDp = osdTopDp + osdHeightDp
+    // Detect tablet vs phone based on smallest screen width (600dp is typical Android tablet threshold)
+    val isTablet = configuration.smallestScreenWidthDp >= 600
+
+    // Derive focus indicator settings based on focusIndicators parameter
+    // Default thickness: 3dp (3rd option in original slider)
+    // Default length: 2nd option (16dp) for vertical indicators
+    // Default distance: 32dp for lines, 30dp for arrows
+    // Default horizontal bar length: 50% of screen width
+    val derivedShowHorizontalBars = focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.LINES
+    val derivedHorizontalBarsThickness = 3
+    val derivedHorizontalBarsDistance = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) 30 else 32
+    val derivedHorizontalBarsLength = 0.5f
+    val derivedShowVerticalIndicators = focusIndicators != us.blindmint.codex.domain.reader.FocusIndicatorsType.OFF
+    val derivedVerticalIndicatorsSize = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) 24 else 16
+    val derivedVerticalIndicatorType = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.ARROWS else us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.LINE
+
+    // Calculate static playback controls position: ~20% from bottom on phone, ~25% on tablet
+    val playbackControlsBottomPercent = if (isTablet) 0.75f else 0.80f
+    val playbackControlsTopDp = (screenHeightDp.value * playbackControlsBottomPercent).dp
+    val playbackControlsHeightDp = 80.dp
+    val playbackControlsBottomDp = playbackControlsTopDp + playbackControlsHeightDp
 
     // Bottom bar exclusion zone: approximately 60dp from bottom
-    val bottomBarHeightDp = 92.dp // 60.dp bar height + 32.dp bottom padding
+    val bottomBarHeightDp = 92.dp
 
     Box(
         modifier = modifier
             .fillMaxSize()
             .onSizeChanged { boxSize = it.width to it.height }
-            .pointerInput(isPlaying, osdEnabled, osdHeight) {
+            .pointerInput(isPlaying, playbackControlsEnabled, playbackControlsTopDp) {
                 // Convert dp to pixels for tap detection
-                val osdTopPx = osdTopDp.toPx()
-                val osdBottomPx = osdBottomDp.toPx()
-                val bottomBarTopPx = boxSize.second - bottomBarHeightDp.toPx()
+                val playbackControlsTopPx = with(density) { playbackControlsTopDp.toPx() }
+                val playbackControlsBottomPx = with(density) { playbackControlsBottomDp.toPx() }
+                val bottomBarTopPx = boxSize.second - with(density) { bottomBarHeightDp.toPx() }
 
                 awaitPointerEventScope {
                     while (true) {
@@ -294,18 +301,18 @@ fun SpeedReadingContent(
                             val position = event.changes.first().position
                             val width = boxSize.first.toFloat()
                             val height = boxSize.second.toFloat()
-                            val tapZoneWidth = width * 0.2f // 20% edge zones
+                            val tapZoneWidth = width * 0.2f
 
-                            // Check if tap is in OSD exclusion zone (only if OSD is enabled)
-                            val inOsdZone = osdEnabled &&
-                                position.y >= osdTopPx &&
-                                position.y <= osdBottomPx
+                            // Check if tap is in playback controls exclusion zone (only if enabled)
+                            val inPlaybackControlsZone = playbackControlsEnabled &&
+                                position.y >= playbackControlsTopPx &&
+                                position.y <= playbackControlsBottomPx
 
                             // Check if tap is in bottom bar exclusion zone
                             val inBottomBarZone = position.y >= bottomBarTopPx
 
                             // Skip processing if tap is in an exclusion zone
-                            if (inOsdZone || inBottomBarZone) {
+                            if (inPlaybackControlsZone || inBottomBarZone) {
                                 continue
                             }
 
@@ -375,14 +382,14 @@ fun SpeedReadingContent(
                     .padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                val containerWidth = constraints.maxWidth.toFloat()
+                val containerWidth = remember(constraints) { constraints.maxWidth.toFloat() }
                 // Fixed focal point - offset to the left of center
                 val focalPointX = containerWidth * accentOffsetRatio
 
                 // Measure text before accent to calculate offset
-                val beforeAccent = if (accentIndex > 0) currentWord.substring(0, accentIndex) else ""
-                val accentChar = if (accentIndex >= 0 && accentIndex < currentWord.length)
-                    currentWord[accentIndex].toString() else ""
+                 val beforeAccent = if (accentIndex > 0) currentWord.take(accentIndex) else ""
+                 val accentChar = if (accentIndex >= 0 && accentIndex < currentWord.length)
+                     currentWord[accentIndex].toString() else ""
 
                 val beforeAccentWidth = if (beforeAccent.isNotEmpty()) {
                     with(density) {
@@ -410,7 +417,6 @@ fun SpeedReadingContent(
                     ).size
                 }
                 val fullWordWidth = fullWordSize.width.toFloat()
-                val fullWordHeight = fullWordSize.height.toFloat()
 
                 // Calculate offset to position the word at the focal point
                 val wordOffsetX = if (centerWord) {
@@ -425,11 +431,11 @@ fun SpeedReadingContent(
                 // Frame dimensions
                 val frameHeight = 120.dp
                 val wordAreaHeight = 60.dp // Height reserved for word display
-                val barToWordGap = horizontalBarsDistance.dp // Configurable gap between horizontal bar and word area
+                val barToWordGap = derivedHorizontalBarsDistance.dp // Configurable gap between horizontal bar and word area
 
                 val barColorWithOpacity = horizontalBarsColor.copy(alpha = horizontalBarsOpacity)
 
-                // Calculate bar positions
+                // Calculate bar positions and word area boundaries
                 val barPositions = remember(frameHeight, wordAreaHeight, barToWordGap, density) {
                     with(density) {
                         val centerY = frameHeight.toPx() / 2f
@@ -441,6 +447,26 @@ fun SpeedReadingContent(
                     }
                 }
                 val (topBarY, bottomBarY, centerY) = barPositions
+
+                // Calculate arrow positions (symmetric around centerY where word is centered)
+                val arrowPositions = remember(frameHeight, derivedVerticalIndicatorsSize, derivedHorizontalBarsDistance, density) {
+                    with(density) {
+                        val centerY = frameHeight.toPx() / 2f
+                        val verticalIndicatorHeight = derivedVerticalIndicatorsSize.dp.toPx()
+                        val iconSize = verticalIndicatorHeight * 2f
+                        val arrowGap = derivedHorizontalBarsDistance.dp.toPx()
+
+                        // Top arrow: offset y is top-left corner, arrow tip is at bottom
+                        // We want tip at (centerY - gap), so top is (centerY - gap) - iconSize
+                        val topArrowY = (centerY - arrowGap) - iconSize
+                        // Bottom arrow: offset y is top-left corner, arrow tip is at top
+                        // We want tip at (centerY + gap), so top is (centerY + gap)
+                        val bottomArrowY = (centerY + arrowGap)
+
+                        Pair(topArrowY, bottomArrowY)
+                    }
+                }
+                val (topArrowY, bottomArrowY) = arrowPositions
 
                 // Draw the RSVP frame - horizontal bars above and below the word
                 Box(
@@ -454,9 +480,9 @@ fun SpeedReadingContent(
                             .height(frameHeight)
                     ) {
                         // Horizontal bars (only if enabled) - TOP and BOTTOM borders
-                        if (showHorizontalBars) {
-                            val lineThickness = horizontalBarsThickness.dp.toPx()
-                            val barWidth = size.width * horizontalBarsLength
+                        if (derivedShowHorizontalBars) {
+                            val lineThickness = derivedHorizontalBarsThickness.dp.toPx()
+                            val barWidth = size.width * derivedHorizontalBarsLength
                             val barStartX = (size.width - barWidth) / 2f
                             val barEndX = barStartX + barWidth
 
@@ -478,9 +504,9 @@ fun SpeedReadingContent(
                         }
 
                         // For LINE type, draw vertical indicators in canvas
-                        if (showVerticalIndicators && verticalIndicatorType == SpeedReadingVerticalIndicatorType.LINE) {
-                            val verticalIndicatorHeight = verticalIndicatorsSize.dp.toPx()
-                            val verticalIndicatorWidth = 1.5.dp.toPx()
+                        if (derivedShowVerticalIndicators && derivedVerticalIndicatorType == SpeedReadingVerticalIndicatorType.LINE) {
+                            val verticalIndicatorHeight = derivedVerticalIndicatorsSize.dp.toPx()
+                            val verticalIndicatorWidth = derivedHorizontalBarsThickness.dp.toPx()
 
                             // Top vertical indicator - starts at top bar, points DOWN toward word
                             drawLine(
@@ -501,15 +527,15 @@ fun SpeedReadingContent(
         }
 
                     // Vertical indicators as icons (for ARROWS and ARROWS_FILLED types)
-                    if (showVerticalIndicators && verticalIndicatorType != SpeedReadingVerticalIndicatorType.LINE) {
-                        val verticalIndicatorHeight = verticalIndicatorsSize.dp
-                        val iconSize = verticalIndicatorHeight * 3.5f // Much larger than the indicator height (3-4x)
+                    if (derivedShowVerticalIndicators && derivedVerticalIndicatorType != SpeedReadingVerticalIndicatorType.LINE) {
+                        val verticalIndicatorHeight = derivedVerticalIndicatorsSize.dp
+                        val iconSize = verticalIndicatorHeight * 2f
 
-                        // Top arrow (pointing down from top bar)
-                        val topIcon = when (verticalIndicatorType) {
+                        // Top arrow (pointing down, positioned above word area)
+                        val topIcon = when (derivedVerticalIndicatorType) {
                             SpeedReadingVerticalIndicatorType.ARROWS -> Icons.Filled.KeyboardArrowDown
                             SpeedReadingVerticalIndicatorType.ARROWS_FILLED -> Icons.Filled.ArrowDropDown
-                            else -> Icons.Filled.KeyboardArrowDown
+                            SpeedReadingVerticalIndicatorType.LINE -> Icons.Filled.KeyboardArrowDown // Unreachable but required for exhaustive when
                         }
 
                         Icon(
@@ -520,15 +546,15 @@ fun SpeedReadingContent(
                                 .size(iconSize)
                                 .offset(
                                     x = with(density) { (focalPointX - iconSize.toPx() / 2).toDp() },
-                                    y = with(density) { topBarY.toDp() }
+                                    y = with(density) { topArrowY.toDp() }
                                 )
                         )
 
-                        // Bottom arrow (pointing up from bottom bar)
-                        val bottomIcon = when (verticalIndicatorType) {
+                        // Bottom arrow (pointing up, positioned below word area)
+                        val bottomIcon = when (derivedVerticalIndicatorType) {
                             SpeedReadingVerticalIndicatorType.ARROWS -> Icons.Filled.KeyboardArrowUp
                             SpeedReadingVerticalIndicatorType.ARROWS_FILLED -> Icons.Filled.ArrowDropUp
-                            else -> Icons.Filled.KeyboardArrowUp
+                            SpeedReadingVerticalIndicatorType.LINE -> Icons.Filled.KeyboardArrowUp // Unreachable but required for exhaustive when
                         }
 
                         Icon(
@@ -539,7 +565,7 @@ fun SpeedReadingContent(
                                 .size(iconSize)
                                 .offset(
                                     x = with(density) { (focalPointX - iconSize.toPx() / 2).toDp() },
-                                    y = with(density) { (bottomBarY - iconSize.toPx()).toDp() }
+                                    y = with(density) { bottomArrowY.toDp() }
                                 )
                         )
                     }
@@ -557,7 +583,7 @@ fun SpeedReadingContent(
                             withStyle(style = SpanStyle(color = fontColor)) {
                                 if (accentCharacterEnabled && accentIndex >= 0) {
                                     if (accentIndex > 0) {
-                                        append(currentWord.substring(0, accentIndex))
+                                        append(currentWord.take(accentIndex))
                                     }
                                     if (accentIndex < currentWord.length) {
                                         withStyle(style = SpanStyle(color = accentColor.copy(alpha = accentOpacity))) {
@@ -565,7 +591,7 @@ fun SpeedReadingContent(
                                         }
                                     }
                                     if (accentIndex < currentWord.length - 1) {
-                                        append(currentWord.substring(accentIndex + 1))
+                                        append(currentWord.drop(accentIndex + 1))
                                     }
                                 } else {
                                     append(currentWord)
@@ -585,73 +611,81 @@ fun SpeedReadingContent(
             }
         }
 
-        // OSD controls positioned based on settings
+        // Playback controls positioned at fixed position from bottom
         // The parent tap detector has an exclusion zone for this area
-        if (osdEnabled) {
-            // osdHeight: 0.0 = top, 1.0 = bottom, 0.5 = middle
-            val verticalPosition = (screenHeightDp.value * (1f - osdHeight)).dp
-
+        if (playbackControlsEnabled) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = verticalPosition)
+                    .padding(top = playbackControlsTopDp)
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
-                val separationDp = (12f + (osdSeparation * 36f)).dp // 12dp to 48dp
+                val separationDp = 16.dp
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(separationDp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Left arrow (<) - navigate to previous word
-                    Text(
-                        text = "<",
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            color = fontColor.copy(alpha = 0.7f),
-                            fontSize = 28.sp
-                        ),
+                    Box(
                         modifier = Modifier
-                            .padding(12.dp)
+                            .size(56.dp)
                             .noRippleClickable {
-                                navigateWord(-1) // Navigate to previous word
-                            }
-                    )
+                                navigateWord(-1)
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "<",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                color = fontColor.copy(alpha = 0.7f),
+                                fontSize = 32.sp
+                            )
+                        )
+                    }
 
-                    // Play/Pause button - centered and larger, minimal icon
-                    Icon(
-                        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                        contentDescription = if (isPlaying) "Pause" else "Play",
-                        tint = fontColor,
+                    // Play/Pause button - centered and larger
+                    Box(
                         modifier = Modifier
-                            .size(60.dp)
-                            .padding(8.dp)
-                              .noRippleClickable {
-                                  val wasPlaying = isPlaying
-                                  Log.d("SPEED_READER", "OSD play/pause: wasPlaying=$wasPlaying, currentWordIndex=$currentWordIndex")
-                                  onPlayPause()
-                                  // Save progress immediately when manually pausing
-                                  if (wasPlaying && !isPlaying) {
-                                      val globalWordIndex = startingWordIndex + currentWordIndex
-                                      val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-                                      Log.d("SPEED_READER", "OSD saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
-                                      onSaveProgress(newProgress, globalWordIndex)
-                                  }
-                              }
-                    )
+                            .size(72.dp)
+                            .noRippleClickable {
+                                val wasPlaying = isPlaying
+                                Log.d("SPEED_READER", "Playback controls play/pause: wasPlaying=$wasPlaying, currentWordIndex=$currentWordIndex")
+                                onPlayPause()
+                                if (wasPlaying && !isPlaying) {
+                                    val globalWordIndex = startingWordIndex + currentWordIndex
+                                    val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                    Log.d("SPEED_READER", "Playback controls saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
+                                    onSaveProgress(newProgress, globalWordIndex)
+                                }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                            contentDescription = if (isPlaying) "Pause" else "Play",
+                            tint = fontColor,
+                            modifier = Modifier.size(72.dp)
+                        )
+                    }
 
                     // Right arrow (>) - navigate to next word
-                    Text(
-                        text = ">",
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            color = fontColor.copy(alpha = 0.7f),
-                            fontSize = 28.sp
-                        ),
+                    Box(
                         modifier = Modifier
-                            .padding(12.dp)
+                            .size(56.dp)
                             .noRippleClickable {
-                                navigateWord(1) // Navigate to next word
-                            }
-                    )
+                                navigateWord(1)
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = ">",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                color = fontColor.copy(alpha = 0.7f),
+                                fontSize = 32.sp
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -728,10 +762,10 @@ fun SpeedReadingContent(
                               }
                               onShowWordPicker()
                           }
-                 )
-            }
+                   )
             }
         }
+    }
 
 
 
@@ -755,125 +789,12 @@ fun SpeedReadingContent(
 
         // Quick WPM Menu Bottom Sheet
         if (showQuickWpmMenu) {
-            val sheetState = rememberModalBottomSheetState()
-
-            ModalBottomSheet(
-                onDismissRequest = {
-                    showQuickWpmMenu = false
-                    // Don't toggle tap menu - just close the WPM panel
-                },
-                sheetState = sheetState,
-                containerColor = backgroundColor
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Top row: -100, -50, current WPM, +50, +100
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "-100",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                color = fontColor.copy(alpha = 0.7f)
-                            ),
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .noRippleClickable {
-                                    onWpmChange((wpm - 100).coerceAtLeast(200))
-                                }
-                        )
-
-                        Text(
-                            text = "-50",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                color = fontColor.copy(alpha = 0.7f)
-                            ),
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .noRippleClickable {
-                                    onWpmChange((wpm - 50).coerceAtLeast(200))
-                                }
-                        )
-
-                        Text(
-                            text = "$wpm",
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                color = fontColor,
-                                fontWeight = FontWeight.Bold
-                            ),
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-
-                        Text(
-                            text = "+50",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                color = fontColor.copy(alpha = 0.7f)
-                            ),
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .noRippleClickable {
-                                    onWpmChange((wpm + 50).coerceAtMost(1200))
-                                }
-                        )
-
-                        Text(
-                            text = "+100",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                color = fontColor.copy(alpha = 0.7f)
-                            ),
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .noRippleClickable {
-                                    onWpmChange((wpm + 100).coerceAtMost(1200))
-                                }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Bottom row: slider with - and + symbols
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "-",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                color = fontColor.copy(alpha = 0.7f)
-                            ),
-                            modifier = Modifier.noRippleClickable {
-                                onWpmChange((wpm - 10).coerceAtLeast(200))
-                            }
-                        )
-
-                        Slider(
-                            value = wpm.toFloat(),
-                            onValueChange = { onWpmChange((it / 5).toInt() * 5) },
-                            valueRange = 200f..1200f,
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        Text(
-                            text = "+",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                color = fontColor.copy(alpha = 0.7f)
-                            ),
-                            modifier = Modifier.noRippleClickable {
-                                onWpmChange((wpm + 10).coerceAtMost(1200))
-                            }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            }
+            SpeedReadingWpmMenuSheet(
+                show = showQuickWpmMenu,
+                onDismiss = { showQuickWpmMenu = false },
+                currentWpm = wpm,
+                onWpmChange = onWpmChange
+            )
         }
     }
 }

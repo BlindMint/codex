@@ -22,6 +22,8 @@ import org.commonmark.parser.Parser
 import us.blindmint.codex.data.local.room.BookDao
 import us.blindmint.codex.data.local.room.BookDatabase
 import us.blindmint.codex.data.local.room.DatabaseHelper
+import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
+import us.blindmint.codex.ui.import_progress.ImportProgressService
 import javax.inject.Singleton
 
 @Module
@@ -74,5 +76,13 @@ object AppModule {
             .allowMainThreadQueries()
             .build()
             .dao
+    }
+
+    @Provides
+    @Singleton
+    fun provideImportProgressService(
+        bulkImportBooksFromFolder: BulkImportBooksFromFolder
+    ): ImportProgressService {
+        return ImportProgressService(bulkImportBooksFromFolder)
     }
 }

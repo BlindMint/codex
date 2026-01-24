@@ -10,11 +10,14 @@ import android.os.Parcelable
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.parcelize.Parcelize
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import us.blindmint.codex.domain.navigator.Screen
-import androidx.compose.ui.unit.dp
 import us.blindmint.codex.presentation.core.util.LocalActivity
 import us.blindmint.codex.presentation.core.util.calculateProgress
 import us.blindmint.codex.presentation.navigator.LocalNavigator
@@ -23,6 +26,12 @@ import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 import us.blindmint.codex.presentation.reader.SpeedReadingSettingsBottomSheet
 import us.blindmint.codex.ui.library.LibraryScreen
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @Parcelize
 data class SpeedReadingScreen(
@@ -38,9 +47,24 @@ data class SpeedReadingScreen(
         val settingsModel = hiltViewModel<us.blindmint.codex.ui.settings.SettingsModel>()
 
         val activity = LocalActivity.current
+        val view = LocalView.current
 
         val mainState = mainModel.state.collectAsStateWithLifecycle()
         val settingsState = settingsModel.state.collectAsStateWithLifecycle()
+
+        // Lock status bar appearance to prevent icon color shift when bottom sheets open
+        // Use LaunchedEffect with colorPreset as key to ensure it re-runs and overrides Theme.kt
+        LaunchedEffect(settingsState.value.selectedColorPreset) {
+            val window = activity.window
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            // Calculate luminance to determine if theme is dark
+            val r = settingsState.value.selectedColorPreset.backgroundColor.red
+            val g = settingsState.value.selectedColorPreset.backgroundColor.green
+            val b = settingsState.value.selectedColorPreset.backgroundColor.blue
+            val luminance = 0.299f * r + 0.587f * g + 0.114f * b
+            val isDarkTheme = luminance <= 0.5f
+            insetsController.isAppearanceLightStatusBars = !isDarkTheme
+        }
 
         // Speed reading settings state
         val wpm = androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(mainState.value.speedReadingWpm) }
@@ -63,16 +87,38 @@ data class SpeedReadingScreen(
         val speedReadingFocalPointPosition = androidx.compose.runtime.remember { androidx.compose.runtime.mutableFloatStateOf(mainState.value.speedReadingFocalPointPosition) }
         val speedReadingOsdHeight = androidx.compose.runtime.remember { androidx.compose.runtime.mutableFloatStateOf(mainState.value.speedReadingOsdHeight) }
         val speedReadingOsdSeparation = androidx.compose.runtime.remember { androidx.compose.runtime.mutableFloatStateOf(mainState.value.speedReadingOsdSeparation) }
+        val speedReadingAutoHideOsd = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingAutoHideOsd) }
         val speedReadingCenterWord = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingCenterWord) }
+        val speedReadingFocusIndicators = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingFocusIndicators) }
         val speedReadingCustomFontEnabled = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingCustomFontEnabled) }
         val speedReadingSelectedFontFamily = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingSelectedFontFamily) }
 
         // Settings visibility state
         val speedReadingSettingsVisible = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-
-        // Update settings when mainState changes
-        androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingWpm) {
-            wpm.intValue = mainState.value.speedReadingWpm
+  
+        androidx.compose.runtime.LaunchedEffect(Unit) {
+            speedReaderModel.loadBook(bookId, activity) {
+                navigator.pop()
+            }
+        }
+  
+        // Handle cleanup when exiting speed reader
+        val onExitWithSystemBars = remember {
+            {
+                // Navigate without manually showing system bars
+                // SpeedReadingScaffold will show them when isPlaying becomes false
+                navigator.pop()
+            }
+        }
+  
+        androidx.compose.runtime.DisposableEffect(Unit) {
+            onDispose {
+                speedReaderModel.onLeave()
+                // Ensure system bars are shown when leaving speed reader
+                val window = activity.window
+                val insetsController = WindowCompat.getInsetsController(window, view)
+                insetsController.show(WindowInsetsCompat.Type.systemBars())
+            }
         }
         androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingManualSentencePauseEnabled) {
             speedReadingManualSentencePauseEnabled.value = mainState.value.speedReadingManualSentencePauseEnabled
@@ -131,6 +177,12 @@ data class SpeedReadingScreen(
         }
         androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingOsdSeparation) {
             speedReadingOsdSeparation.floatValue = mainState.value.speedReadingOsdSeparation
+        }
+        androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingAutoHideOsd) {
+            speedReadingAutoHideOsd.value = mainState.value.speedReadingAutoHideOsd
+        }
+        androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingFocusIndicators) {
+            speedReadingFocusIndicators.value = mainState.value.speedReadingFocusIndicators
         }
         androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingCenterWord) {
             speedReadingCenterWord.value = mainState.value.speedReadingCenterWord
@@ -203,8 +255,14 @@ data class SpeedReadingScreen(
         androidx.compose.runtime.LaunchedEffect(speedReadingOsdSeparation.floatValue) {
             mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingOsdSeparation(speedReadingOsdSeparation.floatValue))
         }
+        androidx.compose.runtime.LaunchedEffect(speedReadingAutoHideOsd.value) {
+            mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingAutoHideOsd(speedReadingAutoHideOsd.value))
+        }
         androidx.compose.runtime.LaunchedEffect(speedReadingCenterWord.value) {
             mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingCenterWord(speedReadingCenterWord.value))
+        }
+        androidx.compose.runtime.LaunchedEffect(speedReadingFocusIndicators.value) {
+            mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingFocusIndicators(speedReadingFocusIndicators.value))
         }
         androidx.compose.runtime.LaunchedEffect(speedReadingCustomFontEnabled.value) {
             mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingCustomFontEnabled(speedReadingCustomFontEnabled.value))
@@ -218,14 +276,7 @@ data class SpeedReadingScreen(
                 navigator.pop()
             }
         }
-
-        // Handle cleanup when exiting speed reader
-        androidx.compose.runtime.DisposableEffect(Unit) {
-            onDispose {
-                speedReaderModel.onLeave()
-            }
-        }
-
+ 
         // Calculate progress for display
         val book = speedReaderModel.book.value
         val words = speedReaderModel.words.value
@@ -262,6 +313,19 @@ data class SpeedReadingScreen(
             "${progress.calculateProgress(2)}%"
         }
 
+        // Screen-size-aware focal point position defaults
+        val configuration = LocalConfiguration.current
+        val isTablet = configuration.smallestScreenWidthDp >= 600
+        val screenAwareFocalPointPosition = remember(speedReadingFocalPointPosition.floatValue, isTablet) {
+            // If the stored value is the old default (0.38f), use screen-aware defaults
+            // Otherwise, use the stored value (user has customized it)
+            if (speedReadingFocalPointPosition.floatValue == 0.38f) {
+                if (isTablet) 0.45f else 0.38f
+            } else {
+                speedReadingFocalPointPosition.floatValue
+            }
+        }
+
         SpeedReadingScaffold(
             words = words,
             book = displayBook,
@@ -287,56 +351,31 @@ data class SpeedReadingScreen(
             },
             wordSize = speedReadingWordSize.intValue,
             accentOpacity = speedReadingAccentOpacity.floatValue,
-            showVerticalIndicators = speedReadingShowVerticalIndicators.value,
-            verticalIndicatorsSize = speedReadingVerticalIndicatorsSize.intValue,
-            verticalIndicatorType = SpeedReadingVerticalIndicatorType.valueOf(speedReadingVerticalIndicatorType.value),
-            showHorizontalBars = speedReadingShowHorizontalBars.value,
-            horizontalBarsThickness = speedReadingHorizontalBarsThickness.intValue,
-            horizontalBarsLength = speedReadingHorizontalBarsLength.floatValue,
-            horizontalBarsDistance = speedReadingHorizontalBarsDistance.intValue,
             horizontalBarsColor = speedReadingHorizontalBarsColor.value,
             horizontalBarsOpacity = speedReadingHorizontalBarsOpacity.floatValue,
-            focalPointPosition = speedReadingFocalPointPosition.floatValue,
+            focalPointPosition = screenAwareFocalPointPosition,
             osdHeight = speedReadingOsdHeight.floatValue,
             osdSeparation = speedReadingOsdSeparation.floatValue,
-            centerWord = speedReadingCenterWord.value,
-            progress = bookProgress,
+             autoHideOsd = speedReadingAutoHideOsd.value,
+             centerWord = speedReadingCenterWord.value,
+             focusIndicators = speedReadingFocusIndicators.value,
+             progress = bookProgress,
             bottomBarPadding = bottomBarPadding,
             showWpmIndicator = true,
             wpm = wpm.intValue,
             onWpmChange = { wpm.intValue = it },
             osdEnabled = speedReadingOsdEnabled.value,
-            onChangeProgress = { progress, wordIndex ->
-                // Wire progress updates to the model for database persistence (throttled)
-                speedReaderModel.updateProgress(progress, wordIndex, forceSave = false)
-            },
-            onSaveProgress = { progress, wordIndex ->
-                // Immediate progress save for manual pauses (no throttling)
-                Log.d("SPEED_READER", "Screen onSaveProgress: progress=$progress, wordIndex=$wordIndex")
-                speedReaderModel.updateProgress(progress, wordIndex, forceSave = true)
-            },
-            onExitSpeedReading = {
-                // Progress is already saved by the exit button logic above
-                // Always return to library for a completely fresh state
-                // This ensures the book can be opened fresh from library with latest progress
-                navigator.push(
-                    LibraryScreen,
-                    popping = true,  // Replace current navigation stack
-                    saveInBackStack = false
-                )
+            onExitSpeedReading = onExitWithSystemBars,
+            onShowSpeedReadingSettings = {
+                speedReadingSettingsVisible.value = true
             },
             onNavigateWord = { direction ->
                 // Speed reading handles word navigation internally
             },
-            onShowSpeedReadingSettings = {
-                speedReadingSettingsVisible.value = true
-            },
-            onMenuVisibilityChanged = { showMenu ->
-                // Handle menu visibility for speed reading screen
-            },
-            showOverlayMenu = false,
-            onShowWordPicker = {
-                // Speed reading handles word picker internally
+            onWordPicked = { newWordIndex ->
+                // Update model when user confirms new word in picker
+                // Use global word index directly - both reader and picker use same word list
+                speedReaderModel.updateProgress(0f, newWordIndex, forceSave = true)
             }
         )
 
@@ -378,14 +417,18 @@ data class SpeedReadingScreen(
             onHorizontalBarsColorChange = { speedReadingHorizontalBarsColor.value = it },
             horizontalBarsOpacity = speedReadingHorizontalBarsOpacity.floatValue,
             onHorizontalBarsOpacityChange = { speedReadingHorizontalBarsOpacity.floatValue = it },
-            focalPointPosition = speedReadingFocalPointPosition.floatValue,
+            focalPointPosition = screenAwareFocalPointPosition,
             onFocalPointPositionChange = { speedReadingFocalPointPosition.floatValue = it },
             osdHeight = speedReadingOsdHeight.floatValue,
             onOsdHeightChange = { speedReadingOsdHeight.floatValue = it },
             osdSeparation = speedReadingOsdSeparation.floatValue,
             onOsdSeparationChange = { speedReadingOsdSeparation.floatValue = it },
+            autoHideOsd = speedReadingAutoHideOsd.value,
+            onAutoHideOsdChange = { speedReadingAutoHideOsd.value = it },
             centerWord = speedReadingCenterWord.value,
             onCenterWordChange = { speedReadingCenterWord.value = it },
+            focusIndicators = speedReadingFocusIndicators.value,
+            onFocusIndicatorsChange = { speedReadingFocusIndicators.value = it },
             verticalIndicatorType = SpeedReadingVerticalIndicatorType.valueOf(speedReadingVerticalIndicatorType.value),
             onVerticalIndicatorTypeChange = { speedReadingVerticalIndicatorType.value = it.name },
             customFontEnabled = speedReadingCustomFontEnabled.value,

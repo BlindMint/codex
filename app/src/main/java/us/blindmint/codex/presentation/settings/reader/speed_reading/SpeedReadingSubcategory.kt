@@ -54,6 +54,7 @@ import us.blindmint.codex.presentation.settings.reader.speed_reading.components.
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingVerticalIndicatorsToggleOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingOsdHeightOption
 import us.blindmint.codex.presentation.settings.reader.speed_reading.components.SpeedReadingOsdSeparationOption
+import us.blindmint.codex.presentation.settings.reader.speed_reading.components.FocusIndicatorsOption
 import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 
 import us.blindmint.codex.presentation.core.components.settings.SwitchWithTitle
@@ -77,10 +78,8 @@ fun LazyListScope.SpeedReadingSubcategory(
     onSentencePauseDurationChange: (Int) -> Unit = {},
     osdEnabled: Boolean = true,
     onOsdEnabledChange: (Boolean) -> Unit = {},
-    osdHeight: Float = 0.2f, // 0.0 = top, 1.0 = bottom, 0.2 = ~20% from top
-    onOsdHeightChange: (Float) -> Unit = {},
-    osdSeparation: Float = 0.5f, // 0.0 = close, 1.0 = far, 0.5 = current spacing
-    onOsdSeparationChange: (Float) -> Unit = {},
+    autoHideOsd: Boolean = true,
+    onAutoHideOsdChange: (Boolean) -> Unit = {},
     wordSize: Int = 48,
     onWordSizeChange: (Int) -> Unit = {},
     accentCharacterEnabled: Boolean = true,
@@ -112,6 +111,8 @@ fun LazyListScope.SpeedReadingSubcategory(
     onFocalPointPositionChange: (Float) -> Unit = {},
     centerWord: Boolean = false,
     onCenterWordChange: (Boolean) -> Unit = {},
+    focusIndicators: String = "LINES",
+    onFocusIndicatorsChange: (String) -> Unit = {},
     customFontEnabled: Boolean = false,
     selectedFontFamily: String = "default",
     onCustomFontChanged: (Boolean) -> Unit = {},
@@ -160,45 +161,22 @@ fun LazyListScope.SpeedReadingSubcategory(
                 }
             }
 
-            item {
-                SwitchWithTitle(
-                    selected = osdEnabled,
-                    title = stringResource(id = R.string.speed_reading_osd),
-                    onClick = { onOsdEnabledChange(!osdEnabled) }
-                )
-            }
+             item {
+                 SwitchWithTitle(
+                     selected = osdEnabled,
+                     title = stringResource(id = R.string.speed_reading_osd),
+                     onClick = { onOsdEnabledChange(!osdEnabled) }
+                 )
+             }
 
-            item {
-                SpeedReadingWordSizeOption(
-                    wordSize = wordSize,
-                    onWordSizeChange = onWordSizeChange
-                )
-            }
+             item {
+                 SpeedReadingWordSizeOption(
+                     wordSize = wordSize,
+                     onWordSizeChange = onWordSizeChange
+                 )
+             }
 
-            item {
-                SwitchWithTitle(
-                    selected = osdEnabled,
-                    title = stringResource(id = R.string.speed_reading_osd),
-                    onClick = { onOsdEnabledChange(!osdEnabled) }
-                )
-            }
 
-            // OSD Height and Separation sliders (only when OSD is enabled)
-            if (osdEnabled) {
-                item {
-                    SpeedReadingOsdHeightOption(
-                        osdHeight = osdHeight,
-                        onOsdHeightChange = onOsdHeightChange
-                    )
-                }
-
-                item {
-                    SpeedReadingOsdSeparationOption(
-                        osdSeparation = osdSeparation,
-                        onOsdSeparationChange = onOsdSeparationChange
-                    )
-                }
-            }
 
             item {
                 SpeedReadingWordSizeOption(
@@ -392,37 +370,18 @@ fun LazyListScope.SpeedReadingSubcategory(
 
             item {
                 SwitchWithTitle(
-                    selected = osdEnabled,
-                    title = stringResource(id = R.string.speed_reading_osd),
-                    onClick = { onOsdEnabledChange(!osdEnabled) }
+                    selected = autoHideOsd,
+                    title = stringResource(id = R.string.speed_reading_auto_hide_osd),
+                    onClick = { onAutoHideOsdChange(!autoHideOsd) }
                 )
             }
 
-            // OSD Height and Separation sliders (only when OSD is enabled)
             item {
-                AnimatedVisibility(
-                    visible = osdEnabled,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingOsdHeightOption(
-                        osdHeight = osdHeight,
-                        onOsdHeightChange = onOsdHeightChange
-                    )
-                }
-            }
-
-            item {
-                AnimatedVisibility(
-                    visible = osdEnabled,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingOsdSeparationOption(
-                        osdSeparation = osdSeparation,
-                        onOsdSeparationChange = onOsdSeparationChange
-                    )
-                }
+                SwitchWithTitle(
+                    selected = osdEnabled,
+                    title = stringResource(id = R.string.speed_reading_playback_controls),
+                    onClick = { onOsdEnabledChange(!osdEnabled) }
+                )
             }
 
             item {
@@ -478,7 +437,7 @@ fun LazyListScope.SpeedReadingSubcategory(
                 )
             }
 
-            // Focal Point section
+            // Focal Point position slider
             item {
                 SpeedReadingFocalPointPositionOption(
                     position = focalPointPosition,
@@ -487,42 +446,30 @@ fun LazyListScope.SpeedReadingSubcategory(
                 )
             }
 
-            // Vertical Indicators toggle
+            // Focus Indicators segmented button
             item {
-                SpeedReadingVerticalIndicatorsToggleOption(
-                    selected = showVerticalIndicators,
-                    onSelectionChange = onShowVerticalIndicatorsChange,
-                    enabled = !centerWord
+                FocusIndicatorsOption(
+                    selected = focusIndicators,
+                    onSelectionChange = onFocusIndicatorsChange
                 )
             }
 
-            // Vertical indicator type (only when toggle is enabled)
+            // Focus Indicators Colors section (only shown when focus indicators are enabled)
             item {
                 AnimatedVisibility(
-                    visible = showVerticalIndicators && !centerWord,
+                    visible = focusIndicators != "OFF",
                     enter = expandVertically() + fadeIn(),
                     exit = shrinkVertically() + fadeOut()
                 ) {
-                    SpeedReadingVerticalIndicatorTypeOption(
-                        selectedType = verticalIndicatorType,
-                        onTypeChange = onVerticalIndicatorTypeChange,
-                        enabled = !centerWord
-                    )
-                }
-            }
-
-            // Vertical indicators length (only when toggle is enabled)
-            item {
-                AnimatedVisibility(
-                    visible = showVerticalIndicators && !centerWord,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingVerticalIndicatorsLengthOption(
-                        verticalIndicatorsSize = verticalIndicatorsSize,
-                        onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange,
-                        enabled = !centerWord
-                    )
+                    Column {
+                        HorizontalDivider()
+                        SpeedReadingHorizontalBarsColorOption(
+                            color = horizontalBarsColor,
+                            opacity = horizontalBarsOpacity,
+                            onColorChange = onHorizontalBarsColorChange,
+                            onOpacityChange = onHorizontalBarsOpacityChange
+                        )
+                    }
                 }
             }
 
@@ -546,77 +493,11 @@ fun LazyListScope.SpeedReadingSubcategory(
                     enter = expandVertically() + fadeIn(),
                     exit = shrinkVertically() + fadeOut()
                 ) {
-                    SpeedReadingColorsOption( // Accent color with RGB sliders and opacity
+                    SpeedReadingColorsOption(
                         color = accentColor,
                         opacity = accentOpacity,
                         onColorChange = onAccentColorChange,
                         onOpacityChange = onAccentOpacityChange
-                    )
-                }
-            }
-
-            // Horizontal Bars section
-            item {
-                HorizontalDivider()
-            }
-
-            item {
-                SpeedReadingHorizontalBarsOption(
-                    selected = showHorizontalBars,
-                    onSelectionChange = onShowHorizontalBarsChange
-                )
-            }
-
-            item {
-                AnimatedVisibility(
-                    visible = showHorizontalBars,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingHorizontalBarsThicknessOption(
-                        thickness = horizontalBarsThickness,
-                        onThicknessChange = onHorizontalBarsThicknessChange
-                    )
-                }
-            }
-
-            item {
-                AnimatedVisibility(
-                    visible = showHorizontalBars,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingHorizontalBarLengthOption(
-                        length = horizontalBarsLength,
-                        onLengthChange = onHorizontalBarsLengthChange
-                    )
-                }
-            }
-
-            item {
-                AnimatedVisibility(
-                    visible = showHorizontalBars,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingHorizontalBarsDistanceOption(
-                        distance = horizontalBarsDistance,
-                        onDistanceChange = onHorizontalBarsDistanceChange
-                    )
-                }
-            }
-
-            item {
-                AnimatedVisibility(
-                    visible = showHorizontalBars,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingHorizontalBarsColorOption(
-                        color = horizontalBarsColor,
-                        opacity = horizontalBarsOpacity,
-                        onColorChange = onHorizontalBarsColorChange,
-                        onOpacityChange = onHorizontalBarsOpacityChange
                     )
                 }
             }

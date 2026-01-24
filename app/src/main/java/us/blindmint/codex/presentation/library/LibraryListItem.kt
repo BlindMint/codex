@@ -205,7 +205,7 @@ fun LibraryListItem(
                     // Trailing button - Speed Reading
                     FilledIconButton(
                         onClick = { navigateToSpeedReading() },
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(20.dp),
                         shape = MaterialTheme.shapes.small,
                         colors = IconButtonDefaults.iconButtonColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -215,7 +215,7 @@ fun LibraryListItem(
                         Icon(
                             imageVector = Icons.Rounded.Bolt,
                             contentDescription = "Speed Read",
-                            Modifier.size(10.dp)
+                            Modifier.size(12.dp)
                         )
                     }
                 }
