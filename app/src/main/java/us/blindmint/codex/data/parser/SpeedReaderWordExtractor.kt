@@ -100,6 +100,7 @@ object SpeedReaderWordExtractor {
         
         return builder.toString()
             .replace(Regex("\\s+"), " ")
+            .replace(Regex("([\\p{L}])([—–])([\\p{L}])"), "$1 $2 $3")
             .trim()
     }
 
@@ -116,7 +117,7 @@ object SpeedReaderWordExtractor {
     private fun cleanWordForSpeedReader(word: String): String {
         return word
             .trim()
-            .replace(Regex("[^\\w.,;:!?\"'\\-]"), "")
+            .replace(Regex("[^\\w.,;:!?\"'\\-—–“”‘’…]"), "")
             .replace(Regex("\\s+"), "")
     }
 }

@@ -84,7 +84,7 @@ fun SpeedReadingScaffold(
     osdSeparation: Float = 0.5f,
     autoHideOsd: Boolean = true,
     centerWord: Boolean = false,
-    focusIndicators: String = "LINES",
+    focusIndicators: String = "OFF",
     onWpmChange: (Int) -> Unit,
     osdEnabled: Boolean,
     onExitSpeedReading: () -> Unit,
@@ -142,9 +142,7 @@ fun SpeedReadingScaffold(
         realTimeProgress = currentProgress
     }
 
-    // Control system bar visibility based on play state
-    // When paused: show system bars (so exit transition is smooth)
-    // When playing: hide system bars (immersive reading)
+    // Control system bar visibility and screen timeout based on play state
     LaunchedEffect(isPlaying) {
         val window = activity.window
         val insetsController = WindowCompat.getInsetsController(window, window.decorView)
@@ -153,9 +151,13 @@ fun SpeedReadingScaffold(
         if (isPlaying) {
             // Hide system bars when playing for immersive reading
             insetsController.hide(WindowInsetsCompat.Type.systemBars())
+            // Keep screen on during playback
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
             // Show system bars when paused
             insetsController.show(WindowInsetsCompat.Type.systemBars())
+            // Allow screen timeout when paused
+            window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 

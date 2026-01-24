@@ -103,7 +103,7 @@ fun SpeedReadingContent(
     navigateWord: (Int) -> Unit = {},
     onRegisterNavigationCallback: ((Int) -> Unit) -> Unit = {},
     playbackControlsEnabled: Boolean = true,
-    focusIndicators: FocusIndicatorsType = FocusIndicatorsType.LINES,
+    focusIndicators: FocusIndicatorsType = FocusIndicatorsType.OFF,
     centerWord: Boolean = false,
     initialWordIndex: Int = 0,
     onShowWordPicker: () -> Unit = {},
@@ -263,16 +263,14 @@ fun SpeedReadingContent(
     val isTablet = configuration.smallestScreenWidthDp >= 600
 
     // Derive focus indicator settings based on focusIndicators parameter
-    // Default thickness: 3dp (3rd option in original slider)
-    // Default length: 2nd option (16dp) for vertical indicators
-    // Default distance: 32dp for lines, 30dp for arrows
-    // Default horizontal bar length: 50% of screen width
+    // Thickness, distance, size scaled with wordSize (sp)
+    // Horizontal bars 92.5% screen width
     val derivedShowHorizontalBars = focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.LINES
-    val derivedHorizontalBarsThickness = 3
-    val derivedHorizontalBarsDistance = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) 30 else 32
-    val derivedHorizontalBarsLength = 0.5f
+    val derivedHorizontalBarsThickness = ((wordSize * 0.06f).coerceIn(2f, 6f)).roundToInt()
+    val derivedHorizontalBarsDistance = ((wordSize * 0.8f).coerceIn(24f, 60f)).roundToInt()
+    val derivedHorizontalBarsLength = 0.925f
     val derivedShowVerticalIndicators = focusIndicators != us.blindmint.codex.domain.reader.FocusIndicatorsType.OFF
-    val derivedVerticalIndicatorsSize = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) 24 else 16
+    val derivedVerticalIndicatorsSize = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) ((wordSize * 0.6f).coerceIn(20f, 36f)).roundToInt() else ((wordSize * 0.4f).coerceIn(12f, 24f)).roundToInt()
     val derivedVerticalIndicatorType = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.ARROWS else us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.LINE
 
     // Calculate static playback controls position: ~20% from bottom on phone, ~25% on tablet

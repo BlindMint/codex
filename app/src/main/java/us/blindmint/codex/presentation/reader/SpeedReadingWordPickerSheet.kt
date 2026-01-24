@@ -196,27 +196,6 @@ fun SpeedReadingWordPickerSheet(
         }
     }
 
-    // Update selectedWord when user scrolls (but not when dragging slider and not during initial open)
-    LaunchedEffect(isDraggingSlider, scrolledRefreshKey, currentWordScrollIndex) {
-        if (!isDraggingSlider) {
-            snapshotFlow { listState.firstVisibleItemIndex }
-                .debounce(150)
-                .collect { visibleIndex ->
-                    // Only update if:
-                    // 1. Initial scroll is complete (scrolledRefreshKey matches current refreshKey)
-                    // 2. We've scrolled away from the current word's paragraph
-                    val initialScrollComplete = (scrolledRefreshKey >= refreshKey)
-                    val scrolledAwayFromCurrent = currentWordScrollIndex >= 0 && visibleIndex != currentWordScrollIndex
-
-                    if (visibleIndex in paragraphs.indices && initialScrollComplete && scrolledAwayFromCurrent) {
-                        val firstWord = paragraphs[visibleIndex].words.firstOrNull()
-                        if (firstWord != null) {
-                            selectedWord = firstWord
-                        }
-                    }
-                }
-        }
-    }
 
 
     // Scroll to current word when sheet opens (refreshKey changes)
