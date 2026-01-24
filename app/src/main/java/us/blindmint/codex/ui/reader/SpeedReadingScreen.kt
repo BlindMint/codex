@@ -21,6 +21,9 @@ import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.presentation.core.util.LocalActivity
 import us.blindmint.codex.presentation.core.util.calculateProgress
 import us.blindmint.codex.presentation.navigator.LocalNavigator
+import us.blindmint.codex.domain.reader.FontWithName
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.Font
 import us.blindmint.codex.presentation.reader.SpeedReadingScaffold
 import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 import us.blindmint.codex.presentation.reader.SpeedReadingSettingsBottomSheet
@@ -95,12 +98,6 @@ data class SpeedReadingScreen(
 
         // Settings visibility state
         val speedReadingSettingsVisible = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-  
-        androidx.compose.runtime.LaunchedEffect(Unit) {
-            speedReaderModel.loadBook(bookId, activity) {
-                navigator.pop()
-            }
-        }
   
         // Handle cleanup when exiting speed reader
         val onExitWithSystemBars = remember {
@@ -271,12 +268,13 @@ data class SpeedReadingScreen(
             mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingSelectedFontFamily(speedReadingSelectedFontFamily.value))
         }
 
-        androidx.compose.runtime.LaunchedEffect(Unit) {
+        // Load the book for speed reading
+        androidx.compose.runtime.LaunchedEffect(bookId) {
             speedReaderModel.loadBook(bookId, activity) {
                 navigator.pop()
             }
         }
- 
+
         // Calculate progress for display
         val book = speedReaderModel.book.value
         val words = speedReaderModel.words.value
@@ -317,12 +315,38 @@ data class SpeedReadingScreen(
         val configuration = LocalConfiguration.current
         val isTablet = configuration.smallestScreenWidthDp >= 600
         val screenAwareFocalPointPosition = remember(speedReadingFocalPointPosition.floatValue, isTablet) {
-            // If the stored value is the old default (0.38f), use screen-aware defaults
-            // Otherwise, use the stored value (user has customized it)
             if (speedReadingFocalPointPosition.floatValue == 0.38f) {
                 if (isTablet) 0.45f else 0.38f
             } else {
                 speedReadingFocalPointPosition.floatValue
+            }
+        }
+
+        val speedReaderFontFamily = remember(
+            speedReadingCustomFontEnabled.value,
+            speedReadingSelectedFontFamily.value,
+            mainState.value.customFonts
+        ) {
+            if (speedReadingCustomFontEnabled.value && speedReadingSelectedFontFamily.value.startsWith("custom_")) {
+                val customFontName = speedReadingSelectedFontFamily.value.removePrefix("custom_")
+                val customFont = mainState.value.customFonts.find { it.name == customFontName }
+                customFont?.let {
+                    try {
+                        FontWithName(
+                            id = "speed_reader_custom_${it.name}",
+                            fontName = us.blindmint.codex.domain.ui.UIText.StringValue(it.name),
+                            font = FontFamily(Font(java.io.File(it.filePath)))
+                        )
+                    } catch (_: Exception) {
+                        us.blindmint.codex.presentation.core.constants.provideFonts().first()
+                    }
+                } ?: us.blindmint.codex.presentation.core.constants.provideFonts().first()
+            } else {
+                us.blindmint.codex.presentation.core.constants.provideFonts().run {
+                    find {
+                        it.id == speedReadingSelectedFontFamily.value
+                    } ?: get(0)
+                }
             }
         }
 
@@ -339,7 +363,7 @@ data class SpeedReadingScreen(
             isLoading = isLoading,
             accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
             accentColor = speedReadingAccentColor.value,
-            fontFamily = us.blindmint.codex.presentation.core.constants.provideFonts().first().font, // Use default font for now
+            fontFamily = speedReaderFontFamily.font,
             sentencePauseMs = if (speedReadingManualSentencePauseEnabled.value) {
                 speedReadingSentencePauseDuration.intValue
             } else {

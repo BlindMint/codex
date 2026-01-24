@@ -250,8 +250,8 @@ fun SpeedReadingScaffold(
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
-            if (isLoading || words.isEmpty() || initialWordIndex < 0 || selectedWordIndex < 0) {
-                // Show loading indicator until text is ready AND word index is synchronized
+            if (isLoading || words.isEmpty() || selectedWordIndex < 0) {
+                // Show loading indicator until text is ready AND word index is set
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
