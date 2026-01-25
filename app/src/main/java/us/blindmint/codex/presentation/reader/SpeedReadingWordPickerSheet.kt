@@ -200,25 +200,24 @@ fun SpeedReadingWordPickerSheet(
 
 
 
-    // Scroll to current word when sheet opens (refreshKey changes)
-    LaunchedEffect(refreshKey) {
-        // Only scroll if this is a fresh sheet open (refreshKey changed)
+    // Scroll to current word when sheet opens (refreshKey changes) and paragraphs are loaded
+    LaunchedEffect(refreshKey, paragraphs) {
+        // Only scroll if this is a fresh sheet open (refreshKey changed) AND paragraphs are populated
         // Don't re-scroll when user changes selection
-        if (refreshKey > scrolledRefreshKey) {
+        if (refreshKey > scrolledRefreshKey && paragraphs.isNotEmpty()) {
             // Small delay to ensure sheet is fully rendered
             delay(100)
             currentWordPosition?.let { position: WordPosition ->
                 val paragraphIndex = paragraphs.indexOfFirst { paragraph: WordParagraph -> paragraph.textIndex == position.textIndex }
                 if (paragraphIndex >= 0) {
-                    listState.animateScrollToItem(paragraphIndex)
-                    // Wait for scroll to complete, then mark as done
-                    scope.launch {
-                        delay(300)
-                        scrolledRefreshKey = refreshKey
-                    }
+                    listState.scrollToItem(paragraphIndex)
+                    scrolledRefreshKey = refreshKey
                 } else {
                     scrolledRefreshKey = refreshKey
                 }
+            } ?: run {
+                // Mark as done even if currentWordPosition is null to avoid repeated attempts
+                scrolledRefreshKey = refreshKey
             }
         }
     }
