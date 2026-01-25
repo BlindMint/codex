@@ -375,7 +375,27 @@ class BookRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteBooks(books: List<Book>) {
-        // Stub implementation
+        Log.i(DELETE_BOOKS, "Deleting ${books.size} books")
+
+        books.forEach { book ->
+            val bookEntity = database.findBookById(book.id) ?: return@forEach
+
+            database.deleteBookmarksByBookId(book.id)
+            database.deleteBookProgressHistory(book.filePath)
+
+            bookEntity.image?.let { imagePath ->
+                val coverFile = File(application.filesDir, "covers/$imagePath")
+                if (coverFile.exists()) {
+                    coverFile.delete()
+                    Log.i(DELETE_BOOKS, "Deleted cover image: $imagePath")
+                }
+            }
+
+            database.deleteBooks(listOf(bookEntity))
+            Log.i(DELETE_BOOKS, "Deleted book: ${book.title}")
+        }
+
+        Log.i(DELETE_BOOKS, "Successfully deleted ${books.size} books")
     }
 
 

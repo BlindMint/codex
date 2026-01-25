@@ -8,18 +8,13 @@ package us.blindmint.codex.domain.use_case.book
 
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.repository.BookRepository
-import us.blindmint.codex.domain.repository.HistoryRepository
 import javax.inject.Inject
 
 class DeleteBooks @Inject constructor(
-    private val bookRepository: BookRepository,
-    private val historyRepository: HistoryRepository
+    private val bookRepository: BookRepository
 ) {
 
     suspend fun execute(books: List<Book>) {
         bookRepository.deleteBooks(books)
-        books.forEach {
-            historyRepository.deleteBookHistory(it.id)
-        }
     }
 }
