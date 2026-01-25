@@ -84,7 +84,7 @@ fun SpeedReadingScaffold(
     osdSeparation: Float = 0.5f,
     autoHideOsd: Boolean = true,
     centerWord: Boolean = false,
-    focusIndicators: String = "LINES",
+    focusIndicators: String = "OFF",
     onWpmChange: (Int) -> Unit,
     osdEnabled: Boolean,
     onExitSpeedReading: () -> Unit,
@@ -93,7 +93,8 @@ fun SpeedReadingScaffold(
     onNavigateWord: (Int) -> Unit,
     onChangeProgress: (Float, Int) -> Unit = { _, _ -> },
     onSaveProgress: (Float, Int) -> Unit = { _, _ -> },
-    onPlayPause: () -> Unit = {}
+    onPlayPause: () -> Unit = {},
+    keepScreenOn: Boolean = true
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
@@ -142,20 +143,22 @@ fun SpeedReadingScaffold(
         realTimeProgress = currentProgress
     }
 
-    // Control system bar visibility based on play state
-    // When paused: show system bars (so exit transition is smooth)
-    // When playing: hide system bars (immersive reading)
-    LaunchedEffect(isPlaying) {
+    // Control system bar visibility and screen timeout based on play state and keep screen on setting
+    LaunchedEffect(isPlaying, keepScreenOn) {
         val window = activity.window
         val insetsController = WindowCompat.getInsetsController(window, window.decorView)
         insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
-        if (isPlaying) {
+        if (isPlaying && keepScreenOn) {
             // Hide system bars when playing for immersive reading
             insetsController.hide(WindowInsetsCompat.Type.systemBars())
+            // Keep screen on during playback if setting is enabled
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
             // Show system bars when paused
             insetsController.show(WindowInsetsCompat.Type.systemBars())
+            // Allow screen timeout when paused or setting is disabled
+            window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 
@@ -248,8 +251,8 @@ fun SpeedReadingScaffold(
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
-            if (isLoading || words.isEmpty() || initialWordIndex < 0 || selectedWordIndex < 0) {
-                // Show loading indicator until text is ready AND word index is synchronized
+            if (isLoading || words.isEmpty() || selectedWordIndex < 0) {
+                // Show loading indicator until text is ready AND word index is set
                 Box(
                     modifier = Modifier
                         .fillMaxSize()

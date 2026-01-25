@@ -60,6 +60,9 @@ interface BookDao {
 
     @Query("UPDATE bookentity SET speedReaderHasBeenOpened = 1 WHERE id = :id")
     suspend fun markSpeedReaderOpened(id: Int)
+
+    @Query("UPDATE bookentity SET speedReaderTotalWords = :totalWords WHERE id = :id")
+    suspend fun updateSpeedReaderTotalWords(id: Int, totalWords: Int)
     /* - - - - - - - - - - - - - - - - - - - - - - */
 
 

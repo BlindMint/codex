@@ -88,7 +88,9 @@ fun SpeedReadingSettingsBottomSheet(
     customFontEnabled: Boolean = false,
     onCustomFontEnabledChange: (Boolean) -> Unit = {},
     selectedFontFamily: String = "default",
-    onFontFamilyChange: (String) -> Unit = {}
+    onFontFamilyChange: (String) -> Unit = {},
+    keepScreenOn: Boolean = true,
+    onKeepScreenOnChange: (Boolean) -> Unit = {}
 ) {
     if (show) {
         val scrollState = rememberLazyListState()
@@ -214,9 +216,11 @@ fun SpeedReadingSettingsBottomSheet(
                              centerWord = centerWord,
                              onCenterWordChange = onCenterWordChange,
                              customFontEnabled = customFontEnabled,
-                            onCustomFontChanged = onCustomFontEnabledChange,
-                            selectedFontFamily = selectedFontFamily,
-                            onFontFamilyChanged = onFontFamilyChange
+                             onCustomFontChanged = onCustomFontEnabledChange,
+                             selectedFontFamily = selectedFontFamily,
+                             onFontFamilyChanged = onFontFamilyChange,
+                             keepScreenOn = keepScreenOn,
+                             onKeepScreenOnChange = onKeepScreenOnChange
                         )
                     }
                      1 -> { // Focus tab

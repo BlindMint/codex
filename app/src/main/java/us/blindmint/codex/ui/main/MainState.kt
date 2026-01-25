@@ -208,9 +208,10 @@ data class MainState(
     val speedReadingOsdSeparation: Float = provideDefaultValue { 0.5f },
     val speedReadingAutoHideOsd: Boolean = provideDefaultValue { true },
     val speedReadingCenterWord: Boolean = provideDefaultValue { false },
-    val speedReadingFocusIndicators: String = provideDefaultValue { "LINES" },
+    val speedReadingFocusIndicators: String = provideDefaultValue { "OFF" },
     val speedReadingCustomFontEnabled: Boolean = provideDefaultValue { false },
     val speedReadingSelectedFontFamily: String = provideDefaultValue { "default" },
+    val speedReadingKeepScreenOn: Boolean = provideDefaultValue { true },
 ) : Parcelable {
     companion object {
         private fun <D> provideDefaultValue(calculation: () -> D): D {

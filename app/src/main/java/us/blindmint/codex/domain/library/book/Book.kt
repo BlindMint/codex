@@ -32,6 +32,7 @@ data class Book(
     // Speed reader progress (separate from normal reader)
     val speedReaderWordIndex: Int = 0,
     val speedReaderHasBeenOpened: Boolean = false,
+    val speedReaderTotalWords: Int = 0,
 
     val lastOpened: Long?,
     val category: Category = Category.PLANNING, // TODO: remove when UI updated

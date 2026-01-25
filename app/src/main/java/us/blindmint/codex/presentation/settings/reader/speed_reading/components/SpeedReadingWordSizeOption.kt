@@ -18,10 +18,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -37,6 +40,14 @@ fun SpeedReadingWordSizeOption(
     onWordSizeChange: (Int) -> Unit = {}
 ) {
     var localWordSize by remember(wordSize) { mutableIntStateOf(wordSize) }
+    var isDebouncing by remember { mutableStateOf(false) }
+
+    LaunchedEffect(localWordSize) {
+        isDebouncing = true
+        delay(150)
+        onWordSizeChange(localWordSize)
+        isDebouncing = false
+    }
 
     Text(
         text = stringResource(id = R.string.speed_reading_word_size),
@@ -53,19 +64,16 @@ fun SpeedReadingWordSizeOption(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Slider
         Slider(
             value = localWordSize.toFloat(),
             onValueChange = {
-                val roundedValue = (it / 2).roundToInt() * 2 // Round to nearest even number
+                val roundedValue = (it / 2).roundToInt() * 2
                 localWordSize = roundedValue.coerceIn(24, 96)
-                onWordSizeChange(localWordSize)
             },
             valueRange = 24f..96f,
             modifier = Modifier.weight(1f)
         )
 
-        // Numeric input with vertical centering fix
         Box(
             modifier = Modifier.width(60.dp),
             contentAlignment = Alignment.Center
@@ -76,7 +84,6 @@ fun SpeedReadingWordSizeOption(
                     val intValue = newValue.toIntOrNull() ?: localWordSize
                     val coercedValue = intValue.coerceIn(24, 96)
                     localWordSize = coercedValue
-                    onWordSizeChange(coercedValue)
                 },
                 label = { Text("sp") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

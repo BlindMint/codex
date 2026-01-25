@@ -78,29 +78,52 @@ object SpeedReaderWordExtractor {
     }
 
     private fun preprocessText(readerText: List<ReaderText>): String {
-        val builder = StringBuilder()
-        
+        val estimatedCapacity = readerText.sumOf { if (it is ReaderText.Text) it.line.text.length else 0 } + 1000
+        val builder = StringBuilder(estimatedCapacity)
+
+        var lastWasNonWhitespace = false
+
         for (item in readerText) {
             if (item is ReaderText.Text) {
-                val text = item.line.text
-                    .replace(Regex("[\\n\\r\\t]"), " ")
-                    .trim()
-                
-                if (text.isNotEmpty()) {
-                    if (builder.isNotEmpty()) {
-                        val lastChar = builder.lastOrNull()
-                        if (lastChar != null && !lastChar.isWhitespace()) {
-                            builder.append(" ")
+                var text = item.line.text
+
+                val processedText = buildString {
+                    for (char in text) {
+                        when {
+                            char == '\n' || char == '\r' || char == '\t' -> append(' ')
+                            else -> append(char)
                         }
                     }
-                    builder.append(text)
+                }.trim()
+
+                if (processedText.isNotEmpty()) {
+                    if (lastWasNonWhitespace) {
+                        builder.append(' ')
+                    }
+                    builder.append(processedText)
+                    lastWasNonWhitespace = true
                 }
             }
         }
-        
-        return builder.toString()
-            .replace(Regex("\\s+"), " ")
-            .trim()
+
+        val result = builder.toString()
+
+        val collapsed = buildString {
+            var inWhitespace = false
+            for (char in result) {
+                if (char.isWhitespace()) {
+                    if (!inWhitespace) {
+                        append(' ')
+                        inWhitespace = true
+                    }
+                } else {
+                    append(char)
+                    inWhitespace = false
+                }
+            }
+        }.trim()
+
+        return collapsed.replace(Regex("([\\p{L}])([—–])([\\p{L}])"), "$1 $2 $3")
     }
 
     private fun splitIntoWords(text: String): List<String> {
@@ -114,9 +137,36 @@ object SpeedReaderWordExtractor {
     }
 
     private fun cleanWordForSpeedReader(word: String): String {
-        return word
-            .trim()
-            .replace(Regex("[^\\w.,;:!?\"'\\-]"), "")
-            .replace(Regex("\\s+"), "")
+        val trimmed = word.trim()
+
+        if (trimmed.isEmpty()) return ""
+
+        val result = buildString(trimmed.length) {
+            for (char in trimmed) {
+                val isLetterOrDigit = char.isLetterOrDigit()
+
+                when {
+                    isLetterOrDigit -> append(char)
+                    char.isWhitespace() -> Unit
+                    else -> {
+                        val isPunctuation = char == '.' ||
+                                          char == ',' ||
+                                          char == ';' ||
+                                          char == ':' ||
+                                          char == '!' ||
+                                          char == '?' ||
+                                          char == '"' ||
+                                          char == '\'' ||
+                                          char == '-' ||
+                                          char == '—' ||
+                                          char == '…'
+
+                        if (isPunctuation) append(char)
+                    }
+                }
+            }
+        }
+
+        return result
     }
 }

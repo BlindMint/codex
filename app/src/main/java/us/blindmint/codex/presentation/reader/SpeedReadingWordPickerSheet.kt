@@ -100,23 +100,25 @@ fun SpeedReadingWordPickerSheet(
         animationSpec = tween(300)
     )
 
-    // Convert SpeedReaderWord to WordPosition for display
-    val allWords: List<WordPosition> = remember(words) {
-        words.map { speedReaderWord ->
-            WordPosition(
-                word = speedReaderWord.text,
-                textIndex = speedReaderWord.paragraphIndex,
-                wordIndexInText = 0,
-                globalWordIndex = speedReaderWord.globalIndex
-            )
-        }
-    }
+    // Lazy load word conversions only when sheet is actually shown to avoid blocking main thread on initial load
+    var allWords by remember { mutableStateOf<List<WordPosition>>(emptyList()) }
+    var paragraphs by remember { mutableStateOf<List<WordParagraph>>(emptyList()) }
 
-    // Group words by paragraph (textIndex)
-    val paragraphs: List<WordParagraph> = remember(allWords) {
-        allWords.groupBy { it: WordPosition -> it.textIndex }
-            .map { (textIndex: Int, words: List<WordPosition>) -> WordParagraph(textIndex, words) }
-            .sortedBy { it: WordParagraph -> it.textIndex }
+    LaunchedEffect(show, words) {
+        if (show && words.isNotEmpty()) {
+            allWords = words.map { speedReaderWord ->
+                WordPosition(
+                    word = speedReaderWord.text,
+                    textIndex = speedReaderWord.paragraphIndex,
+                    wordIndexInText = 0,
+                    globalWordIndex = speedReaderWord.globalIndex
+                )
+            }
+            paragraphs = allWords
+                .groupBy { it: WordPosition -> it.textIndex }
+                .map { (textIndex: Int, words: List<WordPosition>) -> WordParagraph(textIndex, words) }
+                .sortedBy { it: WordParagraph -> it.textIndex }
+        }
     }
 
     // Current word index is passed directly
@@ -196,48 +198,26 @@ fun SpeedReadingWordPickerSheet(
         }
     }
 
-    // Update selectedWord when user scrolls (but not when dragging slider and not during initial open)
-    LaunchedEffect(isDraggingSlider, scrolledRefreshKey, currentWordScrollIndex) {
-        if (!isDraggingSlider) {
-            snapshotFlow { listState.firstVisibleItemIndex }
-                .debounce(150)
-                .collect { visibleIndex ->
-                    // Only update if:
-                    // 1. Initial scroll is complete (scrolledRefreshKey matches current refreshKey)
-                    // 2. We've scrolled away from the current word's paragraph
-                    val initialScrollComplete = (scrolledRefreshKey >= refreshKey)
-                    val scrolledAwayFromCurrent = currentWordScrollIndex >= 0 && visibleIndex != currentWordScrollIndex
-
-                    if (visibleIndex in paragraphs.indices && initialScrollComplete && scrolledAwayFromCurrent) {
-                        val firstWord = paragraphs[visibleIndex].words.firstOrNull()
-                        if (firstWord != null) {
-                            selectedWord = firstWord
-                        }
-                    }
-                }
-        }
-    }
 
 
-    // Scroll to current word when sheet opens (refreshKey changes)
-    LaunchedEffect(refreshKey) {
-        // Only scroll if this is a fresh sheet open (refreshKey changed)
+    // Scroll to current word when sheet opens (refreshKey changes) and paragraphs are loaded
+    LaunchedEffect(refreshKey, paragraphs) {
+        // Only scroll if this is a fresh sheet open (refreshKey changed) AND paragraphs are populated
         // Don't re-scroll when user changes selection
-        if (refreshKey > scrolledRefreshKey) {
+        if (refreshKey > scrolledRefreshKey && paragraphs.isNotEmpty()) {
             // Small delay to ensure sheet is fully rendered
             delay(100)
             currentWordPosition?.let { position: WordPosition ->
                 val paragraphIndex = paragraphs.indexOfFirst { paragraph: WordParagraph -> paragraph.textIndex == position.textIndex }
                 if (paragraphIndex >= 0) {
-                    listState.animateScrollToItem(paragraphIndex)
-                    // Wait for scroll to complete, then mark as done
-                    scope.launch {
-                        delay(300)
-                        scrolledRefreshKey = refreshKey
-                    }
+                    listState.scrollToItem(paragraphIndex)
+                    scrolledRefreshKey = refreshKey
                 } else {
                     scrolledRefreshKey = refreshKey
                 }
+            } ?: run {
+                // Mark as done even if currentWordPosition is null to avoid repeated attempts
+                scrolledRefreshKey = refreshKey
             }
         }
     }

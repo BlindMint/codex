@@ -40,8 +40,6 @@ class SpeedReaderModel @Inject constructor(
     // Progress tracking
     val currentProgress = mutableFloatStateOf(0f)
     val currentWordIndex = mutableIntStateOf(0)
-    private var lastSavedProgress = 0f
-    private var lastDatabaseSaveWordIndex = 0
 
     fun loadBook(bookId: Int, activity: Activity, onError: () -> Unit) {
         viewModelScope.launch {
@@ -110,6 +108,18 @@ class SpeedReaderModel @Inject constructor(
                         Log.d("SPEED_READER_LOAD", "[6]   totalWords = ${loadedWords.size}")
                         Log.d("SPEED_READER_LOAD", "[6]   loadedBook.speedReaderWordIndex = ${loadedBook.speedReaderWordIndex}")
 
+                        // Save total words to database if not already saved or if it differs
+                        if (loadedBook.speedReaderTotalWords != loadedWords.size) {
+                            viewModelScope.launch {
+                                try {
+                                    bookRepository.updateSpeedReaderTotalWords(updatedBook.id, loadedWords.size)
+                                    Log.d("SPEED_READER_LOAD", "[6] Saved totalWords to database: ${loadedWords.size}")
+                                } catch (e: Exception) {
+                                    Log.e("SPEED_READER_LOAD", "[6] Failed to save totalWords to database", e)
+                                }
+                            }
+                        }
+
                         val initialIndex = loadedBook.speedReaderWordIndex.coerceIn(0, loadedWords.size - 1)
                         Log.d("SPEED_READER_LOAD", "[6]   coerced initialIndex = $initialIndex (range: 0-${loadedWords.size - 1})")
 
@@ -141,20 +151,12 @@ class SpeedReaderModel @Inject constructor(
         }
     }
 
-    fun updateProgress(progress: Float, wordIndex: Int, forceSave: Boolean = false) {
+    fun updateProgress(progress: Float, wordIndex: Int) {
         viewModelScope.launch {
-            Log.d("SPEED_READER", "Model updateProgress: progress=$progress, wordIndex=$wordIndex, forceSave=$forceSave, lastSaved=$lastDatabaseSaveWordIndex")
-            // Always update UI state immediately for smooth progress bar
+            Log.d("SPEED_READER", "Model updateProgress: progress=$progress, wordIndex=$wordIndex")
             currentProgress.floatValue = progress
             currentWordIndex.intValue = wordIndex
-
-            // Save to database every 50+ words during reading, or immediately for manual pauses
-            val wordsSinceLastSave = wordIndex - lastDatabaseSaveWordIndex
-            Log.d("SPEED_READER", "Model wordsSinceLastSave=$wordsSinceLastSave, willSave=${forceSave || wordsSinceLastSave >= 50}")
-            if (forceSave || wordsSinceLastSave >= 50) {
-                saveProgressToDatabase(progress)
-                lastDatabaseSaveWordIndex = wordIndex
-            }
+            saveProgressToDatabase(progress)
         }
     }
 
@@ -166,8 +168,6 @@ class SpeedReaderModel @Inject constructor(
             try {
                 bookRepository.updateSpeedReaderProgress(currentBook.id, wordIndex)
                 Log.d("SPEED_READER", "Successfully saved speed reader progress to database: wordIndex=$wordIndex")
-                lastSavedProgress = progress
-                lastDatabaseSaveWordIndex = wordIndex
             } catch (e: Exception) {
                 Log.e("SPEED_READER", "Failed to save speed reader progress to database", e)
             }
@@ -176,7 +176,6 @@ class SpeedReaderModel @Inject constructor(
 
     fun onLeave() {
         viewModelScope.launch {
-            // Always save final progress, even if < 50 words since last save
             saveProgressToDatabase(currentProgress.floatValue)
         }
     }

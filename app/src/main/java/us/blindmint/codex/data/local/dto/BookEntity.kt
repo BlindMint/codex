@@ -28,6 +28,7 @@ data class BookEntity(
     // Speed reader progress (separate from normal reader)
     val speedReaderWordIndex: Int = 0,
     val speedReaderHasBeenOpened: Boolean = false,
+    val speedReaderTotalWords: Int = 0,
     val image: String? = null,
     val category: Category = Category.PLANNING, // TODO: remove when UI updated
     val tags: List<String> = emptyList(),

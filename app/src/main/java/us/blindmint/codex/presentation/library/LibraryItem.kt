@@ -147,9 +147,12 @@ fun LibraryItem(
 
                 // Speed reader progress (top-right, only if opened)
                 if (book.data.speedReaderHasBeenOpened) {
-                    val speedProgress = remember(book.data.speedReaderWordIndex) {
-                        // Placeholder calculation - in practice you'd calculate based on total words
-                        "${(book.data.speedReaderWordIndex / 1000f * 100).toInt()}%"
+                    val speedProgress = remember(book.data.speedReaderWordIndex, book.data.speedReaderTotalWords) {
+                        if (book.data.speedReaderTotalWords > 0) {
+                            "${(book.data.speedReaderWordIndex.toFloat() / book.data.speedReaderTotalWords * 100).toInt()}%"
+                        } else {
+                            "0%"
+                        }
                     }
 
                     Row(

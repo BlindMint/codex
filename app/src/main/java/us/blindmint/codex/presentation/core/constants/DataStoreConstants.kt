@@ -154,4 +154,5 @@ object DataStoreConstants {
     val SPEED_READING_FOCUS_INDICATORS = stringPreferencesKey("speed_reading_focus_indicators")
     val SPEED_READING_CUSTOM_FONT_ENABLED = booleanPreferencesKey("speed_reading_custom_font_enabled")
     val SPEED_READING_SELECTED_FONT_FAMILY = stringPreferencesKey("speed_reading_selected_font_family")
+    val SPEED_READING_KEEP_SCREEN_ON = booleanPreferencesKey("speed_reading_keep_screen_on")
 }
