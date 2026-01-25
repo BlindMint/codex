@@ -362,6 +362,11 @@ class BookRepositoryImpl @Inject constructor(
         database.markSpeedReaderOpened(bookId)
     }
 
+    override suspend fun updateSpeedReaderTotalWords(bookId: Int, totalWords: Int) {
+        Log.d("SPEED_READER_DB", "Updating speed reader total words: bookId=$bookId, totalWords=$totalWords")
+        database.updateSpeedReaderTotalWords(bookId, totalWords)
+    }
+
     override suspend fun canResetCover(bookId: Int): Boolean {
         // Implementation
         val book = database.findBookById(bookId)

@@ -127,16 +127,15 @@ fun SpeedReadingWordPickerDrawer(
         }
     }
 
-    // Panel animation
     val panelAlpha = animateFloatAsState(
         targetValue = if (show) 1f else 0f,
-        animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing),
+        animationSpec = tween(durationMillis = 180, easing = androidx.compose.animation.core.EaseInOutCubic),
         label = "wordPickerAlpha"
     )
 
     val panelOffset = animateDpAsState(
         targetValue = if (show) 0.dp else 400.dp,
-        animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing),
+        animationSpec = tween(durationMillis = 180, easing = androidx.compose.animation.core.EaseInOutCubic),
         label = "wordPickerOffset"
     )
 

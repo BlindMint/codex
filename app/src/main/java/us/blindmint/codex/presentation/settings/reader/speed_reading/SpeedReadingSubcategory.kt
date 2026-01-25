@@ -116,7 +116,9 @@ fun LazyListScope.SpeedReadingSubcategory(
     customFontEnabled: Boolean = false,
     selectedFontFamily: String = "default",
     onCustomFontChanged: (Boolean) -> Unit = {},
-    onFontFamilyChanged: (String) -> Unit = {}
+    onFontFamilyChanged: (String) -> Unit = {},
+    keepScreenOn: Boolean = true,
+    onKeepScreenOnChange: (Boolean) -> Unit = {}
 ) {
     when (tab) {
         null -> {
@@ -376,20 +378,28 @@ fun LazyListScope.SpeedReadingSubcategory(
                 )
             }
 
-            item {
-                SwitchWithTitle(
-                    selected = osdEnabled,
-                    title = stringResource(id = R.string.speed_reading_playback_controls),
-                    onClick = { onOsdEnabledChange(!osdEnabled) }
-                )
-            }
+             item {
+                 SwitchWithTitle(
+                     selected = osdEnabled,
+                     title = stringResource(id = R.string.speed_reading_playback_controls),
+                     onClick = { onOsdEnabledChange(!osdEnabled) }
+                 )
+             }
 
-            item {
-                SpeedReadingWordSizeOption(
-                    wordSize = wordSize,
-                    onWordSizeChange = onWordSizeChange
-                )
-            }
+             item {
+                 SwitchWithTitle(
+                     selected = keepScreenOn,
+                     title = stringResource(id = R.string.speed_reading_keep_screen_on),
+                     onClick = { onKeepScreenOnChange(!keepScreenOn) }
+                 )
+             }
+
+             item {
+                 SpeedReadingWordSizeOption(
+                     wordSize = wordSize,
+                     onWordSizeChange = onWordSizeChange
+                 )
+             }
 
             // Appearance section (with divider)
             item {

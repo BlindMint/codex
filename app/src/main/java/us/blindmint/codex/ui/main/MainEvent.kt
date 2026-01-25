@@ -149,4 +149,5 @@ sealed class MainEvent {
     data class OnChangeSpeedReadingFocusIndicators(val value: String) : MainEvent()
     data class OnChangeSpeedReadingCustomFontEnabled(val value: Boolean) : MainEvent()
     data class OnChangeSpeedReadingSelectedFontFamily(val value: String) : MainEvent()
+    data class OnChangeSpeedReadingKeepScreenOn(val value: Boolean) : MainEvent()
 }

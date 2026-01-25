@@ -37,14 +37,11 @@ fun BookInfoLayoutInfoProgress(
         "${book.progress.calculateProgress(1)}%"
     }
 
-    // Calculate speed reader progress as word index / total words estimate
-    // Since we don't have total words here, we'll use a placeholder
-    // In a real implementation, you'd want to calculate or store total words
-    val speedProgress = remember(book.speedReaderWordIndex) {
-        if (book.speedReaderWordIndex > 0) {
-            // Placeholder calculation - in practice you'd need total words
-            // For now, just show the word index as a percentage representation
-            "${(book.speedReaderWordIndex / 1000f * 100).toInt()}%" // Rough estimate
+    // Calculate speed reader progress as word index / total words
+    val speedProgress = remember(book.speedReaderWordIndex, book.speedReaderTotalWords) {
+        if (book.speedReaderTotalWords > 0) {
+            val progress = (book.speedReaderWordIndex.toFloat() / book.speedReaderTotalWords * 100).toInt()
+            "$progress%"
         } else {
             "0%"
         }
@@ -87,7 +84,13 @@ fun BookInfoLayoutInfoProgress(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 LinearProgressIndicator(
-                    progress = { (book.speedReaderWordIndex / 1000f).coerceIn(0f, 1f) }, // Placeholder calculation
+                    progress = {
+                        if (book.speedReaderTotalWords > 0) {
+                            (book.speedReaderWordIndex.toFloat() / book.speedReaderTotalWords).coerceIn(0f, 1f)
+                        } else {
+                            0f
+                        }
+                    },
                     trackColor = MaterialTheme.colorScheme.secondaryContainer.copy(0.7f),
                     modifier = Modifier
                         .weight(1f)

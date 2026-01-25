@@ -858,6 +858,8 @@
     <string name="speed_reading_osd">OSD</string>
     <string name="speed_reading_osd_height">OSD height</string>
     <string name="speed_reading_osd_separation">OSD separation</string>
+    <string name="speed_reading_keep_screen_on">Keep screen on</string>
+
 
     <string name="delete_bookmark_content_desc">Delete bookmark</string>
     <string name="more_content_desc">More</string>

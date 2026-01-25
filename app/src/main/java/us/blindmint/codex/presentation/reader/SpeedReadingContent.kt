@@ -218,25 +218,16 @@ fun SpeedReadingContent(
         }
     }
 
-    // Periodic progress tracking - save every 50 words during playback only (for crash recovery)
-    LaunchedEffect(isPlaying, currentWordIndex) {
-        val globalWordIndex = startingWordIndex + currentWordIndex
-        val wordsSinceLastSave = globalWordIndex - lastProgressSaveIndex
-
-        // Only auto-save during playback (every 50 words) for crash recovery
-        // Manual pauses are handled separately with immediate saves (no throttling)
-        val shouldSave = isPlaying && wordsSinceLastSave >= 50
-
-        if (shouldSave && totalWords > 0 && wordsSinceLastSave > 0) {
-            // Store precise word-based progress - normal reader will convert when loading
+    // Save progress on manual navigation (every word), but not during playback
+    LaunchedEffect(currentWordIndex) {
+        if (totalWords > 0 && !isPlaying) {
+            val globalWordIndex = startingWordIndex + currentWordIndex
             val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-            Log.d("SPEED_READER", "Auto-saving progress: globalWordIndex=$globalWordIndex, totalWords=$totalWords, newProgress=$newProgress")
             onProgressUpdate(newProgress, globalWordIndex)
-            lastProgressSaveIndex = globalWordIndex
         }
     }
 
-    // Save progress when pausing via OSD or other means
+    // Save progress on pause (during playback)
     var wasPlaying by remember { mutableStateOf(false) }
     LaunchedEffect(isPlaying) {
         if (wasPlaying && !isPlaying && words.isNotEmpty()) {

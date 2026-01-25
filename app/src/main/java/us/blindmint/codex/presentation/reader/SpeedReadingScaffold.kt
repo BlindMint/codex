@@ -93,7 +93,8 @@ fun SpeedReadingScaffold(
     onNavigateWord: (Int) -> Unit,
     onChangeProgress: (Float, Int) -> Unit = { _, _ -> },
     onSaveProgress: (Float, Int) -> Unit = { _, _ -> },
-    onPlayPause: () -> Unit = {}
+    onPlayPause: () -> Unit = {},
+    keepScreenOn: Boolean = true
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
@@ -142,21 +143,21 @@ fun SpeedReadingScaffold(
         realTimeProgress = currentProgress
     }
 
-    // Control system bar visibility and screen timeout based on play state
-    LaunchedEffect(isPlaying) {
+    // Control system bar visibility and screen timeout based on play state and keep screen on setting
+    LaunchedEffect(isPlaying, keepScreenOn) {
         val window = activity.window
         val insetsController = WindowCompat.getInsetsController(window, window.decorView)
         insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
-        if (isPlaying) {
+        if (isPlaying && keepScreenOn) {
             // Hide system bars when playing for immersive reading
             insetsController.hide(WindowInsetsCompat.Type.systemBars())
-            // Keep screen on during playback
+            // Keep screen on during playback if setting is enabled
             window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
             // Show system bars when paused
             insetsController.show(WindowInsetsCompat.Type.systemBars())
-            // Allow screen timeout when paused
+            // Allow screen timeout when paused or setting is disabled
             window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }

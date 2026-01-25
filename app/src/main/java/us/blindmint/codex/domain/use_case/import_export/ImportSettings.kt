@@ -242,7 +242,8 @@ class ImportSettings @Inject constructor(
             DataStoreConstants.PROGRESS_BAR_PADDING.name,
             DataStoreConstants.PROGRESS_BAR_ALIGNMENT.name,
             DataStoreConstants.PROGRESS_BAR_FONT_SIZE.name,
-            DataStoreConstants.PROGRESS_COUNT.name
+            DataStoreConstants.PROGRESS_COUNT.name,
+            DataStoreConstants.SPEED_READING_KEEP_SCREEN_ON.name
             // Note: "colorPresets" is handled separately
         )
         return validKeys.contains(key)

@@ -1025,6 +1025,14 @@ class MainModel @Inject constructor(
                     it.copy(speedReadingSelectedFontFamily = this)
                 }
             )
+
+            is MainEvent.OnChangeSpeedReadingKeepScreenOn -> handleDatastoreUpdate(
+                key = DataStoreConstants.SPEED_READING_KEEP_SCREEN_ON,
+                value = event.value,
+                updateState = {
+                    it.copy(speedReadingKeepScreenOn = this)
+                }
+            )
         }
     }
 

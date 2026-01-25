@@ -56,6 +56,11 @@ interface BookRepository {
         bookId: Int
     )
 
+    suspend fun updateSpeedReaderTotalWords(
+        bookId: Int,
+        totalWords: Int
+    )
+
     suspend fun deleteBooks(
         books: List<Book>
     )

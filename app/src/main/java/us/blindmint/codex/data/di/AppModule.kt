@@ -72,6 +72,7 @@ object AppModule {
                 DatabaseHelper.MIGRATION_17_18, // adds speedReaderWordIndex and speedReaderHasBeenOpened
                 DatabaseHelper.MIGRATION_18_19, // adds totalWordCount
                 DatabaseHelper.MIGRATION_19_20, // removes totalWordCount, summary, remoteUrl, archiveFormat
+                DatabaseHelper.MIGRATION_20_21, // adds speedReaderTotalWords
             )
             .allowMainThreadQueries()
             .build()
