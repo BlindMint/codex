@@ -211,6 +211,7 @@ data class MainState(
     val speedReadingFocusIndicators: String = provideDefaultValue { "OFF" },
     val speedReadingCustomFontEnabled: Boolean = provideDefaultValue { false },
     val speedReadingSelectedFontFamily: String = provideDefaultValue { "default" },
+    val speedReadingKeepScreenOn: Boolean = provideDefaultValue { true },
 ) : Parcelable {
     companion object {
         private fun <D> provideDefaultValue(calculation: () -> D): D {
