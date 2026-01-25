@@ -400,6 +400,12 @@ data class SpeedReadingScreen(
                 // Update model when user confirms new word in picker
                 // Use global word index directly - both reader and picker use same word list
                 speedReaderModel.updateProgress(0f, newWordIndex, forceSave = true)
+            },
+            onChangeProgress = { progress, wordIndex ->
+                speedReaderModel.updateProgress(progress, wordIndex, forceSave = false)
+            },
+            onSaveProgress = { progress, wordIndex ->
+                speedReaderModel.updateProgress(progress, wordIndex, forceSave = true)
             }
         )
 
