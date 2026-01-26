@@ -169,14 +169,13 @@ fun ComicReaderLayout(
     // Store the current logical page for positioning when direction changes
     var storedLogicalPage by remember { mutableIntStateOf(0) }
 
-    // Update stored logical page when current page changes
     LaunchedEffect(currentPage) {
         storedLogicalPage = currentPage
     }
 
     // Position to the same logical page when reading direction changes
     LaunchedEffect(comicReadingDirection, totalPages) {
-        if (totalPages > 0) {
+        if (totalPages > 0 && storedLogicalPage >= 0) {
             val targetPhysicalPage = if (comicReadingDirection == "RTL") {
                 totalPages - 1 - storedLogicalPage
             } else {
@@ -294,16 +293,19 @@ fun ComicReaderLayout(
             // When pages are first loaded, restore to the initial page
             LaunchedEffect(totalPages) {
                 // Only scroll on initial load (when totalPages first becomes > 0)
-                if (initialPage > 0 && initialPage < totalPages) {
+                if (initialPage >= 0 && initialPage < totalPages) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(initialPage)
-                    pagerState.animateScrollToPage(targetPhysicalPage)
+                    pagerState.scrollToPage(targetPhysicalPage)
                 }
             }
 
             // Keep both scroll states in sync with currentPage (the logical source of truth)
             // This ensures seamless transitions when switching between Paged (LTR/RTL) and Webtoon (Vertical).
             // The inactive scroll state is kept synchronized so it's ready if we switch reading modes.
-            LaunchedEffect(currentPage, totalPages, isRTL) {
+            LaunchedEffect(currentPage, totalPages, isRTL, initialLoadComplete) {
+                // Skip initial load to avoid race condition with LaunchedEffect(totalPages) above
+                if (!initialLoadComplete) return@LaunchedEffect
+
                 if (currentPage >= 0 && currentPage < totalPages && totalPages > 0) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(currentPage)
 

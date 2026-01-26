@@ -7,7 +7,6 @@
 package us.blindmint.codex.presentation.reader
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,11 +14,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -47,6 +52,12 @@ fun ComicReaderBottomBar(
 ) {
     if (totalPages <= 0) return
 
+    var sliderValue by remember { mutableFloatStateOf((currentPage + 1).toFloat()) }
+
+    LaunchedEffect(currentPage) {
+        sliderValue = (currentPage + 1).toFloat()
+    }
+
     Column(
         Modifier
             .fillMaxWidth()
@@ -58,10 +69,10 @@ fun ComicReaderBottomBar(
     ) {
         Spacer(Modifier.height(16.dp))
 
-        // Progress text at top
-        val percentage = ((currentPage + 1).toFloat() / totalPages * 100).toInt()
+        val displayPage = sliderValue.toInt().coerceIn(1, totalPages)
+        val percentage = ((displayPage).toFloat() / totalPages * 100).toInt()
         StyledText(
-            text = "$percentage% (${currentPage + 1}/$totalPages)",
+            text = "$percentage% ($displayPage/$totalPages)",
             style = MaterialTheme.typography.titleLarge.copy(
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -69,7 +80,6 @@ fun ComicReaderBottomBar(
 
         Spacer(Modifier.height(12.dp))
 
-        // Interactive slider
         val layoutDirection = if (comicReadingDirection == "RTL") LayoutDirection.Rtl else LayoutDirection.Ltr
 
         CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
@@ -80,11 +90,14 @@ fun ComicReaderBottomBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Slider(
-                    value = (currentPage + 1).toFloat(), // 1-based for display
+                    value = sliderValue,
                     valueRange = 1f..totalPages.toFloat(),
-                    onValueChange = { newValue ->
-                        val newPage = newValue.toInt() - 1 // Convert back to 0-based
-                        onPageSelected(newPage)
+                    onValueChange = {},
+                    onValueChangeFinished = {
+                        val newPage = sliderValue.toInt().coerceIn(1, totalPages) - 1
+                        if (newPage != currentPage) {
+                            onPageSelected(newPage)
+                        }
                     },
                     modifier = Modifier.weight(1f),
                     colors = SliderDefaults.colors(
