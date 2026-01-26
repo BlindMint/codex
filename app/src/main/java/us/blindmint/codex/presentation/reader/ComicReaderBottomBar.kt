@@ -15,11 +15,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -28,6 +34,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import us.blindmint.codex.domain.util.HorizontalAlignment
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.util.noRippleClickable
@@ -46,6 +55,21 @@ fun ComicReaderBottomBar(
     onPageSelected: (Int) -> Unit
 ) {
     if (totalPages <= 0) return
+
+    val scope = rememberCoroutineScope()
+    var pendingPage by remember { mutableStateOf<Int?>(null) }
+    var debounceJob by remember { mutableStateOf<Job?>(null) }
+    val debounceDelay = 100
+
+    LaunchedEffect(pendingPage) {
+        pendingPage?.let { page ->
+            debounceJob?.cancel()
+            debounceJob = scope.launch {
+                delay(debounceDelay.toLong())
+                onPageSelected(page)
+            }
+        }
+    }
 
     Column(
         Modifier
@@ -84,7 +108,7 @@ fun ComicReaderBottomBar(
                     valueRange = 1f..totalPages.toFloat(),
                     onValueChange = { newValue ->
                         val newPage = newValue.toInt() - 1 // Convert back to 0-based
-                        onPageSelected(newPage)
+                        pendingPage = newPage
                     },
                     modifier = Modifier.weight(1f),
                     colors = SliderDefaults.colors(
