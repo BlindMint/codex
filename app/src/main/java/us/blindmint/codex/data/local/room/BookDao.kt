@@ -31,14 +31,8 @@ interface BookDao {
         book: BookEntity
     )
 
-    @Query(
-        """
-        SELECT * FROM bookentity
-        WHERE LOWER(title) LIKE '%' || LOWER(:query) || '%'
-           OR LOWER(COALESCE(description, '')) LIKE '%' || LOWER(:query) || '%'
-    """
-    )
-    suspend fun searchBooks(query: String): List<BookEntity>
+    @Query("SELECT * FROM bookentity")
+    suspend fun getAllBooks(): List<BookEntity>
 
     @Query("SELECT * FROM bookentity WHERE id=:id")
     suspend fun findBookById(id: Int): BookEntity
@@ -161,7 +155,7 @@ interface BookDao {
 
     // Get all books for metadata extraction (used for tags, authors, series, languages)
     @Query("SELECT * FROM bookentity ORDER BY title ASC")
-    suspend fun getAllBooks(): List<BookEntity>
+    suspend fun getAllBooksOrderedByTitle(): List<BookEntity>
 
     // Get publication year range
     @Query("SELECT MIN(publicationDate) as minYear, MAX(publicationDate) as maxYear FROM bookentity WHERE publicationDate IS NOT NULL AND publicationDate > 0")

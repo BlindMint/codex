@@ -26,6 +26,7 @@ import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.file.CachedFileCompat
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.BookWithCover
+import me.xdrop.fuzzywuzzy.FuzzySearch
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.SpeedReaderWord
 import us.blindmint.codex.domain.repository.BookRepository
@@ -102,13 +103,29 @@ class BookRepositoryImpl @Inject constructor(
     /**
      * Get all books matching [query] from database.
      * Empty [query] equals to all books.
+     * Uses fuzzy search to match against title and authors.
      */
     override suspend fun getBooks(query: String): List<Book> {
         Log.i(GET_BOOKS, "Searching for books with query: \"$query\".")
-        val books = database.searchBooks(query)
+        
+        val allBooks = database.getAllBooks()
+        
+        val filteredBooks = if (query.isBlank()) {
+            allBooks
+        } else {
+            allBooks.filter { bookEntity ->
+                // Fuzzy match on title
+                val titleMatch = FuzzySearch.partialRatio(query.lowercase(), bookEntity.title.lowercase()) > 60
+                // Fuzzy match on authors
+                val authorMatch = bookEntity.authors.any { author ->
+                    FuzzySearch.partialRatio(query.lowercase(), author.lowercase()) > 60
+                }
+                titleMatch || authorMatch
+            }
+        }
 
-        Log.i(GET_BOOKS, "Found ${books.size} books.")
-        return books.map { entity ->
+        Log.i(GET_BOOKS, "Found ${filteredBooks.size} books.")
+        return filteredBooks.map { entity ->
             val book = bookMapper.toBook(entity)
             val lastHistory = database.getLatestHistoryForBook(
                 book.id
