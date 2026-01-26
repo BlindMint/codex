@@ -47,7 +47,7 @@ class FileSystemRepositoryImpl @Inject constructor(
         Log.i(GET_FILES, "Getting files from device, query: \"$query\".")
 
         val existingPaths = database
-            .searchBooks("")
+            .getAllBooks()
             .map { it.filePath }
         val supportedExtensions = provideExtensions()
 
