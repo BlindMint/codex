@@ -169,14 +169,13 @@ fun ComicReaderLayout(
     // Store the current logical page for positioning when direction changes
     var storedLogicalPage by remember { mutableIntStateOf(0) }
 
-    // Update stored logical page when current page changes
     LaunchedEffect(currentPage) {
         storedLogicalPage = currentPage
     }
 
     // Position to the same logical page when reading direction changes
     LaunchedEffect(comicReadingDirection, totalPages) {
-        if (totalPages > 0) {
+        if (totalPages > 0 && storedLogicalPage >= 0) {
             val targetPhysicalPage = if (comicReadingDirection == "RTL") {
                 totalPages - 1 - storedLogicalPage
             } else {

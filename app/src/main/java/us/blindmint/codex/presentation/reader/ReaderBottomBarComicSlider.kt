@@ -17,7 +17,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -86,14 +90,25 @@ fun ReaderBottomBarComicSlider(
             if (comicReadingDirection == "RTL") LayoutDirection.Rtl else LayoutDirection.Ltr
         }
 
+        var sliderValue by remember { mutableFloatStateOf((currentPage + 1).toFloat()) }
+
+        LaunchedEffect(currentPage) {
+            sliderValue = (currentPage + 1).toFloat()
+        }
+
         CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
             Slider(
-                value = (currentPage + 1).toFloat(), // 1-based for display
+                value = sliderValue,
                 valueRange = 1f..totalPages.toFloat(),
                 enabled = !lockMenu,
                 onValueChange = { newValue ->
-                    val newPage = newValue.toInt() - 1 // Convert back to 0-based
-                    onPageSelected(newPage)
+                    sliderValue = newValue
+                },
+                onValueChangeFinished = {
+                    val newPage = sliderValue.toInt().coerceIn(1, totalPages) - 1
+                    if (newPage != currentPage) {
+                        onPageSelected(newPage)
+                    }
                 },
                 colors = SliderDefaults.colors(
                     inactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(0.15f),
