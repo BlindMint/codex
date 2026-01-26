@@ -6,6 +6,8 @@
 
 package us.blindmint.codex.domain.import_progress
 
+import android.net.Uri
+
 /**
  * Represents a single import operation tracking its state and progress.
  */
@@ -13,6 +15,7 @@ data class ImportOperation(
     val id: String,
     val folderName: String,
     val folderPath: String,
+    val folderUri: Uri,
     val totalBooks: Int,
     val currentProgress: Int,
     val status: ImportStatus,

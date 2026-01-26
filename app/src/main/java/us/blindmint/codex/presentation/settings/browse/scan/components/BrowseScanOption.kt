@@ -8,6 +8,7 @@ package us.blindmint.codex.presentation.settings.browse.scan.components
 
 import android.content.Context
 import android.content.UriPermission
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
@@ -52,7 +53,11 @@ import us.blindmint.codex.domain.import_progress.ImportOperation
 import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
 import us.blindmint.codex.domain.use_case.book.BulkImportProgress
 import us.blindmint.codex.presentation.core.components.common.StyledText
+import us.blindmint.codex.presentation.core.util.FolderRelationship
+import us.blindmint.codex.presentation.core.util.getAbsoluteFilePath
+import us.blindmint.codex.presentation.core.util.getFolderRelationship
 import us.blindmint.codex.presentation.core.util.noRippleClickable
+import us.blindmint.codex.presentation.core.util.normalize
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.browse.BrowseScreen
 import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
@@ -73,6 +78,11 @@ fun BrowseScanOption() {
 
     var showLocalFolderInfoDialog by remember { mutableStateOf(false) }
     var folderToRemove: android.content.UriPermission? by remember { mutableStateOf(null) }
+    var pendingFolderUri: android.net.Uri? by remember { mutableStateOf(null) }
+    var showNestedFolderDialog by remember { mutableStateOf(false) }
+    var nestedFolderRelationship: FolderRelationship? by remember { mutableStateOf(null) }
+    var pendingFolderName by remember { mutableStateOf("") }
+    var relatedFolderName by remember { mutableStateOf("") }
 
     suspend fun getPersistedUriPermissions(): List<UriPermission> {
         return context.contentResolver?.persistedUriPermissions.let { permissions ->
@@ -111,33 +121,68 @@ fun BrowseScanOption() {
         persistedUriPermissions = getPersistedUriPermissions()
     }
 
+    fun grantFolderPermissionAndImport(uri: Uri, folderName: String, folderPath: String) {
+        coroutineScope.launch {
+            settingsModel.onEvent(
+                SettingsEvent.OnGrantPersistableUriPermission(
+                    uri = uri
+                )
+            )
+            persistedUriPermissions = getPersistedUriPermissions()
+
+            importProgressViewModel.startImport(
+                folderUri = uri,
+                folderName = folderName,
+                folderPath = folderPath,
+                onComplete = {
+                    LibraryScreen.refreshListChannel.trySend(0)
+                }
+            )
+        }
+    }
+
     val persistedUriIntent = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
-        settingsModel.onEvent(
-            SettingsEvent.OnGrantPersistableUriPermission(
-                uri = uri
-            )
-        )
 
-                        coroutineScope.launch {
-                            persistedUriPermissions = getPersistedUriPermissions()
-                        }
-
-        // Start background import using ViewModel
         val permissionFile = DocumentFileCompat.fromUri(context, uri)
         val folderName = permissionFile?.getBasePath(context) ?: "Folder"
         val folderPath = permissionFile?.getRootPath(context) ?: uri.toString()
 
-        importProgressViewModel.startImport(
-            folderUri = uri,
-            folderName = folderName,
-            folderPath = folderPath,
-            onComplete = {
-                LibraryScreen.refreshListChannel.trySend(0) // Refresh Library after import completes
+        coroutineScope.launch {
+            val currentPermissions = getPersistedUriPermissions()
+            val relationship = getFolderRelationship(context, uri, currentPermissions)
+
+            if (relationship == FolderRelationship.UNRELATED) {
+                grantFolderPermissionAndImport(uri, folderName, folderPath)
+            } else {
+                val existingFolder = currentPermissions.firstOrNull { existingPermission ->
+                    val existingUri = existingPermission.uri
+                    val existingPath = existingUri.getAbsoluteFilePath(context)
+                    val newPath = uri.getAbsoluteFilePath(context)
+
+                    if (existingPath != null && newPath != null) {
+                        when (relationship) {
+                            FolderRelationship.EXISTING_IS_PARENT ->
+                                existingPath != newPath && newPath.startsWith("$existingPath/")
+                            FolderRelationship.NEW_IS_PARENT ->
+                                existingPath != newPath && existingPath.startsWith("$newPath/")
+                            FolderRelationship.EQUAL -> existingUri.normalize().toString().equals(uri.normalize().toString(), ignoreCase = true)
+                            FolderRelationship.UNRELATED -> false
+                        }
+                    } else {
+                        false
+                    }
+                }
+
+                pendingFolderUri = uri
+                pendingFolderName = folderName
+                relatedFolderName = existingFolder?.let { DocumentFileCompat.fromUri(context, it.uri)?.getBasePath(context) } ?: "Existing folder"
+                nestedFolderRelationship = relationship
+                showNestedFolderDialog = true
             }
-        )
+        }
     }
 
     Column(
@@ -261,6 +306,28 @@ fun BrowseScanOption() {
             }
         )
     }
+
+    // Warning dialog for nested folder relationships
+    if (showNestedFolderDialog && nestedFolderRelationship != null) {
+        NestedFolderWarningDialog(
+            relationship = nestedFolderRelationship!!,
+            newFolderName = pendingFolderName,
+            existingFolderName = relatedFolderName,
+            onImportAnyway = {
+                val uri = pendingFolderUri ?: return@NestedFolderWarningDialog
+                val folderPath = DocumentFileCompat.fromUri(context, uri)?.getRootPath(context) ?: uri.toString()
+                grantFolderPermissionAndImport(uri, pendingFolderName, folderPath)
+                showNestedFolderDialog = false
+                pendingFolderUri = null
+                nestedFolderRelationship = null
+            },
+            onSkipFolder = {
+                showNestedFolderDialog = false
+                pendingFolderUri = null
+                nestedFolderRelationship = null
+            }
+        )
+    }
 }
 
 @Composable
@@ -277,8 +344,8 @@ private fun BrowseScanFolderItem(
 
     // Find import operation for this folder if one exists
     val currentOperation = importOperations.find { op ->
-        // Match by folder path
-        op.folderPath == permissionFile.getRootPath(context)
+        // Match by folder URI (more reliable than path comparison)
+        op.folderUri == folderUri
     }
 
     Column(
@@ -348,23 +415,9 @@ private fun BrowseScanFolderItem(
             }
         }
 
-        if (currentOperation != null && currentOperation.totalBooks > 0) {
-            StyledText(
-                text = "Importing: ${currentOperation.currentFile}",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = MaterialTheme.colorScheme.primary
-                ),
-                maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Visible
-            )
-        }
-
-        if (currentOperation != null && currentOperation.totalBooks > 0) {
-            LinearProgressIndicator(
-                progress = { currentOperation.currentProgress.toFloat() / currentOperation.totalBooks.toFloat() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp),
+        if (currentOperation != null) {
+            FolderImportProgress(
+                operation = currentOperation
             )
         }
     }

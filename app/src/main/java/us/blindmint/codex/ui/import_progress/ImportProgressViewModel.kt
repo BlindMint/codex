@@ -55,6 +55,7 @@ class ImportProgressService @Inject constructor(
                 id = operationId,
                 folderName = folderName,
                 folderPath = folderPath,
+                folderUri = folderUri,
                 totalBooks = 0,
                 currentProgress = 0,
                 status = ImportStatus.STARTING,
@@ -167,6 +168,7 @@ class ImportProgressService @Inject constructor(
             id = operationId,
             folderName = folderName,
             folderPath = folderPath,
+            folderUri = Uri.EMPTY, // Codex Directory doesn't have a URI
             totalBooks = 0, // Will be updated as progress comes in
             currentProgress = 0,
             status = ImportStatus.STARTING,
@@ -210,6 +212,7 @@ class ImportProgressService @Inject constructor(
                 id = operationId,
                 folderName = folderPath.substringAfterLast("/"),
                 folderPath = folderPath,
+                folderUri = Uri.EMPTY, // Codex Directory doesn't have a URI
                 totalBooks = totalBooks,
                 currentProgress = currentProgress,
                 status = ImportStatus.IN_PROGRESS,
