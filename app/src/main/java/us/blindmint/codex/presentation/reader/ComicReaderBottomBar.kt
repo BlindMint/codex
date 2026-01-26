@@ -7,7 +7,6 @@
 package us.blindmint.codex.presentation.reader
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,12 +17,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -54,14 +52,10 @@ fun ComicReaderBottomBar(
 ) {
     if (totalPages <= 0) return
 
-    val scope = rememberCoroutineScope()
     var sliderValue by remember { mutableFloatStateOf((currentPage + 1).toFloat()) }
-    var isDragging by remember { mutableStateOf(false) }
 
     LaunchedEffect(currentPage) {
-        if (!isDragging) {
-            sliderValue = (currentPage + 1).toFloat()
-        }
+        sliderValue = (currentPage + 1).toFloat()
     }
 
     Column(
@@ -75,7 +69,6 @@ fun ComicReaderBottomBar(
     ) {
         Spacer(Modifier.height(16.dp))
 
-        // Progress text at top
         val displayPage = sliderValue.toInt().coerceIn(1, totalPages)
         val percentage = ((displayPage).toFloat() / totalPages * 100).toInt()
         StyledText(
@@ -87,7 +80,6 @@ fun ComicReaderBottomBar(
 
         Spacer(Modifier.height(12.dp))
 
-        // Interactive slider
         val layoutDirection = if (comicReadingDirection == "RTL") LayoutDirection.Rtl else LayoutDirection.Ltr
 
         CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
@@ -100,14 +92,12 @@ fun ComicReaderBottomBar(
                 Slider(
                     value = sliderValue,
                     valueRange = 1f..totalPages.toFloat(),
-                    onValueChange = { newValue ->
-                        sliderValue = newValue
-                        isDragging = true
-                    },
+                    onValueChange = {},
                     onValueChangeFinished = {
-                        isDragging = false
                         val newPage = sliderValue.toInt().coerceIn(1, totalPages) - 1
-                        onPageSelected(newPage)
+                        if (newPage != currentPage) {
+                            onPageSelected(newPage)
+                        }
                     },
                     modifier = Modifier.weight(1f),
                     colors = SliderDefaults.colors(
