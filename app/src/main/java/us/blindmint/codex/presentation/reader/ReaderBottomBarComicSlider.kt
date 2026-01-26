@@ -51,6 +51,12 @@ fun ReaderBottomBarComicSlider(
 
     if (totalPages <= 0) return
 
+    var sliderValue by remember { mutableFloatStateOf((currentPage + 1).toFloat()) }
+
+    LaunchedEffect(currentPage) {
+        sliderValue = (currentPage + 1).toFloat()
+    }
+
     Column(modifier = modifier) {
         // Progress text display
         if (showProgressBar) {
@@ -61,13 +67,14 @@ fun ReaderBottomBarComicSlider(
                 contentAlignment = progressBarAlignment.alignment
             ) {
                 DisableSelection {
+                    val displayPage = sliderValue.toInt().coerceIn(1, totalPages)
                     val progressText = when (progressCount) {
                         ReaderProgressCount.PERCENTAGE -> {
-                            val percentage = ((currentPage + 1).toFloat() / totalPages * 100).toInt()
+                            val percentage = ((displayPage).toFloat() / totalPages * 100).toInt()
                             "$percentage%"
                         }
-                        ReaderProgressCount.PAGE -> "${currentPage + 1}/$totalPages"
-                        ReaderProgressCount.QUANTITY -> "${currentPage + 1}/$totalPages"
+                        ReaderProgressCount.PAGE -> "$displayPage/$totalPages"
+                        ReaderProgressCount.QUANTITY -> "$displayPage/$totalPages"
                     }
 
                     StyledText(
@@ -85,15 +92,8 @@ fun ReaderBottomBarComicSlider(
         }
 
         // Slider
-        // Use remember with reading direction as a key to force recomposition on direction changes
         val layoutDirection = remember(comicReadingDirection) {
             if (comicReadingDirection == "RTL") LayoutDirection.Rtl else LayoutDirection.Ltr
-        }
-
-        var sliderValue by remember { mutableFloatStateOf((currentPage + 1).toFloat()) }
-
-        LaunchedEffect(currentPage) {
-            sliderValue = (currentPage + 1).toFloat()
         }
 
         CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
