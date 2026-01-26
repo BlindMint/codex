@@ -294,16 +294,19 @@ fun ComicReaderLayout(
             // When pages are first loaded, restore to the initial page
             LaunchedEffect(totalPages) {
                 // Only scroll on initial load (when totalPages first becomes > 0)
-                if (initialPage > 0 && initialPage < totalPages) {
+                if (initialPage >= 0 && initialPage < totalPages) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(initialPage)
-                    pagerState.animateScrollToPage(targetPhysicalPage)
+                    pagerState.scrollToPage(targetPhysicalPage)
                 }
             }
 
             // Keep both scroll states in sync with currentPage (the logical source of truth)
             // This ensures seamless transitions when switching between Paged (LTR/RTL) and Webtoon (Vertical).
             // The inactive scroll state is kept synchronized so it's ready if we switch reading modes.
-            LaunchedEffect(currentPage, totalPages, isRTL) {
+            LaunchedEffect(currentPage, totalPages, isRTL, initialPage) {
+                // Skip initial load to avoid race condition with LaunchedEffect(totalPages) above
+                if (currentPage == initialPage) return@LaunchedEffect
+
                 if (currentPage >= 0 && currentPage < totalPages && totalPages > 0) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(currentPage)
 
