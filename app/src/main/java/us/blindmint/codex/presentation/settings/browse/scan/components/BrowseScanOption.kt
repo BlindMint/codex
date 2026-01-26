@@ -277,8 +277,8 @@ private fun BrowseScanFolderItem(
 
     // Find import operation for this folder if one exists
     val currentOperation = importOperations.find { op ->
-        // Match by folder path
-        op.folderPath == permissionFile.getRootPath(context)
+        // Match by folder URI (more reliable than path comparison)
+        op.folderUri == folderUri
     }
 
     Column(
@@ -348,23 +348,9 @@ private fun BrowseScanFolderItem(
             }
         }
 
-        if (currentOperation != null && currentOperation.totalBooks > 0) {
-            StyledText(
-                text = "Importing: ${currentOperation.currentFile}",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = MaterialTheme.colorScheme.primary
-                ),
-                maxLines = 1,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Visible
-            )
-        }
-
-        if (currentOperation != null && currentOperation.totalBooks > 0) {
-            LinearProgressIndicator(
-                progress = { currentOperation.currentProgress.toFloat() / currentOperation.totalBooks.toFloat() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp),
+        if (currentOperation != null) {
+            FolderImportProgress(
+                operation = currentOperation
             )
         }
     }
