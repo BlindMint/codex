@@ -303,9 +303,9 @@ fun ComicReaderLayout(
             // Keep both scroll states in sync with currentPage (the logical source of truth)
             // This ensures seamless transitions when switching between Paged (LTR/RTL) and Webtoon (Vertical).
             // The inactive scroll state is kept synchronized so it's ready if we switch reading modes.
-            LaunchedEffect(currentPage, totalPages, isRTL, initialPage) {
+            LaunchedEffect(currentPage, totalPages, isRTL, initialLoadComplete) {
                 // Skip initial load to avoid race condition with LaunchedEffect(totalPages) above
-                if (currentPage == initialPage) return@LaunchedEffect
+                if (!initialLoadComplete) return@LaunchedEffect
 
                 if (currentPage >= 0 && currentPage < totalPages && totalPages > 0) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(currentPage)
