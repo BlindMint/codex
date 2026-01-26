@@ -109,7 +109,6 @@ fun FolderImportProgress(
                         ) {
                             ProgressText(
                                 text = "$percentage%",
-                                modifier = Modifier.weight(0f),
                                 color = progressColor,
                                 isMonospace = true
                             )
