@@ -403,10 +403,8 @@ fun ComicReaderLayout(
                                         .fillMaxWidth()
                                         .pointerInput(comicTapZone, showMenu) {
                                             detectTapGestures { offset ->
-                                                // For webtoon, just handle menu toggle on tap
-                                                if (!showMenu) {
-                                                    onMenuToggle()
-                                                }
+                                                // For webtoon, toggle menu on tap regardless of current state
+                                                onMenuToggle()
                                             }
                                         }
                                 )

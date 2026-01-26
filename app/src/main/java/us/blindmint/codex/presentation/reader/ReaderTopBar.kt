@@ -168,17 +168,7 @@ fun ReaderTopBar(
                     }
                 }
 
-                // Bookmarks icon - only for comics
-                if (book.isComic) {
-                    IconButton(
-                        icon = Icons.Rounded.Bookmark,
-                        contentDescription = R.string.bookmarks_content_desc,
-                        disableOnClick = false,
-                        enabled = !lockMenu
-                    ) {
-                        showBookmarksDrawer(ReaderEvent.OnShowBookmarksDrawer)
-                    }
-                }
+
 
 
 
