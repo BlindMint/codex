@@ -15,7 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
-import us.blindmint.codex.presentation.settings.library.tabs.components.LibraryAlwaysShowDefaultTabOption
 import us.blindmint.codex.presentation.settings.library.tabs.components.LibraryShowBookCountOption
 import us.blindmint.codex.presentation.settings.library.tabs.components.LibraryShowCategoryTabsOption
 
@@ -33,10 +32,6 @@ fun LazyListScope.LibraryTabsSubcategory(
     ) {
         item {
             LibraryShowCategoryTabsOption()
-        }
-
-        item {
-            LibraryAlwaysShowDefaultTabOption()
         }
 
         item {

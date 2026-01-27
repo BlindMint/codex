@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import us.blindmint.codex.data.local.dto.BookEntity
 import us.blindmint.codex.data.local.dto.BookProgressHistoryEntity
+import us.blindmint.codex.data.local.dto.HistoryEntity
 import us.blindmint.codex.data.local.room.BookDao
 import us.blindmint.codex.data.mapper.book.BookMapper
 import us.blindmint.codex.data.parser.FileParser
@@ -125,11 +126,14 @@ class BookRepositoryImpl @Inject constructor(
         }
 
         Log.i(GET_BOOKS, "Found ${filteredBooks.size} books.")
+
+        val bookIds = filteredBooks.map { it.id }
+        val histories = database.getLatestHistoryForBooks(bookIds)
+        val historyMap: Map<Int, HistoryEntity?> = histories.groupBy { it.bookId }.mapValues { entry -> entry.value.firstOrNull() }
+
         return filteredBooks.map { entity ->
             val book = bookMapper.toBook(entity)
-            val lastHistory = database.getLatestHistoryForBook(
-                book.id
-            )
+            val lastHistory = historyMap[entity.id]
 
             book.copy(
                 lastOpened = lastHistory?.time

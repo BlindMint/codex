@@ -86,4 +86,9 @@ sealed class SettingsEvent {
     ) : SettingsEvent()
 
     data object OnRemoveCodexRootFolder : SettingsEvent()
+
+    data class OnRemoveFolder(
+        val uri: Uri,
+        val removeBooks: Boolean
+    ) : SettingsEvent()
 }

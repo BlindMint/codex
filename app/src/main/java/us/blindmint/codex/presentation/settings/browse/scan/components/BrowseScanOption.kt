@@ -56,8 +56,8 @@ import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.util.FolderRelationship
 import us.blindmint.codex.presentation.core.util.getAbsoluteFilePath
 import us.blindmint.codex.presentation.core.util.getFolderRelationship
-import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.core.util.normalize
+import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.browse.BrowseScreen
 import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
@@ -65,7 +65,21 @@ import us.blindmint.codex.ui.library.LibraryScreen
 import us.blindmint.codex.ui.settings.SettingsEvent
 import us.blindmint.codex.ui.settings.SettingsModel
 import us.blindmint.codex.ui.theme.dynamicListItemColor
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.RadioButton
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.AlertDialog
+
+private enum class FolderRemovalOption(val description: String) {
+    RemoveBooks("Remove books and folder access"),
+    KeepBooks("Keep books, only remove folder access"),
+    Cancel("Cancel")
+}
 
 @Composable
 fun BrowseScanOption() {
@@ -77,10 +91,10 @@ fun BrowseScanOption() {
     val coroutineScope = rememberCoroutineScope()
 
     var showLocalFolderInfoDialog by remember { mutableStateOf(false) }
-    var folderToRemove: android.content.UriPermission? by remember { mutableStateOf(null) }
-    var pendingFolderUri: android.net.Uri? by remember { mutableStateOf(null) }
+    var folderToRemove by remember { mutableStateOf<UriPermission?>(null) }
+    var pendingFolderUri by remember { mutableStateOf<Uri?>(null) }
     var showNestedFolderDialog by remember { mutableStateOf(false) }
-    var nestedFolderRelationship: FolderRelationship? by remember { mutableStateOf(null) }
+    var nestedFolderRelationship by remember { mutableStateOf<FolderRelationship?>(null) }
     var pendingFolderName by remember { mutableStateOf("") }
     var relatedFolderName by remember { mutableStateOf("") }
 
@@ -273,35 +287,92 @@ fun BrowseScanOption() {
 
     // Confirmation dialog for removing a folder
     if (folderToRemove != null) {
+        var selectedOption by remember { mutableStateOf<FolderRemovalOption?>(null) }
+
         AlertDialog(
-            onDismissRequest = { folderToRemove = null },
-            title = { androidx.compose.material3.Text("Remove Folder") },
+            onDismissRequest = {
+                folderToRemove = null
+                selectedOption = null
+            },
+            title = { Text("Remove Folder") },
             text = {
-                androidx.compose.material3.Text(
-                    "Are you sure you want to remove this folder? " +
-                    "This will remove those books and comics from the library."
-                )
+                Column {
+                    Text(
+                        "What should happen to books in this folder?"
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    FolderRemovalOption.entries.forEach { option ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    selectedOption = if (selectedOption == option) null else option
+                                }
+                                .background(
+                                    color = if (selectedOption == option) {
+                                        MaterialTheme.colorScheme.secondaryContainer
+                                    } else {
+                                        Color.Transparent
+                                    },
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedOption == option,
+                                onClick = { selectedOption = option }
+                            )
+                            Text(text = option.description)
+                        }
+                    }
+                }
             },
             confirmButton = {
-                androidx.compose.material3.TextButton(onClick = {
-                    settingsModel.onEvent(
-                        SettingsEvent.OnReleasePersistableUriPermission(
-                            uri = folderToRemove!!.uri
-                        )
-                    )
+                TextButton(onClick = {
+                    selectedOption?.let { option ->
+                        when (option) {
+                            FolderRemovalOption.RemoveBooks -> {
+                                settingsModel.onEvent(
+                                    SettingsEvent.OnRemoveFolder(
+                                        uri = folderToRemove!!.uri,
+                                        removeBooks = true
+                                    )
+                                )
 
-                    coroutineScope.launch {
-                        persistedUriPermissions = getPersistedUriPermissions()
+                                coroutineScope.launch {
+                                    persistedUriPermissions = getPersistedUriPermissions()
+                                }
+                                BrowseScreen.refreshListChannel.trySend(Unit)
+                            }
+                            FolderRemovalOption.KeepBooks -> {
+                                settingsModel.onEvent(
+                                    SettingsEvent.OnRemoveFolder(
+                                        uri = folderToRemove!!.uri,
+                                        removeBooks = false
+                                    )
+                                )
+
+                                BrowseScreen.refreshListChannel.trySend(Unit)
+                            }
+                            FolderRemovalOption.Cancel -> {
+                            }
+                        }
                     }
-                    BrowseScreen.refreshListChannel.trySend(Unit)
+
                     folderToRemove = null
+                    selectedOption = null
                 }) {
-                    androidx.compose.material3.Text("Remove")
+                    Text("OK")
                 }
             },
             dismissButton = {
-                androidx.compose.material3.TextButton(onClick = { folderToRemove = null }) {
-                    androidx.compose.material3.Text("Cancel")
+                TextButton(onClick = {
+                    folderToRemove = null
+                    selectedOption = null
+                }) {
+                    Text("Cancel")
                 }
             }
         )
