@@ -65,6 +65,46 @@ class OpdsCatalogModel @Inject constructor(
         ).flow.cachedIn(viewModelScope)
     }
 
+    fun createSearchPager(source: OpdsSourceEntity, query: String): Flow<PagingData<OpdsEntry>>? {
+        if (query.isBlank()) return null
+
+        val currentFeed = state.value.feed
+        if (currentFeed == null) return null
+
+        val openSearchLink = currentFeed.links.firstOrNull { link ->
+            link.rel == "search" || link.rel == "opensearchdescription"
+        }
+
+        val searchUrl = if (openSearchLink != null) {
+            openSearchLink.href.replace("{searchTerms}", query)
+        } else {
+            val baseUrl = currentFeed.links.firstOrNull { it.rel == "self" }?.href
+                ?: currentFeed.links.firstOrNull()?.href ?: return null
+            "$baseUrl?q=$query"
+        }
+
+        val username = CredentialEncryptor.decryptCredential(application, source.usernameEncrypted)
+        val password = CredentialEncryptor.decryptCredential(application, source.passwordEncrypted)
+
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                prefetchDistance = 5,
+                enablePlaceholders = false,
+                initialLoadSize = 20,
+                maxSize = 100
+            ),
+            pagingSourceFactory = {
+                OpdsPagingSource(
+                    opdsRepository = opdsRepository,
+                    sourceUrl = searchUrl,
+                    username = username,
+                    password = password
+                )
+            }
+        ).flow.cachedIn(viewModelScope)
+    }
+
     fun loadFeed(source: OpdsSourceEntity, url: String, isDownloadDirectoryAccessible: Boolean = true) {
         android.util.Log.d("OPDS_DEBUG", "loadFeed called for URL: $url")
 
@@ -88,44 +128,14 @@ class OpdsCatalogModel @Inject constructor(
             try {
                 android.util.Log.d("OPDS_DEBUG", "Fetching feed from: $url")
                 val feed = opdsRepository.fetchFeed(url, username, password)
-                val nextPageUrl = feed.links.firstOrNull { it.rel == "next" }?.href
                 android.util.Log.d("OPDS_DEBUG", "Feed loaded successfully: ${feed.entries?.size ?: 0} entries, title: ${feed.title}")
                 _state.value = _state.value.copy(
                     isLoading = false,
-                    feed = feed,
-                    hasNextPage = nextPageUrl != null,
-                    nextPageUrl = nextPageUrl
+                    feed = feed
                 )
             } catch (e: Exception) {
                 android.util.Log.e("OPDS_DEBUG", "Error loading feed from $url", e)
                 _state.value = _state.value.copy(isLoading = false, error = e.message)
-            }
-        }
-    }
-
-    fun loadMore(source: OpdsSourceEntity) {
-        val nextUrl = state.value.nextPageUrl ?: return
-        _state.value = _state.value.copy(isLoadingMore = true)
-        viewModelScope.launch {
-            try {
-                val username = CredentialEncryptor.decryptCredential(application, source.usernameEncrypted)
-                val password = CredentialEncryptor.decryptCredential(application, source.passwordEncrypted)
-                val nextFeed = opdsRepository.loadMore(nextUrl, username, password)
-                val currentFeed = state.value.feed
-                if (currentFeed != null) {
-                    val combinedEntries = currentFeed.entries + nextFeed.entries
-                    val combinedFeed = currentFeed.copy(entries = combinedEntries, links = nextFeed.links)
-
-                    val nextPageUrl = nextFeed.links.firstOrNull { it.rel == "next" }?.href
-                    _state.value = _state.value.copy(
-                        isLoadingMore = false,
-                        feed = combinedFeed,
-                        hasNextPage = nextPageUrl != null,
-                        nextPageUrl = nextPageUrl
-                    )
-                }
-            } catch (e: Exception) {
-                _state.value = _state.value.copy(isLoadingMore = false, error = e.message)
             }
         }
     }

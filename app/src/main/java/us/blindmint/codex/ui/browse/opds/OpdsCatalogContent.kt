@@ -69,6 +69,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.ui.browse.opds.OpdsBooksGrid
+import us.blindmint.codex.ui.browse.opds.OpdsBookDetailsBottomSheet
 import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import us.blindmint.codex.domain.opds.OpdsEntry
 import us.blindmint.codex.presentation.navigator.LocalNavigator
@@ -440,39 +441,13 @@ fun OpdsCatalogContent(
                                     )
                                 }
                             }
-                        }
-                    }
-                }
-
-                // Load More button
-                if (state.hasNextPage && !state.isLoadingMore) {
-                    item {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            OutlinedButton(
-                                onClick = { model.loadMore(source) },
-                                modifier = Modifier.fillMaxWidth(0.8f)
-                            ) {
-                                Text("Load More")
-                            }
-                        }
-                    }
-                }
-
-                // Loading indicator for pagination
-                if (state.isLoadingMore) {
-                    item {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                }
-            }
+                                 }
+                             }
+                         }
+                 }
+             }
+         }
+     }
         }
         }
     }

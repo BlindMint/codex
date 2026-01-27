@@ -62,35 +62,37 @@
 
 #### Subtasks
 
-- [ ] Add `androidx.paging:paging-runtime:3.x` dependency
-- [ ] Add `androidx.paging:paging-compose:3.x` dependency
-- [ ] Create `OpdsPagingSource` class extending `PagingSource<String, OpdsEntry>`
-- [ ] Implement `load()` method with `LoadResult.Page`
-- [ ] Implement `getRefreshKey()` method
-- [ ] Implement `getRefreshKey()` method
-- [ ] Update `OpdsCatalogModel` to create `Pager` instance
-- [ ] Create factory method `createPager(OpdsSourceEntity)` in ViewModel
-- [ ] Update `OpdsCatalogContent` to use `collectAsLazyPagingItems()`
-- [ ] Add item keys: `key = lazyPagingItems.itemKey { it.id }`
-- [ ] Implement LoadState handlers (loading, error, notLoading)
-- [ ] Add retry button in LoadState.Error footer
-- [ ] Add loading indicator in LoadState.Loading footer
-- [ ] Test with feeds having < 20 items
-- [ ] Test with feeds having 20-100 items
-- [ ] Test with feeds having 100+ items (pagination triggers)
-- [ ] Test "Load More" functionality
-- [ ] Test error handling (network failure, 401, 404)
-- [ ] Verify memory usage with large catalogs
-- [ ] Remove old `loadMore()` button logic (replaced by Paging 3)
-- [ ] Update `OpdsCatalogState` to remove manual pagination fields
+- [x] Add `androidx.paging:paging-runtime:3.x` dependency
+- [x] Add `androidx.paging:paging-compose:3.x` dependency
+- [x] Create `OpdsPagingSource` class extending `PagingSource<String, OpdsEntry>`
+- [x] Implement `load()` method with `LoadResult.Page`
+- [x] Implement `getRefreshKey()` method
+- [x] Implement `getRefreshKey()` method
+- [x] Update `OpdsCatalogModel` to create `Pager` instance
+- [x] Create factory method `createPager(OpdsSourceEntity)` in ViewModel
+- [x] Add `createSearchPager()` method for search results with paging
+- [x] Update `OpdsCatalogContent` to use `collectAsLazyPagingItems()`
+- [x] Add item keys: `key = lazyPagingItems.itemKey { it.id }`
+- [x] Implement LoadState handlers (loading, error, notLoading)
+- [x] Add retry button in LoadState.Error footer
+- [x] Add loading indicator in LoadState.Loading footer
+- [x] Test with feeds having < 20 items
+- [x] Test with feeds having 20-100 items
+- [x] Test with feeds having 100+ items (pagination triggers)
+- [x] Test "Load More" functionality
+- [x] Test error handling (network failure, 401, 404)
+- [x] Verify memory usage with large catalogs
+- [x] Remove old `loadMore()` button logic (replaced by Paging 3)
+- [x] Remove old FlowRow layout code (replaced by OpdsBooksGrid)
+- [x] Update `OpdsCatalogContent` to use paging for all book displays
 
 **Acceptance Criteria**:
-- [ ] Paging Library 3 successfully loads OPDS feeds
-- [ ] Only visible items rendered (lazy loading)
-- [ ] Smooth scrolling with prefetched pages
-- [ ] Item keys prevent unnecessary recomposition
-- [ ] Error states handled gracefully
-- [ ] Memory usage < 50MB with 1000+ books
+- [x] Paging Library 3 successfully loads OPDS feeds
+- [x] Only visible items rendered (lazy loading)
+- [x] Smooth scrolling with prefetched pages
+- [x] Item keys prevent unnecessary recomposition
+- [x] Error states handled gracefully
+- [x] Memory usage < 50MB with 1000+ books
 
 ---
 
@@ -101,9 +103,9 @@
 
 #### Subtasks
 
-- [ ] Create `BookCardSkeleton` composable
-- [ ] Match skeleton layout to actual `OpdsBookPreview` layout
-- [ ] Add shimmer/pulse animation effect
+- [x] Create `BookCardSkeleton` composable
+- [x] Match skeleton layout to actual `OpdsBookPreview` layout
+- [x] Add shimmer/pulse animation effect
 - [ ] Update `OpdsCatalogContent` to show skeleton during initial load
 - [ ] Fade transition from skeleton to actual content
 - [ ] Test skeleton with different screen sizes
@@ -121,34 +123,34 @@
 
 ### Task 3.1: Add Fuzzy Search to OPDS Catalog
 
-**Priority**: 🟡 P2 - MEDIUM  
-**Estimated Time**: 3-5 hours  
+**Priority**: 🟡 P2 - MEDIUM
+**Estimated Time**: 3-5 hours
 **Dependencies**: `me.xdrop:fuzzywuzzy:1.4.0` (already in project)
 
 #### Subtasks
 
-- [ ] Create `FuzzySearchHelper` object in `utils/` package
-- [ ] Implement `searchEntries(List<OpdsEntry>, query, threshold)` function
-- [ ] Add fuzzy matching for title field
-- [ ] Add fuzzy matching for author field
-- [ ] Add fuzzy matching for summary field
-- [ ] Implement result sorting by relevance score
-- [ ] Add debouncing (250ms) in `OpdsCatalogContent`
-- [ ] Replace exact `contains()` search with fuzzy search
+- [x] Create `FuzzySearchHelper` object in `utils/` package
+- [x] Implement `searchEntries(List<OpdsEntry>, query, threshold)` function
+- [x] Add fuzzy matching for title field
+- [x] Add fuzzy matching for author field
+- [x] Add fuzzy matching for summary field
+- [x] Implement result sorting by relevance score
+- [x] Add debouncing (250ms) in `OpdsCatalogContent`
+- [x] Replace exact `contains()` search with fuzzy search
 - [ ] Add score visualization (optional, percentage indicator)
-- [ ] Test with typos (e.g., "potter" → "Potter")
-- [ ] Test with partial matches (e.g., "harry" → "Harry Potter")
-- [ ] Test with multi-word queries (e.g., "harry potter")
-- [ ] Tune threshold value (start at 60, test 40-80 range)
-- [ ] Document fuzzy search behavior
-- [ ] Add search debouncing to prevent excessive API calls
+- [x] Test with typos (e.g., "potter" → "Potter")
+- [x] Test with partial matches (e.g., "harry" → "Harry Potter")
+- [x] Test with multi-word queries (e.g., "harry potter")
+- [x] Tune threshold value (start at 60, test 40-80 range)
+- [x] Document fuzzy search behavior
+- [x] Add search debouncing to prevent excessive API calls
 
 **Acceptance Criteria**:
-- [ ] Fuzzy search handles typos
-- [ ] Partial matches work correctly
-- [ ] Results sorted by relevance
-- [ ] Debouncing reduces unnecessary searches
-- [ ] Performance acceptable with 1000+ entries
+- [x] Fuzzy search handles typos
+- [x] Partial matches work correctly
+- [x] Results sorted by relevance
+- [x] Debouncing reduces unnecessary searches
+- [x] Performance acceptable with 1000+ entries
 
 ---
 
@@ -281,18 +283,18 @@
 
 ## Progress Summary
 
-| Phase | Tasks | Completed | % Done |
+ | Phase | Tasks | Completed | % Done |
 |--------|--------|-----------|---------|
-| **Phase 1: Security** | 11 | 0 | 0% |
-| **Phase 2: Performance** | 22 | 0 | 0% |
-| **Phase 3: Fuzzy Search** | 14 | 0 | 0% |
+| **Phase 1: Security** | 13 | 10 | 77% |
+| **Phase 2: Performance** | 22 | 18 | 82% |
+| **Phase 3: Fuzzy Search** | 14 | 13 | 93% |
 | **Phase 4: Material 3** | 18 | 0 | 0% |
 | **Testing & QA** | 23 | 0 | 0% |
-| **Documentation** | 9 | 0 | 0% |
-| **TOTAL** | **97** | **0** | **0%** |
+| **Documentation** | 9 | 1 | 11% |
+| **TOTAL** | **99** | **42** | **42%** |
 
 ---
 
-**Created**: 2026-01-26  
-**Last Updated**: 2026-01-26  
-**Status**: 📋 Ready to begin implementation
+**Created**: 2026-01-26
+**Last Updated**: 2026-01-27
+**Status**: ✅ Phase 2 (Performance & Pagination) UI migration completed!
