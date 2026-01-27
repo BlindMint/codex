@@ -225,4 +225,8 @@ dependencies {
 
     // Credential encryption (EncryptedSharedPreferences - simpler approach)
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    // Paging Library 3 for efficient list rendering
+    implementation("androidx.paging:paging-runtime:3.3.0")
+    implementation("androidx.paging:paging-compose:3.3.0")
 }

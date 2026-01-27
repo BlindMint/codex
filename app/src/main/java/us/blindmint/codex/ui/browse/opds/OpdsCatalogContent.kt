@@ -63,10 +63,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import us.blindmint.codex.ui.browse.opds.OpdsBooksGrid
 import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import us.blindmint.codex.domain.opds.OpdsEntry
 import us.blindmint.codex.presentation.navigator.LocalNavigator
@@ -79,6 +79,7 @@ import us.blindmint.codex.ui.library.LibraryScreen
 import us.blindmint.codex.ui.settings.BrowseSettingsScreen
 import us.blindmint.codex.ui.settings.opds.download.OpdsDownloadModel
 import java.net.URI
+import us.blindmint.codex.utils.FuzzySearchHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,6 +102,10 @@ fun OpdsCatalogContent(
     var showDetailsBottomSheet by remember { mutableStateOf(false) }
     var showSearch by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+
+    LaunchedEffect(searchQuery) {
+        delay(250)
+    }
 
     val focusRequester = remember { androidx.compose.ui.focus.FocusRequester() }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -368,11 +373,7 @@ fun OpdsCatalogContent(
                  android.util.Log.d("OPDS_DEBUG", "Books found: ${allBooks.size}")
 
                 val books = if (showSearch && searchQuery.isNotBlank()) {
-                    allBooks.filter { entry ->
-                        entry.title?.contains(searchQuery, ignoreCase = true) == true ||
-                        entry.author?.contains(searchQuery, ignoreCase = true) == true ||
-                        entry.summary?.contains(searchQuery, ignoreCase = true) == true
-                    }
+                    FuzzySearchHelper.searchEntries(allBooks, searchQuery)
                 } else allBooks
 
                 if (categories.isNotEmpty()) {
@@ -576,6 +577,232 @@ private fun OpdsCategoryItem(
             text = entry.title ?: "No title",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+fun OpdsCatalogWithPagingScreen(
+    source: OpdsSourceEntity,
+    url: String?,
+    title: String?,
+    navigateBack: () -> Unit
+) {
+    val model = hiltViewModel<OpdsCatalogModel>()
+    val lazyPagingItems = model.createPager(source, url).collectAsLazyPagingItems()
+    val scope = rememberCoroutineScope()
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(top = 0.dp, bottom = 16.dp)
+    ) {
+        // Categories section (unchanged)
+        val allCategories = state.feed?.entries?.filter { entry ->
+            val hasNavigationLinks = entry.links.any { link ->
+                link.rel == "subsection" ||
+                link.rel == "http://opds-spec.org/subsection" ||
+                link.type?.startsWith("application/atom+xml") == true ||
+                (link.rel != null && link.rel != "http://opds-spec.org/acquisition" &&
+                 link.rel != "http://opds-spec.org/image/thumbnail" &&
+                 link.rel != "self" && link.rel != "alternate")
+            }
+            val hasAcquisitionLinks = entry.links.any { it.rel == "http://opds-spec.org/acquisition" }
+            val hasSelfReferencingLinks = entry.links.any { link ->
+                link.href?.let { href ->
+                    val resolvedUrl = runCatching {
+                        URI(source.url).resolve(href).toString()
+                    }.getOrNull()
+                    resolvedUrl != null && (
+                        resolvedUrl == state.feedUrl ||
+                        state.feedUrl?.startsWith(resolvedUrl) == true
+                    )
+                } ?: false
+            }
+
+            val isCategory = hasNavigationLinks && !hasAcquisitionLinks && !hasSelfReferencingLinks
+
+            isCategory
+        } ?: emptyList()
+
+        val categories = if (showSearch && searchQuery.isNotBlank()) {
+            allCategories.filter { entry ->
+                entry.title?.contains(searchQuery, ignoreCase = true) == true
+            }
+        } else allCategories
+
+        android.util.Log.d("OPDS_DEBUG", "Categories found: ${allCategories.size}")
+        android.util.Log.d("OPDS_DEBUG", "Categories shown: ${categories.size}")
+
+        if (categories.isNotEmpty()) {
+            item {
+                Text(
+                    "Categories",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
+
+            items(categories) { entry ->
+                OpdsCategoryItem(
+                    index = categories.indexOf(entry),
+                    entry = entry,
+                    source = source,
+                    navigator = navigator
+                )
+            }
+        }
+
+        // Books section - use new grid component
+        item {
+            Text(
+                "Books",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
+            )
+        }
+
+        item {
+            OpdsBooksGrid(
+                lazyPagingItems = lazyPagingItems,
+                source = source,
+                onBookClick = { entry ->
+                    selectedEntryForDetails = entry
+                    showDetailsBottomSheet = true
+                },
+                onBookLongClick = { entry ->
+                    if (!state.isSelectionMode) {
+                        model.toggleSelectionMode()
+                        model.toggleBookSelection(entry.id)
+                    }
+                },
+                toggleBookSelection = { id ->
+                    model.toggleBookSelection(id)
+                },
+                selectedBooks = state.selectedBooks,
+                isSelectionMode = state.isSelectionMode,
+                username = state.username,
+                password = state.password
+            )
+        }
+
+        if (showDetailsBottomSheet && selectedEntryForDetails != null) {
+            OpdsBookDetailsBottomSheet(
+                entry = selectedEntryForDetails!!,
+                baseUrl = state.feedUrl ?: source.url,
+                isDownloadEnabled = state.isDownloadDirectoryAccessible,
+                onDownload = {
+                    model.downloadBook(selectedEntryForDetails!!, source) {
+                        navigator.push(LibraryScreen, saveInBackStack = false)
+                    }
+                },
+                showDetailsBottomSheet = false,
+                selectedEntryForDetails = null,
+            onDismiss = {
+                showDetailsBottomSheet = false
+                selectedEntryForDetails = null
+            },
+            username = state.username,
+            password = state.password
+        )
+    }
+            val hasAcquisitionLinks = entry.links.any { it.rel == "http://opds-spec.org/acquisition" }
+            val hasSelfReferencingLinks = entry.links.any { link ->
+                link.href?.let { href ->
+                    val resolvedUrl = runCatching {
+                        URI(source.url).resolve(href).toString()
+                    }.getOrNull()
+                    resolvedUrl != null && (
+                        resolvedUrl == state.feedUrl ||
+                        state.feedUrl?.startsWith(resolvedUrl) == true
+                    )
+                } ?: false
+            }
+
+            val isCategory = hasNavigationLinks && !hasAcquisitionLinks && !hasSelfReferencingLinks
+
+            isCategory
+        } ?: emptyList()
+
+        val categories = if (showSearch && searchQuery.isNotBlank()) {
+            allCategories.filter { entry ->
+                entry.title?.contains(searchQuery, ignoreCase = true) == true
+            }
+        } else allCategories
+
+        android.util.Log.d("OPDS_DEBUG", "Categories found: ${allCategories.size}")
+        android.util.Log.d("OPDS_DEBUG", "Categories shown: ${categories.size}")
+
+        if (categories.isNotEmpty()) {
+            item {
+                Text(
+                    "Categories",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
+
+            items(categories) { entry ->
+                OpdsCategoryItem(
+                    index = categories.indexOf(entry),
+                    entry = entry,
+                    source = source,
+                    navigator = navigator
+                )
+            }
+        }
+
+        // Books section - use new grid component
+        item {
+            Text(
+                "Books",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
+            )
+        }
+
+        item {
+            OpdsBooksGrid(
+                lazyPagingItems = lazyPagingItems,
+                source = source,
+                onBookClick = { entry ->
+                    selectedEntryForDetails = entry
+                    showDetailsBottomSheet = true
+                },
+                onBookLongClick = { entry ->
+                    if (!state.isSelectionMode) {
+                        model.toggleSelectionMode()
+                        model.toggleBookSelection(entry.id)
+                    }
+                },
+                toggleBookSelection = { id ->
+                    model.toggleBookSelection(id)
+                },
+                selectedBooks = state.selectedBooks,
+                isSelectionMode = state.isSelectionMode,
+                username = state.username,
+                password = state.password
+            )
+        }
+    }
+
+    if (showDetailsBottomSheet && selectedEntryForDetails != null) {
+        OpdsBookDetailsBottomSheet(
+            entry = selectedEntryForDetails!!,
+            baseUrl = state.feedUrl ?: source.url,
+            isDownloadEnabled = state.isDownloadDirectoryAccessible,
+            onDownload = {
+                model.downloadBook(selectedEntryForDetails!!, source) {
+                    navigator.push(LibraryScreen, saveInBackStack = false)
+                }
+                showDetailsBottomSheet = false
+                selectedEntryForDetails = null
+            },
+            onDismiss = {
+                showDetailsBottomSheet = false
+                selectedEntryForDetails = null
+            },
+            username = state.username,
+            password = state.password
         )
     }
 }

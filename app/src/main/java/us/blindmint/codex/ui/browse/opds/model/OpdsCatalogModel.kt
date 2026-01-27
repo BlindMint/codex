@@ -8,12 +8,17 @@ package us.blindmint.codex.ui.browse.opds.model
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import android.content.Context
 import us.blindmint.codex.data.local.dto.OpdsSourceEntity
+import us.blindmint.codex.data.paging.OpdsPagingSource
 import us.blindmint.codex.data.security.CredentialEncryptor
 import us.blindmint.codex.domain.opds.OpdsEntry
 import us.blindmint.codex.domain.opds.OpdsFeed
@@ -22,6 +27,7 @@ import us.blindmint.codex.domain.repository.OpdsRepository
 import us.blindmint.codex.domain.use_case.opds.ImportOpdsBookUseCase
 import javax.inject.Inject
 import dagger.hilt.android.qualifiers.ApplicationContext
+import androidx.paging.PagingData
 
 @HiltViewModel
 class OpdsCatalogModel @Inject constructor(
@@ -33,6 +39,31 @@ class OpdsCatalogModel @Inject constructor(
 
     private val _state = MutableStateFlow(OpdsCatalogState())
     val state = _state.asStateFlow()
+
+    fun createPager(source: OpdsSourceEntity, feedUrl: String? = null): Flow<PagingData<OpdsEntry>> {
+        val url = feedUrl ?: source.url
+
+        val username = CredentialEncryptor.decryptCredential(application, source.usernameEncrypted)
+        val password = CredentialEncryptor.decryptCredential(application, source.passwordEncrypted)
+
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                prefetchDistance = 5,
+                enablePlaceholders = false,
+                initialLoadSize = 20,
+                maxSize = 100
+            ),
+            pagingSourceFactory = {
+                OpdsPagingSource(
+                    opdsRepository = opdsRepository,
+                    sourceUrl = url,
+                    username = username,
+                    password = password
+                )
+            }
+        ).flow.cachedIn(viewModelScope)
+    }
 
     fun loadFeed(source: OpdsSourceEntity, url: String, isDownloadDirectoryAccessible: Boolean = true) {
         android.util.Log.d("OPDS_DEBUG", "loadFeed called for URL: $url")

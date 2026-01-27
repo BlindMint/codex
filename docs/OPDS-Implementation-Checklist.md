@@ -50,6 +50,8 @@
 
 ---
 
+---
+
 ## Phase 2: Performance & Pagination (HIGH) ⚡
 
 ### Task 2.1: Implement Paging Library 3 for OPDS Catalog
