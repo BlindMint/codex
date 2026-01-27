@@ -25,6 +25,7 @@ import us.blindmint.codex.domain.opds.OpdsFeed
 import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.repository.OpdsRepository
 import us.blindmint.codex.domain.use_case.opds.ImportOpdsBookUseCase
+import us.blindmint.codex.ui.library.LibraryScreen
 import javax.inject.Inject
 import dagger.hilt.android.qualifiers.ApplicationContext
 import androidx.paging.PagingData
@@ -262,16 +263,13 @@ class OpdsCatalogModel @Inject constructor(
             var completed = 0
             val total = selectedEntries.size
 
-            for (entry in selectedEntries) {
+            selectedEntries.forEachIndexed { index, entry ->
                 try {
                     val bookWithCover = importOpdsBookUseCase(
                         opdsEntry = entry,
                         sourceUrl = source.url,
                         username = username,
-                        password = password,
-                        onProgress = { progress ->
-                            _state.value = _state.value.copy(downloadProgress = progress)
-                        }
+                        password = password
                     )
                     if (bookWithCover != null) {
                         bookRepository.insertBook(bookWithCover)
@@ -286,6 +284,7 @@ class OpdsCatalogModel @Inject constructor(
             }
 
             _state.value = _state.value.copy(isDownloading = false, downloadProgress = 0f, selectedBooks = emptySet(), isSelectionMode = false)
+            LibraryScreen.refreshListChannel.trySend(0)
             onComplete()
         }
     }
