@@ -16,9 +16,7 @@ import us.blindmint.codex.domain.library.category.Category
 import us.blindmint.codex.domain.ui.UIText
 import javax.inject.Inject
 
-class PdfFileParser @Inject constructor(
-    private val application: Application
-) : FileParser {
+class PdfFileParser @Inject constructor() : FileParser {
 
     override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
         return try {

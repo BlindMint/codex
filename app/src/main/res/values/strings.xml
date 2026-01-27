@@ -116,6 +116,8 @@
 
     <!-- Action Texts -->
     <string name="cancel">Cancel</string>
+    <string name="remove_books_and_folder_access">Remove books and folder access</string>
+    <string name="keep_books_only_remove_folder_access">Keep books, only remove folder access</string>
     <string name="add">Add</string>
     <string name="add_new">Add new</string>
     <string name="add_book">Add a book</string>

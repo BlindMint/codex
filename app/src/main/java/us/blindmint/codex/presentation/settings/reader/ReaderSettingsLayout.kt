@@ -24,7 +24,9 @@ fun ReaderSettingsLayout(
     paddingValues: PaddingValues
 ) {
     val pagerState = rememberPagerState(pageCount = { ReaderSettingsTab.entries.size })
-    val listState = rememberLazyListState()
+    val booksScrollState = rememberLazyListState()
+    val speedReadingScrollState = rememberLazyListState()
+    val comicsScrollState = rememberLazyListState()
 
     Column(
         modifier = Modifier
@@ -37,14 +39,30 @@ fun ReaderSettingsLayout(
             state = pagerState,
             modifier = Modifier.fillMaxSize()
         ) { page ->
-            LazyColumnWithScrollbar(
-                modifier = Modifier.fillMaxSize(),
-                state = listState
-            ) {
-                when (ReaderSettingsTab.entries[page]) {
-                    ReaderSettingsTab.BOOKS -> BooksReaderSettingsCategory()
-                    ReaderSettingsTab.SPEED_READING -> SpeedReadingReaderSettingsCategory()
-                    ReaderSettingsTab.COMICS -> ComicsReaderSettingsCategory()
+            when (ReaderSettingsTab.entries[page]) {
+                ReaderSettingsTab.BOOKS -> {
+                    LazyColumnWithScrollbar(
+                        modifier = Modifier.fillMaxSize(),
+                        state = booksScrollState
+                    ) {
+                        BooksReaderSettingsCategory()
+                    }
+                }
+                ReaderSettingsTab.SPEED_READING -> {
+                    LazyColumnWithScrollbar(
+                        modifier = Modifier.fillMaxSize(),
+                        state = speedReadingScrollState
+                    ) {
+                        SpeedReadingReaderSettingsCategory()
+                    }
+                }
+                ReaderSettingsTab.COMICS -> {
+                    LazyColumnWithScrollbar(
+                        modifier = Modifier.fillMaxSize(),
+                        state = comicsScrollState
+                    ) {
+                        ComicsReaderSettingsCategory()
+                    }
                 }
             }
         }

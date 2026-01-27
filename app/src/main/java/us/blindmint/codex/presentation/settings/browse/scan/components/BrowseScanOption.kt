@@ -56,8 +56,8 @@ import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.util.FolderRelationship
 import us.blindmint.codex.presentation.core.util.getAbsoluteFilePath
 import us.blindmint.codex.presentation.core.util.getFolderRelationship
-import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.core.util.normalize
+import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.browse.BrowseScreen
 import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
@@ -65,7 +65,21 @@ import us.blindmint.codex.ui.library.LibraryScreen
 import us.blindmint.codex.ui.settings.SettingsEvent
 import us.blindmint.codex.ui.settings.SettingsModel
 import us.blindmint.codex.ui.theme.dynamicListItemColor
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.RadioButton
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.AlertDialog
+
+private enum class FolderRemovalOption(val description: String) {
+    RemoveBooks("Remove books and folder access"),
+    KeepBooks("Keep books, only remove folder access"),
+    Cancel("Cancel")
+}
 
 @Composable
 fun BrowseScanOption() {
@@ -76,17 +90,11 @@ fun BrowseScanOption() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    private enum class FolderRemovalOption(val description: String, val action: String) {
-        RemoveBooks("Remove books and folder access", "remove"),
-        KeepBooks("Keep books, only remove folder access", "keep"),
-        Cancel("Cancel", "cancel")
-    }
-
     var showLocalFolderInfoDialog by remember { mutableStateOf(false) }
-    var folderToRemove: android.content.UriPermission? by remember { mutableStateOf(null) }
-    var pendingFolderUri: android.net.Uri? by remember { mutableStateOf(null) }
+    var folderToRemove by remember { mutableStateOf<UriPermission?>(null) }
+    var pendingFolderUri by remember { mutableStateOf<Uri?>(null) }
     var showNestedFolderDialog by remember { mutableStateOf(false) }
-    var nestedFolderRelationship: FolderRelationship? by remember { mutableStateOf(null) }
+    var nestedFolderRelationship by remember { mutableStateOf<FolderRelationship?>(null) }
     var pendingFolderName by remember { mutableStateOf("") }
     var relatedFolderName by remember { mutableStateOf("") }
 
@@ -325,7 +333,7 @@ fun BrowseScanOption() {
                 TextButton(onClick = {
                     selectedOption?.let { option ->
                         when (option) {
-                            is FolderRemovalOption.RemoveBooks -> {
+                            FolderRemovalOption.RemoveBooks -> {
                                 settingsModel.onEvent(
                                     SettingsEvent.OnRemoveFolder(
                                         uri = folderToRemove!!.uri,
@@ -338,7 +346,7 @@ fun BrowseScanOption() {
                                 }
                                 BrowseScreen.refreshListChannel.trySend(Unit)
                             }
-                            is FolderRemovalOption.KeepBooks -> {
+                            FolderRemovalOption.KeepBooks -> {
                                 settingsModel.onEvent(
                                     SettingsEvent.OnRemoveFolder(
                                         uri = folderToRemove!!.uri,
@@ -348,7 +356,7 @@ fun BrowseScanOption() {
 
                                 BrowseScreen.refreshListChannel.trySend(Unit)
                             }
-                            is FolderRemovalOption.Cancel -> {
+                            FolderRemovalOption.Cancel -> {
                             }
                         }
                     }
@@ -360,24 +368,11 @@ fun BrowseScanOption() {
                 }
             },
             dismissButton = {
-                TextButton(onClick = { 
+                TextButton(onClick = {
                     folderToRemove = null
                     selectedOption = null
                 }) {
                     Text("Cancel")
-                }
-            }
-        )
-    }
-                    BrowseScreen.refreshListChannel.trySend(Unit)
-                    folderToRemove = null
-                }) {
-                    androidx.compose.material3.Text("Remove")
-                }
-            },
-            dismissButton = {
-                androidx.compose.material3.TextButton(onClick = { folderToRemove = null }) {
-                    androidx.compose.material3.Text("Cancel")
                 }
             }
         )

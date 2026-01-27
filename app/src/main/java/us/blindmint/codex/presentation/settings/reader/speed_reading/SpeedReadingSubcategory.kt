@@ -163,13 +163,29 @@ fun LazyListScope.SpeedReadingSubcategory(
                 }
             }
 
+            item {
+                SwitchWithTitle(
+                    selected = autoHideOsd,
+                    title = stringResource(id = R.string.speed_reading_auto_hide_osd),
+                    onClick = { onAutoHideOsdChange(!autoHideOsd) }
+                )
+            }
+
+            item {
+                SwitchWithTitle(
+                    selected = osdEnabled,
+                    title = stringResource(id = R.string.speed_reading_playback_controls),
+                    onClick = { onOsdEnabledChange(!osdEnabled) }
+                )
+            }
+
              item {
-                 SwitchWithTitle(
-                     selected = osdEnabled,
-                     title = stringResource(id = R.string.speed_reading_osd),
-                     onClick = { onOsdEnabledChange(!osdEnabled) }
-                 )
-             }
+                SwitchWithTitle(
+                    selected = keepScreenOn,
+                    title = stringResource(id = R.string.speed_reading_keep_screen_on),
+                    onClick = { onKeepScreenOnChange(!keepScreenOn) }
+                )
+            }
 
              item {
                  SpeedReadingWordSizeOption(
@@ -178,137 +194,18 @@ fun LazyListScope.SpeedReadingSubcategory(
                  )
              }
 
-
-
-            item {
-                SpeedReadingWordSizeOption(
-                    wordSize = wordSize,
-                    onWordSizeChange = onWordSizeChange
-                )
-            }
-
-            // Accent & Indicators
             item {
                 HorizontalDivider()
             }
 
-            // Accent & Indicators
             item {
-                SpeedReadingAccentCharacterOption(
-                    selected = accentCharacterEnabled,
-                    onSelectionChange = onAccentCharacterEnabledChange
-                )
-            }
-
-            // Accent color section (only shown when accent character is enabled)
-            item {
-                AnimatedVisibility(
-                    visible = accentCharacterEnabled,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingColorsOption( // Accent color with RGB sliders and opacity
-                        color = accentColor,
-                        opacity = accentOpacity,
-                        onColorChange = onAccentColorChange,
-                        onOpacityChange = onAccentOpacityChange
-                    )
-                }
+                ColorPresetOption()
             }
 
             item {
-                HorizontalDivider()
+                BackgroundImageOption()
             }
 
-            // Horizontal Bars
-            item {
-                SpeedReadingHorizontalBarsOption(
-                    selected = showHorizontalBars,
-                    onSelectionChange = onShowHorizontalBarsChange
-                )
-            }
-
-            item {
-                AnimatedVisibility(
-                    visible = showHorizontalBars,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingHorizontalBarsThicknessOption(
-                        thickness = horizontalBarsThickness,
-                        onThicknessChange = onHorizontalBarsThicknessChange
-                    )
-                }
-            }
-
-            item {
-                AnimatedVisibility(
-                    visible = showHorizontalBars,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingHorizontalBarLengthOption(
-                        length = horizontalBarsLength,
-                        onLengthChange = onHorizontalBarsLengthChange
-                    )
-                }
-            }
-
-            item {
-                AnimatedVisibility(
-                    visible = showHorizontalBars,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingHorizontalBarsDistanceOption(
-                        distance = horizontalBarsDistance,
-                        onDistanceChange = onHorizontalBarsDistanceChange
-                    )
-                }
-            }
-
-            item {
-                AnimatedVisibility(
-                    visible = showHorizontalBars,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    SpeedReadingHorizontalBarsColorOption(
-                        color = horizontalBarsColor,
-                        opacity = horizontalBarsOpacity,
-                        onColorChange = onHorizontalBarsColorChange,
-                        onOpacityChange = onHorizontalBarsOpacityChange
-                    )
-                }
-            }
-
-            // Focal Point
-            item {
-                SettingsSubcategoryTitle(title = stringResource(id = R.string.speed_reading_focal_point))
-            }
-
-            item {
-                SpeedReadingVerticalIndicatorTypeOption(
-                    selectedType = verticalIndicatorType,
-                    onTypeChange = onVerticalIndicatorTypeChange
-                )
-            }
-
-            item {
-                SpeedReadingVerticalIndicatorsLengthOption(
-                    verticalIndicatorsSize = verticalIndicatorsSize,
-                    onVerticalIndicatorsSizeChange = onVerticalIndicatorsSizeChange
-                )
-            }
-
-            item {
-                SpeedReadingFocalPointPositionOption(
-                    position = focalPointPosition,
-                    onPositionChange = onFocalPointPositionChange
-                )
-            }
-
-            // Font Settings
             item {
                 SpeedReadingCustomFontOption(
                     customFontEnabled = customFontEnabled,

@@ -28,6 +28,8 @@ import us.blindmint.codex.domain.reader.ColorPreset
 import us.blindmint.codex.domain.use_case.book.AutoImportCodexBooksUseCase
 import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
 import us.blindmint.codex.domain.use_case.book.BulkImportProgress
+import us.blindmint.codex.domain.use_case.book.DeleteBooks
+import us.blindmint.codex.domain.use_case.book.GetBooks
 import us.blindmint.codex.domain.use_case.color_preset.DeleteColorPreset
 import us.blindmint.codex.domain.use_case.color_preset.GetColorPresets
 import us.blindmint.codex.domain.use_case.color_preset.ReorderColorPresets
@@ -44,6 +46,7 @@ import us.blindmint.codex.presentation.core.constants.provideDefaultColorPresets
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import us.blindmint.codex.presentation.core.util.showToast
+import us.blindmint.codex.ui.browse.BrowseScreen
 import us.blindmint.codex.ui.import_progress.ImportProgressService
 
 import us.blindmint.codex.ui.library.LibraryScreen
@@ -66,6 +69,8 @@ class SettingsModel @Inject constructor(
     private val setDatastore: SetDatastore,
     val bulkImportBooksFromFolder: BulkImportBooksFromFolder,
     private val autoImportCodexBooksUseCase: AutoImportCodexBooksUseCase,
+    private val getAllBooks: GetBooks,
+    private val deleteBooks: DeleteBooks,
     val codexDirectoryManager: CodexDirectoryManager,
 
 ) : ViewModel() {
@@ -230,7 +235,7 @@ class SettingsModel @Inject constructor(
                 viewModelScope.launch {
                     if (event.removeBooks) {
                         val folderPath = event.uri.path ?: ""
-                        val allBooks = getAllBooks.execute()
+                        val allBooks = getAllBooks.execute("")
                         val booksToRemove = allBooks.filter { it.filePath.startsWith(folderPath) }
 
                         if (booksToRemove.isNotEmpty()) {

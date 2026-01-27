@@ -12,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.Refresh
@@ -88,17 +89,9 @@ fun StorageLocationPicker(
         },
         trailingContent = {
             if (state.codexRootDisplayPath != null) {
-                Row {
-                    IconButton(
-                        onClick = { showRemoveConfirmation = true },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Clear,
-                            contentDescription = "Remove Codex Directory",
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     IconButton(
                         onClick = {
                             state.codexRootDisplayPath?.let { displayPath ->
@@ -113,6 +106,16 @@ fun StorageLocationPicker(
                         Icon(
                             imageVector = Icons.Outlined.Refresh,
                             contentDescription = "Rescan Codex Directory",
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    IconButton(
+                        onClick = { showRemoveConfirmation = true },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Remove Codex Directory",
                             modifier = Modifier.size(20.dp)
                         )
                     }
