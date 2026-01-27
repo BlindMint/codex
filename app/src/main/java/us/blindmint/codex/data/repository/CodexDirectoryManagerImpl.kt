@@ -218,6 +218,28 @@ class CodexDirectoryManagerImpl @Inject constructor(
         }
     }
 
+    override suspend fun createAuthorFolder(authorName: String): DocumentFile? = withContext(Dispatchers.IO) {
+        try {
+            val downloadsDir = getDownloadsDir() ?: return@withContext null
+            val safeName = sanitizeFolderName(authorName)
+
+            val existing = downloadsDir.findFile(safeName)
+            if (existing != null && existing.isDirectory) {
+                Log.i(TAG, "Author folder already exists: $safeName")
+                return@withContext existing
+            }
+
+            val newFolder = downloadsDir.createDirectory(safeName)
+            if (newFolder != null) {
+                Log.i(TAG, "Created author folder: $safeName")
+            }
+            newFolder
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to create author folder: $authorName", e)
+            null
+        }
+    }
+
     /**
      * Sanitizes a folder name by removing invalid filesystem characters.
      */

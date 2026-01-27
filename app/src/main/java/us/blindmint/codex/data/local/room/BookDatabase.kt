@@ -31,7 +31,7 @@ import java.io.File
         BookmarkEntity::class,
         OpdsSourceEntity::class,
     ],
-    version = 23,
+    version = 24,
     exportSchema = false
 )
 abstract class BookDatabase : RoomDatabase() {
@@ -239,6 +239,12 @@ object DatabaseHelper {
         override fun migrate(db: SupportSQLiteDatabase) {
             db.execSQL("ALTER TABLE `OpdsSourceEntity` DROP COLUMN `username`")
             db.execSQL("ALTER TABLE `OpdsSourceEntity` DROP COLUMN `password`")
+        }
+    }
+
+    val MIGRATION_23_24 = object : Migration(23, 24) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `opdsCalibreId` TEXT")
         }
     }
 }

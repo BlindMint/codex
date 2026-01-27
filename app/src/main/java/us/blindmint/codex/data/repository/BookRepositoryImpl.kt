@@ -557,4 +557,15 @@ class BookRepositoryImpl @Inject constructor(
                 .filter { it.opdsSourceId == opdsSourceId }
                 .map { bookEntity -> bookMapper.toBook(bookEntity) }
         }
+
+    /**
+     * Get a book by its Calibre ID.
+     * Returns null if no book with that Calibre ID exists.
+     */
+    override suspend fun getBookByCalibreId(calibreId: String): Book? {
+        val entity = database.findBookByCalibreId(calibreId) ?: return null
+        val book = bookMapper.toBook(entity)
+        val lastHistory = database.getLatestHistoryForBook(book.id)
+        return book.copy(lastOpened = lastHistory?.time)
+    }
 }
