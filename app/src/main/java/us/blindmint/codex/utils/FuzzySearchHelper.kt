@@ -36,38 +36,27 @@ object FuzzySearchHelper {
 
         val queryLower = query.lowercase()
 
-        return entries
-            .mapNotNull { entry ->
-                val titleScore = entry.title?.let { title ->
-                    FuzzySearch.partialRatio(queryLower, title.lowercase())
-                } ?: 0
+        val entryScores = entries.map { entry ->
+            val titleScore = entry.title?.let { title ->
+                FuzzySearch.partialRatio(queryLower, title.lowercase())
+            } ?: 0
 
-                val authorScore = entry.author?.let { author ->
-                    FuzzySearch.partialRatio(queryLower, author.lowercase())
-                } ?: 0
+            val authorScore = entry.author?.let { author ->
+                FuzzySearch.partialRatio(queryLower, author.lowercase())
+            } ?: 0
 
-                val summaryScore = entry.summary?.let { summary ->
-                    FuzzySearch.partialRatio(queryLower, summary.lowercase())
-                } ?: 0
+            val summaryScore = entry.summary?.let { summary ->
+                FuzzySearch.partialRatio(queryLower, summary.lowercase())
+            } ?: 0
 
-                val maxScore = maxOf(titleScore, authorScore, summaryScore)
+            val maxScore = maxOf(titleScore, authorScore, summaryScore)
 
-                maxScore >= threshold
-            }
-            .sortedByDescending { entry ->
-                val entryScore = entry.title?.let { title ->
-                    FuzzySearch.partialRatio(queryLower, title.lowercase())
-                } ?: 0
+            Pair(entry, maxScore)
+        }
 
-                val authorScore = entry.author?.let { author ->
-                    FuzzySearch.partialRatio(queryLower, author.lowercase())
-                } ?: 0
-
-                val summaryScore = entry.summary?.let { summary ->
-                    FuzzySearch.partialRatio(queryLower, summary.lowercase())
-                } ?: 0
-
-                maxOf(entryScore, authorScore, summaryScore)
-            }
+        return entryScores
+            .filter { it.second >= threshold }
+            .sortedByDescending { it.second }
+            .map { it.first }
     }
 }
