@@ -43,6 +43,9 @@ interface BookDao {
     @Query("SELECT * FROM bookentity WHERE filePath=:filePath LIMIT 1")
     suspend fun findBookByFilePath(filePath: String): BookEntity?
 
+    @Query("SELECT * FROM bookentity WHERE opdsCalibreId=:calibreId LIMIT 1")
+    suspend fun findBookByCalibreId(calibreId: String): BookEntity?
+
     @Delete
     suspend fun deleteBooks(books: List<BookEntity>)
 

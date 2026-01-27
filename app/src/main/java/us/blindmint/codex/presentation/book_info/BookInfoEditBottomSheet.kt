@@ -7,6 +7,7 @@
 package us.blindmint.codex.presentation.book_info
 
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -63,7 +64,7 @@ fun BookInfoEditBottomSheet(
 ) {
     val context = LocalContext.current
     val cachedFile = remember(book.filePath) {
-        val uri = Uri.parse(book.filePath)
+        val uri = book.filePath.toUri()
         if (!uri.scheme.isNullOrBlank()) {
             CachedFileCompat.fromUri(context, uri)
         } else {

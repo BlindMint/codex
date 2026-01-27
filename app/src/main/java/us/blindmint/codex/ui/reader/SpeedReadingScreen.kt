@@ -280,6 +280,7 @@ data class SpeedReadingScreen(
         val words = speedReaderModel.words.value
         val totalWords = speedReaderModel.totalWords.intValue
         val isLoading = speedReaderModel.isLoading.value
+        val errorMessage = speedReaderModel.errorMessage.value
 
         Log.d("SPEED_READER_SCREEN", "[COMPOSITION] Rendering SpeedReadingScaffold")
         Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   book.id=${book?.id}, book.title=${book?.title}")
@@ -377,9 +378,10 @@ data class SpeedReadingScreen(
             accentOpacity = speedReadingAccentOpacity.floatValue,
             horizontalBarsColor = speedReadingHorizontalBarsColor.value,
             horizontalBarsOpacity = speedReadingHorizontalBarsOpacity.floatValue,
-            focalPointPosition = screenAwareFocalPointPosition,
-            osdHeight = speedReadingOsdHeight.floatValue,
-            osdSeparation = speedReadingOsdSeparation.floatValue,
+             focalPointPosition = screenAwareFocalPointPosition,
+             osdHeight = speedReadingOsdHeight.floatValue,
+             osdSeparation = speedReadingOsdSeparation.floatValue,
+             errorMessage = errorMessage,
              autoHideOsd = speedReadingAutoHideOsd.value,
              centerWord = speedReadingCenterWord.value,
              focusIndicators = speedReadingFocusIndicators.value,
@@ -402,10 +404,11 @@ data class SpeedReadingScreen(
             onChangeProgress = { progress, wordIndex ->
                 speedReaderModel.updateProgress(progress, wordIndex)
             },
-            onSaveProgress = { progress, wordIndex ->
-                speedReaderModel.updateProgress(progress, wordIndex)
-            }
-        )
+             onSaveProgress = { progress, wordIndex ->
+                 speedReaderModel.updateProgress(progress, wordIndex)
+             },
+             onPlayPause = {}
+         )
 
         // Speed reading settings bottom sheet
         SpeedReadingSettingsBottomSheet(

@@ -10,6 +10,7 @@ import android.app.Application
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -34,7 +35,7 @@ class CodexDirectoryManagerImpl @Inject constructor(
 
     override suspend fun getCodexRootUri(): Uri? = withContext(Dispatchers.IO) {
         val uriString = dataStore.getNullableData(DataStoreConstants.CODEX_ROOT_URI)
-        uriString?.let { Uri.parse(it) }
+        uriString?.toUri()
     }
 
     override suspend fun setCodexRootUri(uri: Uri): Boolean = withContext(Dispatchers.IO) {
@@ -214,6 +215,28 @@ class CodexDirectoryManagerImpl @Inject constructor(
             newFolder
         } catch (e: Exception) {
             Log.e(TAG, "Failed to create book folder: $folderName", e)
+            null
+        }
+    }
+
+    override suspend fun createAuthorFolder(authorName: String): DocumentFile? = withContext(Dispatchers.IO) {
+        try {
+            val downloadsDir = getDownloadsDir() ?: return@withContext null
+            val safeName = sanitizeFolderName(authorName)
+
+            val existing = downloadsDir.findFile(safeName)
+            if (existing != null && existing.isDirectory) {
+                Log.i(TAG, "Author folder already exists: $safeName")
+                return@withContext existing
+            }
+
+            val newFolder = downloadsDir.createDirectory(safeName)
+            if (newFolder != null) {
+                Log.i(TAG, "Created author folder: $safeName")
+            }
+            newFolder
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to create author folder: $authorName", e)
             null
         }
     }

@@ -177,7 +177,16 @@ dependencies {
     implementation("com.anggrayudi:storage:2.0.0")
 
     // PDF parser
-    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0") {
+        exclude(group = "org.bouncycastle", module = "bcprov-jdk15to18")
+        exclude(group = "org.bouncycastle", module = "bcpkix-jdk15to18")
+        exclude(group = "org.bouncycastle", module = "bcutil-jdk15to18")
+    }
+
+    // Bouncy Castle (JDK 8+ compatible - works with JDK 21)
+    implementation("org.bouncycastle:bcprov-jdk18on:1.83")
+    implementation("org.bouncycastle:bcpkix-jdk18on:1.83")
+    implementation("org.bouncycastle:bcutil-jdk18on:1.83")
 
     // EPUB parser
     implementation("org.jsoup:jsoup:1.18.3")
@@ -222,4 +231,11 @@ dependencies {
 
     // Fuzzy search
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
+
+    // Credential encryption (EncryptedSharedPreferences - simpler approach)
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    // Paging Library 3 for efficient list rendering
+    implementation("androidx.paging:paging-runtime-ktx:3.3.0")
+    implementation("androidx.paging:paging-compose:3.3.0")
 }

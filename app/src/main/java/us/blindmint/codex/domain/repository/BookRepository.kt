@@ -96,4 +96,8 @@ interface BookRepository {
     suspend fun getBooksByOpdsSourceId(
         opdsSourceId: Int
     ): List<Book>
+
+    suspend fun getBookByCalibreId(
+        calibreId: String
+    ): Book?
 }

@@ -19,12 +19,12 @@ import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import us.blindmint.codex.data.local.dto.OpdsSourceStatus
 import us.blindmint.codex.data.local.room.BookDatabase
 import us.blindmint.codex.data.local.room.DatabaseHelper
+import us.blindmint.codex.data.security.CredentialEncryptor
 import us.blindmint.codex.domain.repository.OpdsRepository
 import us.blindmint.codex.domain.storage.CodexDirectoryManager
 import us.blindmint.codex.domain.backup.OpdsSourceData
 import us.blindmint.codex.domain.backup.CodexBackup
 import us.blindmint.codex.domain.use_case.opds.RefreshAllBooksFromOpdsSource
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -48,8 +48,12 @@ class OpdsSourcesModel @Inject constructor(
             DatabaseHelper.MIGRATION_11_12,
             DatabaseHelper.MIGRATION_12_13,
             DatabaseHelper.MIGRATION_13_14,
-            DatabaseHelper.MIGRATION_14_15,
-            DatabaseHelper.MIGRATION_15_16
+            DatabaseHelper.MIGRATION_17_18,
+            DatabaseHelper.MIGRATION_18_19,
+            DatabaseHelper.MIGRATION_19_20,
+            DatabaseHelper.MIGRATION_20_21,
+            DatabaseHelper.MIGRATION_21_22,
+            DatabaseHelper.MIGRATION_22_23
         ).build()
     }
 
@@ -116,7 +120,7 @@ class OpdsSourcesModel @Inject constructor(
                                 showBackupImportPrompt = true,
                                 backupSourcesToImport = newSources
                             )
-                            break // Only show prompt for the most recent backup with sources
+                            break // Only show prompt for most recent backup with sources
                         }
                     } catch (e: Exception) {
                         // Skip malformed backup files
@@ -142,14 +146,14 @@ class OpdsSourcesModel @Inject constructor(
                 val entity = OpdsSourceEntity(
                     name = sourceData.name,
                     url = sourceData.url,
-                    username = null, // Credentials not stored in backup
-                    password = null,
+                    usernameEncrypted = null, // Credentials not stored in backup
+                    passwordEncrypted = null,
                     enabled = sourceData.enabled
                 )
                 opdsSourceDao.insertOpdsSource(entity)
             }
 
-            // Clear the prompt
+            // Clear prompt
             _state.value = _state.value.copy(
                 showBackupImportPrompt = false,
                 backupSourcesToImport = emptyList()
@@ -161,7 +165,7 @@ class OpdsSourcesModel @Inject constructor(
     }
 
     /**
-     * Dismiss the backup import prompt without importing.
+     * Dismiss backup import prompt without importing.
      */
     fun dismissBackupImportPrompt() {
         _state.value = _state.value.copy(
@@ -172,28 +176,29 @@ class OpdsSourcesModel @Inject constructor(
 
     fun addOpdsSource(name: String, url: String, username: String?, password: String?) {
         viewModelScope.launch {
+            val context = application
             val entity = OpdsSourceEntity(
                 name = name,
                 url = url,
-                username = username,
-                password = password,
+                usernameEncrypted = CredentialEncryptor.encryptCredential(context, username),
+                passwordEncrypted = CredentialEncryptor.encryptCredential(context, password),
                 status = OpdsSourceStatus.CONNECTING
             )
             val id = opdsSourceDao.insertOpdsSource(entity)
             val insertedEntity = entity.copy(id = id.toInt())
 
-            // Test the connection
             testConnectionForSource(insertedEntity)
         }
     }
 
     fun updateOpdsSource(entity: OpdsSourceEntity) {
         viewModelScope.launch {
-            val updatedEntity = entity.copy(status = OpdsSourceStatus.CONNECTING)
+            val updatedEntity = entity.copy(
+                status = OpdsSourceStatus.CONNECTING
+            )
             opdsSourceDao.updateOpdsSource(updatedEntity)
             loadOpdsSources()
 
-            // Test the connection
             testConnectionForSource(updatedEntity)
         }
     }
@@ -216,14 +221,14 @@ class OpdsSourcesModel @Inject constructor(
         for (testUrl in urlVariations) {
             try {
                 opdsRepository.fetchFeed(testUrl, username, password)
-                return testUrl // Return the working URL
+                return testUrl // Return working URL
             } catch (e: Exception) {
                 // Try next variation
                 continue
             }
         }
 
-        // If none worked, throw with the original URL
+        // If none worked, throw with original URL
         opdsRepository.fetchFeed(url, username, password)
         return url
     }
@@ -231,7 +236,7 @@ class OpdsSourcesModel @Inject constructor(
     private fun generateUrlVariations(originalUrl: String): List<String> {
         val variations = mutableListOf<String>()
 
-        // Clean the URL
+        // Clean URL
         var cleanUrl = originalUrl.trim()
 
         // Remove trailing slashes
@@ -261,9 +266,11 @@ class OpdsSourcesModel @Inject constructor(
     private fun testConnectionForSource(source: OpdsSourceEntity) {
         viewModelScope.launch {
             try {
-                opdsRepository.fetchFeed(source.url, source.username, source.password)
+                val username = CredentialEncryptor.decryptCredential(application, source.usernameEncrypted)
+                val password = CredentialEncryptor.decryptCredential(application, source.passwordEncrypted)
+                opdsRepository.fetchFeed(source.url, username, password)
                 // Connection successful
-                val status = if (source.username != null) OpdsSourceStatus.CONNECTED else OpdsSourceStatus.CONNECTED
+                val status = if (username != null) OpdsSourceStatus.CONNECTED else OpdsSourceStatus.CONNECTED
                 val updatedSource = source.copy(status = status)
                 opdsSourceDao.updateOpdsSource(updatedSource)
                 loadOpdsSources()
@@ -285,7 +292,7 @@ class OpdsSourcesModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val count = refreshAllBooksFromOpdsSource.execute(sourceId) { title, author ->
-                    // Fetch OPDS entry from the source for matching books
+                    // Fetch OPDS entry from source for matching books
                     try {
                         val feed = opdsRepository.fetchFeed(sourceUrl)
                         feed.entries.firstOrNull { entry ->

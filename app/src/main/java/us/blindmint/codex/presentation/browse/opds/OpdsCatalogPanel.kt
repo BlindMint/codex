@@ -16,19 +16,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.pullrefresh.PullRefreshState
 import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,6 +44,8 @@ import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import us.blindmint.codex.domain.browse.display.BrowseLayout
 import us.blindmint.codex.domain.browse.file.SelectableFile
 import us.blindmint.codex.presentation.core.util.noRippleClickable
+import us.blindmint.codex.presentation.core.util.showToast
+import us.blindmint.codex.presentation.navigator.LocalNavigator
 
 import us.blindmint.codex.ui.browse.BrowseEvent
 import us.blindmint.codex.ui.browse.OpdsAddSourceDialog
@@ -68,9 +74,14 @@ fun OpdsCatalogPanel(
     navigateToBrowseSettings: () -> Unit,
     onNavigateToOpdsCatalog: (OpdsRootScreen) -> Unit,
 ) {
+    val context = LocalContext.current
+    val navigator = LocalNavigator.current
     val sourcesModel = hiltViewModel<OpdsSourcesModel>()
     val sourcesState by sourcesModel.state.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+
     var showAddSourceDialog by remember { mutableStateOf(false) }
+    var showRootDirectoryPrompt by remember { mutableStateOf(false) }
 
     OpdsAddSourceDialog(
         showDialog = showAddSourceDialog,
@@ -107,8 +118,14 @@ fun OpdsCatalogPanel(
                 )
                 OutlinedButton(
                     onClick = {
-                        showAddSourceDialog = true
-                        // Note: The actual validation happens in OpdsAddSourceDialog
+                        scope.launch {
+                            val isCodexConfigured = sourcesModel.isCodexDirectoryConfigured()
+                            if (isCodexConfigured) {
+                                showAddSourceDialog = true
+                            } else {
+                                showRootDirectoryPrompt = true
+                            }
+                        }
                     }
                 ) {
                     Text(stringResource(R.string.add_opds_source))
@@ -142,6 +159,36 @@ fun OpdsCatalogPanel(
                 }
             }
         }
+    }
+
+    if (showRootDirectoryPrompt) {
+        AlertDialog(
+            onDismissRequest = { showRootDirectoryPrompt = false },
+            title = { Text("Set Codex Directory") },
+            text = {
+                Text(
+                    "You need to configure your Codex directory before adding OPDS sources. " +
+                    "This is where downloaded books will be stored."
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showRootDirectoryPrompt = false
+                        navigateToBrowseSettings()
+                    }
+                ) {
+                    Text("Go to Settings")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showRootDirectoryPrompt = false }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -178,7 +225,7 @@ private fun OpdsSourceItem(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            if (!source.username.isNullOrBlank()) {
+            if (!source.usernameEncrypted.isNullOrBlank()) {
                 Text(
                     text = "Authenticated",
                     style = MaterialTheme.typography.bodySmall,

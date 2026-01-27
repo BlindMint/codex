@@ -26,9 +26,14 @@ data class OpdsSourceEntity(
     @PrimaryKey(true) val id: Int = 0,
     val name: String,
     val url: String,
-    val username: String? = null,
-    val password: String? = null,
+    @Deprecated("Use usernameEncrypted instead - credentials are encrypted at rest") val username: String? = null,
+    @Deprecated("Use passwordEncrypted instead - credentials are encrypted at rest") val password: String? = null,
+    val usernameEncrypted: String? = null,
+    val passwordEncrypted: String? = null,
     val enabled: Boolean = true,
     val lastSync: Long = 0,
     val status: OpdsSourceStatus = OpdsSourceStatus.UNKNOWN
-) : Parcelable
+) : Parcelable {
+    val hasCredentials: Boolean
+        get() = !usernameEncrypted.isNullOrBlank()
+}

@@ -47,6 +47,7 @@ data class Book(
     val source: BookSource = BookSource.LOCAL,
     val opdsSourceUrl: String? = null,
     val opdsSourceId: Int? = null,
+    val opdsCalibreId: String? = null,
     val metadataLastRefreshTime: Long? = null,
     // Comic fields
     val isComic: Boolean = false,

@@ -15,6 +15,7 @@ import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.file.CachedFileCompat
 import us.blindmint.codex.domain.library.book.BookWithCover
 import us.blindmint.codex.domain.opds.OpdsEntry
+import us.blindmint.codex.domain.opds.OpdsLink
 import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.repository.OpdsRepository
 import us.blindmint.codex.domain.util.CoverImage
@@ -45,6 +46,7 @@ import java.util.UUID
 sealed class ImportOpdsResult {
     data class Success(val bookWithCover: BookWithCover) : ImportOpdsResult()
     data class Error(val message: String) : ImportOpdsResult()
+    data class Duplicate(val bookId: Int, val message: String) : ImportOpdsResult()
     object CodexFolderNotConfigured : ImportOpdsResult()
 }
 
@@ -155,12 +157,32 @@ class ImportOpdsBookUseCase @Inject constructor(
         password: String? = null,
         onProgress: ((Float) -> Unit)? = null
     ): ImportOpdsResult = withContext(Dispatchers.IO) {
-        // Check if Codex folder is configured
         if (!codexDirectoryManager.isConfigured()) {
             return@withContext ImportOpdsResult.CodexFolderNotConfigured
         }
 
         try {
+            val acquisitionLink = opdsEntry.links.firstOrNull {
+                it.rel == "http://opds-spec.org/acquisition" ||
+                it.rel?.startsWith("http://opds-spec.org/acquisition/") == true
+            }
+            if (acquisitionLink == null) {
+                android.util.Log.d("OPDS_DEBUG", "No acquisition link found for book: ${opdsEntry.title}")
+                return@withContext ImportOpdsResult.Error("No acquisition link found")
+            }
+
+            val calibreId = extractCalibreId(acquisitionLink)
+
+            if (calibreId != null) {
+                val existingBook = bookRepository.getBookByCalibreId(calibreId)
+                if (existingBook != null) {
+                    return@withContext ImportOpdsResult.Duplicate(
+                        existingBook.id,
+                        "Book already in library (Calibre ID: $calibreId)"
+                    )
+                }
+            }
+
             val result = performImport(opdsEntry, sourceUrl, username, password, onProgress)
             if (result != null) {
                 ImportOpdsResult.Success(result)
@@ -279,7 +301,6 @@ class ImportOpdsBookUseCase @Inject constructor(
         password: String?,
         onProgress: ((Float) -> Unit)?
     ): BookWithCover? {
-        // Find acquisition link - try multiple rel patterns
         val acquisitionLink = opdsEntry.links.firstOrNull {
             it.rel == "http://opds-spec.org/acquisition" ||
             it.rel?.startsWith("http://opds-spec.org/acquisition/") == true
@@ -294,7 +315,6 @@ class ImportOpdsBookUseCase @Inject constructor(
         }
         android.util.Log.d("OPDS_DEBUG", "Found acquisition link: rel='${acquisitionLink.rel}', type='${acquisitionLink.type}', href='${acquisitionLink.href}'")
 
-        // Resolve relative URL against source URL
         val resolvedUrl = try {
             val resolved = java.net.URI(sourceUrl).resolve(acquisitionLink.href).toString()
             android.util.Log.d("OPDS_DEBUG", "Resolved acquisition URL: $resolved (from href: ${acquisitionLink.href}, source: $sourceUrl)")
@@ -308,13 +328,10 @@ class ImportOpdsBookUseCase @Inject constructor(
             }
         }
 
-        // Download the book
         val (bookBytes, suggestedFilename) = opdsRepository.downloadBook(resolvedUrl, username, password, onProgress)
 
-        // Determine proper file extension
         val extension = determineExtension(acquisitionLink.type, acquisitionLink.href, suggestedFilename)
 
-        // Save to temp file
         val tempFile = File(application.cacheDir, "temp_book_${System.currentTimeMillis()}$extension")
         tempFile.writeBytes(bookBytes)
         android.util.Log.d("OPDS_DEBUG", "Saved ${bookBytes.size} bytes to temp file: ${tempFile.absolutePath}")
@@ -368,24 +385,47 @@ class ImportOpdsBookUseCase @Inject constructor(
             }
             android.util.Log.d("OPDS_DEBUG", "Successfully parsed book: ${parsedBook.book.title}")
 
-            // Create book folder in Codex downloads directory
-            val uuid = extractUuid(opdsEntry) ?: UUID.randomUUID().toString().take(8)
+            val calibreId = extractCalibreId(acquisitionLink)
+            val uuid = calibreId ?: extractUuid(opdsEntry) ?: UUID.randomUUID().toString().take(8)
+
+            val rawAuthor = opdsEntry.author?.trim()
+            val primaryAuthor = rawAuthor?.split(",")?.first()?.trim()
+            val authorName = sanitizeAuthorName(primaryAuthor)
+
             val title = sanitizeFilename(opdsEntry.title.trim())
-            val folderName = "${uuid}_$title"
-            android.util.Log.d("OPDS_DEBUG", "Creating book folder: $folderName")
 
-            val bookFolder = codexDirectoryManager.createBookFolder(folderName)
-            if (bookFolder == null) {
-                android.util.Log.e("OPDS_DEBUG", "Failed to create book folder: $folderName")
-                return null
+            val bookFolder = if (calibreId != null) {
+                val bookFolderName = "$title ($calibreId)"
+                android.util.Log.d("OPDS_DEBUG", "Using Calibre structure: $authorName/$bookFolderName")
+
+                val authorFolder = codexDirectoryManager.createAuthorFolder(authorName)
+                if (authorFolder == null) {
+                    android.util.Log.e("OPDS_DEBUG", "Failed to create author folder: $authorName")
+                    return null
+                }
+
+                val folder = authorFolder.createDirectory(bookFolderName)
+                if (folder == null) {
+                    android.util.Log.e("OPDS_DEBUG", "Failed to create book folder: $bookFolderName")
+                    return null
+                }
+                folder
+            } else {
+                val folderName = "${uuid}_$title"
+                android.util.Log.d("OPDS_DEBUG", "Using fallback structure (no calibre_id): $folderName")
+
+                val folder = codexDirectoryManager.createBookFolder(folderName)
+                if (folder == null) {
+                    android.util.Log.e("OPDS_DEBUG", "Failed to create book folder: $folderName")
+                    return null
+                }
+                folder
             }
-            android.util.Log.d("OPDS_DEBUG", "Successfully created book folder: ${bookFolder.uri}")
 
-            // Generate book filename
-            val author = opdsEntry.author?.trim() ?: "Unknown"
-            val bookFilename = sanitizeFilename("$title - $author$extension")
+            android.util.Log.d("OPDS_DEBUG", "Successfully created book folder: ${bookFolder.name}")
 
-            // Save book file to folder
+            val bookFilename = sanitizeFilename("$title$extension")
+
             android.util.Log.d("OPDS_DEBUG", "Creating book file: $bookFilename")
             val bookFile = bookFolder.createFile("application/octet-stream", bookFilename)
             if (bookFile == null) {
@@ -405,7 +445,6 @@ class ImportOpdsBookUseCase @Inject constructor(
                 return null
             }
 
-            // Download and save cover image
             val coverUrl = opdsEntry.coverUrl ?: opdsEntry.links.firstOrNull {
                 it.rel?.contains("image") == true || it.type?.startsWith("image/") == true
             }?.href
@@ -416,7 +455,6 @@ class ImportOpdsBookUseCase @Inject constructor(
                     val resolvedCoverUrl = java.net.URI(sourceUrl).resolve(coverUrl).toString()
                     val coverBytes = opdsRepository.downloadCover(resolvedCoverUrl, username, password)
                     if (coverBytes != null) {
-                        // Save cover.jpg
                         val coverFile = bookFolder.createFile("image/jpeg", "cover.jpg")
                         if (coverFile != null) {
                             application.contentResolver.openOutputStream(coverFile.uri)?.use { output ->
@@ -424,7 +462,6 @@ class ImportOpdsBookUseCase @Inject constructor(
                             }
                             Log.i(TAG, "Saved cover to: ${coverFile.uri}")
 
-                            // Decode bitmap for display
                             coverBitmap = BitmapFactory.decodeByteArray(coverBytes, 0, coverBytes.size)
                         }
                     }
@@ -433,11 +470,9 @@ class ImportOpdsBookUseCase @Inject constructor(
                 }
             }
 
-            // Apply OPDS metadata
-            val bookWithPath = parsedBook.book.copy(filePath = bookFile.uri.toString())
+            val bookWithPath = parsedBook.book.copy(filePath = bookFile.uri.toString(), opdsCalibreId = calibreId)
             val bookWithMetadata = opdsMetadataMapper.applyOpdsMetadataToBook(bookWithPath, opdsEntry)
 
-            // Generate and save metadata.opf
             opfWriter.writeOpfFile(bookFolder, bookWithMetadata, opdsEntry)
 
             return BookWithCover(
@@ -463,5 +498,73 @@ class ImportOpdsBookUseCase @Inject constructor(
             return opdsEntry.id.take(8)
         }
         return null
+    }
+
+    /**
+     * Extract Calibre ID from OPDS acquisition link.
+     *
+     * Supports multiple URL patterns commonly used by Calibre-based OPDS feeds:
+     * - /opds/download/{id}/epub/ (Calibre standard acquisition)
+     * - /opds/cover/{id} (Calibre cover links)
+     * - /download/{id} (Generic download pattern)
+     *
+     * @param acquisitionLink The acquisition link from OPDS entry
+     * @return Calibre ID if found, null otherwise
+     */
+    private fun extractCalibreId(acquisitionLink: OpdsLink?): String? {
+        if (acquisitionLink == null) return null
+
+        val href = acquisitionLink.href ?: return null
+
+        // Try /opds/download/{id}/epub/ pattern (Calibre standard)
+        val downloadMatch = Regex("/opds/download/(\\d+)/").find(href)
+        if (downloadMatch != null) {
+            return downloadMatch.groupValues[1]
+        }
+
+        // Try /opds/cover/{id} pattern (Calibre cover links)
+        val coverMatch = Regex("/opds/cover/(\\d+)").find(href)
+        if (coverMatch != null) {
+            return coverMatch.groupValues[1]
+        }
+
+        // Try generic /download/{id} pattern
+        val genericMatch = Regex("/download/(\\d+)").find(href)
+        if (genericMatch != null) {
+            return genericMatch.groupValues[1]
+        }
+
+        return null
+    }
+
+    /**
+     * Sanitizes an author name for use as a folder name.
+     *
+     * Removes invalid filesystem characters, normalizes whitespace,
+     * and limits length to ensure compatibility across all Android filesystems.
+     *
+     * @param author The raw author name from OPDS
+     * @return Sanitized author name safe for use as folder name
+     */
+    private fun sanitizeAuthorName(author: String?): String {
+        if (author.isNullOrBlank()) {
+            return "Unknown Author"
+        }
+
+        val sanitized = author
+            .trim()
+            // Remove invalid filesystem characters
+            .replace(Regex("[\\\\/:*?\"<>|]"), "_")
+            // Normalize whitespace
+            .replace(Regex("\\s+"), " ")
+            .trim()
+            .ifBlank { "Unknown Author" }
+
+        // Limit length (folder names should be under 100 chars for compatibility)
+        return if (sanitized.length > 100) {
+            sanitized.take(100)
+        } else {
+            sanitized
+        }
     }
 }

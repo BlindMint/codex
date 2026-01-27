@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.presentation.core.components.common.IconButton
 import us.blindmint.codex.presentation.core.components.common.StyledText
@@ -91,7 +92,7 @@ fun BookInfoDetailsBottomSheet(
 
 
     val cachedFile = remember(displayBook.filePath) {
-        val uri = Uri.parse(displayBook.filePath)
+        val uri = displayBook.filePath.toUri()
         if (!uri.scheme.isNullOrBlank()) {
             CachedFileCompat.fromUri(context, uri)
         } else {

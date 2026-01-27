@@ -15,6 +15,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.animation.fadeIn
+import androidx.core.net.toUri
 import androidx.compose.animation.fadeOut
 import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -333,7 +334,7 @@ private fun WebViewContent(
  */
 private fun extractDomain(url: String): String {
     return try {
-        val uri = android.net.Uri.parse(url)
+        val uri = url.toUri()
         uri.host?.removePrefix("www.") ?: url
     } catch (e: Exception) {
         url

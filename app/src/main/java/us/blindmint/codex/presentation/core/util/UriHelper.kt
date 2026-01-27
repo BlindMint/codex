@@ -9,6 +9,7 @@ package us.blindmint.codex.presentation.core.util
 import android.content.UriPermission
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import com.anggrayudi.storage.file.DocumentFileCompat
 import com.anggrayudi.storage.file.getAbsolutePath
 
@@ -33,7 +34,7 @@ enum class FolderRelationship {
 fun Uri.normalize(): Uri {
     val uriString = this.toString()
     val normalized = uriString.removeSuffix("/")
-    return Uri.parse(normalized)
+    return normalized.toUri()
 }
 
 /**

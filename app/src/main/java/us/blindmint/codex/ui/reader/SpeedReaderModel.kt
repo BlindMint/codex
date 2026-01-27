@@ -22,6 +22,8 @@ import us.blindmint.codex.domain.use_case.book.GetBookById
 import us.blindmint.codex.domain.use_case.book.GetSpeedReaderWords
 import us.blindmint.codex.ui.history.HistoryScreen
 import us.blindmint.codex.ui.library.LibraryScreen
+import us.blindmint.codex.domain.ui.UIText
+import us.blindmint.codex.R
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,7 +37,7 @@ class SpeedReaderModel @Inject constructor(
     val words = mutableStateOf<List<SpeedReaderWord>>(emptyList())
     val totalWords = mutableIntStateOf(0)
     val isLoading = mutableStateOf(true)
-    val errorMessage = mutableStateOf<String?>(null)
+    val errorMessage = mutableStateOf<UIText?>(null)
 
     // Progress tracking
     val currentProgress = mutableFloatStateOf(0f)
@@ -97,7 +99,7 @@ class SpeedReaderModel @Inject constructor(
 
                     if (loadedWords.isEmpty()) {
                         Log.e("SPEED_READER_LOAD", "[5] No words loaded! Setting error message")
-                        errorMessage.value = "Could not load text"
+                        errorMessage.value = UIText.StringResource(R.string.error_could_not_get_text)
                         isLoading.value = false
                     } else {
                         words.value = loadedWords
@@ -140,12 +142,12 @@ class SpeedReaderModel @Inject constructor(
                         Log.d("SPEED_READER_LOAD", "[7]   isLoading.value = ${isLoading.value}")
                     }
                 } catch (e: Exception) {
-                    errorMessage.value = "Error loading text: ${e.message}"
+                    errorMessage.value = UIText.StringResource(R.string.error_could_not_get_text)
                     isLoading.value = false
                 }
             } else {
                 // Comics not supported in speed reader
-                errorMessage.value = "Comics not supported in speed reader"
+                errorMessage.value = UIText.StringValue("Comics not supported in speed reader")
                 isLoading.value = false
             }
         }

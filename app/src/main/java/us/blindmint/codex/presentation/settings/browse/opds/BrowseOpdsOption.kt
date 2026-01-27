@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -39,15 +38,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import us.blindmint.codex.R
+import us.blindmint.codex.data.local.dto.OpdsSourceEntity
+import us.blindmint.codex.data.local.dto.OpdsSourceStatus
+import us.blindmint.codex.data.security.CredentialEncryptor
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.presentation.navigator.LocalNavigator
@@ -56,8 +58,6 @@ import us.blindmint.codex.ui.browse.OpdsRootScreen
 import us.blindmint.codex.ui.settings.BrowseSettingsScreen
 import us.blindmint.codex.ui.settings.opds.OpdsSourcesModel
 import us.blindmint.codex.ui.theme.dynamicListItemColor
-import us.blindmint.codex.data.local.dto.OpdsSourceEntity
-import us.blindmint.codex.data.local.dto.OpdsSourceStatus
 
 @Composable
 fun BrowseOpdsOption(
@@ -101,19 +101,20 @@ fun BrowseOpdsOption(
 
     // Edit dialog
     editingSource?.let { source ->
+        val context = LocalContext.current
         OpdsAddSourceDialog(
             showDialog = true,
             initialName = source.name,
             initialUrl = source.url,
-            initialUsername = source.username,
-            initialPassword = source.password,
+            initialUsername = source.usernameEncrypted?.let { CredentialEncryptor.decrypt(context, it) },
+            initialPassword = source.passwordEncrypted?.let { CredentialEncryptor.decrypt(context, it) },
             onDismiss = { editingSource = null },
             onSourceAdded = { name, url, username, password ->
                 val updatedSource = source.copy(
                     name = name,
                     url = url,
-                    username = username,
-                    password = password
+                    usernameEncrypted = CredentialEncryptor.encryptCredential(context, username),
+                    passwordEncrypted = CredentialEncryptor.encryptCredential(context, password)
                 )
                 sourcesModel.updateOpdsSource(updatedSource)
                 editingSource = null
@@ -261,7 +262,7 @@ private fun OpdsSourceItem(
             val statusText = when (source.status) {
                 OpdsSourceStatus.CONNECTING -> "Testing connection..."
                 OpdsSourceStatus.CONNECTED -> {
-                    if (!source.username.isNullOrBlank()) "Authenticated"
+                    if (source.hasCredentials) "Authenticated"
                     else "Connected"
                 }
                 OpdsSourceStatus.AUTH_FAILED -> "Authentication failed"

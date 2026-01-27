@@ -40,13 +40,13 @@ fun ReaderBottomBarComicSlider(
     totalPages: Int,
     lockMenu: Boolean,
     onPageSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier,
     showProgressBar: Boolean = true,
     progressCount: ReaderProgressCount = ReaderProgressCount.PAGE,
     progressBarPadding: Dp = 4.dp,
     progressBarAlignment: HorizontalAlignment = HorizontalAlignment.CENTER,
     progressBarFontSize: TextUnit = 8.sp,
-    comicReadingDirection: String = "LTR",
-    modifier: Modifier = Modifier
+    comicReadingDirection: String = "LTR"
 ) {
 
     if (totalPages <= 0) return

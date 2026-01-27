@@ -443,10 +443,10 @@ fun ExpandableColorPicker(
     title: String,
     value: Color,
     presetId: String,
-    initialColor: Color = value,
-    isLocked: Boolean = false,
     onValueChange: (Color) -> Unit,
     modifier: Modifier = Modifier,
+    initialColor: Color = value,
+    isLocked: Boolean = false,
     horizontalPadding: Dp = 18.dp
 ) {
     val initialValue = rememberSaveable(presetId, saver = ColorSaver) { initialColor }

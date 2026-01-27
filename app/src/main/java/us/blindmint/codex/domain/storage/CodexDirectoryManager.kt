@@ -76,4 +76,15 @@ interface CodexDirectoryManager {
      * @return The created DocumentFile or null if failed
      */
     suspend fun createBookFolder(folderName: String): DocumentFile?
+
+    /**
+     * Create or get an author folder under downloads directory.
+     *
+     * If the author folder already exists, returns the existing folder.
+     * Otherwise, creates a new one.
+     *
+     * @param authorName Sanitized author name
+     * @return The author DocumentFile or null if failed
+     */
+    suspend fun createAuthorFolder(authorName: String): DocumentFile?
 }

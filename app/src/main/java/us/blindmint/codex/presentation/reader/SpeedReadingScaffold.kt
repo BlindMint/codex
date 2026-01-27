@@ -17,7 +17,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import us.blindmint.codex.domain.ui.UIText
+import us.blindmint.codex.R
 import androidx.compose.material3.Scaffold
+import androidx.compose.ui.res.painterResource
 import us.blindmint.codex.presentation.core.components.progress_indicator.CircularProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -48,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import us.blindmint.codex.domain.reader.SpeedReaderWord
 import us.blindmint.codex.domain.reader.FocusIndicatorsType
 import us.blindmint.codex.presentation.core.components.common.AnimatedVisibility
+import us.blindmint.codex.presentation.core.components.placeholder.ErrorPlaceholder
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -85,15 +89,16 @@ fun SpeedReadingScaffold(
     autoHideOsd: Boolean = true,
     centerWord: Boolean = false,
     focusIndicators: String = "OFF",
+    errorMessage: UIText? = null,
     onWpmChange: (Int) -> Unit,
     osdEnabled: Boolean,
     onExitSpeedReading: () -> Unit,
     onShowSpeedReadingSettings: () -> Unit,
-    onWordPicked: (Int) -> Unit = {},
+    onWordPicked: (Int) -> Unit,
     onNavigateWord: (Int) -> Unit,
-    onChangeProgress: (Float, Int) -> Unit = { _, _ -> },
-    onSaveProgress: (Float, Int) -> Unit = { _, _ -> },
-    onPlayPause: () -> Unit = {},
+    onChangeProgress: (Float, Int) -> Unit,
+    onSaveProgress: (Float, Int) -> Unit,
+    onPlayPause: () -> Unit,
     keepScreenOn: Boolean = true
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
@@ -251,7 +256,22 @@ fun SpeedReadingScaffold(
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
-            if (isLoading || words.isEmpty() || selectedWordIndex < 0) {
+            if (errorMessage != null) {
+                // Show error message when file cannot be loaded
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surface),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ErrorPlaceholder(
+                        errorMessage = errorMessage.asString(),
+                        icon = painterResource(id = R.drawable.skull_large),
+                        actionTitle = "",
+                        action = {}
+                    )
+                }
+            } else if (isLoading || words.isEmpty() || selectedWordIndex < 0) {
                 // Show loading indicator until text is ready AND word index is set
                 Box(
                     modifier = Modifier
