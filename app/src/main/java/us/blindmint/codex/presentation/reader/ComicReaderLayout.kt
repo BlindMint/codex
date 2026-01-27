@@ -10,6 +10,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -90,13 +91,13 @@ fun ComicReaderLayout(
     comicProgressBarAlignment: us.blindmint.codex.domain.util.HorizontalAlignment,
     comicProgressBarFontSize: Int,
     comicProgressCount: us.blindmint.codex.domain.reader.ReaderProgressCount,
+    modifier: Modifier = Modifier,
     showMenu: Boolean = false,
     showPageIndicator: Boolean = true,
     onLoadingComplete: () -> Unit = {},
     onMenuToggle: () -> Unit = {},
     onTotalPagesLoaded: (Int) -> Unit = {},
-    onPageSelected: (Int) -> Unit = {},
-    modifier: Modifier = Modifier
+    onPageSelected: (Int) -> Unit = {}
 ) {
     val context = LocalContext.current
     val activity = LocalActivity.current
@@ -244,7 +245,7 @@ fun ComicReaderLayout(
                 android.util.Log.d("CodexComic", "Starting to load comic: ${book.title}")
                 android.util.Log.d("CodexComic", "Book filePath: ${book.filePath}")
 
-                val uri = Uri.parse(book.filePath)
+                val uri = book.filePath.toUri()
                 android.util.Log.d("CodexComic", "Parsed URI: $uri")
 
                 val cachedFile = CachedFile(context, uri)

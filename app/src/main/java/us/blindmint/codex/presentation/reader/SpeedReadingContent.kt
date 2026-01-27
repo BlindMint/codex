@@ -99,6 +99,7 @@ fun SpeedReadingContent(
     isPlaying: Boolean,
     onWpmChange: (Int) -> Unit,
     onPlayPause: () -> Unit,
+    modifier: Modifier = Modifier,
     onNavigateWord: (Int) -> Unit = {}, // -1 for back, +1 for forward
     navigateWord: (Int) -> Unit = {},
     onRegisterNavigationCallback: ((Int) -> Unit) -> Unit = {},
@@ -109,8 +110,7 @@ fun SpeedReadingContent(
     onShowWordPicker: () -> Unit = {},
     onProgressUpdate: (Float, Int) -> Unit = { _, _ -> }, // Callback for word-based progress updates
     onSaveProgress: (Float, Int) -> Unit = { _, _ -> }, // Callback for immediate progress saves (no throttling)
-    showBottomBar: Boolean = true,
-    modifier: Modifier = Modifier
+    showBottomBar: Boolean = true
 ) {
     // Log initial composition
     Log.d("SPEED_READER_CONTENT", "[COMPOSITION START] words.size=${words.size}, currentWordIndex=$currentWordIndex, totalWords=$totalWords, initialWordIndex=$initialWordIndex, isPlaying=$isPlaying")

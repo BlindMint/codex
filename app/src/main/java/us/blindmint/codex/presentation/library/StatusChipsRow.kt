@@ -26,9 +26,9 @@ import us.blindmint.codex.domain.library.category.Category
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun StatusChipsRow(
-    selectedStatuses: Set<Category> = emptySet(),
     onStatusToggle: (Category, Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectedStatuses: Set<Category> = emptySet()
 ) {
     val statuses = listOf(Category.READING, Category.PLANNING, Category.ALREADY_READ)
 

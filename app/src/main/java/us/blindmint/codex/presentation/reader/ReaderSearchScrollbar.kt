@@ -87,7 +87,7 @@ fun ReaderSearchScrollbar(
         derivedStateOf { listState.layoutInfo.visibleItemsInfo.size }
     }
     val viewportHeightRatio = remember(visibleItemsCount, text.size) {
-        if (text.isEmpty()) 0f else min(visibleItemsCount.toFloat() / text.size.toFloat(),1f)
+        if (text.isEmpty()) 0f else min(visibleItemsCount.toFloat() / text.size.toFloat(), 1f)
     }
 
     Box(

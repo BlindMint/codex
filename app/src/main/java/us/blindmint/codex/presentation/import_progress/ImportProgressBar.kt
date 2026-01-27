@@ -33,8 +33,8 @@ import us.blindmint.codex.domain.import_progress.ImportStatus
 @Composable
 fun ImportProgressBar(
     operation: ImportOperation,
-    onCancel: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCancel: () -> Unit = {}
 ) {
     val progress = if (operation.totalBooks > 0) {
         operation.currentProgress.toFloat() / operation.totalBooks.toFloat()

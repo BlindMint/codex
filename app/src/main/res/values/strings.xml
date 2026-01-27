@@ -140,7 +140,8 @@
     <string name="add_folder">Add folder</string>
     <string name="set_up_scanning">Set up scanning</string>
     <string name="importing_progress">Importing %1$d/%2$d: %3$s</string>
-    <string name="import_completed">Imported %1$d books successfully</string>
+    <string name="import_completed_one">Imported 1 book successfully</string>
+    <string name="import_completed_other">Imported %d books successfully</string>
 
     <!-- Book -->
     <string name="unknown_author">Unknown</string>

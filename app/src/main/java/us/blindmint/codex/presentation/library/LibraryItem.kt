@@ -58,8 +58,8 @@ fun LibraryItem(
     selectBook: (select: Boolean?) -> Unit,
     navigateToBookInfo: () -> Unit,
     navigateToReader: () -> Unit,
-    navigateToSpeedReading: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navigateToSpeedReading: () -> Unit = {}
 ) {
     val backgroundColor = if (book.selected) MaterialTheme.colorScheme.secondary
     else Color.Transparent

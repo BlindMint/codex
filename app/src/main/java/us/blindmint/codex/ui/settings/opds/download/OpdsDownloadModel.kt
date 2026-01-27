@@ -10,6 +10,7 @@ import android.app.Application
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,7 +43,7 @@ class OpdsDownloadModel @Inject constructor(
     private fun loadDownloadUri() {
         viewModelScope.launch {
             val uriString = dataStore.getNullableData(DataStoreConstants.OPDS_DOWNLOAD_URI)
-            _downloadUri.value = uriString?.let { Uri.parse(it) }
+            _downloadUri.value = uriString?.toUri()
         }
     }
 

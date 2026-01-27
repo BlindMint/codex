@@ -34,8 +34,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun EmptyCatalogState(
     message: String,
-    onRefresh: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onRefresh: (() -> Unit)? = null
 ) {
     Column(
         modifier = modifier
@@ -82,8 +82,8 @@ fun EmptyCatalogState(
 @Composable
 fun EmptySearchState(
     message: String,
-    onClearSearch: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClearSearch: (() -> Unit)? = null
 ) {
     Column(
         modifier = modifier

@@ -10,6 +10,7 @@ import android.app.Application
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -34,7 +35,7 @@ class CodexDirectoryManagerImpl @Inject constructor(
 
     override suspend fun getCodexRootUri(): Uri? = withContext(Dispatchers.IO) {
         val uriString = dataStore.getNullableData(DataStoreConstants.CODEX_ROOT_URI)
-        uriString?.let { Uri.parse(it) }
+        uriString?.toUri()
     }
 
     override suspend fun setCodexRootUri(uri: Uri): Boolean = withContext(Dispatchers.IO) {

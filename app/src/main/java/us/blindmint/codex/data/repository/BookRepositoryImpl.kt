@@ -69,7 +69,7 @@ class BookRepositoryImpl @Inject constructor(
      * Creates a CachedFile from book.filePath, handling both file paths and content URIs.
      */
     private fun getCachedFile(book: BookEntity): CachedFile? {
-        val uri = Uri.parse(book.filePath)
+        val uri = book.filePath.toUri()
         return if (!uri.scheme.isNullOrBlank()) {
             // It's a URI (content:// or file://)
             val name = if (uri.scheme == "content") {

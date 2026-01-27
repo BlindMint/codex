@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -159,7 +160,7 @@ fun SpeedReadingWordPickerDrawer(
                     MaterialTheme.colorScheme.surfaceContainerLow,
                     RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 16.dp, bottomEnd = 16.dp)
                 )
-                .offset(x = panelOffset.value)
+                .offset { IntOffset(x = panelOffset.value.roundToPx(), y = 0) }
                 .alpha(panelAlpha.value)
                 .clickable(
                     indication = null,
