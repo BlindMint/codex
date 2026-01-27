@@ -125,11 +125,14 @@ class BookRepositoryImpl @Inject constructor(
         }
 
         Log.i(GET_BOOKS, "Found ${filteredBooks.size} books.")
+
+        val bookIds = filteredBooks.map { it.id }
+        val histories = database.getLatestHistoryForBooks(bookIds)
+        val historyMap = histories.groupBy { it.bookId }.mapValues { list -> list.firstOrNull() }
+
         return filteredBooks.map { entity ->
             val book = bookMapper.toBook(entity)
-            val lastHistory = database.getLatestHistoryForBook(
-                book.id
-            )
+            val lastHistory = historyMap[entity.id]
 
             book.copy(
                 lastOpened = lastHistory?.time

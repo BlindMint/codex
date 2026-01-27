@@ -10,8 +10,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,8 +28,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
 import us.blindmint.codex.ui.settings.SettingsEvent
 import us.blindmint.codex.ui.settings.SettingsModel
 
@@ -39,6 +44,7 @@ fun StorageLocationPicker(
     modifier: Modifier = Modifier
 ) {
     val settingsModel = hiltViewModel<SettingsModel>()
+    val importProgressViewModel = hiltViewModel<ImportProgressViewModel>()
     val state by settingsModel.state.collectAsStateWithLifecycle()
     var showPicker by remember { mutableStateOf(false) }
     var showRemoveConfirmation by remember { mutableStateOf(false) }
@@ -82,11 +88,34 @@ fun StorageLocationPicker(
         },
         trailingContent = {
             if (state.codexRootDisplayPath != null) {
-                IconButton(onClick = { showRemoveConfirmation = true }) {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = "Remove Codex Directory"
-                    )
+                Row {
+                    IconButton(
+                        onClick = { showRemoveConfirmation = true },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Remove Codex Directory",
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            state.codexRootDisplayPath?.let { displayPath ->
+                                importProgressViewModel.startCodexImport(
+                                    folderPath = displayPath,
+                                    folderName = displayPath.substringAfterLast("/")
+                                )
+                            }
+                        },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Refresh,
+                            contentDescription = "Rescan Codex Directory",
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }

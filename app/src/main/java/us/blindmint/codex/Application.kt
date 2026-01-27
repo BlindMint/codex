@@ -7,6 +7,7 @@
 package us.blindmint.codex
 
 import android.app.Application
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import dagger.hilt.android.HiltAndroidApp
 import us.blindmint.codex.core.crash.CrashHandler
 import us.blindmint.codex.data.security.CredentialEncryptor
@@ -16,6 +17,7 @@ class Application : Application() {
     override fun onCreate() {
         super.onCreate()
         CredentialEncryptor.initialize(this)
+        PDFBoxResourceLoader.init(this)
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this, defaultHandler))
     }

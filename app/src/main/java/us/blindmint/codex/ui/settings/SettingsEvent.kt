@@ -22,67 +22,9 @@ sealed class SettingsEvent {
         val uri: Uri
     ) : SettingsEvent()
 
-    data class OnSelectColorPreset(
-        val id: ID
-    ) : SettingsEvent()
-
-    data class OnSelectPreviousPreset(
-        val context: Context
-    ) : SettingsEvent()
-
-    data class OnSelectNextPreset(
-        val context: Context
-    ) : SettingsEvent()
-
-    data class OnDeleteColorPreset(
-        val id: ID
-    ) : SettingsEvent()
-
-    data class OnToggleColorPresetLock(
-        val id: ID
-    ) : SettingsEvent()
-
-    data class OnUpdateColorPresetTitle(
-        val id: ID,
-        val title: String
-    ) : SettingsEvent()
-
-    data class OnShuffleColorPreset(
-        val id: ID
-    ) : SettingsEvent()
-
-    data class OnRestoreDefaultColorPreset(
-        val id: ID
-    ) : SettingsEvent()
-
-    data class OnResetColorPresetToInitial(
-        val id: ID
-    ) : SettingsEvent()
-
-    data class OnAddColorPreset(
-        val backgroundColor: Color,
-        val fontColor: Color
-    ) : SettingsEvent()
-
-    data class OnReorderColorPresets(
-        val from: Int,
-        val to: Int
-    ) : SettingsEvent()
-
-    data class OnUpdateColorPresetColor(
-        val id: ID,
-        val backgroundColor: Color?,
-        val fontColor: Color?
-    ) : SettingsEvent()
-
-    data object OnConfirmReorderColorPresets : SettingsEvent()
-
-    data class OnScrollToColorPreset(
-        val index: Int
-    ) : SettingsEvent()
-
-    data class OnSetCodexRootFolder(
-        val uri: Uri
+    data class OnRemoveFolder(
+        val uri: Uri,
+        val removeBooks: Boolean
     ) : SettingsEvent()
 
     data object OnRemoveCodexRootFolder : SettingsEvent()

@@ -978,7 +978,13 @@ class ReaderModel @Inject constructor(
                     } else {
                         // For speed reading screen, load text directly and complete loading immediately
                         launch(Dispatchers.IO) {
-                            val text = getText.execute(_state.value.book.id)
+                            val text = try {
+                                getText.execute(_state.value.book.id)
+                            } catch (e: Exception) {
+                                Log.e("READER", "Failed to load text for book ${_state.value.book.id}", e)
+                                emptyList<us.blindmint.codex.domain.reader.ReaderText>()
+                            }
+
                             yield()
 
                             if (text.isEmpty()) {

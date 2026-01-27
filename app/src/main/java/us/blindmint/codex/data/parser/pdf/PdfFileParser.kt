@@ -6,8 +6,6 @@
 
 package us.blindmint.codex.data.parser.pdf
 
-import android.app.Application
-import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import us.blindmint.codex.R
 import us.blindmint.codex.data.parser.FileParser
@@ -24,7 +22,6 @@ class PdfFileParser @Inject constructor(
 
     override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
         return try {
-            PDFBoxResourceLoader.init(application)
             val document = PDDocument.load(cachedFile.openInputStream())
 
             val title = document.documentInformation.title

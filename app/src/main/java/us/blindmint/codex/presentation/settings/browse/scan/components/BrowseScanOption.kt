@@ -76,6 +76,12 @@ fun BrowseScanOption() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
+    private enum class FolderRemovalOption(val description: String, val action: String) {
+        RemoveBooks("Remove books and folder access", "remove"),
+        KeepBooks("Keep books, only remove folder access", "keep"),
+        Cancel("Cancel", "cancel")
+    }
+
     var showLocalFolderInfoDialog by remember { mutableStateOf(false) }
     var folderToRemove: android.content.UriPermission? by remember { mutableStateOf(null) }
     var pendingFolderUri: android.net.Uri? by remember { mutableStateOf(null) }
@@ -273,26 +279,96 @@ fun BrowseScanOption() {
 
     // Confirmation dialog for removing a folder
     if (folderToRemove != null) {
+        var selectedOption by remember { mutableStateOf<FolderRemovalOption?>(null) }
+
         AlertDialog(
-            onDismissRequest = { folderToRemove = null },
-            title = { androidx.compose.material3.Text("Remove Folder") },
+            onDismissRequest = {
+                folderToRemove = null
+                selectedOption = null
+            },
+            title = { Text("Remove Folder") },
             text = {
-                androidx.compose.material3.Text(
-                    "Are you sure you want to remove this folder? " +
-                    "This will remove those books and comics from the library."
-                )
+                Column {
+                    Text(
+                        "What should happen to books in this folder?"
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    FolderRemovalOption.entries.forEach { option ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    selectedOption = if (selectedOption == option) null else option
+                                }
+                                .background(
+                                    color = if (selectedOption == option) {
+                                        MaterialTheme.colorScheme.secondaryContainer
+                                    } else {
+                                        Color.Transparent
+                                    },
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedOption == option,
+                                onClick = { selectedOption = option }
+                            )
+                            Text(text = option.description)
+                        }
+                    }
+                }
             },
             confirmButton = {
-                androidx.compose.material3.TextButton(onClick = {
-                    settingsModel.onEvent(
-                        SettingsEvent.OnReleasePersistableUriPermission(
-                            uri = folderToRemove!!.uri
-                        )
-                    )
+                TextButton(onClick = {
+                    selectedOption?.let { option ->
+                        when (option) {
+                            is FolderRemovalOption.RemoveBooks -> {
+                                settingsModel.onEvent(
+                                    SettingsEvent.OnRemoveFolder(
+                                        uri = folderToRemove!!.uri,
+                                        removeBooks = true
+                                    )
+                                )
 
-                    coroutineScope.launch {
-                        persistedUriPermissions = getPersistedUriPermissions()
+                                coroutineScope.launch {
+                                    persistedUriPermissions = getPersistedUriPermissions()
+                                }
+                                BrowseScreen.refreshListChannel.trySend(Unit)
+                            }
+                            is FolderRemovalOption.KeepBooks -> {
+                                settingsModel.onEvent(
+                                    SettingsEvent.OnRemoveFolder(
+                                        uri = folderToRemove!!.uri,
+                                        removeBooks = false
+                                    )
+                                )
+
+                                BrowseScreen.refreshListChannel.trySend(Unit)
+                            }
+                            is FolderRemovalOption.Cancel -> {
+                            }
+                        }
                     }
+
+                    folderToRemove = null
+                    selectedOption = null
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { 
+                    folderToRemove = null
+                    selectedOption = null
+                }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
                     BrowseScreen.refreshListChannel.trySend(Unit)
                     folderToRemove = null
                 }) {

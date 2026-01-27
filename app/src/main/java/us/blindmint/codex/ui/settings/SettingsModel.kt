@@ -226,6 +226,26 @@ class SettingsModel @Inject constructor(
                 }
             }
 
+            is SettingsEvent.OnRemoveFolder -> {
+                viewModelScope.launch {
+                    if (event.removeBooks) {
+                        val folderPath = event.uri.path ?: ""
+                        val allBooks = getAllBooks.execute()
+                        val booksToRemove = allBooks.filter { it.filePath.startsWith(folderPath) }
+
+                        if (booksToRemove.isNotEmpty()) {
+                            deleteBooks.execute(booksToRemove)
+                        }
+
+                        releasePersistableUriPermission.execute(event.uri)
+                    } else {
+                        releasePersistableUriPermission.execute(event.uri)
+                    }
+
+                    BrowseScreen.refreshListChannel.trySend(Unit)
+                }
+            }
+
             is SettingsEvent.OnSelectColorPreset -> {
                 viewModelScope.launch {
                     cancelColorPresetJobs()

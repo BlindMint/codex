@@ -70,6 +70,9 @@ interface BookDao {
     @Query("SELECT * FROM historyentity WHERE bookId = :bookId ORDER BY time DESC LIMIT 1")
     fun getLatestHistoryForBook(bookId: Int): HistoryEntity?
 
+    @Query("SELECT * FROM historyentity WHERE bookId IN (:bookIds)")
+    suspend fun getLatestHistoryForBooks(bookIds: List<Int>): List<HistoryEntity>
+
     @Query("SELECT * FROM historyentity ORDER BY time DESC LIMIT :limit")
     suspend fun getRecentHistory(limit: Int): List<HistoryEntity>
 

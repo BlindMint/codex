@@ -6,7 +6,6 @@
 
 package us.blindmint.codex.data.parser.pdf
 
-import android.app.Application
 import android.util.Log
 import androidx.compose.ui.text.buildAnnotatedString
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
@@ -23,18 +22,13 @@ import javax.inject.Inject
 private const val PDF_TAG = "PDF Parser"
 
 class PdfTextParser @Inject constructor(
-    private val markdownParser: MarkdownParser,
-    private val application: Application
+    private val markdownParser: MarkdownParser
 ) : TextParser {
 
     override suspend fun parse(cachedFile: CachedFile): List<ReaderText> {
         Log.i(PDF_TAG, "Started PDF parsing: ${cachedFile.name}.")
-
+        
         return try {
-            yield()
-
-            PDFBoxResourceLoader.init(application)
-
             yield()
 
             val oldText: String
