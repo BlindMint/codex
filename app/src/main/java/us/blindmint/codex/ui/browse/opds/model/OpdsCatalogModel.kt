@@ -12,16 +12,20 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import android.content.Context
 import us.blindmint.codex.data.local.dto.OpdsSourceEntity
+import us.blindmint.codex.data.security.CredentialEncryptor
 import us.blindmint.codex.domain.opds.OpdsEntry
 import us.blindmint.codex.domain.opds.OpdsFeed
 import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.repository.OpdsRepository
 import us.blindmint.codex.domain.use_case.opds.ImportOpdsBookUseCase
 import javax.inject.Inject
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 @HiltViewModel
 class OpdsCatalogModel @Inject constructor(
+    @ApplicationContext private val application: Context,
     private val opdsRepository: OpdsRepository,
     private val importOpdsBookUseCase: ImportOpdsBookUseCase,
     private val bookRepository: BookRepository
@@ -38,18 +42,21 @@ class OpdsCatalogModel @Inject constructor(
             return
         }
 
+        val username = CredentialEncryptor.decryptCredential(application, source.usernameEncrypted)
+        val password = CredentialEncryptor.decryptCredential(application, source.passwordEncrypted)
+
         _state.value = _state.value.copy(
             isLoading = true,
             error = null,
             feedUrl = url,
             isDownloadDirectoryAccessible = isDownloadDirectoryAccessible,
-            username = source.username,
-            password = source.password
+            username = username,
+            password = password
         )
         viewModelScope.launch {
             try {
                 android.util.Log.d("OPDS_DEBUG", "Fetching feed from: $url")
-                val feed = opdsRepository.fetchFeed(url, source.username, source.password)
+                val feed = opdsRepository.fetchFeed(url, username, password)
                 val nextPageUrl = feed.links.firstOrNull { it.rel == "next" }?.href
                 android.util.Log.d("OPDS_DEBUG", "Feed loaded successfully: ${feed.entries?.size ?: 0} entries, title: ${feed.title}")
                 _state.value = _state.value.copy(
@@ -70,10 +77,11 @@ class OpdsCatalogModel @Inject constructor(
         _state.value = _state.value.copy(isLoadingMore = true)
         viewModelScope.launch {
             try {
-                val nextFeed = opdsRepository.loadMore(nextUrl, source.username, source.password)
+                val username = CredentialEncryptor.decryptCredential(application, source.usernameEncrypted)
+                val password = CredentialEncryptor.decryptCredential(application, source.passwordEncrypted)
+                val nextFeed = opdsRepository.loadMore(nextUrl, username, password)
                 val currentFeed = state.value.feed
                 if (currentFeed != null) {
-                    // Combine current entries with new entries
                     val combinedEntries = currentFeed.entries + nextFeed.entries
                     val combinedFeed = currentFeed.copy(entries = combinedEntries, links = nextFeed.links)
 
@@ -94,14 +102,18 @@ class OpdsCatalogModel @Inject constructor(
     fun downloadBook(entry: OpdsEntry, source: OpdsSourceEntity, onSuccess: () -> Unit) {
         _state.value = _state.value.copy(isDownloading = true, downloadProgress = 0f, downloadError = null)
         android.util.Log.d("OPDS_DEBUG", "Starting download for book: ${entry.title}")
+
+        val username = CredentialEncryptor.decryptCredential(application, source.usernameEncrypted)
+        val password = CredentialEncryptor.decryptCredential(application, source.passwordEncrypted)
+
         viewModelScope.launch {
             try {
                 android.util.Log.d("OPDS_DEBUG", "Calling importOpdsBookUseCase for: ${entry.title}")
                 val bookWithCover = importOpdsBookUseCase(
                     opdsEntry = entry,
                     sourceUrl = source.url,
-                    username = source.username,
-                    password = source.password,
+                    username = username,
+                    password = password,
                     onProgress = { progress ->
                         _state.value = _state.value.copy(downloadProgress = progress)
                     }
@@ -109,11 +121,9 @@ class OpdsCatalogModel @Inject constructor(
                 if (bookWithCover != null) {
                     android.util.Log.d("OPDS_DEBUG", "Book import successful, saving to database: ${bookWithCover.book.title}")
                     try {
-                        // Save the downloaded book to the database
                         val insertedBookId = bookRepository.insertBook(bookWithCover)
                         android.util.Log.d("OPDS_DEBUG", "Book saved to database with ID: $insertedBookId")
 
-                        // Trigger Library refresh
                         us.blindmint.codex.ui.library.LibraryScreen.refreshListChannel.trySend(0)
                         android.util.Log.d("OPDS_DEBUG", "Triggered Library refresh")
 
@@ -142,7 +152,6 @@ class OpdsCatalogModel @Inject constructor(
     fun search(query: String, source: OpdsSourceEntity) {
         println("DEBUG: OpdsCatalogModel.search called with query: $query")
         if (query.isBlank()) {
-            // If query is empty, reload the original feed
             loadFeed(source, source.url)
             return
         }
@@ -153,11 +162,14 @@ class OpdsCatalogModel @Inject constructor(
             return
         }
 
+        val username = CredentialEncryptor.decryptCredential(application, source.usernameEncrypted)
+        val password = CredentialEncryptor.decryptCredential(application, source.passwordEncrypted)
+
         _state.value = _state.value.copy(isLoading = true, error = null)
         viewModelScope.launch {
             try {
                 println("DEBUG: Calling opdsRepository.search...")
-                val searchFeed = opdsRepository.search(currentFeed, query, source.username, source.password)
+                val searchFeed = opdsRepository.search(currentFeed, query, username, password)
                 println("DEBUG: Search completed, entries: ${searchFeed.entries.size}")
                 _state.value = _state.value.copy(isLoading = false, feed = searchFeed)
                 println("DEBUG: Search state updated")
@@ -201,6 +213,9 @@ class OpdsCatalogModel @Inject constructor(
         val selectedEntries = _state.value.feed?.entries?.filter { it.id in _state.value.selectedBooks } ?: emptyList()
         if (selectedEntries.isEmpty()) return
 
+        val username = CredentialEncryptor.decryptCredential(application, source.usernameEncrypted)
+        val password = CredentialEncryptor.decryptCredential(application, source.passwordEncrypted)
+
         _state.value = _state.value.copy(isDownloading = true, downloadProgress = 0f)
         viewModelScope.launch {
             var completed = 0
@@ -211,8 +226,11 @@ class OpdsCatalogModel @Inject constructor(
                     val bookWithCover = importOpdsBookUseCase(
                         opdsEntry = entry,
                         sourceUrl = source.url,
-                        username = source.username,
-                        password = source.password
+                        username = username,
+                        password = password,
+                        onProgress = { progress ->
+                            _state.value = _state.value.copy(downloadProgress = progress)
+                        }
                     )
                     if (bookWithCover != null) {
                         bookRepository.insertBook(bookWithCover)

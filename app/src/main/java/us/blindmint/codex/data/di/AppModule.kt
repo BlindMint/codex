@@ -73,6 +73,8 @@ object AppModule {
                 DatabaseHelper.MIGRATION_18_19, // adds totalWordCount
                 DatabaseHelper.MIGRATION_19_20, // removes totalWordCount, summary, remoteUrl, archiveFormat
                 DatabaseHelper.MIGRATION_20_21, // adds speedReaderTotalWords
+                DatabaseHelper.MIGRATION_21_22, // adds usernameEncrypted and passwordEncrypted to OpdsSourceEntity
+                DatabaseHelper.MIGRATION_22_23, // removes plaintext username and password from OpdsSourceEntity
             )
             .allowMainThreadQueries()
             .build()

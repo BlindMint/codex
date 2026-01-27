@@ -178,7 +178,7 @@ private fun OpdsSourceItem(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            if (!source.username.isNullOrBlank()) {
+            if (!source.usernameEncrypted.isNullOrBlank()) {
                 Text(
                     text = "Authenticated",
                     style = MaterialTheme.typography.bodySmall,
