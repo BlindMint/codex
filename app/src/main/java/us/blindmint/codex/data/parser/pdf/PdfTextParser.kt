@@ -12,8 +12,8 @@ import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import kotlinx.coroutines.yield
+import us.blindmint.codex.data.parser.BaseTextParser
 import us.blindmint.codex.data.parser.MarkdownParser
-import us.blindmint.codex.data.parser.TextParser
 import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.presentation.core.util.clearAllMarkdown
@@ -23,12 +23,14 @@ private const val PDF_TAG = "PDF Parser"
 
 class PdfTextParser @Inject constructor(
     private val markdownParser: MarkdownParser
-) : TextParser {
+) : BaseTextParser() {
+
+    override val tag = PDF_TAG
 
     override suspend fun parse(cachedFile: CachedFile): List<ReaderText> {
-        Log.i(PDF_TAG, "Started PDF parsing: ${cachedFile.name}.")
-        
-        return try {
+        Log.i(tag, "Started PDF parsing: ${cachedFile.name}.")
+
+        return safeParse {
             yield()
 
             val oldText: String
@@ -71,7 +73,7 @@ class PdfTextParser @Inject constructor(
                                 chapterAdded = true
                             } else {
                                 // For PDFs, skip expensive markdown parsing as PDF text rarely contains markdown
-                                // Just use the text as-is for better performance
+                                // Just use text as-is for better performance
                                 readerText.add(
                                     ReaderText.Text(
                                         line = buildAnnotatedString { append(paragraph) }
@@ -89,15 +91,12 @@ class PdfTextParser @Inject constructor(
                 readerText.filterIsInstance<ReaderText.Text>().isEmpty() ||
                 readerText.filterIsInstance<ReaderText.Chapter>().isEmpty()
             ) {
-                Log.e(PDF_TAG, "Could not extract text from PDF.")
+                Log.e(tag, "Could not extract text from PDF.")
                 return emptyList()
             }
 
-            Log.i(PDF_TAG, "Successfully finished PDF parsing.")
+            Log.i(tag, "Successfully finished PDF parsing.")
             readerText
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
         }
     }
 }

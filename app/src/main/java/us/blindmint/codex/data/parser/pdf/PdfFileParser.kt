@@ -8,18 +8,19 @@ package us.blindmint.codex.data.parser.pdf
 
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import us.blindmint.codex.R
-import us.blindmint.codex.data.parser.FileParser
+import us.blindmint.codex.data.parser.BaseFileParser
+import us.blindmint.codex.data.parser.BookFactory
 import us.blindmint.codex.domain.file.CachedFile
-import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.BookWithCover
-import us.blindmint.codex.domain.library.category.Category
 import us.blindmint.codex.domain.ui.UIText
 import javax.inject.Inject
 
-class PdfFileParser @Inject constructor() : FileParser {
+class PdfFileParser @Inject constructor() : BaseFileParser() {
+
+    override val tag = "PDF Parser"
 
     override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
-        return try {
+        return safeParse {
             val document = PDDocument.load(cachedFile.openInputStream())
 
             val title = document.documentInformation.title
@@ -32,24 +33,12 @@ class PdfFileParser @Inject constructor() : FileParser {
 
             document.close()
 
-            BookWithCover(
-                book = Book(
-                    title = title,
-                    authors = authors,
-                    description = description,
-                    scrollIndex = 0,
-                    scrollOffset = 0,
-                    progress = 0f,
-                    filePath = cachedFile.uri.toString(),
-                    lastOpened = null,
-                    category = Category.entries[0],
-                    coverImage = null
-                ),
-                coverImage = null
+            BookFactory.createWithDefaults(
+                title = title,
+                authors = authors,
+                description = description,
+                filePath = cachedFile.uri.toString()
             )
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
         }
     }
 }

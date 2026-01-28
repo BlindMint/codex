@@ -16,10 +16,10 @@ import us.blindmint.codex.R
 import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.presentation.core.components.top_bar.collapsibleTopAppBarScrollBehavior
 import us.blindmint.codex.presentation.navigator.LocalNavigator
-import us.blindmint.codex.presentation.settings.library.LibrarySettingsContent
+import us.blindmint.codex.presentation.settings.library.LibrarySettingsScaffold
 
 @Parcelize
-object LibrarySettingsScreen : Screen, Parcelable {
+ object LibrarySettingsScreen : Screen, Parcelable {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -27,7 +27,7 @@ object LibrarySettingsScreen : Screen, Parcelable {
         val navigator = LocalNavigator.current
         val (scrollBehavior, listState) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior()
 
-        LibrarySettingsContent(
+        LibrarySettingsScaffold(
             listState = listState,
             scrollBehavior = scrollBehavior,
             navigateBack = {

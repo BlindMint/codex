@@ -9,11 +9,10 @@ package us.blindmint.codex.data.parser.fodt
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import us.blindmint.codex.R
-import us.blindmint.codex.data.parser.FileParser
+import us.blindmint.codex.data.parser.BaseFileParser
+import us.blindmint.codex.data.parser.BookFactory
 import us.blindmint.codex.domain.file.CachedFile
-import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.BookWithCover
-import us.blindmint.codex.domain.library.category.Category
 import us.blindmint.codex.domain.ui.UIText
 import javax.inject.Inject
 
@@ -21,10 +20,12 @@ import javax.inject.Inject
  * Parser for FODT (Flat OpenDocument Text) files.
  * FODT is an uncompressed XML format for OpenDocument text files.
  */
-class FodtFileParser @Inject constructor() : FileParser {
+class FodtFileParser @Inject constructor() : BaseFileParser() {
+
+    override val tag = "FODT Parser"
 
     override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
-        return try {
+        return safeParse {
             val content = cachedFile.openInputStream()?.bufferedReader()?.use { it.readText() }
                 ?: return null
 
@@ -50,24 +51,12 @@ class FodtFileParser @Inject constructor() : FileParser {
             val description = doc.select("office|meta dc|description, dc\\:description, dc|subject, dc\\:subject")
                 .firstOrNull()?.text()
 
-            BookWithCover(
-                book = Book(
-                    title = title,
-                    authors = authors,
-                    description = description,
-                    scrollIndex = 0,
-                    scrollOffset = 0,
-                    progress = 0f,
-                    filePath = cachedFile.uri.toString(),
-                    lastOpened = null,
-                    category = Category.entries[0],
-                    coverImage = null
-                ),
-                coverImage = null
+            BookFactory.createWithDefaults(
+                title = title,
+                authors = authors,
+                description = description,
+                filePath = cachedFile.uri.toString()
             )
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
         }
     }
 }

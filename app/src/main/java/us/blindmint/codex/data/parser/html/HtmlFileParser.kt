@@ -9,18 +9,19 @@ package us.blindmint.codex.data.parser.html
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import us.blindmint.codex.R
-import us.blindmint.codex.data.parser.FileParser
+import us.blindmint.codex.data.parser.BaseFileParser
+import us.blindmint.codex.data.parser.BookFactory
 import us.blindmint.codex.domain.file.CachedFile
-import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.BookWithCover
-import us.blindmint.codex.domain.library.category.Category
 import us.blindmint.codex.domain.ui.UIText
 import javax.inject.Inject
 
-class HtmlFileParser @Inject constructor() : FileParser {
+class HtmlFileParser @Inject constructor() : BaseFileParser() {
+
+    override val tag = "HTML Parser"
 
     override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
-        return try {
+        return safeParse {
             val document = cachedFile.openInputStream()?.use {
                 Jsoup.parse(it, null, "", Parser.htmlParser())
             }
@@ -32,24 +33,10 @@ class HtmlFileParser @Inject constructor() : FileParser {
                 return@run this
             }
 
-            BookWithCover(
-                book = Book(
-                    title = title,
-                    authors = emptyList(),
-                    description = null,
-                    scrollIndex = 0,
-                    scrollOffset = 0,
-                    progress = 0f,
-                    filePath = cachedFile.uri.toString(),
-                    lastOpened = null,
-                    category = Category.entries[0],
-                    coverImage = null
-                ),
-                coverImage = null
+            BookFactory.createWithDefaults(
+                title = title,
+                filePath = cachedFile.uri.toString()
             )
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
         }
     }
 }

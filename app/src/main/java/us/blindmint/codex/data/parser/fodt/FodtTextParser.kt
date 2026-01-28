@@ -9,7 +9,7 @@ package us.blindmint.codex.data.parser.fodt
 import androidx.compose.ui.text.AnnotatedString
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
-import us.blindmint.codex.data.parser.TextParser
+import us.blindmint.codex.data.parser.BaseTextParser
 import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.reader.ReaderText
 import javax.inject.Inject
@@ -18,10 +18,12 @@ import javax.inject.Inject
  * Parser for FODT (Flat OpenDocument Text) file content.
  * Extracts text from office:body > office:text section.
  */
-class FodtTextParser @Inject constructor() : TextParser {
+class FodtTextParser @Inject constructor() : BaseTextParser() {
+
+    override val tag = "FODT Parser"
 
     override suspend fun parse(cachedFile: CachedFile): List<ReaderText> {
-        return try {
+        return safeParse {
             val content = cachedFile.openInputStream()?.bufferedReader()?.use { it.readText() }
                 ?: return emptyList()
 
@@ -40,9 +42,6 @@ class FodtTextParser @Inject constructor() : TextParser {
             }
 
             textContent
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
         }
     }
 

@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import us.blindmint.codex.presentation.core.components.common.IconButton
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.R
+import us.blindmint.codex.data.util.CachedFileFactory
 import us.blindmint.codex.domain.file.CachedFileCompat
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.category.Category
@@ -92,12 +93,7 @@ fun BookInfoDetailsBottomSheet(
 
 
     val cachedFile = remember(displayBook.filePath) {
-        val uri = displayBook.filePath.toUri()
-        if (!uri.scheme.isNullOrBlank()) {
-            CachedFileCompat.fromUri(context, uri)
-        } else {
-            CachedFileCompat.fromFullPath(context, displayBook.filePath)
-        }
+        CachedFileFactory.fromBook(context, displayBook)
     }
 
     val fileSize = remember(cachedFile) {

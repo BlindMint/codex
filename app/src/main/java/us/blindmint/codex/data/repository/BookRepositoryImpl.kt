@@ -20,6 +20,7 @@ import us.blindmint.codex.data.local.dto.BookProgressHistoryEntity
 import us.blindmint.codex.data.local.dto.HistoryEntity
 import us.blindmint.codex.data.local.room.BookDao
 import us.blindmint.codex.data.mapper.book.BookMapper
+import us.blindmint.codex.data.util.CachedFileFactory
 import us.blindmint.codex.data.parser.FileParser
 import us.blindmint.codex.data.parser.SpeedReaderWordExtractor
 import us.blindmint.codex.data.parser.TextParser
@@ -70,35 +71,7 @@ class BookRepositoryImpl @Inject constructor(
      * Creates a CachedFile from book.filePath, handling both file paths and content URIs.
      */
     private fun getCachedFile(book: BookEntity): CachedFile? {
-        val uri = book.filePath.toUri()
-        return if (!uri.scheme.isNullOrBlank()) {
-            // It's a URI (content:// or file://)
-            val name = if (uri.scheme == "content") {
-                uri.lastPathSegment?.let { Uri.decode(it) } ?: "unknown"
-            } else {
-                uri.lastPathSegment ?: book.filePath.substringAfterLast(File.separator)
-            }
-            CachedFileCompat.fromUri(
-                context = application,
-                uri = uri,
-                builder = CachedFileCompat.build(
-                    name = name,
-                    path = book.filePath,
-                    isDirectory = false
-                )
-            )
-        } else {
-            // It's a file path
-            CachedFileCompat.fromFullPath(
-                context = application,
-                path = book.filePath,
-                builder = CachedFileCompat.build(
-                    name = book.filePath.substringAfterLast(File.separator),
-                    path = book.filePath,
-                    isDirectory = false
-                )
-            )
-        }
+        return CachedFileFactory.fromBookEntity(application, book)
     }
 
     /**

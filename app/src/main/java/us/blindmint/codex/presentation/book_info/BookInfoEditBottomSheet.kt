@@ -37,7 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
-import us.blindmint.codex.domain.file.CachedFileCompat
+import us.blindmint.codex.data.util.CachedFileFactory
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.presentation.core.components.common.IconButton
 import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
@@ -64,12 +64,7 @@ fun BookInfoEditBottomSheet(
 ) {
     val context = LocalContext.current
     val cachedFile = remember(book.filePath) {
-        val uri = book.filePath.toUri()
-        if (!uri.scheme.isNullOrBlank()) {
-            CachedFileCompat.fromUri(context, uri)
-        } else {
-            CachedFileCompat.fromFullPath(context, book.filePath)
-        }
+        CachedFileFactory.fromBook(context, book)
     }
 
     val fileExists = remember(cachedFile) {
