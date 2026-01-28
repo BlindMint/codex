@@ -22,14 +22,9 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.library.category.Category
-import us.blindmint.codex.domain.use_case.book.CanResetCover
-import us.blindmint.codex.domain.use_case.book.DeleteBooks
-import us.blindmint.codex.domain.use_case.book.DeleteProgressHistoryUseCase
-import us.blindmint.codex.domain.use_case.book.GetBookById
-import us.blindmint.codex.domain.use_case.book.ResetCoverImage
-import us.blindmint.codex.domain.use_case.book.UpdateBook
-import us.blindmint.codex.domain.use_case.opds.RefreshBookMetadataFromOpds
-import us.blindmint.codex.domain.use_case.book.UpdateCoverImageOfBook
+import us.blindmint.codex.data.repository.OpdsRefreshRepository
+import us.blindmint.codex.domain.repository.BookRepository
+import us.blindmint.codex.domain.repository.HistoryRepository
 import us.blindmint.codex.domain.repository.OpdsRepository
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.browse.BrowseScreen
@@ -39,14 +34,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BookInfoModel @Inject constructor(
-    private val getBookById: GetBookById,
-    private val updateBook: UpdateBook,
-    private val canResetCover: CanResetCover,
-    private val updateCoverImageOfBook: UpdateCoverImageOfBook,
-    private val resetCoverImage: ResetCoverImage,
-    private val deleteBooks: DeleteBooks,
-    private val deleteProgressHistory: DeleteProgressHistoryUseCase,
-    private val refreshBookMetadataFromOpds: RefreshBookMetadataFromOpds,
+    private val bookRepository: BookRepository,
+    private val historyRepository: HistoryRepository,
+    private val opdsRefreshRepository: OpdsRefreshRepository,
     private val opdsRepository: OpdsRepository
 ) : ViewModel() {
 
@@ -96,7 +86,7 @@ class BookInfoModel @Inject constructor(
                             image
                         )
 
-                        val newCoverImage = getBookById.execute(
+                        val newCoverImage = bookRepository.getBookById(
                             _state.value.book.id
                         )?.coverImage ?: return@launch
 
@@ -106,7 +96,7 @@ class BookInfoModel @Inject constructor(
                                     coverImage = newCoverImage
                                 ),
                                 bottomSheet = null,
-                                canResetCover = canResetCover.execute(bookId = it.book.id)
+                                canResetCover = bookRepository.canResetCover(bookId = it.book.id)
                             )
                         }
 
@@ -132,7 +122,7 @@ class BookInfoModel @Inject constructor(
                             return@launch
                         }
 
-                        val book = getBookById.execute(_state.value.book.id)
+                        val book = bookRepository.getBookById(_state.value.book.id)
 
                         if (book == null) {
                             withContext(Dispatchers.Main) {
@@ -176,7 +166,7 @@ class BookInfoModel @Inject constructor(
                                     coverImage = null
                                 ),
                                 bottomSheet = null,
-                                canResetCover = canResetCover.execute(bookId = it.book.id)
+                                canResetCover = bookRepository.canResetCover(bookId = it.book.id)
                             )
                         }
 
@@ -193,7 +183,7 @@ class BookInfoModel @Inject constructor(
                 is BookInfoEvent.OnCheckCoverReset -> {
                     launch(Dispatchers.IO) {
                         if (_state.value.book.id == -1) return@launch
-                        canResetCover.execute(_state.value.book.id).apply {
+                        bookRepository.canResetCover(_state.value.book.id).apply {
                             _state.update {
                                 it.copy(
                                     canResetCover = this
@@ -642,7 +632,7 @@ class BookInfoModel @Inject constructor(
                         }
 
                         try {
-                            val refreshedBook = refreshBookMetadataFromOpds.execute(currentBook) { uuid, isbn ->
+                            val refreshedBook = opdsRefreshRepository.refreshBookMetadata(currentBook) { uuid, isbn ->
                                 // Find OPDS entry by UUID or ISBN from the book's OPDS source
                                 try {
                                     val feed = opdsRepository.fetchFeed(currentBook.opdsSourceUrl!!)
@@ -795,7 +785,7 @@ class BookInfoModel @Inject constructor(
         navigateBack: () -> Unit
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val book = getBookById.execute(bookId)
+            val book = bookRepository.getBookById(bookId)
 
             if (book == null) {
                 navigateBack()

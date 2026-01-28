@@ -122,7 +122,7 @@ class ReaderModel @Inject constructor(
 
                         yield()
 
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -224,7 +224,7 @@ class ReaderModel @Inject constructor(
                             )
                         }
 
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(300)
                         HistoryScreen.refreshListChannel.trySend(300)
@@ -334,7 +334,7 @@ class ReaderModel @Inject constructor(
                                         )
                                     }
 
-                                updateBook.execute(_state.value.book)
+                                bookRepository.updateBook(_state.value.book)
                             }
                         }
 
@@ -353,7 +353,7 @@ class ReaderModel @Inject constructor(
                                         )
                                     }
 
-                                    updateBook.execute(_state.value.book)
+                                    bookRepository.updateBook(_state.value.book)
                         }
 
                         WindowCompat.getInsetsController(
@@ -605,7 +605,7 @@ class ReaderModel @Inject constructor(
                             customName = customName,
                             pageNumber = pageNumber
                         )
-                        insertBookmark.execute(currentBookmark)
+                        bookmarkRepository.insertBookmark(currentBookmark)
 
                         // Reload bookmarks to update the list
                         val bookmarks = getBookmarksByBookId.execute(_state.value.book.id)
@@ -860,7 +860,7 @@ class ReaderModel @Inject constructor(
                             )
                         }
 
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
                         LibraryScreen.refreshListChannel.trySend(300)
                         HistoryScreen.refreshListChannel.trySend(300)
                     }
@@ -886,7 +886,7 @@ class ReaderModel @Inject constructor(
         reuseExistingText: Boolean = false
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val book = getBookById.execute(bookId)
+            val book = bookRepository.getBookById(bookId)
 
             if (book == null) {
                 navigateBack()
@@ -1020,7 +1020,7 @@ class ReaderModel @Inject constructor(
 
                             yield()
 
-                            updateBook.execute(_state.value.book)
+                            bookRepository.updateBook(_state.value.book)
 
                             LibraryScreen.refreshListChannel.trySend(0)
                             HistoryScreen.refreshListChannel.trySend(0)
@@ -1056,7 +1056,7 @@ class ReaderModel @Inject constructor(
                     )
                 }
 
-                updateBook.execute(book)
+                bookRepository.updateBook(book)
                 LibraryScreen.refreshListChannel.trySend(0)
                 HistoryScreen.refreshListChannel.trySend(0)
             }
@@ -1091,7 +1091,7 @@ class ReaderModel @Inject constructor(
                     )
                 }
 
-                updateBook.execute(_state.value.book)
+                bookRepository.updateBook(_state.value.book)
 
                 LibraryScreen.refreshListChannel.trySend(0)
                 HistoryScreen.refreshListChannel.trySend(0)
@@ -1322,7 +1322,7 @@ class ReaderModel @Inject constructor(
 
     fun deleteBookmarkItem(bookmark: us.blindmint.codex.domain.bookmark.Bookmark) {
         viewModelScope.launch(Dispatchers.IO) {
-            deleteBookmark.execute(bookmark)
+            bookmarkRepository.deleteBookmark(bookmark)
 
             // Reload bookmarks to update the list
             val bookmarks = getBookmarksByBookId.execute(_state.value.book.id)

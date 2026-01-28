@@ -63,7 +63,7 @@ class SpeedReaderModel @Inject constructor(
             }
 
             Log.d("SPEED_READER_LOAD", "[3] Fetching book from database...")
-            val loadedBook = getBookById.execute(bookId)
+            val loadedBook = bookRepository.getBookById(bookId)
             if (loadedBook == null) {
                 Log.e("SPEED_READER_LOAD", "[3] Book not found in database!")
                 onError()
@@ -94,7 +94,7 @@ class SpeedReaderModel @Inject constructor(
             if (!loadedBook.isComic) {
                 try {
                     Log.d("SPEED_READER_LOAD", "[5] Loading words from repository...")
-                    val loadedWords = getSpeedReaderWords.execute(bookId)
+                    val loadedWords = bookRepository.getSpeedReaderWords(bookId)
                     Log.d("SPEED_READER_LOAD", "[5] Words loaded from repository - count=${loadedWords.size}")
 
                     if (loadedWords.isEmpty()) {
@@ -108,7 +108,7 @@ class SpeedReaderModel @Inject constructor(
                         Log.d("SPEED_READER_LOAD", "[6] Setting state values:")
                         Log.d("SPEED_READER_LOAD", "[6]   words.size = ${loadedWords.size}")
                         Log.d("SPEED_READER_LOAD", "[6]   totalWords = ${loadedWords.size}")
-                        Log.d("SPEED_READER_LOAD", "[6]   loadedBook.speedReaderWordIndex = ${loadedBook.speedReaderWordIndex}")
+                        Log.d("SPEED_READER_LOAD", "[6]   book.value?.speedReaderWordIndex = ${loadedBook.value?.speedReaderWordIndex}")
 
                         // Save total words to database if not already saved or if it differs
                         if (loadedBook.speedReaderTotalWords != loadedWords.size) {
