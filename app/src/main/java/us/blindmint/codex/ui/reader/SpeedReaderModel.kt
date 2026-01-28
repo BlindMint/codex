@@ -63,17 +63,17 @@ class SpeedReaderModel @Inject constructor(
             }
 
             Log.d("SPEED_READER_LOAD", "[3] Fetching book from database...")
-            val loadedBook = bookRepository.getBookById(bookId)
+            val loadedBook = getBookById.execute(bookId)
             if (loadedBook == null) {
                 Log.e("SPEED_READER_LOAD", "[3] Book not found in database!")
                 onError()
                 return@launch
             }
 
-            Log.d("SPEED_READER_LOAD", "[3] Book loaded from DB - title='${loadedBook.value?.title}', speedReaderWordIndex=${loadedBook.value?.speedReaderWordIndex}, isComic=${loadedBook.value?.isComic}")
+            Log.d("SPEED_READER_LOAD", "[3] Book loaded from DB - title='${loadedBook.title}', speedReaderWordIndex=${loadedBook.speedReaderWordIndex}, isComic=${loadedBook.isComic}")
 
             // Mark that this book has been opened in speed reader
-            val updatedBook = loadedBook.value?.copy(speedReaderHasBeenOpened = true)
+            val updatedBook = loadedBook.copy(speedReaderHasBeenOpened = true)
             book.value = updatedBook
             Log.d("SPEED_READER_LOAD", "[4] Updated book stored in state - id=${updatedBook.id}")
 
@@ -108,7 +108,7 @@ class SpeedReaderModel @Inject constructor(
                         Log.d("SPEED_READER_LOAD", "[6] Setting state values:")
                         Log.d("SPEED_READER_LOAD", "[6]   words.size = ${loadedWords.size}")
                         Log.d("SPEED_READER_LOAD", "[6]   totalWords = ${loadedWords.size}")
-                        Log.d("SPEED_READER_LOAD", "[6]   book.value?.speedReaderWordIndex = ${loadedBook.value?.speedReaderWordIndex}")
+                        Log.d("SPEED_READER_LOAD", "[6]   book.speedReaderWordIndex = ${loadedBook.speedReaderWordIndex}")
 
                         // Save total words to database if not already saved or if it differs
                         if (loadedBook.speedReaderTotalWords != loadedWords.size) {
@@ -145,9 +145,7 @@ class SpeedReaderModel @Inject constructor(
                     errorMessage.value = UIText.StringResource(R.string.error_could_not_get_text)
                     isLoading.value = false
                 }
-            } else {
-                // Comics not supported in speed reader
-                errorMessage.value = UIText.StringValue("Comics not supported in speed reader")
+            } else if (!loadedBook.isComic) {
                 isLoading.value = false
             }
         }

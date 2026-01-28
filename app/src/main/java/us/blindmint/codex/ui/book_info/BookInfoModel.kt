@@ -86,9 +86,9 @@ class BookInfoModel @Inject constructor(
                             image
                         )
 
-                        val newCoverImage = bookRepository.getBookById(
-                            _state.value.book.id
-                        )?.coverImage ?: return@launch
+                        val newCoverImage = bookRepository.getBooksById(
+                            listOf(_state.value.book.id)
+                        ).firstOrNull()?.coverImage ?: return@launch
 
                         _state.update {
                             it.copy(
@@ -122,7 +122,7 @@ class BookInfoModel @Inject constructor(
                             return@launch
                         }
 
-                        val book = bookRepository.getBookById(_state.value.book.id)
+                        val book = bookRepository.getBooksById(listOf(_state.value.book.id)).firstOrNull()
 
                         if (book == null) {
                             withContext(Dispatchers.Main) {
@@ -415,7 +415,7 @@ class BookInfoModel @Inject constructor(
 
                 is BookInfoEvent.OnClearProgressHistory -> {
                     launch(Dispatchers.IO) {
-                        historyRepository.deleteProgressHistory(_state.value.book)
+                        bookRepository.deleteProgressHistory(_state.value.book)
 
                         withContext(Dispatchers.Main) {
                             event.context.getString(R.string.progress_history_cleared)
@@ -785,7 +785,7 @@ class BookInfoModel @Inject constructor(
         navigateBack: () -> Unit
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val book = bookRepository.getBookById(bookId)
+            val book = bookRepository.getBooksById(listOf(bookId)).firstOrNull()
 
             if (book == null) {
                 navigateBack()

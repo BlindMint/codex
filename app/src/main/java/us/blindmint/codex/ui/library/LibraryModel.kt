@@ -307,7 +307,7 @@ class LibraryModel @Inject constructor(
             viewModelScope.launch(Dispatchers.IO) {
                 _state.value.books.forEach { book ->
                     if (book.selected) {
-                        historyRepository.deleteProgressHistory(book.data)
+                        bookRepository.deleteProgressHistory(book.data)
                     }
                 }
 
