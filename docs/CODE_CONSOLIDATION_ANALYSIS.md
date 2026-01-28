@@ -1,10 +1,31 @@
 # Code Consolidation Analysis & Implementation Plan
 
 **Generated:** 2026-01-28
-**Last Updated:** 2026-01-28
+**Last Updated:** 2026-01-28 (Phase 1.2 Complete)
 **Branch:** refactor/phase1-1-thin-wrapper-elimination
 **Project:** Codex - Material You eBook Reader for Android
-**Current Phase:** Phase 1.1 - Compilation Errors Fixed
+**Current Phase:** Phase 1.2 - FormatDetector Integration (✅ COMPLETE)
+
+## Phase 1.2 Completion Summary (2026-01-28)
+
+**Status:** ✅ **COMPLETED**
+
+**Changes Made:**
+1. Updated `FileParserImpl.kt` to use `FormatDetector.detect()` - 30 lines eliminated (83 → 53 lines)
+2. Updated `TextParserImpl.kt` to use `FormatDetector.detect()` - 27 lines eliminated (84 → 57 lines)
+3. Total code reduction: **57 lines** (matches estimated 40-50 lines)
+
+**Files Modified:**
+- `app/src/main/java/us/blindmint/codex/data/parser/FileParserImpl.kt`
+- `app/src/main/java/us/blindmint/codex/data/parser/TextParserImpl.kt`
+
+**Benefits:**
+- Single source of truth for format detection logic
+- Easier to add new file formats (modify only FormatDetector)
+- Reduced code duplication between FileParserImpl and TextParserImpl
+- Verified no impact on speed reader functionality
+
+**Next Phase:** Phase 1.3 - BaseFileParser Consolidation
 
 ---
 
