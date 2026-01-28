@@ -70,10 +70,10 @@ class SpeedReaderModel @Inject constructor(
                 return@launch
             }
 
-            Log.d("SPEED_READER_LOAD", "[3] Book loaded from DB - title='${loadedBook.title}', speedReaderWordIndex=${loadedBook.speedReaderWordIndex}, isComic=${loadedBook.isComic}")
+            Log.d("SPEED_READER_LOAD", "[3] Book loaded from DB - title='${loadedBook.value?.title}', speedReaderWordIndex=${loadedBook.value?.speedReaderWordIndex}, isComic=${loadedBook.value?.isComic}")
 
             // Mark that this book has been opened in speed reader
-            val updatedBook = loadedBook.copy(speedReaderHasBeenOpened = true)
+            val updatedBook = loadedBook.value?.copy(speedReaderHasBeenOpened = true)
             book.value = updatedBook
             Log.d("SPEED_READER_LOAD", "[4] Updated book stored in state - id=${updatedBook.id}")
 

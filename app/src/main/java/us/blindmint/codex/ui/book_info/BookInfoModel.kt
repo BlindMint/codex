@@ -81,7 +81,7 @@ class BookInfoModel @Inject constructor(
                             BitmapFactory.decodeStream(it)
                         } ?: return@launch
 
-                        updateCoverImageOfBook.execute(
+                        bookRepository.updateCoverImageOfBook(
                             _state.value.book,
                             image
                         )
@@ -112,7 +112,7 @@ class BookInfoModel @Inject constructor(
 
                 is BookInfoEvent.OnResetCover -> {
                     launch {
-                        val result = resetCoverImage.execute(_state.value.book.id)
+                        val result = bookRepository.resetCoverImage(_state.value.book.id)
 
                         if (!result) {
                             withContext(Dispatchers.Main) {
@@ -156,7 +156,7 @@ class BookInfoModel @Inject constructor(
                             return@launch
                         }
 
-                        updateCoverImageOfBook.execute(
+                        bookRepository.updateCoverImageOfBook(
                             bookWithOldCover = _state.value.book,
                             newCoverImage = null
                         )
@@ -218,7 +218,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -249,7 +249,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -278,7 +278,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -307,7 +307,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -344,7 +344,7 @@ class BookInfoModel @Inject constructor(
                             )
                         }
 
-                        deleteBooks.execute(listOf(_state.value.book))
+                        bookRepository.deleteBooks(listOf(_state.value.book))
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -394,7 +394,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         LibraryScreen.scrollToPageCompositionChannel.trySend(
@@ -415,7 +415,7 @@ class BookInfoModel @Inject constructor(
 
                 is BookInfoEvent.OnClearProgressHistory -> {
                     launch(Dispatchers.IO) {
-                        deleteProgressHistory.execute(_state.value.book)
+                        historyRepository.deleteProgressHistory(_state.value.book)
 
                         withContext(Dispatchers.Main) {
                             event.context.getString(R.string.progress_history_cleared)
@@ -435,7 +435,7 @@ class BookInfoModel @Inject constructor(
                             speedReaderWordIndex = 0,
                             speedReaderHasBeenOpened = false
                         )
-                        updateBook.execute(updatedBook)
+                        bookRepository.updateBook(updatedBook)
                         _state.update {
                             it.copy(book = updatedBook)
                         }
@@ -476,7 +476,7 @@ class BookInfoModel @Inject constructor(
                             baseBook
                         }
 
-                        updateBook.execute(finalBook)
+                        bookRepository.updateBook(finalBook)
                         _state.update {
                             it.copy(book = finalBook)
                         }
@@ -533,7 +533,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -568,7 +568,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -603,7 +603,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -648,7 +648,7 @@ class BookInfoModel @Inject constructor(
                                 _state.update {
                                     it.copy(book = refreshedBook)
                                 }
-                                updateBook.execute(refreshedBook)
+                                bookRepository.updateBook(refreshedBook)
                             }
 
                             LibraryScreen.refreshListChannel.trySend(0)
@@ -668,7 +668,7 @@ class BookInfoModel @Inject constructor(
                 is BookInfoEvent.OnToggleFavorite -> {
                     val currentBook = _state.value.book
                     val updatedBook = currentBook.copy(isFavorite = !currentBook.isFavorite)
-                    updateBook.execute(updatedBook)
+                    bookRepository.updateBook(updatedBook)
                     _state.update { it.copy(book = updatedBook) }
                     LibraryScreen.refreshListChannel.trySend(0)
                 }
@@ -719,7 +719,7 @@ class BookInfoModel @Inject constructor(
                 is BookInfoEvent.OnConfirmSaveChanges -> {
                     launch {
                         val bookToSave = _state.value.editedBook ?: return@launch
-                        updateBook.execute(bookToSave)
+                        bookRepository.updateBook(bookToSave)
 
                         _state.update {
                             it.copy(
@@ -762,7 +762,7 @@ class BookInfoModel @Inject constructor(
                 is BookInfoEvent.OnChangeCategory -> {
                     launch {
                         val updatedBook = _state.value.book.copy(category = event.category)
-                        updateBook.execute(updatedBook)
+                        bookRepository.updateBook(updatedBook)
 
                         _state.update {
                             it.copy(
