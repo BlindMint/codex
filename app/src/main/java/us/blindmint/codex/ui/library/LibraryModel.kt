@@ -29,10 +29,7 @@ import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.SelectableBook
 import us.blindmint.codex.domain.library.sort.LibrarySortOrder
 import us.blindmint.codex.domain.repository.BookRepository
-import us.blindmint.codex.domain.use_case.book.DeleteBooks
-import us.blindmint.codex.domain.use_case.book.DeleteProgressHistoryUseCase
-import us.blindmint.codex.domain.use_case.book.GetBooks
-import us.blindmint.codex.domain.use_case.book.UpdateBook
+import us.blindmint.codex.domain.repository.HistoryRepository
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.browse.BrowseScreen
 import us.blindmint.codex.ui.history.HistoryScreen
@@ -40,11 +37,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LibraryModel @Inject constructor(
-    private val getBooks: GetBooks,
     private val bookRepository: BookRepository,
-    private val deleteBooks: DeleteBooks,
-    private val moveBooks: UpdateBook,
-    private val deleteProgressHistory: DeleteProgressHistoryUseCase
+    private val historyRepository: HistoryRepository
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -223,7 +217,7 @@ class LibraryModel @Inject constructor(
                 viewModelScope.launch {
                     _state.value.books.forEach { book ->
                         if (!book.selected) return@forEach
-                        moveBooks.execute(
+                        bookRepository.updateBook(
                             book.data.copy(
                                 category = event.selectedCategory
                             )
@@ -273,7 +267,7 @@ class LibraryModel @Inject constructor(
 
             is LibraryEvent.OnActionDeleteDialog -> {
                 viewModelScope.launch {
-                    deleteBooks.execute(
+                    bookRepository.deleteBooks(
                         _state.value.books.mapNotNull {
                             if (!it.selected) return@mapNotNull null
                             it.data
@@ -313,7 +307,7 @@ class LibraryModel @Inject constructor(
             viewModelScope.launch(Dispatchers.IO) {
                 _state.value.books.forEach { book ->
                     if (book.selected) {
-                        deleteProgressHistory.execute(book.data)
+                        historyRepository.deleteProgressHistory(book.data)
                     }
                 }
 
@@ -380,7 +374,7 @@ class LibraryModel @Inject constructor(
 
                 selectedBooks.forEach { book ->
                     if (book.data.isFavorite != newFavoriteState) {
-                        moveBooks.execute(book.data.copy(isFavorite = newFavoriteState))
+                        bookRepository.updateBook(book.data.copy(isFavorite = newFavoriteState))
                     }
                 }
 
@@ -453,7 +447,7 @@ class LibraryModel @Inject constructor(
                         if (book.selected) {
                             // Non-destructive merge: add new tags, remove deleted tags
                             val updatedTags = (book.data.tags.toSet() + addedTags.toSet() - removedTags.toSet()).toList().sorted()
-                            moveBooks.execute(book.data.copy(tags = updatedTags))
+                            bookRepository.updateBook(book.data.copy(tags = updatedTags))
                         }
                     }
 
@@ -497,7 +491,7 @@ class LibraryModel @Inject constructor(
                         if (book.selected) {
                             // Non-destructive merge: add new series, remove deleted series
                             val updatedSeries = (book.data.series.toSet() + addedSeries.toSet() - removedSeries.toSet()).toList().sorted()
-                            moveBooks.execute(book.data.copy(series = updatedSeries))
+                            bookRepository.updateBook(book.data.copy(series = updatedSeries))
                         }
                     }
 
@@ -541,7 +535,7 @@ class LibraryModel @Inject constructor(
                         if (book.selected) {
                             // Non-destructive merge: add new languages, remove deleted languages
                             val updatedLanguages = (book.data.languages.toSet() + addedLanguages.toSet() - removedLanguages.toSet()).toList().sorted()
-                            moveBooks.execute(book.data.copy(languages = updatedLanguages))
+                            bookRepository.updateBook(book.data.copy(languages = updatedLanguages))
                         }
                     }
 
@@ -585,7 +579,7 @@ class LibraryModel @Inject constructor(
                         if (book.selected) {
                             // Non-destructive merge: add new authors, remove deleted authors
                             val updatedAuthors = (book.data.authors.toSet() + addedAuthors.toSet() - removedAuthors.toSet()).toList().sorted()
-                            moveBooks.execute(book.data.copy(authors = updatedAuthors))
+                            bookRepository.updateBook(book.data.copy(authors = updatedAuthors))
                         }
                     }
 
@@ -619,7 +613,7 @@ class LibraryModel @Inject constructor(
                         } else {
                             book
                         }
-                        moveBooks.execute(updatedBook)
+                        bookRepository.updateBook(updatedBook)
                     }
 
                     _state.update {
@@ -671,7 +665,7 @@ class LibraryModel @Inject constructor(
     private suspend fun getBooksFromDatabase(
         query: String = if (_state.value.showSearch) _state.value.searchQuery else ""
     ) {
-        val allBooks = getBooks.execute(query)
+        val allBooks = bookRepository.getBooks(query)
         val filteredBooks = applyFilters(allBooks, _state.value.filterState)
         val sortedBooks = filteredBooks
             .sortedWith(compareByDescending<Book> { it.lastOpened }.thenBy { it.title })

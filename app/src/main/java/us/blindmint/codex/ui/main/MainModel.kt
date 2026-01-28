@@ -40,9 +40,8 @@ import us.blindmint.codex.domain.ui.toDarkTheme
 import us.blindmint.codex.domain.ui.toPureDark
 import us.blindmint.codex.domain.ui.toThemeContrast
 import us.blindmint.codex.domain.repository.BookRepository
+import us.blindmint.codex.domain.repository.DataStoreRepository
 import us.blindmint.codex.domain.use_case.data_store.ChangeLanguage
-import us.blindmint.codex.domain.use_case.data_store.GetAllSettings
-import us.blindmint.codex.domain.use_case.data_store.SetDatastore
 import us.blindmint.codex.domain.util.toHorizontalAlignment
 import us.blindmint.codex.presentation.core.constants.DataStoreConstants
 import us.blindmint.codex.presentation.core.constants.provideFonts
@@ -54,10 +53,9 @@ import javax.inject.Inject
 @HiltViewModel
 class MainModel @Inject constructor(
     private val stateHandle: SavedStateHandle,
-
-    private val setDatastore: SetDatastore,
+    
+    private val dataStoreRepository: DataStoreRepository,
     private val changeLanguage: ChangeLanguage,
-    private val getAllSettings: GetAllSettings,
     private val bookRepository: BookRepository
 ) : ViewModel() {
 
@@ -1038,7 +1036,7 @@ class MainModel @Inject constructor(
 
     fun init(settingsModelReady: StateFlow<Boolean>) {
         viewModelScope.launch(Dispatchers.Main) {
-            val settings = getAllSettings.execute()
+            val settings = dataStoreRepository.getAllSettings()
 
             /* All additional execution */
             changeLanguage.execute(settings.language)
@@ -1073,7 +1071,7 @@ class MainModel @Inject constructor(
 
     fun reloadSettings() {
         viewModelScope.launch(Dispatchers.Main) {
-            val settings = getAllSettings.execute()
+            val settings = dataStoreRepository.getAllSettings()
 
             /* All additional execution */
             changeLanguage.execute(settings.language)
@@ -1201,8 +1199,8 @@ class MainModel @Inject constructor(
 
     private fun handleLibraryGridSizeSettingsUpdate(event: MainEvent.OnChangeLibraryGridSizeSettings) {
         viewModelScope.launch(Dispatchers.Main.immediate) {
-            setDatastore.execute(key = DataStoreConstants.LIBRARY_AUTO_GRID_SIZE, value = event.value == 0)
-            setDatastore.execute(key = DataStoreConstants.LIBRARY_GRID_SIZE, value = event.value)
+            dataStoreRepository.putDataToDataStore(key = DataStoreConstants.LIBRARY_AUTO_GRID_SIZE, value = event.value == 0)
+            dataStoreRepository.putDataToDataStore(key =                 DataStoreConstants.LIBRARY_GRID_SIZE, event.value)
             updateStateWithSavedHandle {
                 it.copy(libraryAutoGridSize = event.value == 0, libraryGridSize = event.value)
             }
@@ -1211,8 +1209,8 @@ class MainModel @Inject constructor(
 
     private fun handleBrowseGridSizeSettingsUpdate(event: MainEvent.OnChangeBrowseGridSizeSettings) {
         viewModelScope.launch(Dispatchers.Main.immediate) {
-            setDatastore.execute(key = DataStoreConstants.BROWSE_AUTO_GRID_SIZE, value = event.value == 0)
-            setDatastore.execute(key = DataStoreConstants.BROWSE_GRID_SIZE, value = event.value)
+            dataStoreRepository.putDataToDataStore(key = DataStoreConstants.BROWSE_AUTO_GRID_SIZE, value = event.value == 0)
+            dataStoreRepository.putDataToDataStore(key =                 DataStoreConstants.BROWSE_GRID_SIZE, event.value)
             updateStateWithSavedHandle {
                 it.copy(browseAutoGridSize = event.value == 0, browseGridSize = event.value)
             }
@@ -1228,7 +1226,7 @@ class MainModel @Inject constructor(
         updateState: V.(MainState) -> MainState
     ) {
         viewModelScope.launch(Dispatchers.Main.immediate) {
-            setDatastore.execute(key = key, value = value)
+            dataStoreRepository.putDataToDataStore(key =                 key, value)
             updateStateWithSavedHandle {
                 value.updateState(it)
             }

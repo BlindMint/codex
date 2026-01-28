@@ -25,11 +25,8 @@ import kotlinx.coroutines.yield
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.history.GroupedHistory
 import us.blindmint.codex.domain.history.History
-import us.blindmint.codex.domain.use_case.book.GetBooksById
-import us.blindmint.codex.domain.use_case.history.DeleteHistory
-import us.blindmint.codex.domain.use_case.history.DeleteWholeHistory
-import us.blindmint.codex.domain.use_case.history.GetHistory
-import us.blindmint.codex.domain.use_case.history.InsertHistory
+import us.blindmint.codex.domain.repository.BookRepository
+import us.blindmint.codex.domain.repository.HistoryRepository
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.library.LibraryScreen
 import java.text.SimpleDateFormat
@@ -40,11 +37,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HistoryModel @Inject constructor(
-    private val getHistory: GetHistory,
-    private val getBooksById: GetBooksById,
-    private val insertHistory: InsertHistory,
-    private val deleteHistory: DeleteHistory,
-    private val deleteWholeHistory: DeleteWholeHistory
+    private val historyRepository: HistoryRepository,
+    private val bookRepository: BookRepository
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -78,7 +72,7 @@ class HistoryModel @Inject constructor(
         }
         viewModelScope.launch(Dispatchers.IO) {
             HistoryScreen.insertHistoryChannel.receiveAsFlow().collectLatest {
-                insertHistory.execute(
+                historyRepository.insertHistory(
                     History(
                         bookId = it,
                         book = null,
@@ -199,7 +193,7 @@ class HistoryModel @Inject constructor(
 
             is HistoryEvent.OnDeleteHistoryEntry -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    deleteHistory.execute(event.history)
+                    historyRepository.deleteHistory(event.history)
 
                     onEvent(
                         HistoryEvent.OnRefreshList(
@@ -229,7 +223,7 @@ class HistoryModel @Inject constructor(
                     when (snackbarResult) {
                         SnackbarResult.Dismissed -> Unit
                         SnackbarResult.ActionPerformed -> {
-                            insertHistory.execute(event.history)
+                            historyRepository.insertHistory(event.history)
                             LibraryScreen.refreshListChannel.trySend(0)
 
                             onEvent(
@@ -258,11 +252,11 @@ class HistoryModel @Inject constructor(
                     _state.update {
                         it.copy(
                             dialog = null,
-                            isLoading = true
-                        )
-                    }
+                        isLoading = true
+                    )
+                }
 
-                    deleteWholeHistory.execute()
+                historyRepository.deleteWholeHistory()
                     LibraryScreen.refreshListChannel.trySend(0)
                     onEvent(
                         HistoryEvent.OnRefreshList(
@@ -307,10 +301,10 @@ class HistoryModel @Inject constructor(
             return maxElementsById.filterNotNull()
         }
 
-        val history = getHistory.execute().sortedByDescending {
+        val history = historyRepository.getHistory().sortedByDescending {
             it.time
         }.run {
-            val books = getBooksById.execute(
+            val books = bookRepository.getBooksById(
                 this.map { it.bookId }.distinct()
             ).toMutableList()
 
