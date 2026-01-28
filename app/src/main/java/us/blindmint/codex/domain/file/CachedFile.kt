@@ -221,12 +221,12 @@ class CachedFile(
             )
         }
 
-        context.contentResolver.query(
-            uri,
-            projection.toTypedArray(),
-            null, null, null
-        )?.use { cursor ->
-            try {
+        try {
+            context.contentResolver.query(
+                uri,
+                projection.toTypedArray(),
+                null, null, null
+            )?.use { cursor ->
                 if (cursor.moveToFirst()) {
                     val queryResult = mutableMapOf<String, Any?>()
 
@@ -291,9 +291,9 @@ class CachedFile(
                         isDirectory = isDirectoryQuery
                     )
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
 
         return QueryParams(
