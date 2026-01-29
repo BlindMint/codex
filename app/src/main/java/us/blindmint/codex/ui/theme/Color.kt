@@ -11,6 +11,7 @@ import androidx.annotation.StringRes
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.graphics.Color
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.ui.ThemeContrast
 import us.blindmint.codex.ui.theme.color.uranusTheme
@@ -88,6 +89,212 @@ enum class Theme(
  */
 fun String.toTheme(): Theme {
     return Theme.valueOf(this)
+}
+
+/**
+ * Returns the background and onBackground colors for a given theme.
+ * This is a non-Composable version for use in ViewModels where
+ * Compose context is not available.
+ *
+ * For themes with dynamic colors (Mercury), uses generic Dark/Light presets.
+ */
+fun getThemeReaderColors(
+    theme: Theme,
+    isDark: Boolean,
+    themeContrast: ThemeContrast = ThemeContrast.STANDARD
+): Pair<Color, Color> {
+    return when (theme) {
+        Theme.CATPPUCCIN -> {
+            if (isDark) {
+                Color(0xFF181825) to Color(0xFFCDD6F4)
+            } else {
+                Color(0xFFE6E9EF) to Color(0xFF4C4F69)
+            }
+        }
+        Theme.MERCURY -> {
+            // Mercury uses dynamic colors, fall back to generic presets
+            if (isDark) {
+                Color(0xFF0F1419) to Color(0xFFE6E1E5)
+            } else {
+                Color(0xFFFFFFFF) to Color(0xFF1C1B1F)
+            }
+        }
+        Theme.NEPTUNE -> {
+            if (isDark) {
+                Color(0xFF121318) to Color(0xFFE2E2E9)
+            } else {
+                Color(0xFFFAF8FF) to Color(0xFF1A1B21)
+            }
+        }
+        Theme.EARTH -> {
+            if (isDark) {
+                Color(0xFF1C1F1B) to Color(0xFFE2E4DE)
+            } else {
+                Color(0xFFF8FAF5) to Color(0xFF191C19)
+            }
+        }
+        Theme.IO -> {
+            if (isDark) {
+                Color(0xFF1C1F1B) to Color(0xFFDDE4DA)
+            } else {
+                Color(0xFFE1E8DE) to Color(0xFF191C1A)
+            }
+        }
+        Theme.ENCELADUS -> {
+            if (isDark) {
+                Color(0xFF1C1F22) to Color(0xFFE1E3E6)
+            } else {
+                Color(0xFFE6E8EB) to Color(0xFF191C1F)
+            }
+        }
+        Theme.PLUTO -> {
+            if (isDark) {
+                Color(0xFF1C1F24) to Color(0xFFE2E3E0)
+            } else {
+                Color(0xFFF1F5EF) to Color(0xFF191C1F)
+            }
+        }
+        Theme.MARS -> {
+            if (isDark) {
+                Color(0xFF1C1B1E) to Color(0xFFE5E2E6)
+            } else {
+                Color(0xFFFBF8FB) to Color(0xFF191B1D)
+            }
+        }
+        Theme.CALLISTO -> {
+            if (isDark) {
+                Color(0xFF1C1C1E) to Color(0xFFE2E2E3)
+            } else {
+                Color(0xFFE8E8E9) to Color(0xFF191C1C)
+            }
+        }
+        Theme.JUPITER -> {
+            if (isDark) {
+                Color(0xFF1C1B22) to Color(0xFFE4E2E9)
+            } else {
+                Color(0xFFF9F6FC) to Color(0xFF1B1A20)
+            }
+        }
+        Theme.CERES -> {
+            if (isDark) {
+                Color(0xFF1C1F22) to Color(0xFFE2E3E6)
+            } else {
+                Color(0xFFE6E9EC) to Color(0xFF191C1F)
+            }
+        }
+        Theme.ERIS -> {
+            if (isDark) {
+                Color(0xFF1E1B1D) to Color(0xFFE8E4E6)
+            } else {
+                Color(0xFFFCF8FA) to Color(0xFF1B191A)
+            }
+        }
+        Theme.SATURN -> {
+            if (isDark) {
+                Color(0xFF1E1B1D) to Color(0xFFE8E4E5)
+            } else {
+                Color(0xFFFBF7F8) to Color(0xFF1B1919)
+            }
+        }
+        Theme.GANYMEDE -> {
+            if (isDark) {
+                Color(0xFF1C1B1E) to Color(0xFFE4E2E4)
+            } else {
+                Color(0xFFEAE8EA) to Color(0xFF191B1C)
+            }
+        }
+        Theme.VENUS -> {
+            if (isDark) {
+                Color(0xFF1F1E1B) to Color(0xFFE6E4DF)
+            } else {
+                Color(0xFFFEF9E9) to Color(0xFF1D1B17)
+            }
+        }
+        Theme.MAKEMAKE -> {
+            if (isDark) {
+                Color(0xFF1F1F1C) to Color(0xFFE5E5DE)
+            } else {
+                Color(0xFFEDEAD9) to Color(0xFF1D1D18)
+            }
+        }
+        Theme.URANUS -> {
+            if (isDark) {
+                Color(0xFF1B1F20) to Color(0xFFDEE3E6)
+            } else {
+                Color(0xFFE6EBED) to Color(0xFF181C1E)
+            }
+        }
+        Theme.TRITON -> {
+            if (isDark) {
+                Color(0xFF1C1D21) to Color(0xFFE2E3E7)
+            } else {
+                Color(0xFFE8E9ED) to Color(0xFF191B1F)
+            }
+        }
+        Theme.EUROPA -> {
+            if (isDark) {
+                Color(0xFF1D1F24) to Color(0xFFE2E4E9)
+            } else {
+                Color(0xFFE6E9EF) to Color(0xFF1A1C20)
+            }
+        }
+        Theme.TITAN -> {
+            if (isDark) {
+                Color(0xFF1D1F1E) to Color(0xFFE2E4E4)
+            } else {
+                Color(0xFFE7EAE9) to Color(0xFF1A1C1C)
+            }
+        }
+        Theme.GRUVBOX -> {
+            if (isDark) {
+                Color(0xFF282828) to Color(0xFFD4BE98)
+            } else {
+                Color(0xFFFBF1C7) to Color(0xFF3C3836)
+            }
+        }
+        Theme.NORD -> {
+            if (isDark) {
+                Color(0xFF2E3440) to Color(0xFFECEFF4)
+            } else {
+                Color(0xFFECEFF4) to Color(0xFF2E3440)
+            }
+        }
+        Theme.DRACULA -> {
+            if (isDark) {
+                Color(0xFF282A36) to Color(0xFFF8F8F2)
+            } else {
+                Color(0xFF282A36) to Color(0xFFF8F8F2)
+            }
+        }
+        Theme.TOKYO_NIGHT -> {
+            if (isDark) {
+                Color(0xFF1A1B26) to Color(0xFFA9B1D6)
+            } else {
+                Color(0xFF1A1B26) to Color(0xFFA9B1D6)
+            }
+        }
+        Theme.HACKERMAN -> {
+            if (isDark) {
+                Color(0xFF0D0D0D) to Color(0xFF00FF00)
+            } else {
+                Color(0xFF0D0D0D) to Color(0xFF00FF00)
+            }
+        }
+        Theme.ROSE_PINE -> {
+            if (isDark) {
+                Color(0xFF191724) to Color(0xFFE0DEF4)
+            } else {
+                Color(0xFF191724) to Color(0xFFE0DEF4)
+            }
+        }
+        Theme.KANAGAWA -> {
+            if (isDark) {
+                Color(0xFF1F2335) to Color(0xFFC0CAF0)
+            } else {
+                Color(0xFFFDF6E3) to Color(0xFF54546D)
+            }
+        }
+    }
 }
 
 /**

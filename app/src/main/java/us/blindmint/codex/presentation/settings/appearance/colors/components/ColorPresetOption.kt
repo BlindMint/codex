@@ -420,7 +420,7 @@ private fun ColorPresetOptionConfigurationItem(
         }
     }
 
-    val isDefaultPreset = selectedColorPreset.name == "Light" || selectedColorPreset.name == "Dark"
+    val isDefaultPreset = selectedColorPreset.name == "Light" || selectedColorPreset.name == "Dark" || selectedColorPreset.name == "Theme"
 
     Row(
         Modifier.fillMaxWidth(),

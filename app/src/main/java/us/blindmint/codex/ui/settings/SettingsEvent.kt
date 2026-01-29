@@ -75,6 +75,8 @@ sealed class SettingsEvent {
         val fontColor: Color?
     ) : SettingsEvent()
 
+    data object OnSyncThemePreset : SettingsEvent()
+
     data object OnConfirmReorderColorPresets : SettingsEvent()
 
     data class OnScrollToColorPreset(
