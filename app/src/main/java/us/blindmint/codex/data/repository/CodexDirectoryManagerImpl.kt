@@ -35,6 +35,7 @@ class CodexDirectoryManagerImpl @Inject constructor(
 
     override suspend fun getCodexRootUri(): Uri? = withContext(Dispatchers.IO) {
         val uriString = dataStore.getNullableData(DataStoreConstants.CODEX_ROOT_URI)
+        if (uriString.isNullOrEmpty()) return@withContext null
         uriString?.toUri()
     }
 

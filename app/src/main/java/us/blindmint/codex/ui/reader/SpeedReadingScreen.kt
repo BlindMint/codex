@@ -28,13 +28,18 @@ import us.blindmint.codex.presentation.reader.SpeedReadingScaffold
 import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 import us.blindmint.codex.presentation.reader.SpeedReadingSettingsBottomSheet
 import us.blindmint.codex.ui.library.LibraryScreen
+import us.blindmint.codex.ui.history.HistoryScreen
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 
 @Parcelize
 data class SpeedReadingScreen(
@@ -87,7 +92,26 @@ data class SpeedReadingScreen(
         val speedReadingHorizontalBarsDistance = androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(mainState.value.speedReadingHorizontalBarsDistance) }
         val speedReadingHorizontalBarsColor = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(androidx.compose.ui.graphics.Color(mainState.value.speedReadingHorizontalBarsColor.toInt())) }
         val speedReadingHorizontalBarsOpacity = androidx.compose.runtime.remember { androidx.compose.runtime.mutableFloatStateOf(mainState.value.speedReadingHorizontalBarsOpacity) }
-        val speedReadingFocalPointPosition = androidx.compose.runtime.remember { androidx.compose.runtime.mutableFloatStateOf(mainState.value.speedReadingFocalPointPosition) }
+
+        val coroutineScope = rememberCoroutineScope()
+        val localFocalPointPosition = androidx.compose.runtime.remember { androidx.compose.runtime.mutableFloatStateOf(mainState.value.speedReadingFocalPointPosition) }
+        val focalPointDebounceJob = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<kotlinx.coroutines.Job?>(null) }
+
+        LaunchedEffect(mainState.value.speedReadingFocalPointPosition) {
+            localFocalPointPosition.floatValue = mainState.value.speedReadingFocalPointPosition
+        }
+
+        LaunchedEffect(localFocalPointPosition.floatValue) {
+            focalPointDebounceJob.value?.cancel()
+            focalPointDebounceJob.value = coroutineScope.launch {
+                delay(300)
+                mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingFocalPointPosition(localFocalPointPosition.floatValue))
+            }
+        }
+
+        val localOnFocalPointPositionChange = { newValue: Float ->
+            localFocalPointPosition.floatValue = newValue
+        }
         val speedReadingOsdHeight = androidx.compose.runtime.remember { androidx.compose.runtime.mutableFloatStateOf(mainState.value.speedReadingOsdHeight) }
         val speedReadingOsdSeparation = androidx.compose.runtime.remember { androidx.compose.runtime.mutableFloatStateOf(mainState.value.speedReadingOsdSeparation) }
         val speedReadingAutoHideOsd = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(mainState.value.speedReadingAutoHideOsd) }
@@ -111,7 +135,8 @@ data class SpeedReadingScreen(
         androidx.compose.runtime.DisposableEffect(Unit) {
             onDispose {
                 speedReaderModel.onLeave()
-                // Ensure system bars are shown when leaving speed reader
+                LibraryScreen.refreshListChannel.trySend(0)
+                HistoryScreen.refreshListChannel.trySend(0)
                 val window = activity.window
                 val insetsController = WindowCompat.getInsetsController(window, view)
                 insetsController.show(WindowInsetsCompat.Type.systemBars())
@@ -165,9 +190,6 @@ data class SpeedReadingScreen(
         }
         androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingHorizontalBarsOpacity) {
             speedReadingHorizontalBarsOpacity.floatValue = mainState.value.speedReadingHorizontalBarsOpacity
-        }
-        androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingFocalPointPosition) {
-            speedReadingFocalPointPosition.floatValue = mainState.value.speedReadingFocalPointPosition
         }
         androidx.compose.runtime.LaunchedEffect(mainState.value.speedReadingOsdHeight) {
             speedReadingOsdHeight.floatValue = mainState.value.speedReadingOsdHeight
@@ -243,9 +265,6 @@ data class SpeedReadingScreen(
         androidx.compose.runtime.LaunchedEffect(speedReadingHorizontalBarsOpacity.floatValue) {
             mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingHorizontalBarsOpacity(speedReadingHorizontalBarsOpacity.floatValue))
         }
-        androidx.compose.runtime.LaunchedEffect(speedReadingFocalPointPosition.floatValue) {
-            mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingFocalPointPosition(speedReadingFocalPointPosition.floatValue))
-        }
         androidx.compose.runtime.LaunchedEffect(speedReadingOsdHeight.floatValue) {
             mainModel.onEvent(us.blindmint.codex.ui.main.MainEvent.OnChangeSpeedReadingOsdHeight(speedReadingOsdHeight.floatValue))
         }
@@ -315,11 +334,11 @@ data class SpeedReadingScreen(
         // Screen-size-aware focal point position defaults
         val configuration = LocalConfiguration.current
         val isTablet = configuration.smallestScreenWidthDp >= 600
-        val screenAwareFocalPointPosition = remember(speedReadingFocalPointPosition.floatValue, isTablet) {
-            if (speedReadingFocalPointPosition.floatValue == 0.38f) {
+        val screenAwareFocalPointPosition = remember(localFocalPointPosition.floatValue, isTablet) {
+            if (localFocalPointPosition.floatValue == 0.38f) {
                 if (isTablet) 0.45f else 0.38f
             } else {
-                speedReadingFocalPointPosition.floatValue
+                localFocalPointPosition.floatValue
             }
         }
 
@@ -449,7 +468,7 @@ data class SpeedReadingScreen(
             horizontalBarsOpacity = speedReadingHorizontalBarsOpacity.floatValue,
             onHorizontalBarsOpacityChange = { speedReadingHorizontalBarsOpacity.floatValue = it },
             focalPointPosition = screenAwareFocalPointPosition,
-            onFocalPointPositionChange = { speedReadingFocalPointPosition.floatValue = it },
+            onFocalPointPositionChange = localOnFocalPointPositionChange,
             osdHeight = speedReadingOsdHeight.floatValue,
             onOsdHeightChange = { speedReadingOsdHeight.floatValue = it },
             osdSeparation = speedReadingOsdSeparation.floatValue,

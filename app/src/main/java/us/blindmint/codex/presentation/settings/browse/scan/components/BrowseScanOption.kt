@@ -74,6 +74,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.RadioButton
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.AlertDialog
+import kotlinx.coroutines.delay
 
 private enum class FolderRemovalOption(val description: String) {
     RemoveBooks("Remove books and folder access"),
@@ -334,26 +335,31 @@ fun BrowseScanOption() {
                     selectedOption?.let { option ->
                         when (option) {
                             FolderRemovalOption.RemoveBooks -> {
-                                settingsModel.onEvent(
-                                    SettingsEvent.OnRemoveFolder(
-                                        uri = folderToRemove!!.uri,
-                                        removeBooks = true
-                                    )
-                                )
-
+                                val uriToRemove = folderToRemove!!.uri
                                 coroutineScope.launch {
+                                    settingsModel.onEvent(
+                                        SettingsEvent.OnRemoveFolder(
+                                            uri = uriToRemove,
+                                            removeBooks = true
+                                        )
+                                    )
+                                    delay(300)
                                     persistedUriPermissions = getPersistedUriPermissions()
                                 }
                                 BrowseScreen.refreshListChannel.trySend(Unit)
                             }
                             FolderRemovalOption.KeepBooks -> {
-                                settingsModel.onEvent(
-                                    SettingsEvent.OnRemoveFolder(
-                                        uri = folderToRemove!!.uri,
-                                        removeBooks = false
+                                val uriToRemove = folderToRemove!!.uri
+                                coroutineScope.launch {
+                                    settingsModel.onEvent(
+                                        SettingsEvent.OnRemoveFolder(
+                                            uri = uriToRemove,
+                                            removeBooks = false
+                                        )
                                     )
-                                )
-
+                                    delay(300)
+                                    persistedUriPermissions = getPersistedUriPermissions()
+                                }
                                 BrowseScreen.refreshListChannel.trySend(Unit)
                             }
                             FolderRemovalOption.Cancel -> {

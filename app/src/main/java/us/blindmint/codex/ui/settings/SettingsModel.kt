@@ -219,9 +219,26 @@ class SettingsModel @Inject constructor(
             is SettingsEvent.OnRemoveFolder -> {
                 viewModelScope.launch {
                     if (event.removeBooks) {
-                        val folderPath = event.uri.path ?: ""
+                        val folderUriString = event.uri.toString().removeSuffix("/")
                         val allBooks = bookRepository.getBooks("")
-                        val booksToRemove = allBooks.filter { it.filePath.startsWith(folderPath) }
+                        Log.d("OnRemoveFolder", "Folder URI to match: $folderUriString")
+
+                        val booksToRemove = allBooks.filter { book ->
+                            val bookUri = android.net.Uri.parse(book.filePath)
+                            val treePart = bookUri.path?.substringBefore("/document/")
+
+                            val matches = bookUri.scheme == event.uri.scheme &&
+                                         bookUri.authority == event.uri.authority &&
+                                         treePart != null &&
+                                         treePart.equals(event.uri.path, ignoreCase = true)
+
+                            if (matches) {
+                                Log.d("OnRemoveFolder", "Removing book: ${book.title} (${book.filePath})")
+                            }
+                            matches
+                        }
+
+                        Log.d("OnRemoveFolder", "Books to remove: ${booksToRemove.size}")
 
                         if (booksToRemove.isNotEmpty()) {
                             bookRepository.deleteBooks(booksToRemove)
@@ -232,9 +249,10 @@ class SettingsModel @Inject constructor(
                         permissionRepository.releasePersistableUriPermission(event.uri)
                     }
 
-                    BrowseScreen.refreshListChannel.trySend(Unit)
+                    LibraryScreen.refreshListChannel.trySend(0)
                 }
             }
+
 
             is SettingsEvent.OnSelectColorPreset -> {
                 viewModelScope.launch {
