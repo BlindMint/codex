@@ -42,6 +42,28 @@ fun DarkThemeOption() {
         }
     ) {
         mainModel.onEvent(MainEvent.OnChangeDarkTheme(it.id))
-        settingsModel.onEvent(SettingsEvent.OnSyncThemePreset)
+        // Allow DataStore to propagate the change before syncing
+)	/    mainModel.onEvent(MainEvent.OnChangeDarkTheme(it.id))	/    ) {/c    ) {/c
+    mainModel.onEvent(MainEvent.OnChangeDarkTheme(it.id))
+        // Allow DataStore to propagate before syncing
+        settingsModel.viewModelScope.launch {
+            kotlinx.coroutines.delay(100)
+            // Sync Theme preset with actual dark mode based on selection
+            val isDarkMode = when (it) {
+                DarkTheme.OFF -> false
+                DarkTheme.ON -> true
+                DarkTheme.FOLLOW_SYSTEM -> true
+            }
+            settingsModel.syncThemePresetWithSystemDarkMode(isDarkMode)
+        }
+    }
+        kotlinx.coroutines.delay(100)
+        // Sync Theme preset with actual dark mode based on selection
+        val isDarkMode = when (it) {
+            DarkTheme.OFF -> false
+            DarkTheme.ON -> true
+            DarkTheme.FOLLOW_SYSTEM -> true
+        }
+        settingsModel.syncThemePresetWithSystemDarkMode(isDarkMode)
     }
 }
