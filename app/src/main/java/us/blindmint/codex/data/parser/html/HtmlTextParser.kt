@@ -10,8 +10,8 @@ import android.util.Log
 import kotlinx.coroutines.yield
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
+import us.blindmint.codex.data.parser.BaseTextParser
 import us.blindmint.codex.data.parser.DocumentParser
-import us.blindmint.codex.data.parser.TextParser
 import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.reader.ReaderText
 import javax.inject.Inject
@@ -20,12 +20,14 @@ private const val HTML_TAG = "HTML Parser"
 
 class HtmlTextParser @Inject constructor(
     private val documentParser: DocumentParser
-) : TextParser {
+) : BaseTextParser() {
+
+    override val tag = HTML_TAG
 
     override suspend fun parse(cachedFile: CachedFile): List<ReaderText> {
-        Log.i(HTML_TAG, "Started HTML parsing: ${cachedFile.name}.")
+        Log.i(tag, "Started HTML parsing: ${cachedFile.name}.")
 
-        return try {
+        return safeParse {
             val readerText = cachedFile.openInputStream()?.use { stream ->
                 documentParser.parseDocument(Jsoup.parse(stream, null, "", Parser.htmlParser()))
             }
@@ -37,15 +39,12 @@ class HtmlTextParser @Inject constructor(
                 readerText.filterIsInstance<ReaderText.Text>().isEmpty() ||
                 readerText.filterIsInstance<ReaderText.Chapter>().isEmpty()
             ) {
-                Log.e(HTML_TAG, "Could not extract text from HTML.")
+                Log.e(tag, "Could not extract text from HTML.")
                 return emptyList()
             }
 
-            Log.i(HTML_TAG, "Successfully finished HTML parsing.")
+            Log.i(tag, "Successfully finished HTML parsing.")
             readerText
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
         }
     }
 }

@@ -223,9 +223,9 @@ class ReaderModel @Inject constructor(
                                 )
                             )
                         }
-
+ 
                         updateBook.execute(_state.value.book)
-
+ 
                         LibraryScreen.refreshListChannel.trySend(300)
                         HistoryScreen.refreshListChannel.trySend(300)
                     }
@@ -334,7 +334,7 @@ class ReaderModel @Inject constructor(
                                         )
                                     }
 
-                                updateBook.execute(_state.value.book)
+                        updateBook.execute(_state.value.book)
                             }
                         }
 
@@ -353,7 +353,7 @@ class ReaderModel @Inject constructor(
                                         )
                                     }
 
-                                    updateBook.execute(_state.value.book)
+                        updateBook.execute(_state.value.book)
                         }
 
                         WindowCompat.getInsetsController(
@@ -859,7 +859,7 @@ class ReaderModel @Inject constructor(
                                 )
                             )
                         }
-
+ 
                         updateBook.execute(_state.value.book)
                         LibraryScreen.refreshListChannel.trySend(300)
                         HistoryScreen.refreshListChannel.trySend(300)
@@ -1019,9 +1019,9 @@ class ReaderModel @Inject constructor(
                             }
 
                             yield()
-
+ 
                             updateBook.execute(_state.value.book)
-
+ 
                             LibraryScreen.refreshListChannel.trySend(0)
                             HistoryScreen.refreshListChannel.trySend(0)
 
@@ -1055,7 +1055,7 @@ class ReaderModel @Inject constructor(
                         isLoading = true
                     )
                 }
-
+ 
                 updateBook.execute(book)
                 LibraryScreen.refreshListChannel.trySend(0)
                 HistoryScreen.refreshListChannel.trySend(0)
@@ -1090,9 +1090,9 @@ class ReaderModel @Inject constructor(
                         currentChapterProgress = currentChapterProgress
                     )
                 }
-
+ 
                 updateBook.execute(_state.value.book)
-
+ 
                 LibraryScreen.refreshListChannel.trySend(0)
                 HistoryScreen.refreshListChannel.trySend(0)
             }

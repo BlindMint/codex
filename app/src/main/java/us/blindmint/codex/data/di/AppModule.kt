@@ -23,6 +23,7 @@ import us.blindmint.codex.data.local.room.BookDao
 import us.blindmint.codex.data.local.room.BookDatabase
 import us.blindmint.codex.data.local.room.DatabaseHelper
 import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
+import us.blindmint.codex.domain.use_case.book.BulkImportCodexDirectoryUseCase
 import us.blindmint.codex.ui.import_progress.ImportProgressService
 import javax.inject.Singleton
 
@@ -85,8 +86,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideImportProgressService(
-        bulkImportBooksFromFolder: BulkImportBooksFromFolder
+        bulkImportBooksFromFolder: BulkImportBooksFromFolder,
+        bulkImportCodexDirectoryUseCase: BulkImportCodexDirectoryUseCase
     ): ImportProgressService {
-        return ImportProgressService(bulkImportBooksFromFolder)
+        return ImportProgressService(bulkImportBooksFromFolder, bulkImportCodexDirectoryUseCase)
     }
 }

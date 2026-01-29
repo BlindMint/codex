@@ -10,8 +10,8 @@ import android.util.Log
 import kotlinx.coroutines.yield
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
+import us.blindmint.codex.data.parser.BaseTextParser
 import us.blindmint.codex.data.parser.DocumentParser
-import us.blindmint.codex.data.parser.TextParser
 import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.reader.ReaderText
 import javax.inject.Inject
@@ -20,12 +20,14 @@ private const val XML_TAG = "XML Parser"
 
 class XmlTextParser @Inject constructor(
     private val documentParser: DocumentParser
-) : TextParser {
+) : BaseTextParser() {
+
+    override val tag = XML_TAG
 
     override suspend fun parse(cachedFile: CachedFile): List<ReaderText> {
-        Log.i(XML_TAG, "Started XML parsing: ${cachedFile.name}.")
+        Log.i(tag, "Started XML parsing: ${cachedFile.name}.")
 
-        return try {
+        return safeParse {
             val readerText = cachedFile.openInputStream()?.use { stream ->
                 documentParser.parseDocument(Jsoup.parse(stream, null, "", Parser.xmlParser()))
             }
@@ -37,15 +39,12 @@ class XmlTextParser @Inject constructor(
                 readerText.filterIsInstance<ReaderText.Text>().isEmpty() ||
                 readerText.filterIsInstance<ReaderText.Chapter>().isEmpty()
             ) {
-                Log.e(XML_TAG, "Could not extract text from XML.")
+                Log.e(tag, "Could not extract text from XML.")
                 return emptyList()
             }
 
-            Log.i(XML_TAG, "Successfully finished XML parsing.")
+            Log.i(tag, "Successfully finished XML parsing.")
             readerText
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
         }
     }
 }

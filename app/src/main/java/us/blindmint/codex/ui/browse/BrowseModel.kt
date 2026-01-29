@@ -26,18 +26,16 @@ import us.blindmint.codex.domain.browse.display.BrowseSortOrder
 import us.blindmint.codex.domain.browse.file.SelectableFile
 import us.blindmint.codex.domain.library.book.NullableBook
 import us.blindmint.codex.domain.library.book.SelectableNullableBook
-import us.blindmint.codex.domain.use_case.book.InsertBook
-import us.blindmint.codex.domain.use_case.file_system.GetBookFromFile
-import us.blindmint.codex.domain.use_case.file_system.GetFiles
+import us.blindmint.codex.domain.repository.BookRepository
+import us.blindmint.codex.domain.repository.FileSystemRepository
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.library.LibraryScreen
 import javax.inject.Inject
 
 @HiltViewModel
 class BrowseModel @Inject constructor(
-    private val getFiles: GetFiles,
-    private val getBookFromFile: GetBookFromFile,
-    private val insertBook: InsertBook
+    private val fileSystemRepository: FileSystemRepository,
+    private val bookRepository: BookRepository
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -293,7 +291,7 @@ class BrowseModel @Inject constructor(
                             }
                             .forEach {
                                 yield()
-                                books.add(getBookFromFile.execute(it.data))
+                                books.add(fileSystemRepository.getBookFromFile(it.data))
                             }
 
                         yield()
@@ -334,7 +332,7 @@ class BrowseModel @Inject constructor(
                     }.ifEmpty { return@launch }
 
                     for (book in booksToInsert) {
-                        insertBook.execute(book.bookWithCover!!)
+                        bookRepository.insertBook(book.bookWithCover!!)
                     }
 
                     LibraryScreen.refreshListChannel.trySend(0)
@@ -401,7 +399,7 @@ class BrowseModel @Inject constructor(
     private suspend fun getFilesFromDownloads(
         query: String = if (_state.value.showSearch) _state.value.searchQuery else ""
     ) {
-        getFiles.execute(query).apply {
+            fileSystemRepository.getFiles(query).apply {
             yield()
             _state.update {
                 it.copy(

@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 import us.blindmint.codex.domain.import_progress.ImportOperation
 import us.blindmint.codex.domain.import_progress.ImportStatus
 import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
+import us.blindmint.codex.domain.use_case.book.BulkImportCodexDirectoryUseCase
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,7 +35,8 @@ private const val TAG = "ImportProgressViewModel"
  */
 @Singleton
 class ImportProgressService @Inject constructor(
-    private val bulkImportBooksFromFolder: BulkImportBooksFromFolder
+    private val bulkImportBooksFromFolder: BulkImportBooksFromFolder,
+    private val bulkImportCodexDirectoryUseCase: BulkImportCodexDirectoryUseCase
 ) {
     private val coroutineScope = CoroutineScope(SupervisorJob())
 
@@ -159,66 +161,71 @@ class ImportProgressService @Inject constructor(
     }
 
     /**
-     * Update progress for Codex Directory import.
-     * Used for tracking OPDS book auto-imports from Codex Directory.
+     * Start importing books from Codex Directory.
+     * Mirrors local folder import behavior with proper progress tracking.
      */
-    fun startCodexImport(folderPath: String, folderName: String) {
-        val operationId = UUID.randomUUID().toString()
-        val operation = ImportOperation(
-            id = operationId,
-            folderName = folderName,
-            folderPath = folderPath,
-            folderUri = Uri.EMPTY, // Codex Directory doesn't have a URI
-            totalBooks = 0, // Will be updated as progress comes in
-            currentProgress = 0,
-            status = ImportStatus.STARTING,
-            currentFile = ""
-        )
-
-        _importOperations.value = _importOperations.value + operation
-        Log.i(TAG, "Started Codex Directory import operation: $operationId")
-    }
-
-    fun updateCodexImportProgress(
-        folderPath: String,
-        totalBooks: Int,
-        currentProgress: Int,
-        currentFile: String = ""
-    ) {
-        // Find existing operation for this folder or create a new one
-        val existingOp = _importOperations.value.find { op ->
-            op.folderPath.endsWith(folderPath.substringAfterLast("/")) &&
-            op.status == ImportStatus.IN_PROGRESS
-        }
-
-        if (existingOp != null) {
-            // Update existing operation
-            _importOperations.value = _importOperations.value.map { op ->
-                if (op.id == existingOp.id) {
-                    op.copy(
-                        totalBooks = totalBooks,
-                        currentProgress = currentProgress,
-                        currentFile = currentFile,
-                        status = ImportStatus.IN_PROGRESS
-                    )
-                } else {
-                    op
-                }
-            }
-        } else {
-            // Create new operation if doesn't exist
+    fun startCodexImport(folderPath: String, folderName: String, onComplete: (suspend () -> Unit)? = null) {
+        coroutineScope.launch {
             val operationId = UUID.randomUUID().toString()
             val operation = ImportOperation(
                 id = operationId,
-                folderName = folderPath.substringAfterLast("/"),
+                folderName = "Codex Directory",
                 folderPath = folderPath,
-                folderUri = Uri.EMPTY, // Codex Directory doesn't have a URI
-                totalBooks = totalBooks,
-                currentProgress = currentProgress,
-                status = ImportStatus.IN_PROGRESS,
-                currentFile = currentFile
+                folderUri = Uri.EMPTY,
+                totalBooks = 0,
+                currentProgress = 0,
+                status = ImportStatus.STARTING,
+                currentFile = ""
             )
+
             _importOperations.value = _importOperations.value + operation
+            _isImporting.value = true
+
+            try {
+                bulkImportCodexDirectoryUseCase.execute(
+                    onProgress = { progress ->
+                        _importOperations.value = _importOperations.value.map { op ->
+                            if (op.id == operationId) {
+                                op.copy(
+                                    status = ImportStatus.IN_PROGRESS,
+                                    totalBooks = progress.total,
+                                    currentProgress = progress.current,
+                                    currentFile = progress.currentFile
+                                )
+                            } else {
+                                op
+                            }
+                        }
+                    }
+                )
+
+                _importOperations.value = _importOperations.value.map { op ->
+                    if (op.id == operationId) {
+                        op.copy(status = ImportStatus.COMPLETED)
+                    } else {
+                        op
+                    }
+                }
+
+                onComplete?.invoke()
+                delay(2000)
+                clearOperation(operationId)
+            } catch (e: Exception) {
+                _importOperations.value = _importOperations.value.map { op ->
+                    if (op.id == operationId) {
+                        op.copy(
+                            status = ImportStatus.FAILED,
+                            errorMessage = e.message ?: "Unknown error"
+                        )
+                    } else {
+                        op
+                    }
+                }
+                delay(5000)
+                clearOperation(operationId)
+            } finally {
+                _isImporting.value = false
+            }
         }
     }
 }
@@ -239,15 +246,6 @@ class ImportProgressViewModel @Inject constructor(
 
     fun startCodexImport(folderPath: String, folderName: String) =
         importProgressService.startCodexImport(folderPath, folderName)
-
-    fun updateCodexImportProgress(
-        folderPath: String,
-        totalBooks: Int,
-        currentProgress: Int,
-        currentFile: String = ""
-    ) = importProgressService.updateCodexImportProgress(
-        folderPath, totalBooks, currentProgress, currentFile
-    )
 
     fun cancelImport(operationId: String) =
         importProgressService.cancelImport(operationId)

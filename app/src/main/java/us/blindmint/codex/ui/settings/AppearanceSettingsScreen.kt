@@ -14,10 +14,10 @@ import kotlinx.parcelize.Parcelize
 import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.presentation.core.components.top_bar.collapsibleTopAppBarScrollBehavior
 import us.blindmint.codex.presentation.navigator.LocalNavigator
-import us.blindmint.codex.presentation.settings.appearance.AppearanceSettingsContent
+import us.blindmint.codex.presentation.settings.appearance.AppearanceSettingsScaffold
 
 @Parcelize
-object AppearanceSettingsScreen : Screen, Parcelable {
+ object AppearanceSettingsScreen : Screen, Parcelable {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -25,7 +25,7 @@ object AppearanceSettingsScreen : Screen, Parcelable {
         val navigator = LocalNavigator.current
         val (scrollBehavior, listState) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior()
 
-        AppearanceSettingsContent(
+        AppearanceSettingsScaffold(
             scrollBehavior = scrollBehavior,
             listState = listState,
             navigateBack = {

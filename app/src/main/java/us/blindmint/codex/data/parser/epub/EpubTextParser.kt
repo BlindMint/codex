@@ -17,8 +17,8 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import org.jsoup.Jsoup
+import us.blindmint.codex.data.parser.BaseTextParser
 import us.blindmint.codex.data.parser.DocumentParser
-import us.blindmint.codex.data.parser.TextParser
 import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.presentation.core.constants.provideImageExtensions
@@ -37,12 +37,14 @@ private val dispatcher = Dispatchers.IO.limitedParallelism(3)
 
 class EpubTextParser @Inject constructor(
     private val documentParser: DocumentParser
-) : TextParser {
+) : BaseTextParser() {
+
+    override val tag = EPUB_TAG
 
     override suspend fun parse(cachedFile: CachedFile): List<ReaderText> {
-        Log.i(EPUB_TAG, "Started EPUB parsing: ${cachedFile.name}.")
+        Log.i(tag, "Started EPUB parsing: ${cachedFile.name}.")
 
-        return try {
+        return safeParse {
             yield()
             var readerText = listOf<ReaderText>()
 
@@ -66,10 +68,10 @@ class EpubTextParser @Inject constructor(
                     }
                     val chapterTitleEntries = zip.getChapterTitleMapFromToc(tocEntry)
 
-                    Log.i(EPUB_TAG, "TOC Entry: ${tocEntry?.name ?: "no toc.ncx"}")
-                    Log.i(EPUB_TAG, "OPF Entry: ${opfEntry?.name ?: "no .opf entry"}")
-                    Log.i(EPUB_TAG, "Chapter entries, size: ${chapterEntries.size}")
-                    Log.i(EPUB_TAG, "Title entries, size: ${chapterTitleEntries?.size}")
+                    Log.i(tag, "TOC Entry: ${tocEntry?.name ?: "no toc.ncx"}")
+                    Log.i(tag, "OPF Entry: ${opfEntry?.name ?: "no .opf entry"}")
+                    Log.i(tag, "Chapter entries, size: ${chapterEntries.size}")
+                    Log.i(tag, "Title entries, size: ${chapterTitleEntries?.size}")
 
                     readerText = zip.parseEpub(
                         chapterEntries = chapterEntries,
@@ -85,15 +87,12 @@ class EpubTextParser @Inject constructor(
                 readerText.filterIsInstance<ReaderText.Text>().isEmpty() ||
                 readerText.filterIsInstance<ReaderText.Chapter>().isEmpty()
             ) {
-                Log.e(EPUB_TAG, "Could not extract text from EPUB.")
+                Log.e(tag, "Could not extract text from EPUB.")
                 return emptyList()
             }
 
-            Log.i(EPUB_TAG, "Successfully finished EPUB parsing.")
+            Log.i(tag, "Successfully finished EPUB parsing.")
             readerText
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
         }
     }
 

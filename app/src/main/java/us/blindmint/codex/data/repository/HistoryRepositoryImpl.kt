@@ -7,6 +7,7 @@
 package us.blindmint.codex.data.repository
 
 import us.blindmint.codex.data.local.room.BookDao
+import us.blindmint.codex.data.local.dto.HistoryEntity
 import us.blindmint.codex.data.mapper.history.HistoryMapper
 import us.blindmint.codex.domain.history.History
 import us.blindmint.codex.domain.repository.HistoryRepository
@@ -19,67 +20,33 @@ import javax.inject.Singleton
  */
 @Singleton
 class HistoryRepositoryImpl @Inject constructor(
-    private val database: BookDao,
+    database: BookDao,
+    private val historyMapper: HistoryMapper
+) : BaseRepository<History, HistoryEntity, BookDao>(), HistoryRepository {
 
-    private val historyMapper: HistoryMapper,
-) : HistoryRepository {
+    override val dao = database
 
-    /**
-     * Insert history in database.
-     */
     override suspend fun insertHistory(history: History) {
-        database.insertHistory(
-            listOf(
-                historyMapper.toHistoryEntity(
-                    history
-                )
-            )
-        )
+        dao.insertHistory(listOf(historyMapper.toHistoryEntity(history)))
     }
 
-    /**
-     * Get all history from database.
-     */
     override suspend fun getHistory(): List<History> {
-        return database.getHistory().map {
-            historyMapper.toHistory(
-                it
-            )
-        }
+        return dao.getHistory().map { historyMapper.toHistory(it) }
     }
 
-    /**
-     * Get latest history of the matching [bookId].
-     */
     override suspend fun getLatestBookHistory(bookId: Int): History? {
-        val history = database.getLatestHistoryForBook(bookId)
-        return history?.let { historyMapper.toHistory(it) }
+        return dao.getLatestHistoryForBook(bookId)?.let { historyMapper.toHistory(it) }
     }
 
-    /**
-     * Delete whole history.
-     */
     override suspend fun deleteWholeHistory() {
-        database.deleteWholeHistory()
+        dao.deleteWholeHistory()
     }
 
-    /**
-     * Delete all history of the matching [bookId].
-     */
     override suspend fun deleteBookHistory(bookId: Int) {
-        database.deleteBookHistory(bookId)
+        dao.deleteBookHistory(bookId)
     }
 
-    /**
-     * Delete specific history item.
-     */
     override suspend fun deleteHistory(history: History) {
-        database.deleteHistory(
-            listOf(
-                historyMapper.toHistoryEntity(
-                    history
-                )
-            )
-        )
+        dao.deleteHistory(listOf(historyMapper.toHistoryEntity(history)))
     }
 }

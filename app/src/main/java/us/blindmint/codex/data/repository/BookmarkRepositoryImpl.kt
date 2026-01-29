@@ -7,6 +7,7 @@
 package us.blindmint.codex.data.repository
 
 import us.blindmint.codex.data.local.room.BookDao
+import us.blindmint.codex.data.local.dto.BookmarkEntity
 import us.blindmint.codex.data.mapper.bookmark.BookmarkMapper
 import us.blindmint.codex.domain.bookmark.Bookmark
 import us.blindmint.codex.domain.repository.BookmarkRepository
@@ -19,56 +20,33 @@ import javax.inject.Singleton
  */
 @Singleton
 class BookmarkRepositoryImpl @Inject constructor(
-    private val database: BookDao,
-    private val bookmarkMapper: BookmarkMapper,
-) : BookmarkRepository {
+    database: BookDao,
+    private val bookmarkMapper: BookmarkMapper
+) : BaseRepository<Bookmark, BookmarkEntity, BookDao>(), BookmarkRepository {
 
-    /**
-     * Insert bookmark in database.
-     */
+    override val dao = database
+
     override suspend fun insertBookmark(bookmark: Bookmark) {
-        database.insertBookmark(
-            bookmarkMapper.toBookmarkEntity(bookmark)
-        )
+        dao.insertBookmark(bookmarkMapper.toBookmarkEntity(bookmark))
     }
 
-    /**
-     * Get all bookmarks for a specific book.
-     */
     override suspend fun getBookmarksByBookId(bookId: Int): List<Bookmark> {
-        return database.getBookmarksByBookId(bookId).map {
-            bookmarkMapper.toBookmark(it)
-        }
+        return dao.getBookmarksByBookId(bookId).map { bookmarkMapper.toBookmark(it) }
     }
 
-    /**
-     * Get a specific bookmark by ID.
-     */
     override suspend fun getBookmarkById(bookmarkId: Int): Bookmark? {
-        val bookmark = database.getBookmarkById(bookmarkId)
-        return bookmark?.let { bookmarkMapper.toBookmark(it) }
+        return dao.getBookmarkById(bookmarkId)?.let { bookmarkMapper.toBookmark(it) }
     }
 
-    /**
-     * Delete a specific bookmark.
-     */
     override suspend fun deleteBookmark(bookmark: Bookmark) {
-        database.deleteBookmark(
-            bookmarkMapper.toBookmarkEntity(bookmark)
-        )
+        dao.deleteBookmark(bookmarkMapper.toBookmarkEntity(bookmark))
     }
 
-    /**
-     * Delete all bookmarks for a specific book.
-     */
     override suspend fun deleteBookmarksByBookId(bookId: Int) {
-        database.deleteBookmarksByBookId(bookId)
+        dao.deleteBookmarksByBookId(bookId)
     }
 
-    /**
-     * Delete all bookmarks.
-     */
     override suspend fun deleteAllBookmarks() {
-        database.deleteAllBookmarks()
+        dao.deleteAllBookmarks()
     }
 }

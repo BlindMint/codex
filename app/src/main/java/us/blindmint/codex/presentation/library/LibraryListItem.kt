@@ -62,8 +62,8 @@ fun LibraryListItem(
     val fontColor = if (book.selected) MaterialTheme.colorScheme.onSecondary
     else MaterialTheme.colorScheme.onSurface
 
-    val progress = rememberSaveable(book.data.progress) {
-        "${book.data.progress.calculateProgress(1)}%"
+    val progress = rememberSaveable(book.data.displayProgress) {
+        "${book.data.displayProgress.calculateProgress(1)}%"
     }
 
     // Size configurations based on listSize

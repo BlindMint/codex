@@ -11,10 +11,9 @@ import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import us.blindmint.codex.R
-import us.blindmint.codex.data.parser.FileParser
+import us.blindmint.codex.data.parser.BaseFileParser
+import us.blindmint.codex.data.parser.BookFactory
 import us.blindmint.codex.domain.file.CachedFile
-import us.blindmint.codex.domain.library.book.Book
-import us.blindmint.codex.domain.library.book.BookSource
 import us.blindmint.codex.domain.library.book.BookWithCover
 import us.blindmint.codex.domain.ui.UIText
 import us.blindmint.codex.domain.util.CoverImage
@@ -25,7 +24,9 @@ private const val TAG = "ComicFileParser"
 
 class ComicFileParser @Inject constructor(
     private val archiveReader: ArchiveReader
-) : FileParser {
+) : BaseFileParser() {
+
+    override val tag = TAG
 
     private val supportedExtensions = setOf("cbz", "cbr", "cb7")
 
@@ -33,7 +34,7 @@ class ComicFileParser @Inject constructor(
         if (!isComicFile(cachedFile)) return null
 
         return withContext(Dispatchers.IO) {
-            try {
+            safeParse {
                 archiveReader.openArchive(cachedFile).use { archive ->
                     val pageCount = archive.entries.size
                     val coverImage: CoverImage? = try {
@@ -51,30 +52,17 @@ class ComicFileParser @Inject constructor(
                             }
                         }
                     } catch (e: Exception) {
-                        Log.w(TAG, "Failed to load cover image for ${cachedFile.name}", e)
+                        Log.w(tag, "Failed to load cover image for ${cachedFile.name}", e)
                         null
                     }
 
-                    val book = Book(
+                    BookFactory.createComic(
                         title = cachedFile.name.substringBeforeLast('.'),
-                        authors = emptyList(),
-                        description = null,
                         filePath = cachedFile.uri.toString(),
-                        coverImage = null,
-                        scrollIndex = 0,
-                        scrollOffset = 0,
-                        progress = 0f,
-                        lastOpened = null,
-                        // Comic fields
-                        isComic = true,
-                        pageCount = pageCount
+                        pageCount = pageCount,
+                        coverImage = coverImage
                     )
-
-                    BookWithCover(book, coverImage)
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to parse comic file: ${cachedFile.name}", e)
-                null
             }
         }
     }

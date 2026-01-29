@@ -71,7 +71,6 @@ class AutoImportCodexBooksUseCase @Inject constructor(
 
         var importedCount = 0
 
-        // Get all book folders from downloads directory
         Log.d(AUTO_IMPORT, "Listing files in downloads directory")
         val allFiles = try {
             downloadsDir.listFiles()
@@ -85,8 +84,27 @@ class AutoImportCodexBooksUseCase @Inject constructor(
             Log.d(AUTO_IMPORT, "Found item: ${file.name} (isDirectory: ${file.isDirectory}, isFile: ${file.isFile}, canRead: ${file.canRead()})")
         }
 
-        val bookFolders = allFiles?.filter { it.isDirectory }?.toTypedArray() ?: emptyArray()
-        Log.i(AUTO_IMPORT, "Found ${bookFolders.size} book folders to process")
+        val authorFolders = allFiles?.filter { it.isDirectory }?.toTypedArray() ?: emptyArray()
+        Log.i(AUTO_IMPORT, "Found ${authorFolders.size} author folders")
+
+        val bookFolders = mutableListOf<DocumentFile>()
+
+        authorFolders.forEach { authorFolder ->
+            Log.d(AUTO_IMPORT, "Scanning author folder: ${authorFolder.name}")
+            val authorContents = try {
+                authorFolder.listFiles()
+            } catch (e: Exception) {
+                Log.e(AUTO_IMPORT, "Failed to list files in author folder: ${authorFolder.name}", e)
+                null
+            }
+
+            val foldersInAuthor = authorContents?.filter { it.isDirectory } ?: emptyList()
+            Log.d(AUTO_IMPORT, "Found ${foldersInAuthor.size} book folders in ${authorFolder.name}")
+
+            bookFolders.addAll(foldersInAuthor)
+        }
+
+        Log.i(AUTO_IMPORT, "Total of ${bookFolders.size} book folders to process from all authors")
 
         if (bookFolders.isEmpty()) {
             Log.i(AUTO_IMPORT, "No book folders found to process")

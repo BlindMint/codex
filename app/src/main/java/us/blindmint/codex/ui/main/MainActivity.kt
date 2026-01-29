@@ -293,7 +293,12 @@ class MainActivity : AppCompatActivity() {
         fileImportMutex.withLock {
             try {
                 val cachedFile = CachedFileCompat.fromUri(this@MainActivity, uri)
-                val absolutePath = cachedFile.path
+                // Get absolute path; for content:// URIs that don't resolve to a path, fall back to URI string
+                val absolutePath = if (cachedFile.path.isNotBlank()) {
+                    cachedFile.path
+                } else {
+                    uri.toString()
+                }
 
                 // Check if book already exists in library by absolute path
                 // This is URI-scheme-agnostic and works for both file:// and content:// URIs

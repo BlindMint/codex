@@ -10,8 +10,8 @@ import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
+import us.blindmint.codex.data.parser.BaseTextParser
 import us.blindmint.codex.data.parser.MarkdownParser
-import us.blindmint.codex.data.parser.TextParser
 import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.presentation.core.util.clearAllMarkdown
@@ -21,12 +21,14 @@ private const val TXT_TAG = "TXT Parser"
 
 class TxtTextParser @Inject constructor(
     private val markdownParser: MarkdownParser
-) : TextParser {
+) : BaseTextParser() {
+
+    override val tag = TXT_TAG
 
     override suspend fun parse(cachedFile: CachedFile): List<ReaderText> {
-        Log.i(TXT_TAG, "Started TXT parsing: ${cachedFile.name}.")
+        Log.i(tag, "Started TXT parsing: ${cachedFile.name}.")
 
-        return try {
+        return safeParse {
             val readerText = mutableListOf<ReaderText>()
             var chapterAdded = false
 
@@ -66,15 +68,12 @@ class TxtTextParser @Inject constructor(
                 readerText.filterIsInstance<ReaderText.Text>().isEmpty() ||
                 readerText.filterIsInstance<ReaderText.Chapter>().isEmpty()
             ) {
-                Log.e(TXT_TAG, "Could not extract text from TXT.")
+                Log.e(tag, "Could not extract text from TXT.")
                 return emptyList()
             }
 
-            Log.i(TXT_TAG, "Successfully finished TXT parsing.")
+            Log.i(tag, "Successfully finished TXT parsing.")
             readerText
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
         }
     }
 }

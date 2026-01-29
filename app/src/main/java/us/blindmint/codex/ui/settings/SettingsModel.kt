@@ -24,21 +24,13 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.reader.ColorPreset
-// import us.blindmint.codex.domain.use_case.book.AutoImportOpdsBooksUseCase
 import us.blindmint.codex.domain.use_case.book.AutoImportCodexBooksUseCase
 import us.blindmint.codex.domain.use_case.book.BulkImportBooksFromFolder
 import us.blindmint.codex.domain.use_case.book.BulkImportProgress
-import us.blindmint.codex.domain.use_case.book.DeleteBooks
-import us.blindmint.codex.domain.use_case.book.GetBooks
-import us.blindmint.codex.domain.use_case.color_preset.DeleteColorPreset
-import us.blindmint.codex.domain.use_case.color_preset.GetColorPresets
-import us.blindmint.codex.domain.use_case.color_preset.ReorderColorPresets
-import us.blindmint.codex.domain.use_case.color_preset.SelectColorPreset
-import us.blindmint.codex.domain.use_case.color_preset.UpdateColorPreset
-import us.blindmint.codex.domain.use_case.data_store.GetAllSettings
-import us.blindmint.codex.domain.use_case.data_store.SetDatastore
-import us.blindmint.codex.domain.use_case.permission.GrantPersistableUriPermission
-import us.blindmint.codex.domain.use_case.permission.ReleasePersistableUriPermission
+import us.blindmint.codex.domain.repository.BookRepository
+import us.blindmint.codex.domain.repository.ColorPresetRepository
+import us.blindmint.codex.domain.repository.DataStoreRepository
+import us.blindmint.codex.domain.repository.PermissionRepository
 import us.blindmint.codex.domain.storage.CodexDirectoryManager
 import us.blindmint.codex.presentation.core.constants.DataStoreConstants
 import us.blindmint.codex.presentation.core.constants.provideDefaultColorPreset
@@ -58,19 +50,12 @@ import java.util.UUID
 @HiltViewModel
 class SettingsModel @Inject constructor(
     private val importProgressService: ImportProgressService,
-    private val getColorPresets: GetColorPresets,
-    private val updateColorPreset: UpdateColorPreset,
-    private val selectColorPreset: SelectColorPreset,
-    private val reorderColorPresets: ReorderColorPresets,
-    private val deleteColorPreset: DeleteColorPreset,
-    private val grantPersistableUriPermission: GrantPersistableUriPermission,
-    private val releasePersistableUriPermission: ReleasePersistableUriPermission,
-    private val getAllSettings: GetAllSettings,
-    private val setDatastore: SetDatastore,
     val bulkImportBooksFromFolder: BulkImportBooksFromFolder,
     private val autoImportCodexBooksUseCase: AutoImportCodexBooksUseCase,
-    private val getAllBooks: GetBooks,
-    private val deleteBooks: DeleteBooks,
+    private val colorPresetRepository: ColorPresetRepository,
+    private val dataStoreRepository: DataStoreRepository,
+    private val bookRepository: BookRepository,
+    private val permissionRepository: PermissionRepository,
     val codexDirectoryManager: CodexDirectoryManager,
 
 ) : ViewModel() {
@@ -94,18 +79,18 @@ class SettingsModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            var colorPresets = getColorPresets.execute()
+            var colorPresets = colorPresetRepository.getColorPresets()
 
             if (colorPresets.isEmpty()) {
                 // Create both Light and Dark presets
                 val defaultPresets = provideDefaultColorPresets()
                 defaultPresets.forEach { preset ->
-                    updateColorPreset.execute(preset)
+                    colorPresetRepository.updateColorPreset(preset)
                 }
-                colorPresets = getColorPresets.execute()
+                colorPresets = colorPresetRepository.getColorPresets()
 
                 // Reset auto-selection flag for fresh installation
-                setDatastore.execute(DataStoreConstants.AUTO_COLOR_PRESET_SELECTED, false)
+                dataStoreRepository.putDataToDataStore(DataStoreConstants.AUTO_COLOR_PRESET_SELECTED, false)
             }
 
             val scrollIndex = colorPresets.indexOfFirst {
@@ -142,7 +127,7 @@ class SettingsModel @Inject constructor(
     fun selectAppropriateColorPreset(isDarkTheme: Boolean) {
         viewModelScope.launch {
             // Check if auto-selection has already been completed
-            val settings = getAllSettings.execute()
+            val settings = dataStoreRepository.getAllSettings()
             if (settings.autoColorPresetSelected) {
                 // Auto-selection already completed, do nothing
                 return@launch
@@ -170,7 +155,7 @@ class SettingsModel @Inject constructor(
                         }
 
                         // Mark auto-selection as completed in DataStore
-                        setDatastore.execute(DataStoreConstants.AUTO_COLOR_PRESET_SELECTED, true)
+                        dataStoreRepository.putDataToDataStore(DataStoreConstants.AUTO_COLOR_PRESET_SELECTED, true)
                     }
                 }
             }
@@ -180,7 +165,7 @@ class SettingsModel @Inject constructor(
     fun performInitialColorPresetSelection(isDarkTheme: Boolean) {
         viewModelScope.launch {
             // Only perform if we haven't done auto-selection before
-            val settings = getAllSettings.execute()
+            val settings = dataStoreRepository.getAllSettings()
             if (!settings.autoColorPresetSelected) {
                 selectAppropriateColorPreset(isDarkTheme)
             }
@@ -189,7 +174,7 @@ class SettingsModel @Inject constructor(
 
     fun reloadColorPresets() {
         viewModelScope.launch(Dispatchers.IO) {
-            val colorPresets = getColorPresets.execute()
+            val colorPresets = colorPresetRepository.getColorPresets()
 
             val scrollIndex = colorPresets.indexOfFirst {
                 it.isSelected
@@ -217,7 +202,7 @@ class SettingsModel @Inject constructor(
         when (event) {
             is SettingsEvent.OnGrantPersistableUriPermission -> {
                 viewModelScope.launch {
-                    grantPersistableUriPermission.execute(
+                    permissionRepository.grantPersistableUriPermission(
                         event.uri
                     )
                 }
@@ -225,7 +210,7 @@ class SettingsModel @Inject constructor(
 
             is SettingsEvent.OnReleasePersistableUriPermission -> {
                 viewModelScope.launch {
-                    releasePersistableUriPermission.execute(
+                    permissionRepository.releasePersistableUriPermission(
                         event.uri
                     )
                 }
@@ -235,16 +220,16 @@ class SettingsModel @Inject constructor(
                 viewModelScope.launch {
                     if (event.removeBooks) {
                         val folderPath = event.uri.path ?: ""
-                        val allBooks = getAllBooks.execute("")
+                        val allBooks = bookRepository.getBooks("")
                         val booksToRemove = allBooks.filter { it.filePath.startsWith(folderPath) }
 
                         if (booksToRemove.isNotEmpty()) {
-                            deleteBooks.execute(booksToRemove)
+                            bookRepository.deleteBooks(booksToRemove)
                         }
 
-                        releasePersistableUriPermission.execute(event.uri)
+                        permissionRepository.releasePersistableUriPermission(event.uri)
                     } else {
-                        releasePersistableUriPermission.execute(event.uri)
+                        permissionRepository.releasePersistableUriPermission(event.uri)
                     }
 
                     BrowseScreen.refreshListChannel.trySend(Unit)
@@ -413,12 +398,12 @@ class SettingsModel @Inject constructor(
 
                         yield()
 
-                        deleteColorPreset.execute(colorPreset)
-                        val nextColorPreset = getColorPresets.execute().getOrNull(nextPosition)
+            colorPresetRepository.deleteColorPreset(colorPreset)
+            val nextColorPreset = colorPresetRepository.getColorPresets().getOrNull(nextPosition)
                             ?: return@launch
 
                         nextColorPreset.select()
-                        val colorPresets = getColorPresets.execute()
+                        val colorPresets = colorPresetRepository.getColorPresets()
 
                         _state.update {
                             it.copy(
@@ -442,9 +427,9 @@ class SettingsModel @Inject constructor(
                     updateColorColorPresetJob = launch {
                         val colorPreset = event.id.getColorPresetById() ?: return@launch
                         val updatedPreset = colorPreset.copy(isLocked = !colorPreset.isLocked)
-                        updateColorPreset.execute(updatedPreset)
+                        colorPresetRepository.updateColorPreset(updatedPreset)
 
-                        val colorPresets = getColorPresets.execute()
+                        val colorPresets = colorPresetRepository.getColorPresets()
                         _state.update {
                             it.copy(
                                 selectedColorPreset = colorPresets.selected(),
@@ -469,7 +454,7 @@ class SettingsModel @Inject constructor(
 
                         yield()
 
-                        updateColorPreset.execute(updatedColorPreset)
+                        colorPresetRepository.updateColorPreset(updatedColorPreset)
                         _state.update {
                             it.copy(
                                 selectedColorPreset = updatedColorPreset,
@@ -505,7 +490,7 @@ class SettingsModel @Inject constructor(
 
                         yield()
 
-                        updateColorPreset.execute(shuffledColorPreset)
+                        colorPresetRepository.updateColorPreset(shuffledColorPreset)
                         _state.update {
                             it.copy(
                                 selectedColorPreset = shuffledColorPreset,
@@ -540,7 +525,7 @@ class SettingsModel @Inject constructor(
 
                         yield()
 
-                        updateColorPreset.execute(restoredColorPreset)
+                        colorPresetRepository.updateColorPreset(restoredColorPreset)
                         _state.update {
                             it.copy(
                                 selectedColorPreset = restoredColorPreset,
@@ -570,7 +555,7 @@ class SettingsModel @Inject constructor(
 
                         yield()
 
-                        updateColorPreset.execute(resetColorPreset)
+                        colorPresetRepository.updateColorPreset(resetColorPreset)
                         _state.update {
                             it.copy(
                                 selectedColorPreset = resetColorPreset,
@@ -615,8 +600,8 @@ class SettingsModel @Inject constructor(
                         }
 
                         // Now persist to database
-                        updateColorPreset.execute(newColorPreset)
-                        selectColorPreset.execute(newColorPreset)
+            colorPresetRepository.updateColorPreset(newColorPreset)
+            colorPresetRepository.selectColorPreset(newColorPreset)
 
                         // Scroll to the new preset
                         val newPresetIndex = updatedPresets.indexOfFirst { it.id == newId }
@@ -644,7 +629,7 @@ class SettingsModel @Inject constructor(
 
                         yield()
 
-                        updateColorPreset.execute(updatedColorPreset)
+                        colorPresetRepository.updateColorPreset(updatedColorPreset)
                         _state.update {
                             it.copy(
                                 selectedColorPreset = updatedColorPreset,
@@ -680,7 +665,7 @@ class SettingsModel @Inject constructor(
                 viewModelScope.launch {
                     cancelColorPresetJobs()
                     launch {
-                        reorderColorPresets.execute(_state.value.colorPresets)
+                        colorPresetRepository.reorderColorPresets(_state.value.colorPresets)
                     }
                 }
             }
@@ -699,10 +684,7 @@ class SettingsModel @Inject constructor(
 
             is SettingsEvent.OnSetCodexRootFolder -> {
                 viewModelScope.launch {
-                    Log.i("SettingsModel", "Setting Codex root folder: ${event.uri}")
                     val success = codexDirectoryManager.setCodexRootUri(event.uri)
-                    Log.i("SettingsModel", "Codex root folder set successfully: $success")
-
                     if (success) {
                         val displayPath = codexDirectoryManager.getDisplayPath()
                         Log.i("SettingsModel", "Codex root display path: $displayPath")
@@ -713,49 +695,57 @@ class SettingsModel @Inject constructor(
                             )
                         }
 
-                        // Check if directory is configured
                         val isConfigured = codexDirectoryManager.isConfigured()
                         Log.i("SettingsModel", "Codex directory configured: $isConfigured")
 
-                        // Start background import with progress tracking
-                        Log.i("SettingsModel", "Starting background auto-import of existing OPDS books")
-                        val folderName = displayPath?.substringAfterLast("/") ?: "Codex Directory"
-
-                        // Create initial import operation for Codex Directory
-                        importProgressService.startCodexImport(displayPath ?: "", folderName)
-
-                        try {
-                            val importedCount = autoImportCodexBooksUseCase.execute { progress ->
-                                Log.d("SettingsModel", "Auto-import progress: ${progress.current}/${progress.total} - ${progress.currentFolder}")
-                                // Update the Codex Directory import progress
-                                importProgressService.updateCodexImportProgress(
-                                    folderPath = displayPath ?: "",
-                                    totalBooks = progress.total,
-                                    currentProgress = progress.current,
-                                    currentFile = progress.currentFolder
-                                )
-                            }
-                            Log.i("SettingsModel", "Auto-import completed. Imported $importedCount books")
-
-                            if (importedCount > 0) {
-                                // Trigger library refresh to show imported books
-                                Log.i("SettingsModel", "Triggering library refresh after auto-import")
-                                try {
-                                    withContext(Dispatchers.Main) {
-                                        LibraryScreen.refreshListChannel.trySend(0)
+                        if (isConfigured) {
+                            Log.i("SettingsModel", "Starting auto-import of existing books from Codex Directory")
+                            importProgressService.startCodexImport(
+                                folderPath = displayPath ?: "",
+                                folderName = "Codex Directory",
+                                onComplete = {
+                                    try {
+                                        withContext(Dispatchers.Main) {
+                                            LibraryScreen.refreshListChannel.trySend(0)
+                                        }
+                                        Log.i("SettingsModel", "Library refresh signal sent")
+                                    } catch (e: Exception) {
+                                        Log.e("SettingsModel", "Failed to trigger library refresh", e)
                                     }
-                                    Log.i("SettingsModel", "Library refresh signal sent successfully")
-                                } catch (e: Exception) {
-                                    Log.e("SettingsModel", "Failed to trigger library refresh", e)
                                 }
-                            } else {
-                                Log.w("SettingsModel", "No books were imported during auto-import")
-                            }
-                        } catch (e: Exception) {
-                            Log.e("SettingsModel", "Auto-import failed with exception", e)
+                            )
                         }
                     } else {
                         Log.e("SettingsModel", "Failed to set Codex root folder")
+                    }
+                }
+            }
+
+            is SettingsEvent.OnScanCodexDirectory -> {
+                viewModelScope.launch {
+                    val displayPath = codexDirectoryManager.getDisplayPath()
+                    if (displayPath != null) {
+                        val isConfigured = codexDirectoryManager.isConfigured()
+                        Log.i("SettingsModel", "Scanning Codex directory. Configured: $isConfigured")
+
+                        if (isConfigured) {
+                            importProgressService.startCodexImport(
+                                folderPath = displayPath,
+                                folderName = "Codex Directory",
+                                onComplete = {
+                                    try {
+                                        withContext(Dispatchers.Main) {
+                                            LibraryScreen.refreshListChannel.trySend(0)
+                                        }
+                                        Log.i("SettingsModel", "Library refresh signal sent")
+                                    } catch (e: Exception) {
+                                        Log.e("SettingsModel", "Failed to trigger library refresh", e)
+                                    }
+                                }
+                            )
+                        } else {
+                            Log.e("SettingsModel", "Codex directory not configured, cannot scan")
+                        }
                     }
                 }
             }
@@ -777,7 +767,7 @@ class SettingsModel @Inject constructor(
     }
 
     private suspend fun ColorPreset.select(animate: Boolean = false) {
-        selectColorPreset.execute(this)
+            colorPresetRepository.selectColorPreset(this)
         _state.update {
             it.copy(
                 animateColorPreset = animate

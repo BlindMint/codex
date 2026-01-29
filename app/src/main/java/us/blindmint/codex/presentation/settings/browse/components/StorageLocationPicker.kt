@@ -6,20 +6,21 @@
 
 package us.blindmint.codex.presentation.settings.browse.components
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -28,18 +29,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import us.blindmint.codex.R
+import us.blindmint.codex.domain.import_progress.ImportOperation
 import us.blindmint.codex.ui.import_progress.ImportProgressViewModel
 import us.blindmint.codex.ui.settings.SettingsEvent
 import us.blindmint.codex.ui.settings.SettingsModel
+import us.blindmint.codex.presentation.settings.browse.scan.components.FolderImportProgress
+import us.blindmint.codex.presentation.core.components.common.StyledText
+import us.blindmint.codex.ui.theme.dynamicListItemColor
 
-/**
- * Storage location picker component.
- * Shows storage location as a single clickable ListItem with headline and supporting content.
- */
 @Composable
 fun StorageLocationPicker(
     modifier: Modifier = Modifier
@@ -47,9 +55,14 @@ fun StorageLocationPicker(
     val settingsModel = hiltViewModel<SettingsModel>()
     val importProgressViewModel = hiltViewModel<ImportProgressViewModel>()
     val state by settingsModel.state.collectAsStateWithLifecycle()
+    val importOperations by importProgressViewModel.importOperations.collectAsStateWithLifecycle()
     var showPicker by remember { mutableStateOf(false) }
     var showRemoveConfirmation by remember { mutableStateOf(false) }
     var showInfoDialog by remember { mutableStateOf(false) }
+
+    val codexImportOperation = importOperations.find { op ->
+        op.folderUri == android.net.Uri.EMPTY
+    }
 
     val folderPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
@@ -60,75 +73,95 @@ fun StorageLocationPicker(
         showPicker = false
     }
 
-    ListItem(
+    Column(
         modifier = modifier
-            .fillMaxWidth()
-            .clickable {
+            .padding(
+                horizontal = 18.dp,
+                vertical = 8.dp
+            )
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(18.dp),
+            modifier = Modifier.clickable {
                 if (state.codexRootDisplayPath == null) {
                     showInfoDialog = true
                 } else {
                     showPicker = true
                 }
-            },
-        headlineContent = {
-            Text(
-                text = "Codex Directory",
-                style = MaterialTheme.typography.titleSmall
+            }
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.skull_medium),
+                contentDescription = null,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.dynamicListItemColor(0))
+                    .padding(11.dp)
+                    .size(22.dp),
+                tint = MaterialTheme.colorScheme.onSurface
             )
-        },
-        supportingContent = {
-            Text(
-                text = state.codexRootDisplayPath ?: "Tap to configure",
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (state.codexRootDisplayPath != null) {
-                    MaterialTheme.colorScheme.onSurface
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                }
-            )
-        },
-        trailingContent = {
-            if (state.codexRootDisplayPath != null) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                StyledText(
+                    text = "Codex Directory",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                )
+                StyledText(
+                    text = state.codexRootDisplayPath ?: "Tap to configure",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = if (state.codexRootDisplayPath != null) {
+                            MaterialTheme.colorScheme.onSurface
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+                    )
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                IconButton(
+                    onClick = {
+                        settingsModel.onEvent(SettingsEvent.OnScanCodexDirectory)
+                    },
+                    modifier = Modifier.size(36.dp)
                 ) {
-                    IconButton(
-                        onClick = {
-                            state.codexRootDisplayPath?.let { displayPath ->
-                                importProgressViewModel.startCodexImport(
-                                    folderPath = displayPath,
-                                    folderName = displayPath.substringAfterLast("/")
-                                )
-                            }
-                        },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Refresh,
-                            contentDescription = "Rescan Codex Directory",
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    IconButton(
-                        onClick = { showRemoveConfirmation = true },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Clear,
-                            contentDescription = "Remove Codex Directory",
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Outlined.Refresh,
+                        contentDescription = "Rescan Codex Directory",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                IconButton(
+                    onClick = { showRemoveConfirmation = true },
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Remove Codex Directory",
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }
-    )
+
+        if (codexImportOperation != null) {
+            FolderImportProgress(
+                operation = codexImportOperation
+            )
+        }
+    }
 
     if (showPicker) {
         folderPicker.launch(null)
     }
 
-    // Confirmation dialog for removing Codex Directory
     if (showRemoveConfirmation) {
         AlertDialog(
             onDismissRequest = { showRemoveConfirmation = false },
@@ -150,7 +183,6 @@ fun StorageLocationPicker(
         )
     }
 
-    // Informational dialog about Codex Directory
     if (showInfoDialog) {
         AlertDialog(
             onDismissRequest = { showInfoDialog = false },

@@ -39,42 +39,15 @@ class TextParserImpl @Inject constructor(
             return emptyList()
         }
 
-        val fileFormat = ".${cachedFile.name.substringAfterLast(".")}".lowercase().trim()
         return withContext(Dispatchers.IO) {
-            when (fileFormat) {
-                ".pdf" -> {
-                    pdfTextParser.parse(cachedFile)
-                }
-
-                ".epub" -> {
-                    epubTextParser.parse(cachedFile)
-                }
-
-                ".txt" -> {
-                    txtTextParser.parse(cachedFile)
-                }
-
-                ".fb2" -> {
-                    xmlTextParser.parse(cachedFile)
-                }
-
-                ".html" -> {
-                    htmlTextParser.parse(cachedFile)
-                }
-
-                ".htm" -> {
-                    htmlTextParser.parse(cachedFile)
-                }
-
-                ".md" -> {
-                    htmlTextParser.parse(cachedFile)
-                }
-
-                ".fodt" -> {
-                    fodtTextParser.parse(cachedFile)
-                }
-
-                else -> {
+            when (FormatDetector.detect(cachedFile.name)) {
+                FormatDetector.Format.PDF -> pdfTextParser.parse(cachedFile)
+                FormatDetector.Format.EPUB -> epubTextParser.parse(cachedFile)
+                FormatDetector.Format.TXT -> txtTextParser.parse(cachedFile)
+                FormatDetector.Format.FB2 -> xmlTextParser.parse(cachedFile)
+                FormatDetector.Format.HTML -> htmlTextParser.parse(cachedFile)
+                FormatDetector.Format.FODT -> fodtTextParser.parse(cachedFile)
+                FormatDetector.Format.COMIC, FormatDetector.Format.UNKNOWN -> {
                     Log.e(TEXT_PARSER, "Wrong file format, could not find supported extension.")
                     emptyList()
                 }

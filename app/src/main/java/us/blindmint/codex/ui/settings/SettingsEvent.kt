@@ -85,6 +85,8 @@ sealed class SettingsEvent {
         val uri: Uri
     ) : SettingsEvent()
 
+    data object OnScanCodexDirectory : SettingsEvent()
+
     data object OnRemoveCodexRootFolder : SettingsEvent()
 
     data class OnRemoveFolder(

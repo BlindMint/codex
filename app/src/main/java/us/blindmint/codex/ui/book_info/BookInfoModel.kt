@@ -22,14 +22,9 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.library.category.Category
-import us.blindmint.codex.domain.use_case.book.CanResetCover
-import us.blindmint.codex.domain.use_case.book.DeleteBooks
-import us.blindmint.codex.domain.use_case.book.DeleteProgressHistoryUseCase
-import us.blindmint.codex.domain.use_case.book.GetBookById
-import us.blindmint.codex.domain.use_case.book.ResetCoverImage
-import us.blindmint.codex.domain.use_case.book.UpdateBook
-import us.blindmint.codex.domain.use_case.opds.RefreshBookMetadataFromOpds
-import us.blindmint.codex.domain.use_case.book.UpdateCoverImageOfBook
+import us.blindmint.codex.data.repository.OpdsRefreshRepository
+import us.blindmint.codex.domain.repository.BookRepository
+import us.blindmint.codex.domain.repository.HistoryRepository
 import us.blindmint.codex.domain.repository.OpdsRepository
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.browse.BrowseScreen
@@ -39,14 +34,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BookInfoModel @Inject constructor(
-    private val getBookById: GetBookById,
-    private val updateBook: UpdateBook,
-    private val canResetCover: CanResetCover,
-    private val updateCoverImageOfBook: UpdateCoverImageOfBook,
-    private val resetCoverImage: ResetCoverImage,
-    private val deleteBooks: DeleteBooks,
-    private val deleteProgressHistory: DeleteProgressHistoryUseCase,
-    private val refreshBookMetadataFromOpds: RefreshBookMetadataFromOpds,
+    private val bookRepository: BookRepository,
+    private val historyRepository: HistoryRepository,
+    private val opdsRefreshRepository: OpdsRefreshRepository,
     private val opdsRepository: OpdsRepository
 ) : ViewModel() {
 
@@ -91,14 +81,14 @@ class BookInfoModel @Inject constructor(
                             BitmapFactory.decodeStream(it)
                         } ?: return@launch
 
-                        updateCoverImageOfBook.execute(
+                        bookRepository.updateCoverImageOfBook(
                             _state.value.book,
                             image
                         )
 
-                        val newCoverImage = getBookById.execute(
-                            _state.value.book.id
-                        )?.coverImage ?: return@launch
+                        val newCoverImage = bookRepository.getBooksById(
+                            listOf(_state.value.book.id)
+                        ).firstOrNull()?.coverImage ?: return@launch
 
                         _state.update {
                             it.copy(
@@ -106,7 +96,7 @@ class BookInfoModel @Inject constructor(
                                     coverImage = newCoverImage
                                 ),
                                 bottomSheet = null,
-                                canResetCover = canResetCover.execute(bookId = it.book.id)
+                                canResetCover = bookRepository.canResetCover(bookId = it.book.id)
                             )
                         }
 
@@ -122,7 +112,7 @@ class BookInfoModel @Inject constructor(
 
                 is BookInfoEvent.OnResetCover -> {
                     launch {
-                        val result = resetCoverImage.execute(_state.value.book.id)
+                        val result = bookRepository.resetCoverImage(_state.value.book.id)
 
                         if (!result) {
                             withContext(Dispatchers.Main) {
@@ -132,7 +122,7 @@ class BookInfoModel @Inject constructor(
                             return@launch
                         }
 
-                        val book = getBookById.execute(_state.value.book.id)
+                        val book = bookRepository.getBooksById(listOf(_state.value.book.id)).firstOrNull()
 
                         if (book == null) {
                             withContext(Dispatchers.Main) {
@@ -166,7 +156,7 @@ class BookInfoModel @Inject constructor(
                             return@launch
                         }
 
-                        updateCoverImageOfBook.execute(
+                        bookRepository.updateCoverImageOfBook(
                             bookWithOldCover = _state.value.book,
                             newCoverImage = null
                         )
@@ -176,7 +166,7 @@ class BookInfoModel @Inject constructor(
                                     coverImage = null
                                 ),
                                 bottomSheet = null,
-                                canResetCover = canResetCover.execute(bookId = it.book.id)
+                                canResetCover = bookRepository.canResetCover(bookId = it.book.id)
                             )
                         }
 
@@ -193,7 +183,7 @@ class BookInfoModel @Inject constructor(
                 is BookInfoEvent.OnCheckCoverReset -> {
                     launch(Dispatchers.IO) {
                         if (_state.value.book.id == -1) return@launch
-                        canResetCover.execute(_state.value.book.id).apply {
+                        bookRepository.canResetCover(_state.value.book.id).apply {
                             _state.update {
                                 it.copy(
                                     canResetCover = this
@@ -228,7 +218,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -259,7 +249,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -288,7 +278,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -317,7 +307,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -354,7 +344,7 @@ class BookInfoModel @Inject constructor(
                             )
                         }
 
-                        deleteBooks.execute(listOf(_state.value.book))
+                        bookRepository.deleteBooks(listOf(_state.value.book))
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -404,7 +394,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         LibraryScreen.scrollToPageCompositionChannel.trySend(
@@ -425,7 +415,7 @@ class BookInfoModel @Inject constructor(
 
                 is BookInfoEvent.OnClearProgressHistory -> {
                     launch(Dispatchers.IO) {
-                        deleteProgressHistory.execute(_state.value.book)
+                        bookRepository.deleteProgressHistory(_state.value.book)
 
                         withContext(Dispatchers.Main) {
                             event.context.getString(R.string.progress_history_cleared)
@@ -445,7 +435,7 @@ class BookInfoModel @Inject constructor(
                             speedReaderWordIndex = 0,
                             speedReaderHasBeenOpened = false
                         )
-                        updateBook.execute(updatedBook)
+                        bookRepository.updateBook(updatedBook)
                         _state.update {
                             it.copy(book = updatedBook)
                         }
@@ -486,7 +476,7 @@ class BookInfoModel @Inject constructor(
                             baseBook
                         }
 
-                        updateBook.execute(finalBook)
+                        bookRepository.updateBook(finalBook)
                         _state.update {
                             it.copy(book = finalBook)
                         }
@@ -543,7 +533,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -578,7 +568,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -613,7 +603,7 @@ class BookInfoModel @Inject constructor(
                                 )
                             )
                         }
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateBook(_state.value.book)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -642,7 +632,7 @@ class BookInfoModel @Inject constructor(
                         }
 
                         try {
-                            val refreshedBook = refreshBookMetadataFromOpds.execute(currentBook) { uuid, isbn ->
+                            val refreshedBook = opdsRefreshRepository.refreshBookMetadata(currentBook) { uuid, isbn ->
                                 // Find OPDS entry by UUID or ISBN from the book's OPDS source
                                 try {
                                     val feed = opdsRepository.fetchFeed(currentBook.opdsSourceUrl!!)
@@ -658,7 +648,7 @@ class BookInfoModel @Inject constructor(
                                 _state.update {
                                     it.copy(book = refreshedBook)
                                 }
-                                updateBook.execute(refreshedBook)
+                                bookRepository.updateBook(refreshedBook)
                             }
 
                             LibraryScreen.refreshListChannel.trySend(0)
@@ -678,7 +668,7 @@ class BookInfoModel @Inject constructor(
                 is BookInfoEvent.OnToggleFavorite -> {
                     val currentBook = _state.value.book
                     val updatedBook = currentBook.copy(isFavorite = !currentBook.isFavorite)
-                    updateBook.execute(updatedBook)
+                    bookRepository.updateBook(updatedBook)
                     _state.update { it.copy(book = updatedBook) }
                     LibraryScreen.refreshListChannel.trySend(0)
                 }
@@ -729,7 +719,7 @@ class BookInfoModel @Inject constructor(
                 is BookInfoEvent.OnConfirmSaveChanges -> {
                     launch {
                         val bookToSave = _state.value.editedBook ?: return@launch
-                        updateBook.execute(bookToSave)
+                        bookRepository.updateBook(bookToSave)
 
                         _state.update {
                             it.copy(
@@ -772,7 +762,7 @@ class BookInfoModel @Inject constructor(
                 is BookInfoEvent.OnChangeCategory -> {
                     launch {
                         val updatedBook = _state.value.book.copy(category = event.category)
-                        updateBook.execute(updatedBook)
+                        bookRepository.updateBook(updatedBook)
 
                         _state.update {
                             it.copy(
@@ -795,7 +785,7 @@ class BookInfoModel @Inject constructor(
         navigateBack: () -> Unit
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val book = getBookById.execute(bookId)
+            val book = bookRepository.getBooksById(listOf(bookId)).firstOrNull()
 
             if (book == null) {
                 navigateBack()
