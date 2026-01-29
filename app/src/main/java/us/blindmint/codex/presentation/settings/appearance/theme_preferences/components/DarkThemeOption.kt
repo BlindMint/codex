@@ -17,10 +17,13 @@ import us.blindmint.codex.domain.ui.DarkTheme
 import us.blindmint.codex.presentation.core.components.settings.SegmentedButtonWithTitle
 import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
+import us.blindmint.codex.ui.settings.SettingsEvent
+import us.blindmint.codex.ui.settings.SettingsModel
 
 @Composable
 fun DarkThemeOption() {
     val mainModel = hiltViewModel<MainModel>()
+    val settingsModel = hiltViewModel<SettingsModel>()
     val state = mainModel.state.collectAsStateWithLifecycle()
 
     SegmentedButtonWithTitle(
@@ -39,5 +42,6 @@ fun DarkThemeOption() {
         }
     ) {
         mainModel.onEvent(MainEvent.OnChangeDarkTheme(it.id))
+        settingsModel.onEvent(SettingsEvent.OnSyncThemePreset)
     }
 }
