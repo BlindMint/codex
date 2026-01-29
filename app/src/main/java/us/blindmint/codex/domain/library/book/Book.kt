@@ -57,4 +57,11 @@ data class Book(
     val readingDirection: String = "LTR",
     val comicReaderMode: String = "PAGED",
     val isFavorite: Boolean = false
-) : Parcelable
+) : Parcelable {
+    val displayProgress: Float
+        get() = if (speedReaderHasBeenOpened && speedReaderTotalWords > 0) {
+            speedReaderWordIndex.toFloat() / speedReaderTotalWords.toFloat()
+        } else {
+            progress
+        }
+}

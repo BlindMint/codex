@@ -74,6 +74,7 @@ import kotlinx.coroutines.delay
 import us.blindmint.codex.domain.reader.FocusIndicatorsType
 import us.blindmint.codex.domain.reader.SpeedReaderWord
 import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
+import us.blindmint.codex.presentation.core.util.calculateProgress
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import kotlin.math.roundToInt
 
@@ -265,7 +266,13 @@ fun SpeedReadingContent(
     val derivedVerticalIndicatorType = if (focusIndicators == us.blindmint.codex.domain.reader.FocusIndicatorsType.ARROWS) us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.ARROWS else us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType.LINE
 
     // Calculate static playback controls position: ~20% from bottom on phone, ~25% on tablet
-    val playbackControlsBottomPercent = if (isTablet) 0.75f else 0.80f
+    val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    val playbackControlsBottomPercent = when {
+        isLandscape && isTablet -> 0.65f
+        isLandscape -> 0.70f
+        isTablet -> 0.75f
+        else -> 0.80f
+    }
     val playbackControlsTopDp = (screenHeightDp.value * playbackControlsBottomPercent).dp
     val playbackControlsHeightDp = 80.dp
     val playbackControlsBottomDp = playbackControlsTopDp + playbackControlsHeightDp
@@ -705,8 +712,23 @@ fun SpeedReadingContent(
                     trackColor = fontColor.copy(alpha = 0.2f)
                 )
 
+                // Progress percentage (1 decimal place)
+                val progressPercentage = if (totalWords > 0) {
+                    ((currentWordIndex.toFloat() / totalWords) * 100).calculateProgress(1)
+                } else {
+                    "0.0"
+                }
+                Text(
+                    text = "$progressPercentage%",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = fontColor.copy(alpha = 0.8f),
+                        fontWeight = FontWeight.Medium
+                    ),
+                    modifier = Modifier.width(56.dp) // Fixed width for consistency
+                )
+
                 // Spacer for consistent spacing
-                Spacer(modifier = Modifier.width(24.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
                  // WPM indicator (tappable for quick menu)
                  Text(
