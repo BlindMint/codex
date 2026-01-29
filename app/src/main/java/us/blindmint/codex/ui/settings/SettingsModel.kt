@@ -142,7 +142,16 @@ class SettingsModel @Inject constructor(
         val isDarkTheme = when {
             settings.darkTheme.name == "DARK" -> true
             settings.darkTheme.name == "OFF" -> false
-            settings.darkTheme.name == "FOLLOW_SYSTEM" -> isSystemInDarkMode ?: false
+            settings.darkTheme.name == "FOLLOW_SYSTEM" -> {
+                // When FOLLOW_SYSTEM, if we don't have the actual system dark mode,
+                // don't sync (keep current state) to avoid incorrect light/dark toggle
+                // The system will trigger a proper sync via performInitialColorPresetSelection
+                // when the actual system dark mode is available
+                if (isSystemInDarkMode == null) {
+                    return@syncThemePreset
+                }
+                isSystemInDarkMode
+            }
             else -> false
         }
 
@@ -216,6 +225,8 @@ class SettingsModel @Inject constructor(
 
                         // Mark auto-selection as completed in DataStore
                         dataStoreRepository.putDataToDataStore(DataStoreConstants.AUTO_COLOR_PRESET_SELECTED, true)
+
+                        syncThemePreset()
                     }
                 }
             }
