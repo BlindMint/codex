@@ -43,54 +43,76 @@ fun SettingsLayout(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit
 ) {
-    val allSettingsItems = remember {
+    val appearanceTitle = stringResource(id = R.string.appearance_settings)
+    val appearanceDesc = stringResource(id = R.string.appearance_settings_desc)
+    val readerTitle = stringResource(id = R.string.reader_settings)
+    val readerDesc = stringResource(id = R.string.reader_settings_desc)
+    val libraryTitle = stringResource(id = R.string.library_settings)
+    val libraryDesc = stringResource(id = R.string.library_settings)
+    val browseTitle = stringResource(id = R.string.browse_settings)
+    val browseDesc = stringResource(id = R.string.browse_settings_desc)
+    val importExportTitle = stringResource(id = R.string.import_export_settings)
+    val importExportDesc = stringResource(id = R.string.import_export_settings_desc)
+    val aboutTitle = stringResource(id = R.string.about_screen)
+    val aboutDesc = stringResource(id = R.string.about_screen)
+    val aboutIcon = painterResource(id = R.drawable.skull_small)
+
+    val allSettingsItems = remember(
+        appearanceTitle, appearanceDesc,
+        readerTitle, readerDesc,
+        libraryTitle, libraryDesc,
+        browseTitle, browseDesc,
+        importExportTitle, importExportDesc,
+        aboutTitle, aboutDesc,
+        aboutIcon
+    ) {
         listOf(
             SettingsItem(
                 id = "appearance",
-                title = stringResource(id = R.string.appearance_settings),
-                description = stringResource(id = R.string.appearance_settings_desc),
+                title = appearanceTitle,
+                description = appearanceDesc,
                 icon = Icons.Outlined.Palette,
                 onClick = navigateToAppearanceSettings
             ),
             SettingsItem(
                 id = "reader",
-                title = stringResource(id = R.string.reader_settings),
-                description = stringResource(id = R.string.reader_settings_desc),
+                title = readerTitle,
+                description = readerDesc,
                 icon = Icons.AutoMirrored.Outlined.MenuBook,
                 onClick = navigateToReaderSettings
             ),
             SettingsItem(
                 id = "library",
-                title = stringResource(id = R.string.library_settings),
-                description = stringResource(id = R.string.library_settings),
+                title = libraryTitle,
+                description = libraryDesc,
                 icon = Icons.AutoMirrored.Outlined.LibraryBooks,
                 onClick = navigateToLibrarySettings
             ),
             SettingsItem(
                 id = "browse",
-                title = stringResource(id = R.string.browse_settings),
-                description = stringResource(id = R.string.browse_settings_desc),
+                title = browseTitle,
+                description = browseDesc,
                 icon = Icons.Outlined.Explore,
                 onClick = navigateToBrowseSettings
             ),
             SettingsItem(
                 id = "import_export",
-                title = stringResource(id = R.string.import_export_settings),
-                description = stringResource(id = R.string.import_export_settings_desc),
+                title = importExportTitle,
+                description = importExportDesc,
                 icon = Icons.Outlined.ImportExport,
                 onClick = navigateToImportExportSettings
             ),
             SettingsItem(
                 id = "about",
-                title = stringResource(id = R.string.about_screen),
-                description = stringResource(id = R.string.about_screen),
-                icon = painterResource(id = R.drawable.skull_small),
+                title = aboutTitle,
+                description = aboutDesc,
+                icon = aboutIcon,
                 onClick = navigateToAbout
             )
         )
     }
 
-    val filteredItems = remember(searchQuery) {
+    val filteredItems = remember(searchQuery, allSettingsItems) {
         if (searchQuery.isBlank()) {
             allSettingsItems
         } else {

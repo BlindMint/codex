@@ -44,7 +44,7 @@ fun SettingsTopBar(
     onSearch: () -> Unit
 ) {
     TopAppBar(
-        scrollBehavior = scrollBehavior,
+        scrollBehavior = null,
         isTopBarScrolled = showSearch,
         shownTopBar = if (showSearch) 1 else 0,
         topBars = listOf(

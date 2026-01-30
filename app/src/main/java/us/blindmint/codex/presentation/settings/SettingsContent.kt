@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.focus.FocusRequester
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,7 +24,13 @@ fun SettingsContent(
     navigateToImportExportSettings: () -> Unit,
     navigateToAbout: () -> Unit,
     navigateToHelp: () -> Unit,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    showSearch: Boolean = false,
+    searchQuery: String = "",
+    focusRequester: FocusRequester,
+    onSearchVisibilityChange: (Boolean) -> Unit = {},
+    onSearchQueryChange: (String) -> Unit = {},
+    onSearch: () -> Unit = {}
 ) {
     SettingsScaffold(
         listState = listState,
@@ -35,6 +42,12 @@ fun SettingsContent(
         navigateToImportExportSettings = navigateToImportExportSettings,
         navigateToAbout = navigateToAbout,
         navigateToHelp = navigateToHelp,
-        navigateBack = navigateBack
+        navigateBack = navigateBack,
+        showSearch = showSearch,
+        searchQuery = searchQuery,
+        focusRequester = focusRequester,
+        onSearchVisibilityChange = onSearchVisibilityChange,
+        onSearchQueryChange = onSearchQueryChange,
+        onSearch = onSearch
     )
 }

@@ -17,7 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.focus.FocusRequester
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +31,13 @@ fun SettingsScaffold(
     navigateToImportExportSettings: () -> Unit,
     navigateToAbout: () -> Unit,
     navigateToHelp: () -> Unit,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    showSearch: Boolean = false,
+    searchQuery: String = "",
+    focusRequester: FocusRequester,
+    onSearchVisibilityChange: (Boolean) -> Unit = {},
+    onSearchQueryChange: (String) -> Unit = {},
+    onSearch: () -> Unit = {}
 ) {
     Scaffold(
         Modifier
@@ -41,7 +47,13 @@ fun SettingsScaffold(
         topBar = {
             SettingsTopBar(
                 scrollBehavior = scrollBehavior,
-                navigateBack = navigateBack
+                navigateBack = navigateBack,
+                showSearch = showSearch,
+                searchQuery = searchQuery,
+                focusRequester = focusRequester,
+                onSearchVisibilityChange = onSearchVisibilityChange,
+                onSearchQueryChange = onSearchQueryChange,
+                onSearch = onSearch
             )
         }
     ) { paddingValues ->
@@ -54,7 +66,9 @@ fun SettingsScaffold(
             navigateToBrowseSettings = navigateToBrowseSettings,
             navigateToImportExportSettings = navigateToImportExportSettings,
             navigateToAbout = navigateToAbout,
-            navigateToHelp = navigateToHelp
+            navigateToHelp = navigateToHelp,
+            searchQuery = searchQuery,
+            onSearchQueryChange = onSearchQueryChange
         )
     }
 }

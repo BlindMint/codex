@@ -13,6 +13,9 @@ import android.os.Parcelable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.requestFocus
+import androidx.compose.ui.platform.LocalFocusManager
 import kotlinx.parcelize.Parcelize
 import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.presentation.core.components.top_bar.collapsibleTopAppBarScrollBehavior
@@ -31,6 +34,10 @@ object SettingsScreen : Screen, Parcelable {
     override fun Content() {
         val navigator = LocalNavigator.current
         val (scrollBehavior, listState) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior()
+        val showSearch by remember { mutableStateOf(false) }
+        val (searchQuery, setSearchQuery) = remember { mutableStateOf("") }
+        val focusRequester = remember { FocusRequester() }
+        val focusManager = LocalFocusManager.current
 
         SettingsContent(
             listState = listState,
@@ -59,8 +66,18 @@ object SettingsScreen : Screen, Parcelable {
             navigateBack = {
                 navigator.pop()
             },
+            showSearch = showSearch,
             searchQuery = searchQuery,
-            onSearchQueryChange = { searchQuery = it }
+            focusRequester = focusRequester,
+            onSearchVisibilityChange = { visible ->
+                if (visible) {
+                    focusRequester.requestFocus()
+                } else {
+                    focusManager.clearFocus()
+                }
+            },
+            onSearchQueryChange = { setSearchQuery(it) },
+            onSearch = {  }
         )
     }
 }

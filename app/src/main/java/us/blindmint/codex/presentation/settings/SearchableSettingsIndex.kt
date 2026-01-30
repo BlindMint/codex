@@ -1,5 +1,6 @@
 package us.blindmint.codex.presentation.settings
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.reader.search.SearchSubcategory
@@ -7,6 +8,7 @@ import us.blindmint.codex.presentation.settings.reader.search.components.SearchH
 import us.blindmint.codex.presentation.settings.reader.search.components.ShowSearchScrollbarOption
 import us.blindmint.codex.presentation.settings.reader.search.components.SearchScrollbarOpacityOption
 
+@Composable
 fun buildSearchableSettingsIndex(
     navigateToReaderSettings: () -> Unit
 ): List<SearchableSettingsItem> {
@@ -35,7 +37,7 @@ fun buildSearchableSettingsIndex(
         add(
             SearchableSettingsItem(
                 id = "reader.search.highlight_color",
-                title = stringResource(id = R.string.search_highlight_color_option),
+                title = "Highlight color",
                 category = stringResource(id = R.string.reader_settings),
                 subcategory = stringResource(id = R.string.search_reader_settings),
                 type = SearchableSettingsType.SUBSETTING,
@@ -45,7 +47,7 @@ fun buildSearchableSettingsIndex(
         add(
             SearchableSettingsItem(
                 id = "reader.search.show_scrollbar",
-                title = stringResource(id = R.string.show_search_scrollbar_option),
+                title = "Show scrollbar",
                 category = stringResource(id = R.string.reader_settings),
                 subcategory = stringResource(id = R.string.search_reader_settings),
                 type = SearchableSettingsType.SUBSETTING,
@@ -55,7 +57,7 @@ fun buildSearchableSettingsIndex(
         add(
             SearchableSettingsItem(
                 id = "reader.search.scrollbar_opacity",
-                title = stringResource(id = R.string.search_scrollbar_opacity_option),
+                title = "Scrollbar opacity",
                 category = stringResource(id = R.string.reader_settings),
                 subcategory = stringResource(id = R.string.search_reader_settings),
                 type = SearchableSettingsType.SUBSETTING,
