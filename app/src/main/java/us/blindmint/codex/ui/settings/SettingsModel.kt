@@ -35,8 +35,6 @@ import us.blindmint.codex.domain.storage.CodexDirectoryManager
 import us.blindmint.codex.presentation.core.constants.DataStoreConstants
 import us.blindmint.codex.presentation.core.constants.provideDefaultColorPreset
 import us.blindmint.codex.presentation.core.constants.provideDefaultColorPresets
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.runtime.Composable
 import us.blindmint.codex.presentation.core.util.showToast
 import us.blindmint.codex.ui.browse.BrowseScreen
 import us.blindmint.codex.ui.import_progress.ImportProgressService
@@ -91,6 +89,17 @@ class SettingsModel @Inject constructor(
 
                 // Reset auto-selection flag for fresh installation
                 dataStoreRepository.putDataToDataStore(DataStoreConstants.AUTO_COLOR_PRESET_SELECTED, false)
+
+                syncThemePreset()
+            } else {
+                val hasThemePreset = colorPresets.any { it.name == "Theme" }
+                if (!hasThemePreset) {
+                    val defaultPresets = provideDefaultColorPresets()
+                    val themePreset = defaultPresets.first { it.name == "Theme" }
+                    colorPresetRepository.updateColorPreset(themePreset)
+                    colorPresets = colorPresetRepository.getColorPresets()
+                    syncThemePreset()
+                }
             }
 
             val scrollIndex = colorPresets.indexOfFirst {
@@ -121,6 +130,66 @@ class SettingsModel @Inject constructor(
 
             // Auto-selection will be triggered from composable context
             // when the system theme is available
+        }
+    }
+
+    private suspend fun syncThemePreset(
+        isSystemInDarkMode: Boolean? = null,
+        forcedIsDarkTheme: Boolean? = null
+    ) {
+        val themePreset = colorPresetRepository.getColorPresets()
+            .find { it.name == "Theme" } ?: return
+
+        val settings = dataStoreRepository.getAllSettings()
+
+        val isDarkTheme = if (forcedIsDarkTheme != null) {
+            forcedIsDarkTheme
+        } else {
+            when {
+                settings.darkTheme.name == "DARK" -> true
+                settings.darkTheme.name == "OFF" -> false
+                settings.darkTheme.name == "FOLLOW_SYSTEM" -> isSystemInDarkMode ?: true
+                else -> false
+            }
+        }
+
+        val currentThemeName = settings.theme.name
+        val currentTheme = try {
+            us.blindmint.codex.ui.theme.Theme.valueOf(currentThemeName)
+        } catch (e: IllegalArgumentException) {
+            us.blindmint.codex.ui.theme.Theme.CATPPUCCIN
+        }
+
+        val (backgroundColor, fontColor) = us.blindmint.codex.ui.theme.getThemeReaderColors(
+            theme = currentTheme,
+            isDark = isDarkTheme,
+            themeContrast = settings.themeContrast
+        )
+
+        val updatedThemePreset = themePreset.copy(
+            backgroundColor = backgroundColor,
+            fontColor = fontColor
+        )
+
+        colorPresetRepository.updateColorPreset(updatedThemePreset)
+
+        val currentPresets = _state.value.colorPresets
+        _state.update {
+            it.copy(
+                selectedColorPreset = if (themePreset.isSelected) updatedThemePreset else it.selectedColorPreset,
+                colorPresets = currentPresets.updateColorPreset(updatedThemePreset)
+            )
+        }
+    }
+    fun syncThemePresetWithSystemDarkMode(isDarkMode: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            cancelColorPresetJobs()
+            updateColorColorPresetJob = launch {
+                syncThemePreset(
+                    isSystemInDarkMode = isDarkMode,
+                    forcedIsDarkTheme = isDarkMode
+                )
+            }
         }
     }
 
@@ -156,6 +225,8 @@ class SettingsModel @Inject constructor(
 
                         // Mark auto-selection as completed in DataStore
                         dataStoreRepository.putDataToDataStore(DataStoreConstants.AUTO_COLOR_PRESET_SELECTED, true)
+
+                        syncThemePreset()
                     }
                 }
             }
@@ -169,6 +240,8 @@ class SettingsModel @Inject constructor(
             if (!settings.autoColorPresetSelected) {
                 selectAppropriateColorPreset(isDarkTheme)
             }
+
+            syncThemePresetWithSystemDarkMode(isDarkTheme)
         }
     }
 
@@ -219,9 +292,26 @@ class SettingsModel @Inject constructor(
             is SettingsEvent.OnRemoveFolder -> {
                 viewModelScope.launch {
                     if (event.removeBooks) {
-                        val folderPath = event.uri.path ?: ""
+                        val folderUriString = event.uri.toString().removeSuffix("/")
                         val allBooks = bookRepository.getBooks("")
-                        val booksToRemove = allBooks.filter { it.filePath.startsWith(folderPath) }
+                        Log.d("OnRemoveFolder", "Folder URI to match: $folderUriString")
+
+                        val booksToRemove = allBooks.filter { book ->
+                            val bookUri = android.net.Uri.parse(book.filePath)
+                            val treePart = bookUri.path?.substringBefore("/document/")
+
+                            val matches = bookUri.scheme == event.uri.scheme &&
+                                         bookUri.authority == event.uri.authority &&
+                                         treePart != null &&
+                                         treePart.equals(event.uri.path, ignoreCase = true)
+
+                            if (matches) {
+                                Log.d("OnRemoveFolder", "Removing book: ${book.title} (${book.filePath})")
+                            }
+                            matches
+                        }
+
+                        Log.d("OnRemoveFolder", "Books to remove: ${booksToRemove.size}")
 
                         if (booksToRemove.isNotEmpty()) {
                             bookRepository.deleteBooks(booksToRemove)
@@ -232,9 +322,10 @@ class SettingsModel @Inject constructor(
                         permissionRepository.releasePersistableUriPermission(event.uri)
                     }
 
-                    BrowseScreen.refreshListChannel.trySend(Unit)
+                    LibraryScreen.refreshListChannel.trySend(0)
                 }
             }
+
 
             is SettingsEvent.OnSelectColorPreset -> {
                 viewModelScope.launch {
@@ -421,6 +512,45 @@ class SettingsModel @Inject constructor(
                 }
             }
 
+            is SettingsEvent.OnCopyColorPreset -> {
+                viewModelScope.launch {
+                    cancelColorPresetJobs()
+                    addColorPresetJob = launch {
+                        val colorPreset = event.id.getColorPresetById() ?: return@launch
+                        val currentPresets = _state.value.colorPresets
+
+                        val existingIds = currentPresets.map { it.id }.toSet()
+                        val newId = generateSequence(4) { it + 1 }
+                            .first { it !in existingIds }
+
+                        val newColorPreset = ColorPreset(
+                            id = newId,
+                            name = null,
+                            backgroundColor = colorPreset.backgroundColor,
+                            fontColor = colorPreset.fontColor,
+                            isSelected = true
+                        )
+
+                        val updatedPresets = currentPresets.map { it.copy(isSelected = false) } + newColorPreset
+
+                        _state.update {
+                            it.copy(
+                                selectedColorPreset = newColorPreset,
+                                colorPresets = updatedPresets
+                            )
+                        }
+
+            colorPresetRepository.updateColorPreset(newColorPreset)
+            colorPresetRepository.selectColorPreset(newColorPreset)
+
+                        val newPresetIndex = updatedPresets.indexOfFirst { it.id == newId }
+                        if (newPresetIndex != -1) {
+                            onEvent(SettingsEvent.OnScrollToColorPreset(newPresetIndex))
+                        }
+                    }
+                }
+            }
+
             is SettingsEvent.OnToggleColorPresetLock -> {
                 viewModelScope.launch {
                     cancelColorPresetJobs()
@@ -511,10 +641,15 @@ class SettingsModel @Inject constructor(
 
                         yield()
 
+                        if (colorPreset.name == "Theme") {
+                            onEvent(SettingsEvent.OnSyncThemePreset)
+                            return@launch
+                        }
+
                         val defaultPresets = provideDefaultColorPresets()
                         val defaultPreset = when (colorPreset.name) {
                             "Light" -> defaultPresets.first()
-                            "Dark" -> defaultPresets.last()
+                            "Dark" -> defaultPresets[1] // Dark is at index 1 (Light=0, Dark=1, Theme=2)
                             else -> return@launch
                         }
 
@@ -573,10 +708,9 @@ class SettingsModel @Inject constructor(
                     cancelColorPresetJobs()
                     addColorPresetJob = launch {
                         val currentPresets = _state.value.colorPresets
-                        
-                        // Find the lowest available ID starting from 3 (after Light=1 and Dark=2)
+
                         val existingIds = currentPresets.map { it.id }.toSet()
-                        val newId = generateSequence(3) { it + 1 }
+                        val newId = generateSequence(4) { it + 1 }
                             .first { it !in existingIds }
 
                         // Create a new preset with the calculated ID
@@ -638,6 +772,15 @@ class SettingsModel @Inject constructor(
                                 )
                             )
                         }
+                    }
+                }
+            }
+
+            is SettingsEvent.OnSyncThemePreset -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    cancelColorPresetJobs()
+                    updateColorColorPresetJob = launch {
+                        syncThemePreset()
                     }
                 }
             }

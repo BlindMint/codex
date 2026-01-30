@@ -269,7 +269,7 @@ fun SpeedReadingContent(
     val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
     val playbackControlsBottomPercent = when {
         isLandscape && isTablet -> 0.65f
-        isLandscape -> 0.70f
+        isLandscape -> 0.60f
         isTablet -> 0.75f
         else -> 0.80f
     }
@@ -704,7 +704,6 @@ fun SpeedReadingContent(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Progress bar (takes available space)
                 LinearProgressIndicator(
                     progress = { if (totalWords > 0) currentWordIndex.toFloat() / totalWords else 0f },
                     modifier = Modifier.weight(1f),
@@ -712,68 +711,65 @@ fun SpeedReadingContent(
                     trackColor = fontColor.copy(alpha = 0.2f)
                 )
 
-                // Progress percentage (1 decimal place)
-                val progressPercentage = if (totalWords > 0) {
-                    ((currentWordIndex.toFloat() / totalWords) * 100).calculateProgress(1)
-                } else {
-                    "0.0"
-                }
-                Text(
-                    text = "$progressPercentage%",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = fontColor.copy(alpha = 0.8f),
-                        fontWeight = FontWeight.Medium
-                    ),
-                    modifier = Modifier.width(56.dp) // Fixed width for consistency
-                )
-
-                // Spacer for consistent spacing
-                Spacer(modifier = Modifier.width(16.dp))
-
-                 // WPM indicator (tappable for quick menu)
-                 Text(
-                     text = "$wpm wpm",
-                     style = MaterialTheme.typography.bodyMedium.copy(
-                         color = fontColor.copy(alpha = 0.8f),
-                         fontWeight = FontWeight.Medium
-                     ),
-                      modifier = Modifier.noRippleClickable {
-                          if (isPlaying) {
-                              Log.d("SPEED_READER", "WPM tap pause: currentWordIndex=$currentWordIndex, totalWords=$totalWords")
-                              onPlayPause()
-                              // Save progress immediately when manually pausing
-                              val globalWordIndex = startingWordIndex + currentWordIndex
-                              val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-                              Log.d("SPEED_READER", "WPM tap saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
-                              onSaveProgress(newProgress, globalWordIndex)
-                          }
-                          showQuickWpmMenu = true
-                      }
-                 )
-
-                // Spacer for consistent spacing
                 Spacer(modifier = Modifier.width(24.dp))
 
-                 // Book icon - opens word picker
-                 Icon(
-                     imageVector = Icons.AutoMirrored.Filled.MenuBook,
-                     contentDescription = "Select starting word",
-                     tint = fontColor.copy(alpha = 0.7f),
-                     modifier = Modifier
-                         .size(20.dp)
-                          .noRippleClickable {
-                              if (isPlaying) {
-                                  Log.d("SPEED_READER", "Book icon tap pause: currentWordIndex=$currentWordIndex, totalWords=$totalWords")
-                                  onPlayPause()
-                                  // Save progress immediately when manually pausing
-                                  val globalWordIndex = startingWordIndex + currentWordIndex
-                                  val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-                                  Log.d("SPEED_READER", "Book icon saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
-                                  onSaveProgress(newProgress, globalWordIndex)
-                              }
-                              onShowWordPicker()
-                          }
-                   )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(18.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val progressPercentage = if (totalWords > 0) {
+                        (currentWordIndex.toFloat() / totalWords).calculateProgress(1)
+                    } else {
+                        "0.0"
+                    }
+                    Text(
+                        text = "$progressPercentage%",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = fontColor.copy(alpha = 0.8f),
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+
+                    Text(
+                        text = "$wpm wpm",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = fontColor.copy(alpha = 0.8f),
+                            fontWeight = FontWeight.Medium
+                        ),
+                        modifier = Modifier.noRippleClickable {
+                            if (isPlaying) {
+                                Log.d("SPEED_READER", "WPM tap pause: currentWordIndex=$currentWordIndex, totalWords=$totalWords")
+                                onPlayPause()
+                                // Save progress immediately when manually pausing
+                                val globalWordIndex = startingWordIndex + currentWordIndex
+                                val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                Log.d("SPEED_READER", "WPM tap saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
+                                onSaveProgress(newProgress, globalWordIndex)
+                            }
+                            showQuickWpmMenu = true
+                        }
+                    )
+
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                        contentDescription = "Select starting word",
+                        tint = fontColor.copy(alpha = 0.7f),
+                        modifier = Modifier
+                            .size(20.dp)
+                            .noRippleClickable {
+                                if (isPlaying) {
+                                    Log.d("SPEED_READER", "Book icon tap pause: currentWordIndex=$currentWordIndex, totalWords=$totalWords")
+                                    onPlayPause()
+                                    // Save progress immediately when manually pausing
+                                    val globalWordIndex = startingWordIndex + currentWordIndex
+                                    val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                                    Log.d("SPEED_READER", "Book icon saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
+                                    onSaveProgress(newProgress, globalWordIndex)
+                                }
+                                onShowWordPicker()
+                            }
+                    )
+                }
             }
         }
     }

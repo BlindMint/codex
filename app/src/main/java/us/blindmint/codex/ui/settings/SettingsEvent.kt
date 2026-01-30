@@ -38,6 +38,10 @@ sealed class SettingsEvent {
         val id: ID
     ) : SettingsEvent()
 
+    data class OnCopyColorPreset(
+        val id: ID
+    ) : SettingsEvent()
+
     data class OnToggleColorPresetLock(
         val id: ID
     ) : SettingsEvent()
@@ -74,6 +78,8 @@ sealed class SettingsEvent {
         val backgroundColor: Color?,
         val fontColor: Color?
     ) : SettingsEvent()
+
+    data object OnSyncThemePreset : SettingsEvent()
 
     data object OnConfirmReorderColorPresets : SettingsEvent()
 

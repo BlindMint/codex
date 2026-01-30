@@ -9,8 +9,10 @@ package us.blindmint.codex.presentation.settings.appearance.theme_preferences.co
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -23,13 +25,25 @@ import us.blindmint.codex.domain.ui.isPureDark
 import us.blindmint.codex.presentation.core.components.settings.SegmentedButtonWithTitle
 import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
+import us.blindmint.codex.ui.settings.SettingsEvent
+import us.blindmint.codex.ui.settings.SettingsModel
 import us.blindmint.codex.ui.theme.CodexTheme
 import us.blindmint.codex.ui.theme.ExpandingTransition
 
 @Composable
 fun ThemeContrastOption() {
     val mainModel = hiltViewModel<MainModel>()
+    val settingsModel = hiltViewModel<SettingsModel>()
     val state = mainModel.state.collectAsStateWithLifecycle()
+
+    var previousThemeContrast by remember { mutableStateOf(state.value.themeContrast) }
+
+    LaunchedEffect(state.value.themeContrast) {
+        if (previousThemeContrast != state.value.themeContrast) {
+            previousThemeContrast = state.value.themeContrast
+            settingsModel.onEvent(SettingsEvent.OnSyncThemePreset)
+        }
+    }
 
     val themeContrastTheme = remember { mutableStateOf(state.value.theme) }
     LaunchedEffect(state.value.theme) {

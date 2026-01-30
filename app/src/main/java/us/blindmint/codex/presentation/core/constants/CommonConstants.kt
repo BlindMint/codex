@@ -49,6 +49,14 @@ fun provideDefaultColorPresets() = listOf(
         backgroundColor = Color(0xFF0F1419), // Material Design dark surface (#0F1419)
         fontColor = Color(0xFFE6E1E5), // Material Design dark onSurface (#E6E1E5)
         isSelected = false
+    ),
+    ColorPreset(
+        id = 3,
+        name = "Theme",
+        backgroundColor = Color(0xFFFFFFFF),
+        fontColor = Color(0xFF1C1B1F),
+        isSelected = false,
+        isLocked = true
     )
 )
 

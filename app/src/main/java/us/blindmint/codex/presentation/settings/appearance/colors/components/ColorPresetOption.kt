@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Lock
@@ -89,6 +90,22 @@ import us.blindmint.codex.ui.theme.Transitions
 fun ColorPresetOption() {
     val settingsModel = hiltViewModel<SettingsModel>()
     val state = settingsModel.state.collectAsStateWithLifecycle()
+
+    fun getDefaultBackgroundColor(preset: ColorPreset): Color {
+        return when (preset.name) {
+            "Light" -> Color(0xFFFFFFFF)
+            "Dark" -> Color(0xFF0F1419)
+            else -> preset.backgroundColor
+        }
+    }
+
+    fun getDefaultFontColor(preset: ColorPreset): Color {
+        return when (preset.name) {
+            "Light" -> Color(0xFF1C1B1F)
+            "Dark" -> Color(0xFFE6E1E5)
+            else -> preset.fontColor
+        }
+    }
 
     // Auto-selection is now handled in MainActivity when the app starts
 
@@ -248,6 +265,13 @@ fun ColorPresetOption() {
                                   id = selectedPreset.id
                               )
                           )
+                      },
+                      onCopy = {
+                          settingsModel.onEvent(
+                              SettingsEvent.OnCopyColorPreset(
+                                  id = selectedPreset.id
+                              )
+                          )
                       }
                 )
 
@@ -257,7 +281,7 @@ fun ColorPresetOption() {
                       title = stringResource(id = R.string.background_color_option),
                       value = selectedPreset.backgroundColor,
                       presetId = "${selectedPreset.id}_background",
-                      initialColor = selectedPreset.backgroundColor,
+                      initialColor = getDefaultBackgroundColor(selectedPreset),
                       isLocked = selectedPreset.isLocked,
                       horizontalPadding = 0.dp,
                       onValueChange = {
@@ -279,7 +303,7 @@ fun ColorPresetOption() {
                         title = stringResource(id = R.string.font_color_option),
                         value = selectedPreset.fontColor,
                         presetId = "${selectedPreset.id}_font",
-                        initialColor = selectedPreset.fontColor,
+                        initialColor = getDefaultFontColor(selectedPreset),
                         isLocked = selectedPreset.isLocked,
                         horizontalPadding = 0.dp,
                         onValueChange = {
@@ -307,6 +331,7 @@ private fun ReorderableCollectionItemScope.ColorPresetOptionRowItem(
     enableAnimation: Boolean,
     onClick: () -> Unit
 ) {
+    val settingsModel = hiltViewModel<SettingsModel>()
     val context = LocalContext.current
     val title = remember(colorPreset.id, colorPreset.name) {
         if ((colorPreset.name ?: "").isBlank()) {
@@ -385,6 +410,8 @@ private fun ReorderableCollectionItemScope.ColorPresetOptionRowItem(
             )
         }
 
+
+
         StyledText(
             text = title.trim(),
             style = MaterialTheme.typography.labelLarge.copy(
@@ -405,7 +432,8 @@ private fun ColorPresetOptionConfigurationItem(
     onRestore: () -> Unit,
     onDelete: () -> Unit,
     onToggleLock: () -> Unit,
-    onResetToInitial: () -> Unit
+    onResetToInitial: () -> Unit,
+    onCopy: () -> Unit
 ) {
     val showDeleteDialog = remember { mutableStateOf(false) }
     val title = remember(selectedColorPreset.id) {
@@ -420,7 +448,7 @@ private fun ColorPresetOptionConfigurationItem(
         }
     }
 
-    val isDefaultPreset = selectedColorPreset.name == "Light" || selectedColorPreset.name == "Dark"
+    val isDefaultPreset = selectedColorPreset.name == "Light" || selectedColorPreset.name == "Dark" || selectedColorPreset.name == "Theme"
 
     Row(
         Modifier.fillMaxWidth(),
@@ -468,6 +496,16 @@ private fun ColorPresetOptionConfigurationItem(
         }
 
         Spacer(modifier = Modifier.width(12.dp))
+
+        IconButton(
+            modifier = Modifier.size(24.dp),
+            icon = Icons.Default.ContentCopy,
+            contentDescription = R.string.copy_color_preset_content_desc,
+            disableOnClick = false,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        ) {
+            onCopy()
+        }
 
         if (isDefaultPreset) {
             IconButton(

@@ -264,6 +264,7 @@
     <string name="theme_appearance_settings">Theme preferences</string>
     <string name="colors_appearance_settings">Colors</string>
     <string name="scan_browse_settings">Local folders</string>
+    <string name="codex_directory_browse_settings">Codex Directory</string>
     <string name="opds_browse_settings">OPDS</string>
     <string name="add_opds_source">Add OPDS Source</string>
     <string name="details">Details</string>
@@ -811,6 +812,7 @@
     <string name="shuffle_color_preset_content_desc">Shuffle colors</string>
     <string name="restore_default_colors_content_desc">Restore default colors</string>
     <string name="reset_color_preset_content_desc">Reset to initial colors</string>
+    <string name="copy_color_preset_content_desc">Copy color preset</string>
     <string name="drag_content_desc">Drag</string>
     <string name="filter_content_desc">Filter</string>
     <string name="checkpoint_back_content_desc">Checkpoint back</string>
