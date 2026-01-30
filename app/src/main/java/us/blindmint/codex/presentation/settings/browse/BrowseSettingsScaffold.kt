@@ -34,7 +34,6 @@ fun BrowseSettingsScaffold(
     Scaffold(
         Modifier
             .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
             .windowInsetsPadding(WindowInsets.navigationBars)
             .imePadding(),
         containerColor = MaterialTheme.colorScheme.surface,
