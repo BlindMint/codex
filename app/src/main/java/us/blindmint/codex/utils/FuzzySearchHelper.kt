@@ -8,11 +8,12 @@ package us.blindmint.codex.utils
 
 import me.xdrop.fuzzywuzzy.FuzzySearch
 import us.blindmint.codex.domain.opds.OpdsEntry
+import us.blindmint.codex.presentation.settings.SettingsItem
 
 /**
- * Fuzzy search utility for OPDS catalog browsing.
+ * Fuzzy search utility for OPDS catalog browsing and settings.
  *
- * Provides fuzzy search capabilities to improve discoverability in OPDS catalogs.
+ * Provides fuzzy search capabilities to improve discoverability in OPDS catalogs and settings menus.
  * Uses the FuzzyWuzzy library for string similarity matching.
  *
  * @property threshold Minimum similarity score (0-100) to consider a match
@@ -55,6 +56,36 @@ object FuzzySearchHelper {
         }
 
         return entryScores
+            .filter { it.second >= threshold }
+            .sortedByDescending { it.second }
+            .map { it.first }
+    }
+
+    /**
+     * Search through settings items using fuzzy matching.
+     *
+     * @param items List of settings items to search
+     * @param query Search query string
+     * @param threshold Minimum similarity score (0-100) to consider a match
+     * @return Filtered and sorted list of settings items
+     */
+    fun searchSettings(
+        items: List<SettingsItem>,
+        query: String,
+        threshold: Int = 60
+    ): List<SettingsItem> {
+        if (query.isBlank()) return items
+
+        val queryLower = query.lowercase()
+
+        val itemScores = items.map { item ->
+            val titleScore = FuzzySearch.partialRatio(queryLower, item.title.lowercase())
+            val maxScore = titleScore
+
+            Pair(item, maxScore)
+        }
+
+        return itemScores
             .filter { it.second >= threshold }
             .sortedByDescending { it.second }
             .map { it.first }
