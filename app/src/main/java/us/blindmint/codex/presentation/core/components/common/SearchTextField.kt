@@ -44,7 +44,8 @@ fun SearchTextField(
     modifier: Modifier = Modifier,
     initialQuery: String,
     onQueryChange: (String) -> Unit,
-    onSearch: () -> Unit
+    onSearch: () -> Unit,
+    focusRequester: androidx.compose.ui.focus.FocusRequester? = null
 ) {
     val keyboardManager = LocalSoftwareKeyboardController.current
 
