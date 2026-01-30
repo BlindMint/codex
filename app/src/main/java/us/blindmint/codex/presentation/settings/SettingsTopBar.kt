@@ -6,7 +6,6 @@
 
 package us.blindmint.codex.presentation.settings
 
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -16,7 +15,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -64,33 +62,28 @@ fun SettingsTopBar(
             )
         )
     } else {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TopAppBar(
-                scrollBehavior = scrollBehavior,
-                navigationIcon = {
-                    NavigatorBackIconButton(
-                        navigateBack = navigateBack
-                    )
-                },
-                title = {
-                    StyledText(text = stringResource(id = R.string.settings_screen))
-                },
-                actions = {
-                    IconButton(
-                        icon = Icons.Default.Search,
-                        contentDescription = R.string.search_content_desc,
-                        disableOnClick = true
-                    ) {
-                        onSearchVisibilityChange(true)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+        TopAppBar(
+            scrollBehavior = scrollBehavior,
+            navigationIcon = {
+                NavigatorBackIconButton(
+                    navigateBack = navigateBack
                 )
+            },
+            title = {
+                StyledText(text = stringResource(id = R.string.settings_screen))
+            },
+            actions = {
+                IconButton(
+                    icon = Icons.Default.Search,
+                    contentDescription = R.string.search_content_desc,
+                    disableOnClick = true
+                ) {
+                    onSearchVisibilityChange(true)
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface
             )
-        }
+        )
     }
 }
