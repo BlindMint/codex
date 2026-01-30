@@ -7,17 +7,15 @@
 package us.blindmint.codex.presentation.settings.library
 
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
+import us.blindmint.codex.presentation.core.components.common.StyledText
+import us.blindmint.codex.presentation.navigator.NavigatorBackIconButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,21 +25,16 @@ fun LibrarySettingsTopBar(
 ) {
     TopAppBar(
         title = {
-            Text(
-                text = stringResource(id = R.string.library_settings),
-                style = MaterialTheme.typography.titleLarge
-            )
+            StyledText(stringResource(id = R.string.library_settings))
         },
         navigationIcon = {
-            androidx.compose.material3.IconButton(
-                onClick = navigateBack
-            ) {
-                androidx.compose.material3.Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.go_back_content_desc)
-                )
-            }
+            NavigatorBackIconButton(
+                navigateBack = navigateBack
+            )
         },
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     )
 }

@@ -7,8 +7,8 @@
 package us.blindmint.codex.presentation.settings.browse
 
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -23,7 +23,7 @@ fun BrowseSettingsTopBar(
     scrollBehavior: TopAppBarScrollBehavior,
     navigateBack: () -> Unit
 ) {
-    LargeTopAppBar(
+    TopAppBar(
         title = {
             StyledText(stringResource(id = R.string.browse_settings))
         },
@@ -34,8 +34,7 @@ fun BrowseSettingsTopBar(
         },
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = MaterialTheme.colorScheme.surface
         )
     )
 }
