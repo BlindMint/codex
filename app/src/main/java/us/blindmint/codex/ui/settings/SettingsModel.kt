@@ -512,6 +512,45 @@ class SettingsModel @Inject constructor(
                 }
             }
 
+            is SettingsEvent.OnCopyColorPreset -> {
+                viewModelScope.launch {
+                    cancelColorPresetJobs()
+                    addColorPresetJob = launch {
+                        val colorPreset = event.id.getColorPresetById() ?: return@launch
+                        val currentPresets = _state.value.colorPresets
+
+                        val existingIds = currentPresets.map { it.id }.toSet()
+                        val newId = generateSequence(4) { it + 1 }
+                            .first { it !in existingIds }
+
+                        val newColorPreset = ColorPreset(
+                            id = newId,
+                            name = null,
+                            backgroundColor = colorPreset.backgroundColor,
+                            fontColor = colorPreset.fontColor,
+                            isSelected = true
+                        )
+
+                        val updatedPresets = currentPresets.map { it.copy(isSelected = false) } + newColorPreset
+
+                        _state.update {
+                            it.copy(
+                                selectedColorPreset = newColorPreset,
+                                colorPresets = updatedPresets
+                            )
+                        }
+
+            colorPresetRepository.updateColorPreset(newColorPreset)
+            colorPresetRepository.selectColorPreset(newColorPreset)
+
+                        val newPresetIndex = updatedPresets.indexOfFirst { it.id == newId }
+                        if (newPresetIndex != -1) {
+                            onEvent(SettingsEvent.OnScrollToColorPreset(newPresetIndex))
+                        }
+                    }
+                }
+            }
+
             is SettingsEvent.OnToggleColorPresetLock -> {
                 viewModelScope.launch {
                     cancelColorPresetJobs()
@@ -610,7 +649,7 @@ class SettingsModel @Inject constructor(
                         val defaultPresets = provideDefaultColorPresets()
                         val defaultPreset = when (colorPreset.name) {
                             "Light" -> defaultPresets.first()
-                            "Dark" -> defaultPresets.last()
+                            "Dark" -> defaultPresets[1] // Dark is at index 1 (Light=0, Dark=1, Theme=2)
                             else -> return@launch
                         }
 

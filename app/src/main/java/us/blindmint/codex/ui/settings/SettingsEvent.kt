@@ -38,6 +38,10 @@ sealed class SettingsEvent {
         val id: ID
     ) : SettingsEvent()
 
+    data class OnCopyColorPreset(
+        val id: ID
+    ) : SettingsEvent()
+
     data class OnToggleColorPresetLock(
         val id: ID
     ) : SettingsEvent()
