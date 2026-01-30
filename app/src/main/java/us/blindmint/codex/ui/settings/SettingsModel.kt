@@ -133,17 +133,24 @@ class SettingsModel @Inject constructor(
         }
     }
 
-    private suspend fun syncThemePreset(isSystemInDarkMode: Boolean? = null) {
+    private suspend fun syncThemePreset(
+        isSystemInDarkMode: Boolean? = null,
+        forcedIsDarkTheme: Boolean? = null
+    ) {
         val themePreset = colorPresetRepository.getColorPresets()
             .find { it.name == "Theme" } ?: return
 
         val settings = dataStoreRepository.getAllSettings()
 
-        val isDarkTheme = when {
-            settings.darkTheme.name == "DARK" -> true
-            settings.darkTheme.name == "OFF" -> false
-            settings.darkTheme.name == "FOLLOW_SYSTEM" -> isSystemInDarkMode ?: true
-            else -> false
+        val isDarkTheme = if (forcedIsDarkTheme != null) {
+            forcedIsDarkTheme
+        } else {
+            when {
+                settings.darkTheme.name == "DARK" -> true
+                settings.darkTheme.name == "OFF" -> false
+                settings.darkTheme.name == "FOLLOW_SYSTEM" -> isSystemInDarkMode ?: true
+                else -> false
+            }
         }
 
         val currentThemeName = settings.theme.name
@@ -178,7 +185,10 @@ class SettingsModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             cancelColorPresetJobs()
             updateColorColorPresetJob = launch {
-                syncThemePreset(isSystemInDarkMode = isDarkMode)
+                syncThemePreset(
+                    isSystemInDarkMode = isDarkMode,
+                    forcedIsDarkTheme = isDarkMode
+                )
             }
         }
     }

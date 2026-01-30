@@ -33,6 +33,11 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,13 +55,25 @@ import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
+import us.blindmint.codex.ui.settings.SettingsEvent
+import us.blindmint.codex.ui.settings.SettingsModel
 import us.blindmint.codex.ui.theme.Theme
 import us.blindmint.codex.ui.theme.animatedColorScheme
 
 @Composable
 fun AppThemeOption() {
     val mainModel = hiltViewModel<MainModel>()
+    val settingsModel = hiltViewModel<SettingsModel>()
     val state = mainModel.state.collectAsStateWithLifecycle()
+
+    var previousTheme by remember { mutableStateOf(state.value.theme) }
+
+    LaunchedEffect(state.value.theme) {
+        if (previousTheme != state.value.theme) {
+            previousTheme = state.value.theme
+            settingsModel.onEvent(SettingsEvent.OnSyncThemePreset)
+        }
+    }
 
     Column(
         Modifier

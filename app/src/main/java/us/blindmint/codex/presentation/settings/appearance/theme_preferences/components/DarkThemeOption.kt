@@ -8,12 +8,18 @@ package us.blindmint.codex.presentation.settings.appearance.theme_preferences.co
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.ui.ButtonItem
 import us.blindmint.codex.domain.ui.DarkTheme
+import us.blindmint.codex.domain.ui.isDark
 import us.blindmint.codex.presentation.core.components.settings.SegmentedButtonWithTitle
 import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
@@ -25,6 +31,16 @@ fun DarkThemeOption() {
     val mainModel = hiltViewModel<MainModel>()
     val settingsModel = hiltViewModel<SettingsModel>()
     val state = mainModel.state.collectAsStateWithLifecycle()
+
+    var previousDarkTheme by remember { mutableStateOf(state.value.darkTheme) }
+
+    LaunchedEffect(state.value.darkTheme) {
+        if (previousDarkTheme != state.value.darkTheme) {
+            previousDarkTheme = state.value.darkTheme
+            val isDarkMode = state.value.darkTheme == DarkTheme.ON || state.value.darkTheme == DarkTheme.FOLLOW_SYSTEM
+            settingsModel.syncThemePresetWithSystemDarkMode(isDarkMode)
+        }
+    }
 
     SegmentedButtonWithTitle(
         title = stringResource(id = R.string.dark_theme_option),
@@ -42,28 +58,5 @@ fun DarkThemeOption() {
         }
     ) {
         mainModel.onEvent(MainEvent.OnChangeDarkTheme(it.id))
-        // Allow DataStore to propagate the change before syncing
-)	/    mainModel.onEvent(MainEvent.OnChangeDarkTheme(it.id))	/    ) {/c    ) {/c
-    mainModel.onEvent(MainEvent.OnChangeDarkTheme(it.id))
-        // Allow DataStore to propagate before syncing
-        settingsModel.viewModelScope.launch {
-            kotlinx.coroutines.delay(100)
-            // Sync Theme preset with actual dark mode based on selection
-            val isDarkMode = when (it) {
-                DarkTheme.OFF -> false
-                DarkTheme.ON -> true
-                DarkTheme.FOLLOW_SYSTEM -> true
-            }
-            settingsModel.syncThemePresetWithSystemDarkMode(isDarkMode)
-        }
-    }
-        kotlinx.coroutines.delay(100)
-        // Sync Theme preset with actual dark mode based on selection
-        val isDarkMode = when (it) {
-            DarkTheme.OFF -> false
-            DarkTheme.ON -> true
-            DarkTheme.FOLLOW_SYSTEM -> true
-        }
-        settingsModel.syncThemePresetWithSystemDarkMode(isDarkMode)
     }
 }
