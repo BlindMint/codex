@@ -16,14 +16,12 @@ import us.blindmint.codex.presentation.settings.reader.chapters.ChaptersSubcateg
 import us.blindmint.codex.presentation.settings.reader.dictionary.DictionarySubcategory
 import us.blindmint.codex.presentation.settings.reader.font.FontSubcategory
 import us.blindmint.codex.presentation.settings.reader.images.ImagesSubcategory
-import us.blindmint.codex.presentation.settings.reader.misc.MiscSubcategory
 import us.blindmint.codex.presentation.settings.reader.padding.PaddingSubcategory
 import us.blindmint.codex.presentation.settings.reader.progress.ProgressSubcategory
 import us.blindmint.codex.presentation.settings.reader.reading_mode.ReadingModeSubcategory
 import us.blindmint.codex.presentation.settings.reader.reading_speed.ReadingSpeedSubcategory
 import us.blindmint.codex.presentation.settings.reader.search.SearchSubcategory
 import us.blindmint.codex.presentation.settings.reader.speed_reading.SpeedReadingSubcategory
-import us.blindmint.codex.presentation.settings.reader.system.SystemSubcategory
 import us.blindmint.codex.presentation.settings.reader.text.TextSubcategory
 
 fun LazyListScope.BooksReaderSettingsCategory(
@@ -47,9 +45,6 @@ fun LazyListScope.BooksReaderSettingsCategory(
     PaddingSubcategory(
         titleColor = titleColor
     )
-    SystemSubcategory(
-        titleColor = titleColor
-    )
     ReadingSpeedSubcategory(
         titleColor = titleColor
     )
@@ -60,9 +55,6 @@ fun LazyListScope.BooksReaderSettingsCategory(
         titleColor = titleColor
     )
     DictionarySubcategory(
-        titleColor = titleColor
-    )
-    MiscSubcategory(
         titleColor = titleColor,
         showDivider = false
     )

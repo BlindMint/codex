@@ -22,7 +22,9 @@ fun LazyListScope.AppearanceSettingsCategory(
         titleColor = titleColor
     )
     ColorsSubcategory(
-        titleColor = titleColor,
-        showDivider = false
+        titleColor = titleColor
+    )
+    SystemSubcategory(
+        titleColor = titleColor
     )
 }

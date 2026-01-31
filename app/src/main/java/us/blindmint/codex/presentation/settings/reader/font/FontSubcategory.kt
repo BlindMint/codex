@@ -39,10 +39,6 @@ fun LazyListScope.FontSubcategory(
         }
 
         item {
-            CustomFontsOption()
-        }
-
-        item {
             FontThicknessOption()
         }
 
