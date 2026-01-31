@@ -193,6 +193,7 @@ private fun SearchResult(
                         StyledText(
                             text = "No results found",
                             style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 14.dp),
                         )
                     }
                 }
