@@ -1,22 +1,20 @@
-/*
- * Codex — free and open-source Material You eBook reader.
- * Copyright (C) 2024-2025 BlindMint
- * SPDX-License-Identifier: GPL-3.0-only
- */
-
 package us.blindmint.codex.presentation.settings.reader.font.components
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -25,8 +23,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.reader.ReaderFontThickness
 import us.blindmint.codex.presentation.core.components.common.StyledText
+import us.blindmint.codex.presentation.core.components.settings.GenericOption
+import us.blindmint.codex.presentation.core.components.settings.OptionConfig
+import us.blindmint.codex.presentation.core.constants.SettingsHorizontalPadding
 import us.blindmint.codex.presentation.core.constants.provideFonts
-import us.blindmint.codex.presentation.settings.components.SettingsSubcategoryTitle
 import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
 
@@ -34,10 +34,10 @@ import us.blindmint.codex.ui.main.MainModel
 fun FontThicknessOption() {
     val mainModel = hiltViewModel<MainModel>()
     val state = mainModel.state.collectAsStateWithLifecycle()
+    var showDialog by remember { mutableStateOf(false) }
 
     val fontFamily = remember(state.value.fontFamily) {
         if (state.value.fontFamily.startsWith("custom_")) {
-            // For custom fonts, use different built-in fonts as visual indicators for preview
             val customFontName = state.value.fontFamily.removePrefix("custom_").lowercase()
             when {
                 customFontName.contains("serif") ||
@@ -78,95 +78,61 @@ fun FontThicknessOption() {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 18.dp, vertical = 8.dp)
-    ) {
-        SettingsSubcategoryTitle(title = stringResource(id = R.string.font_thickness_option), padding = 0.dp)
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // First row: Thin, Extra light, Light
-        FlowRow(
-            horizontalArrangement = Arrangement.Center,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            content = {
-                listOf(
-                    ReaderFontThickness.THIN,
-                    ReaderFontThickness.EXTRA_LIGHT,
-                    ReaderFontThickness.LIGHT
-                ).forEach { thickness ->
-                    FilterChip(
-                        modifier = Modifier.height(36.dp),
-                        selected = thickness == state.value.fontThickness,
-                        label = {
-                            StyledText(
-                                text = when (thickness) {
-                                    ReaderFontThickness.THIN -> stringResource(id = R.string.font_thickness_thin)
-                                    ReaderFontThickness.EXTRA_LIGHT -> stringResource(id = R.string.font_thickness_extra_light)
-                                    ReaderFontThickness.LIGHT -> stringResource(id = R.string.font_thickness_light)
-                                    ReaderFontThickness.NORMAL -> stringResource(id = R.string.font_thickness_normal)
-                                    ReaderFontThickness.MEDIUM -> stringResource(id = R.string.font_thickness_medium)
-                                },
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    fontFamily = fontFamily.font,
-                                    fontWeight = thickness.thickness
-                                ),
-                                maxLines = 1
-                            )
-                        },
-                        onClick = {
-                            mainModel.onEvent(
-                                MainEvent.OnChangeFontThickness(
-                                    thickness.toString()
-                                )
-                            )
-                        },
-                    )
-                }
-            },
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Second row: Normal, Medium
-        FlowRow(
-            horizontalArrangement = Arrangement.Center,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            content = {
-                listOf(
-                    ReaderFontThickness.NORMAL,
-                    ReaderFontThickness.MEDIUM
-                ).forEach { thickness ->
-                    FilterChip(
-                        modifier = Modifier.height(36.dp),
-                        selected = thickness == state.value.fontThickness,
-                        label = {
-                            StyledText(
-                                text = when (thickness) {
-                                    ReaderFontThickness.THIN -> stringResource(id = R.string.font_thickness_thin)
-                                    ReaderFontThickness.EXTRA_LIGHT -> stringResource(id = R.string.font_thickness_extra_light)
-                                    ReaderFontThickness.LIGHT -> stringResource(id = R.string.font_thickness_light)
-                                    ReaderFontThickness.NORMAL -> stringResource(id = R.string.font_thickness_normal)
-                                    ReaderFontThickness.MEDIUM -> stringResource(id = R.string.font_thickness_medium)
-                                },
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    fontFamily = fontFamily.font,
-                                    fontWeight = thickness.thickness
-                                ),
-                                maxLines = 1
-                            )
-                        },
-                        onClick = {
-                            mainModel.onEvent(
-                                MainEvent.OnChangeFontThickness(
-                                    thickness.toString()
-                                )
-                            )
-                        },
-                    )
-                }
-            },
-        )
+    val selectedThickness = state.value.fontThickness
+    val thicknessText = when (selectedThickness) {
+        ReaderFontThickness.THIN -> stringResource(id = R.string.font_thickness_thin)
+        ReaderFontThickness.EXTRA_LIGHT -> stringResource(id = R.string.font_thickness_extra_light)
+        ReaderFontThickness.LIGHT -> stringResource(id = R.string.font_thickness_light)
+        ReaderFontThickness.NORMAL -> stringResource(id = R.string.font_thickness_normal)
+        ReaderFontThickness.MEDIUM -> stringResource(id = R.string.font_thickness_medium)
     }
+
+    GenericOption(
+        OptionConfig(
+            stateSelector = { it.fontThickness },
+            eventCreator = { MainEvent.OnChangeFontThickness(it.toString()) },
+            component = { value, onChange ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showDialog = true }
+                        .padding(horizontal = SettingsHorizontalPadding, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.font_thickness_option),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
+                        FilterChip(
+                            modifier = Modifier.height(36.dp),
+                            selected = true,
+                            label = {
+                                StyledText(
+                                    text = thicknessText,
+                                    style = MaterialTheme.typography.labelLarge.copy(
+                                        fontFamily = fontFamily.font,
+                                        fontWeight = value.thickness
+                                    ),
+                                    maxLines = 1
+                                )
+                            },
+                            onClick = { showDialog = true },
+                        )
+                    }
+                }
+
+                if (showDialog) {
+                    FontThicknessDialog(
+                        onDismissRequest = { showDialog = false },
+                        onThicknessSelected = { thickness ->
+                            mainModel.onEvent(MainEvent.OnChangeFontThickness(thickness.toString()))
+                        }
+                    )
+                }
+            }
+        )
+    )
 }

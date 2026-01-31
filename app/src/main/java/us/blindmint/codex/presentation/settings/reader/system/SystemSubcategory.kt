@@ -15,6 +15,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
+import us.blindmint.codex.presentation.settings.reader.misc.components.FullscreenOption
+import us.blindmint.codex.presentation.settings.reader.misc.components.HideBarsOnFastScrollOption
+import us.blindmint.codex.presentation.settings.reader.misc.components.KeepScreenOnOption
 import us.blindmint.codex.presentation.settings.reader.system.components.CustomScreenBrightnessOption
 import us.blindmint.codex.presentation.settings.reader.system.components.ScreenBrightnessOption
 import us.blindmint.codex.presentation.settings.reader.system.components.ScreenOrientationOption
@@ -31,6 +34,18 @@ fun LazyListScope.SystemSubcategory(
         showTitle = showTitle,
         showDivider = showDivider
     ) {
+        item {
+            FullscreenOption()
+        }
+
+        item {
+            KeepScreenOnOption()
+        }
+
+        item {
+            HideBarsOnFastScrollOption()
+        }
+
         item {
             CustomScreenBrightnessOption()
         }
