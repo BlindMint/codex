@@ -17,6 +17,7 @@ import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
 import us.blindmint.codex.presentation.settings.reader.comic.components.*
 import us.blindmint.codex.presentation.settings.reader.comic.ComicProgressSubcategory
+import us.blindmint.codex.presentation.settings.reader.system.components.ScreenOrientationOption
 
 fun LazyListScope.ComicsReaderSettingsCategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary }
@@ -53,6 +54,9 @@ fun LazyListScope.ComicsReaderSettingsCategory(
         }
         item {
             ComicBackgroundColorOption()
+        }
+        item {
+            ScreenOrientationOption()
         }
     }
 

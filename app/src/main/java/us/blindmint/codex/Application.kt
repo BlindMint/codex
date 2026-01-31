@@ -18,7 +18,6 @@ class Application : Application() {
         super.onCreate()
         CredentialEncryptor.initialize(this)
         PDFBoxResourceLoader.init(this)
-        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
-        Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this, defaultHandler))
+        Thread.setDefaultUncaughtExceptionHandler(CrashHandler(this))
     }
 }

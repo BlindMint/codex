@@ -6,10 +6,17 @@
 
 package us.blindmint.codex.ui.settings
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import android.os.Parcelable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import kotlinx.parcelize.Parcelize
 import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.presentation.core.components.top_bar.collapsibleTopAppBarScrollBehavior
@@ -28,6 +35,18 @@ object SettingsScreen : Screen, Parcelable {
     override fun Content() {
         val navigator = LocalNavigator.current
         val (scrollBehavior, listState) = TopAppBarDefaults.collapsibleTopAppBarScrollBehavior()
+
+        val showSearchState = remember { mutableStateOf(false) }
+        val (searchQuery, setSearchQuery) = remember { mutableStateOf("") }
+        val focusRequester = remember { FocusRequester() }
+        val focusManager = LocalFocusManager.current
+        val keyboardController = LocalSoftwareKeyboardController.current
+
+        LaunchedEffect(showSearchState.value) {
+            if (showSearchState.value) {
+                focusRequester.requestFocus()
+            }
+        }
 
         SettingsContent(
             listState = listState,
@@ -55,7 +74,18 @@ object SettingsScreen : Screen, Parcelable {
             },
             navigateBack = {
                 navigator.pop()
-            }
+            },
+            showSearch = showSearchState.value,
+            searchQuery = searchQuery,
+            focusRequester = focusRequester,
+            onSearchVisibilityChange = { visible ->
+                showSearchState.value = visible
+                if (visible) {
+                    keyboardController?.show()
+                }
+            },
+            onSearchQueryChange = { setSearchQuery(it) },
+            onSearch = {  }
         )
     }
 }
