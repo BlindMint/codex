@@ -8,6 +8,7 @@ package us.blindmint.codex.utils
 
 import me.xdrop.fuzzywuzzy.FuzzySearch
 import us.blindmint.codex.domain.opds.OpdsEntry
+import us.blindmint.codex.presentation.settings.Preference
 import us.blindmint.codex.presentation.settings.SettingsItem
 
 /**
@@ -89,5 +90,85 @@ object FuzzySearchHelper {
             .filter { it.second >= threshold }
             .sortedByDescending { it.second }
             .map { it.first }
+    }
+
+    data class SearchResult(
+        val preference: Preference.PreferenceItem<*, *>,
+        val score: Int,
+        val breadcrumbs: String,
+    )
+
+    fun searchPreferences(
+        preferences: List<Preference>,
+        query: String,
+        threshold: Int = 60,
+        breadcrumbs: String = ""
+    ): List<SearchResult> {
+        if (query.isBlank()) return emptyList()
+
+        val queryLower = query.lowercase()
+        val results = mutableListOf<SearchResult>()
+
+        fun searchItems(items: List<Preference.PreferenceItem<*, *>>, currentBreadcrumbs: String) {
+            items.forEach { item ->
+                if (!item.enabled || item.title.isBlank()) return@forEach
+
+                val titleScore = FuzzySearch.partialRatio(queryLower, item.title.lowercase())
+                val subtitleScore = item.subtitle?.let {
+                    FuzzySearch.partialRatio(queryLower, it.lowercase())
+                } ?: 0
+
+                val maxScore = maxOf(titleScore, subtitleScore)
+
+                if (maxScore >= threshold) {
+                    results.add(
+                        SearchResult(
+                            preference = item,
+                            score = maxScore,
+                            breadcrumbs = currentBreadcrumbs,
+                        )
+                    )
+                }
+            }
+        }
+
+        preferences.forEach { pref ->
+            when (pref) {
+                is Preference.PreferenceGroup -> {
+                    if (!pref.enabled) return@forEach
+
+                    val newBreadcrumbs = if (breadcrumbs.isEmpty()) {
+                        pref.title
+                    } else {
+                        "$breadcrumbs > ${pref.title}"
+                    }
+                    searchItems(pref.preferenceItems, newBreadcrumbs)
+                }
+                is Preference.PreferenceItem<*, *> -> {
+                    if (!pref.enabled || pref.title.isBlank()) return@forEach
+
+                    val titleScore = FuzzySearch.partialRatio(queryLower, pref.title.lowercase())
+                    val subtitleScore = pref.subtitle?.let {
+                        FuzzySearch.partialRatio(queryLower, it.lowercase())
+                    } ?: 0
+
+                    val maxScore = maxOf(titleScore, subtitleScore)
+
+                    if (maxScore >= threshold) {
+                        results.add(
+                            SearchResult(
+                                preference = pref,
+                                score = maxScore,
+                                breadcrumbs = breadcrumbs,
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+        return results
+            .sortedByDescending { it.score }
+            .take(50)
     }
 }

@@ -11,7 +11,18 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
  * Data class representing a main settings menu item
+ *
+ * @deprecated Use [Preference.PreferenceItem] with [PreferenceScreen] instead.
+ * This class is kept for backward compatibility and will be removed in future versions.
  */
+@Deprecated(
+    message = "Use Preference.PreferenceItem with PreferenceScreen instead",
+    replaceWith = ReplaceWith(
+        "Preference.PreferenceItem",
+        imports = ["us.blindmint.codex.presentation.settings.Preference"]
+    ),
+    level = DeprecationLevel.WARNING
+)
 data class SettingsItem(
     val id: String,
     val title: String,

@@ -20,10 +20,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
+import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.presentation.core.components.common.IconButton
 import us.blindmint.codex.presentation.core.components.common.SearchTextField
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.navigator.NavigatorBackIconButton
+import us.blindmint.codex.presentation.navigator.LocalNavigator
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,12 +75,13 @@ fun SettingsTopBar(
                 StyledText(text = stringResource(id = R.string.settings_screen))
             },
             actions = {
+                val navigator = LocalNavigator.current
                 IconButton(
                     icon = Icons.Default.Search,
                     contentDescription = R.string.search_content_desc,
                     disableOnClick = true
                 ) {
-                    onSearchVisibilityChange(true)
+                    navigator?.push(SettingsSearchScreen())
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
