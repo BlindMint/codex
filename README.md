@@ -25,7 +25,7 @@ Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) rea
       <sup>Custom Typography</sup>
     </td>
     <td width="33%">
-      <video src="docs/images/gallery/speed_reader_demo.mp4" controls width="100%" alt="Speed reading mode" preload="none"/>
+      <video src="docs/images/gallery/speed_reader_demo.mp4" controls width="100%" poster="docs/images/gallery/speed_reader_screen.jpg" alt="Speed reading mode" preload="none"/>
       <br>
       <sup>Speed Reading</sup>
     </td>
