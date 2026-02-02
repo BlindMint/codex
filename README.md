@@ -1,19 +1,56 @@
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/BlindMint/codex/master/docs/images/codex_splash_dark.png" alt="codex_splash_dark" width="210" />
-</div>
 
 # Codex
 
 [![GitHub Releases](https://img.shields.io/badge/github-v2.8.0-333333?logo=github&link=https://github.com/BlindMint/codex/releases/latest)](https://github.com/BlindMint/codex/releases/latest)
-[![GitLab Releases](https://img.shields.io/badge/gitlab-v2.8.0-/releases)
-[![Codeberg Releases](https://img.shields.io/badge/codeberg-v2.8.0-2185D0?logo=codeberg&link=https://codeberg.org/BlindMint/codex/releases)](https://codeberg.org/BlindMint/codex/releases)  
-
+[![GitLab Releases](https://img.shields.io/badge/gitlab-v2.8.0-FC6D26?logo=gitlab&link=https://gitlab.com/BlindMint/codex/-/releases)](https://gitlab.com/BlindMint/codex/-/releases)
+[![Codeberg Releases](https://img.shields.io/badge/codeberg-v2.8.0-2185D0?logo=codeberg&link=https://codeberg.org/BlindMint/codex/releases)](https://codeberg.org/BlindMint/codex/releases)
 
 ### Material You eBook Reader for Android
 
 In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.  
-Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) reader for Android.  
+Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) reader for Android. 
+
+<table>
+  <tr>
+    <td width="33%">
+      <img src="docs/images/gallery/library_preview.jpg" width="100%" alt="Library with Material You theming"/>
+      <br>
+      <sup>Library & Dynamic Colors</sup>
+    </td>
+    <td width="33%">
+      <img src="docs/images/gallery/book_reader.jpg" width="100%" alt="Book reader with custom typography"/>
+      <br>
+      <sup>Custom Typography</sup>
+    </td>
+    <td width="33%">
+      <video src="docs/images/gallery/speed_reader_demo.mp4" controls width="100%" alt="Speed reading mode" preload="none"/>
+      <br>
+      <sup>Speed Reading</sup>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <img src="docs/images/gallery/library_comics.jpg" width="100%" alt="Comic library"/>
+      <br>
+      <sup>Comic/Manga Support</sup>
+    </td>
+    <td width="33%">
+      <img src="docs/images/gallery/comic_reader.jpg" width="100%" alt="Comic reader"/>
+      <br>
+      <sup>Comic Reader</sup>
+    </td>
+    <td width="33%">
+      <img src="docs/images/gallery/appearance.jpg" width="100%" alt="Appearance settings"/>
+      <br>
+      <sup>Material 3 Settings</sup>
+    </td>
+  </tr>
+</table>
+
+</div>
+ 
 
 ## Features
 
