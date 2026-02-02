@@ -13,7 +13,7 @@ In the grim darkness of the far future, knowledge is power, and wisdom is forged
 Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) reader for Android. 
 
 ## Gallery
-<table width="66%">
+<table>
   <tr>
     <td width="33%">
       <img src="docs/images/gallery/library_preview.jpg" width="100%" alt="Library with Material You theming"/>
@@ -45,7 +45,7 @@ Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) rea
 </table>
 
 ## Speed Reader Demo
-<video src="docs/images/gallery/speed_reader_demo.mp4" controls width="21%" poster="docs/images/gallery/speed_reader_screen.jpg" alt="Speed reading mode" preload="none"/>
+<video src="docs/images/gallery/speed_reader_demo.mp4" controls width="33%" poster="docs/images/gallery/speed_reader_screen.jpg" alt="Speed reading mode" preload="none"/>
 
 </div>
  
