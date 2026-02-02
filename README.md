@@ -46,11 +46,7 @@ Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) rea
 
 ## Speed Reader Demo
 
-<video src="https://github.com/BlindMint/codex/releases/download/v2.8.0/speed_reader.mp4" 
-       controls 
-       width="33%" 
-       poster="https://raw.githubusercontent.com/BlindMint/codex/main/docs/images/gallery/speed_reader_screen.jpg">
-</video>
+[![Speed Reader Demo](https://img.youtube.com/vi/WYsIp4rHOjU/maxresdefault.jpg)](https://www.youtube.com/shorts/WYsIp4rHOjU)
 
 </div>
  
