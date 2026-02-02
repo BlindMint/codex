@@ -46,7 +46,10 @@ Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) rea
 
 ## Speed Reader Demo
 
+(Redirects to YouTube short: https://www.youtube.com/shorts/WYsIp4rHOjU)
+
 [![Speed Reader Demo](https://img.youtube.com/vi/WYsIp4rHOjU/maxresdefault.jpg)](https://www.youtube.com/shorts/WYsIp4rHOjU)
+
 
 </div>
  
