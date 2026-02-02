@@ -822,8 +822,8 @@ fun SpeedReadingContent(
 fun findAccentCharIndex(word: String): Int {
     if (word.isEmpty()) return -1
 
-    // Strip punctuation for calculation
-    val cleanWord = word.trimEnd { it in ".,!?;:'\"-" }
+    // Strip punctuation for calculation (including smart quotes)
+    val cleanWord = word.trimEnd { it in ".,!?;:'\"-\u201C\u201D\u2018\u2019" }
     if (cleanWord.isEmpty()) return 0
 
     // Extended vowel set for multiple languages including accented characters

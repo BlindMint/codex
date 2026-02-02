@@ -150,16 +150,21 @@ object SpeedReaderWordExtractor {
                     char.isWhitespace() -> Unit
                     else -> {
                         val isPunctuation = char == '.' ||
-                                          char == ',' ||
-                                          char == ';' ||
-                                          char == ':' ||
-                                          char == '!' ||
-                                          char == '?' ||
-                                          char == '"' ||
-                                          char == '\'' ||
-                                          char == '-' ||
-                                          char == '—' ||
-                                          char == '…'
+                            char == ',' ||
+                            char == ';' ||
+                            char == ':' ||
+                            char == '!' ||
+                            char == '?' ||
+                            char == '"' ||
+                            char == '\'' ||
+                            char == '-' ||
+                            char == '—' ||
+                            char == '…' ||
+                            // Smart quotes (curly quotes used in books)
+                            char == '\u201C' ||
+                            char == '\u201D' ||
+                            char == '\u2018' ||
+                            char == '\u2019'
 
                         if (isPunctuation) append(char)
                     }
