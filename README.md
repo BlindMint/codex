@@ -12,42 +12,40 @@
 In the grim darkness of the far future, knowledge is power, and wisdom is forged in battle.  
 Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) reader for Android. 
 
-<table>
+## Gallery
+<table width="66%">
   <tr>
     <td width="33%">
       <img src="docs/images/gallery/library_preview.jpg" width="100%" alt="Library with Material You theming"/>
       <br>
-      <sup>Library & Dynamic Colors</sup>
     </td>
     <td width="33%">
       <img src="docs/images/gallery/book_reader.jpg" width="100%" alt="Book reader with custom typography"/>
       <br>
-      <sup>Custom Typography</sup>
     </td>
     <td width="33%">
-      <video src="docs/images/gallery/speed_reader_demo.mp4" controls width="100%" poster="docs/images/gallery/speed_reader_screen.jpg" alt="Speed reading mode" preload="none"/>
+      <img src="docs/images/gallery/speed_reader_screen.jpg" width="100%" alt="Speed reading mode"/>
       <br>
-      <sup>Speed Reading</sup>
     </td>
   </tr>
   <tr>
     <td width="33%">
       <img src="docs/images/gallery/library_comics.jpg" width="100%" alt="Comic library"/>
       <br>
-      <sup>Comic/Manga Support</sup>
     </td>
     <td width="33%">
       <img src="docs/images/gallery/comic_reader.jpg" width="100%" alt="Comic reader"/>
       <br>
-      <sup>Comic Reader</sup>
     </td>
     <td width="33%">
       <img src="docs/images/gallery/appearance.jpg" width="100%" alt="Appearance settings"/>
       <br>
-      <sup>Material 3 Settings</sup>
     </td>
   </tr>
 </table>
+
+## Speed Reader Demo
+<video src="docs/images/gallery/speed_reader_demo.mp4" controls width="21%" poster="docs/images/gallery/speed_reader_screen.jpg" alt="Speed reading mode" preload="none"/>
 
 </div>
  
