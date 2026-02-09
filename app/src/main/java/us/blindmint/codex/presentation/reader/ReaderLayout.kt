@@ -169,6 +169,45 @@ fun ReaderLayout(
         return
     }
 
+    // PDF native page rendering
+    if (book.isPdf) {
+        Column(Modifier.fillMaxSize()) {
+            PdfReaderLayout(
+                book = book,
+                initialPage = currentComicPage,
+                currentPage = currentComicPage,
+                onPageChanged = { page ->
+                    onReaderEvent(ReaderEvent.OnComicPageChanged(page))
+                },
+                backgroundColor = backgroundColor,
+                readingDirection = mainState.value.comicReadingDirection,
+                showMenu = showMenu,
+                showPageIndicator = !fullscreenMode,
+                onLoadingComplete = {
+                    onReaderEvent(ReaderEvent.OnComicLoadingComplete)
+                },
+                onMenuToggle = {
+                    menuVisibility(
+                        ReaderEvent.OnMenuVisibility(
+                            show = !showMenu,
+                            fullscreenMode = fullscreenMode,
+                            saveCheckpoint = true,
+                            activity = activity
+                        )
+                    )
+                },
+                onTotalPagesLoaded = { pages ->
+                    onReaderEvent(ReaderEvent.OnComicTotalPagesLoaded(pages))
+                },
+                onPageSelected = { page ->
+                    onReaderEvent(ReaderEvent.OnComicPageSelected(page))
+                },
+                modifier = Modifier.weight(1f)
+            )
+        }
+        return
+    }
+
     SelectionContainerWithBottomSheet(
         onTextSelected = { selectedText ->
             // Build paragraph context from the text list

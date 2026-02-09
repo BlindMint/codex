@@ -287,7 +287,7 @@ fun ReaderContent(
         onQuickBookmark = { customName ->
             onBookmarkSelection(ReaderEvent.OnBookmarkSelection(customName = customName))
         },
-        isComic = book.isComic
+        isComic = book.isPageBased
     )
 
     ReaderBackHandler(

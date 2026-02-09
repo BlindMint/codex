@@ -34,7 +34,8 @@ object BookFactory {
         description: String? = null,
         filePath: String,
         category: Category = Category.entries[0],
-        coverImage: Bitmap? = null
+        coverImage: Bitmap? = null,
+        pageCount: Int? = null
     ): BookWithCover {
         return BookWithCover(
             book = Book(
@@ -47,7 +48,8 @@ object BookFactory {
                 filePath = filePath,
                 lastOpened = null,
                 category = category,
-                coverImage = null
+                coverImage = null,
+                pageCount = pageCount
             ),
             coverImage = coverImage
         )

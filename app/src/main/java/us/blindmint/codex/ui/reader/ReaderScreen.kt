@@ -345,13 +345,13 @@ data class ReaderScreen(
 
         val bookProgress = remember(
             state.value.book.progress,
-            state.value.book.isComic,
+            state.value.book.isPageBased,
             state.value.text,
             mainState.value.progressCount,
             state.value.currentComicPage,
             state.value.totalComicPages
         ) {
-            if (state.value.book.isComic) {
+            if (state.value.book.isPageBased) {
                 // For comics, show page-based progress
                 when (mainState.value.progressCount) {
                     ReaderProgressCount.PERCENTAGE -> {
@@ -413,14 +413,14 @@ data class ReaderScreen(
             }
         }
         val chapterProgress = remember(
-            state.value.book.isComic,
+            state.value.book.isPageBased,
             state.value.text,
             state.value.book.progress,
             state.value.currentChapter,
             state.value.currentChapterProgress,
             mainState.value.progressCount
         ) {
-            if (state.value.book.isComic) return@remember "" // Comics don't have chapters
+            if (state.value.book.isPageBased) return@remember "" // Page-based formats don't have chapters
             if (state.value.currentChapter == null) return@remember ""
             when (mainState.value.progressCount) {
                 ReaderProgressCount.PERCENTAGE -> {

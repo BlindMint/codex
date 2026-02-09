@@ -316,7 +316,7 @@ class ReaderModel @Inject constructor(
                         // Save position for text books
                         _state.value.listState.apply {
                             if (
-                                !_state.value.book.isComic &&
+                                !_state.value.book.isPageBased &&
                                 !_state.value.isLoading &&
                                 layoutInfo.totalItemsCount >= 1 &&
                                 _state.value.text.isNotEmpty() &&
@@ -338,8 +338,8 @@ class ReaderModel @Inject constructor(
                             }
                         }
 
-                        // Save position for comics
-                                if (_state.value.book.isComic && !_state.value.isLoading) {
+                        // Save position for page-based books (comics and PDFs)
+                                if (_state.value.book.isPageBased && !_state.value.isLoading) {
                                     _state.update {
                                         it.copy(
                                             book = it.book.copy(
@@ -902,8 +902,8 @@ class ReaderModel @Inject constructor(
                 eventJob = SupervisorJob()
             }
 
-            // Skip text loading for comics - they use image-based rendering
-            if (!book.isComic) {
+            // Skip text loading for page-based formats (comics and PDFs)
+            if (!book.isPageBased) {
                 val hasExistingText = _state.value.text.isNotEmpty() && _state.value.book.id == bookId
 
                 if (hasExistingText) {

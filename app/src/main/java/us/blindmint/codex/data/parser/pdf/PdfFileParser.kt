@@ -30,6 +30,7 @@ class PdfFileParser @Inject constructor() : BaseFileParser() {
                 else listOf(this)
             }
             val description = document.documentInformation.subject
+            val pageCount = document.numberOfPages
 
             document.close()
 
@@ -37,7 +38,8 @@ class PdfFileParser @Inject constructor() : BaseFileParser() {
                 title = title,
                 authors = authors,
                 description = description,
-                filePath = cachedFile.uri.toString()
+                filePath = cachedFile.uri.toString(),
+                pageCount = pageCount
             )
         }
     }
