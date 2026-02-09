@@ -64,4 +64,10 @@ data class Book(
         } else {
             progress
         }
+
+    val isPdf: Boolean
+        get() = Uri.decode(filePath).lowercase().endsWith(".pdf")
+
+    val isPageBased: Boolean
+        get() = isComic || isPdf
 }

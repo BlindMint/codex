@@ -68,7 +68,7 @@ fun ReaderTopBar(
         targetValue = currentChapterProgress
     )
 
-    val subtitleComposable: (@Composable () -> Unit) = if (!book.isComic) {
+    val subtitleComposable: (@Composable () -> Unit) = if (!book.isPageBased) {
         {
             StyledText(
                 text = currentChapter?.title
@@ -140,8 +140,8 @@ fun ReaderTopBar(
             },
             subtitle = subtitleComposable,
             actions = {
-                // Search icon - only for books
-                if (!book.isComic) {
+                // Search icon - only for text-based books
+                if (!book.isPageBased) {
                     IconButton(
                         icon = Icons.Rounded.Search,
                         contentDescription = R.string.search_in_book_content_desc,
@@ -156,8 +156,8 @@ fun ReaderTopBar(
                     }
                 }
 
-                // Chapters icon - only for books with chapters
-                if (!book.isComic && currentChapter != null) {
+                // Chapters icon - only for text-based books with chapters
+                if (!book.isPageBased && currentChapter != null) {
                     IconButton(
                         icon = Icons.Rounded.Menu,
                         contentDescription = R.string.chapters_content_desc,
@@ -178,7 +178,7 @@ fun ReaderTopBar(
                     disableOnClick = false,
                     enabled = !lockMenu
                 ) {
-                    showSettingsBottomSheet(ReaderEvent.OnShowSettingsBottomSheet(showComicSettings = book.isComic))
+                    showSettingsBottomSheet(ReaderEvent.OnShowSettingsBottomSheet(showComicSettings = book.isPageBased))
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(

@@ -82,10 +82,10 @@ fun ReaderBottomBar(
             }
         }
     }
-    val checkpointProgress = remember(checkpoint.index, text.lastIndex, book.isComic) {
+    val checkpointProgress = remember(checkpoint.index, text.lastIndex, book.isPageBased) {
         derivedStateOf {
-            if (book.isComic || text.isEmpty()) {
-                0f // Comics don't use text-based checkpoints
+            if (book.isPageBased || text.isEmpty()) {
+                0f // Page-based formats don't use text-based checkpoints
             } else {
                 (checkpoint.index / text.lastIndex.toFloat()) * 0.987f
             }
@@ -104,8 +104,8 @@ fun ReaderBottomBar(
     ) {
         Spacer(Modifier.height(16.dp))
 
-        // For books, show the progress text. For comics, progress is handled by ReaderBottomBarComicSlider
-        if (!book.isComic) {
+        // For books, show the progress text. For page-based formats, progress is handled by ReaderBottomBarComicSlider
+        if (!book.isPageBased) {
             StyledText(
                 text = progress,
                 style = MaterialTheme.typography.titleLarge.copy(
@@ -134,13 +134,13 @@ fun ReaderBottomBar(
 
             // Only show the progress slider/controls if:
             // - For books: always show
-            // - For comics: only show if comicProgressBar is enabled
-            if (!book.isComic || comicProgressBar) {
+            // - For page-based: only show if comicProgressBar is enabled
+            if (!book.isPageBased || comicProgressBar) {
                 Box(
                     modifier = Modifier.weight(1f),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    if (book.isComic) {
+                    if (book.isPageBased) {
                         ReaderBottomBarComicSlider(
                             currentPage = currentComicPage,
                             totalPages = totalComicPages,
