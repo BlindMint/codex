@@ -867,10 +867,23 @@ class ReaderModel @Inject constructor(
                 }
 
                 is ReaderEvent.OnComicPageSelected -> {
-                    _state.update {
-                        it.copy(
-                            currentComicPage = event.page
-                        )
+                    launch(Dispatchers.IO) {
+                        _state.update {
+                            it.copy(
+                                currentComicPage = event.page,
+                                book = it.book.copy(
+                                    currentPage = event.page,
+                                    lastPageRead = event.page,
+                                    progress = if (it.totalComicPages > 0) {
+                                        (event.page + 1).toFloat() / it.totalComicPages
+                                    } else 0f
+                                )
+                            )
+                        }
+
+                        updateBook.execute(_state.value.book)
+                        LibraryScreen.refreshListChannel.trySend(300)
+                        HistoryScreen.refreshListChannel.trySend(300)
                     }
                 }
             }
