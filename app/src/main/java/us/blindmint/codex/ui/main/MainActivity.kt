@@ -67,6 +67,9 @@ import us.blindmint.codex.ui.settings.SettingsScreen
 import us.blindmint.codex.ui.start.StartScreen
 import us.blindmint.codex.ui.theme.CodexTheme
 import us.blindmint.codex.ui.theme.Transitions
+import java.io.BufferedOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.lang.reflect.Field
 import javax.inject.Inject
 
@@ -288,6 +291,61 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Resolves the display name for a content URI by querying the content resolver.
+     * Falls back to the URI's last path segment or a generated name.
+     */
+    private fun resolveFileName(uri: Uri): String {
+        try {
+            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val idx = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    if (idx >= 0) {
+                        val name = cursor.getString(idx)
+                        if (!name.isNullOrBlank()) return name
+                    }
+                }
+            }
+        } catch (_: Exception) { }
+        // Fall back to URI last path segment
+        return uri.lastPathSegment
+            ?.substringAfterLast('/')
+            ?.takeIf { it.isNotBlank() }
+            ?: "import_${System.currentTimeMillis()}"
+    }
+
+    /**
+     * Copies a content:// URI to permanent internal storage so the file remains
+     * accessible after the temporary URI permission expires.
+     * Returns the local File, or null if the copy fails.
+     */
+    private fun copyToInternalStorage(uri: Uri, fileName: String): File? {
+        val importsDir = File(filesDir, "imports")
+        if (!importsDir.exists()) importsDir.mkdirs()
+
+        // Use a unique prefix to avoid collisions for files with the same name
+        val targetFile = File(importsDir, "${System.currentTimeMillis()}_$fileName")
+        val tempFile = File(importsDir, "${targetFile.name}.tmp")
+
+        return try {
+            contentResolver.openInputStream(uri)?.use { input ->
+                BufferedOutputStream(FileOutputStream(tempFile)).use { output ->
+                    input.copyTo(output)
+                }
+            } ?: return null
+
+            if (!tempFile.renameTo(targetFile)) {
+                tempFile.delete()
+                return null
+            }
+            targetFile
+        } catch (e: Exception) {
+            e.printStackTrace()
+            tempFile.delete()
+            null
+        }
+    }
+
     private suspend fun processFileImport(uri: Uri) {
         // Use mutex to serialize imports and prevent race conditions
         fileImportMutex.withLock {
@@ -313,23 +371,43 @@ class MainActivity : AppCompatActivity() {
                         message = getString(R.string.opening_existing_book, existingBook.title)
                     )
                 } else {
+                    // For content:// URIs without a resolvable path, copy the file to internal
+                    // storage while the temporary URI permission is still valid
+                    val (importCachedFile, importPath) = if (cachedFile.path.isBlank()) {
+                        withContext(Dispatchers.IO) {
+                            val fileName = resolveFileName(uri)
+                            val localFile = copyToInternalStorage(uri, fileName)
+                            if (localFile != null) {
+                                val localUri = Uri.fromFile(localFile)
+                                val localCachedFile = CachedFileCompat.fromUri(this@MainActivity, localUri)
+                                Pair(localCachedFile, localFile.absolutePath)
+                            } else {
+                                // Copy failed — fall back to original URI (may still work
+                                // if the provider grants long-lived permissions)
+                                Pair(cachedFile, absolutePath)
+                            }
+                        }
+                    } else {
+                        Pair(cachedFile, absolutePath)
+                    }
+
                     // Import the book
                     val result = withContext(Dispatchers.IO) {
-                        getBookFromFile.execute(cachedFile)
+                        getBookFromFile.execute(importCachedFile)
                     }
                     when (result) {
                         is NullableBook.NotNull -> {
                             val bookTitle = result.bookWithCover!!.book.title
-                            // Always store the absolute path for consistent duplicate detection
+                            // Always store the resolved path for consistent duplicate detection
                             val bookWithCorrectPath = result.bookWithCover!!.copy(
-                                book = result.bookWithCover.book.copy(filePath = absolutePath)
+                                book = result.bookWithCover.book.copy(filePath = importPath)
                             )
                             withContext(Dispatchers.IO) {
                                 insertBook.execute(bookWithCorrectPath)
                             }
                             // Get the newly inserted book to get its ID
                             val newBook = withContext(Dispatchers.IO) {
-                                getBookByFilePath.execute(absolutePath)
+                                getBookByFilePath.execute(importPath)
                             }
                             if (newBook != null) {
                                 fileImportState.value = FileImportState(
