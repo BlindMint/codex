@@ -1,3 +1,9 @@
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_TAG
+      when: manual
+    - when: never
+
 stages:
   - release
 
@@ -7,8 +13,6 @@ variables:
 create_release:
   stage: release
   image: cimg/base:2024.04
-  rules:
-    - if: $CI_COMMIT_TAG
   before_script:
     - apt-get update -qq && apt-get install -yq glab jq curl
     - >
