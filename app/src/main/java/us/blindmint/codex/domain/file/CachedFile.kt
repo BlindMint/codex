@@ -224,71 +224,49 @@ class CachedFile(
         try {
             context.contentResolver.query(
                 uri,
-                projection.toTypedArray(),
+                null, // Use null projection for maximum compatibility with all content providers
                 null, null, null
             )?.use { cursor ->
                 if (cursor.moveToFirst()) {
-                    val queryResult = mutableMapOf<String, Any?>()
+                    var nameQuery: String? = builder?.name
+                    var sizeQuery: Long? = builder?.size
+                    var lastModifiedQuery: Long? = builder?.lastModified
+                    var isDirectoryQuery: Boolean? = builder?.isDirectory
 
-                    projection.forEach { column ->
-                        when (column) {
-                            nameColumn -> {
-                                if (builder?.name == null) {
-                                    queryResult[column] = cursor.getString(
-                                        cursor.getColumnIndexOrThrow(column)
-                                    )
-                                }
-                            }
-
-                            sizeColumn -> {
-                                if (builder?.size == null) {
-                                    queryResult[column] = cursor.getLong(
-                                        cursor.getColumnIndexOrThrow(column)
-                                    )
-                                }
-                            }
-
-                            lastModifiedColumn -> {
-                                if (builder?.lastModified == null) {
-                                    queryResult[column] = cursor.getLong(
-                                        cursor.getColumnIndexOrThrow(column)
-                                    )
-                                }
-                            }
-
-                            isDirectoryColumn -> {
-                                if (builder?.isDirectory == null) {
-                                    queryResult[column] = cursor.getString(
-                                        cursor.getColumnIndexOrThrow(column)
-                                    )
-                                }
-                            }
+                    // Use getColumnIndex() instead of getColumnIndexOrThrow() so that
+                    // missing columns (common with FileProvider URIs) don't fail the query
+                    if (nameQuery == null) {
+                        val idx = cursor.getColumnIndex(nameColumn)
+                        if (idx >= 0) nameQuery = cursor.getString(idx)
+                    }
+                    if (sizeQuery == null) {
+                        val idx = cursor.getColumnIndex(sizeColumn)
+                        if (idx >= 0) sizeQuery = cursor.getLong(idx)
+                    }
+                    if (lastModifiedQuery == null) {
+                        val idx = cursor.getColumnIndex(lastModifiedColumn)
+                        if (idx >= 0) lastModifiedQuery = cursor.getLong(idx)
+                    }
+                    if (isDirectoryQuery == null) {
+                        val idx = cursor.getColumnIndex(isDirectoryColumn)
+                        if (idx >= 0) {
+                            val mimeType = cursor.getString(idx)
+                            isDirectoryQuery = mimeType == DocumentsContract.Document.MIME_TYPE_DIR
                         }
                     }
 
-                    val nameQuery = queryResult.getOrElse(nameColumn) {
-                        builder?.name
-                    } as String
-
-                    val sizeQuery = queryResult.getOrElse(sizeColumn) {
-                        builder?.size
-                    } as Long
-
-                    val lastModifiedQuery = queryResult.getOrElse(lastModifiedColumn) {
-                        builder?.lastModified
-                    } as Long
-
-                    val isDirectoryQuery = when (queryResult[isDirectoryColumn]) {
-                        DocumentsContract.Document.MIME_TYPE_DIR -> true
-                        null -> builder?.isDirectory!!
-                        else -> false
+                    // Fall back to extracting filename from URI path if display name is unavailable
+                    if (nameQuery == null) {
+                        nameQuery = uri.lastPathSegment
+                            ?.substringAfterLast('/')
+                            ?.takeIf { it.isNotBlank() }
                     }
 
                     return QueryParams(
-                        name = nameQuery,
-                        size = sizeQuery,
-                        lastModified = lastModifiedQuery,
-                        isDirectory = isDirectoryQuery
+                        name = nameQuery ?: "unknown_${UUID.randomUUID()}",
+                        size = sizeQuery ?: 0,
+                        lastModified = lastModifiedQuery ?: 0,
+                        isDirectory = isDirectoryQuery ?: false
                     )
                 }
             }
@@ -296,8 +274,14 @@ class CachedFile(
             e.printStackTrace()
         }
 
+        // Last resort: try to extract filename from URI path
+        val fallbackName = uri.lastPathSegment
+            ?.substringAfterLast('/')
+            ?.takeIf { it.isNotBlank() }
+            ?: "unknown_${UUID.randomUUID()}"
+
         return QueryParams(
-            name = "unknown_${UUID.randomUUID()}",
+            name = fallbackName,
             size = 0,
             lastModified = 0,
             isDirectory = false
