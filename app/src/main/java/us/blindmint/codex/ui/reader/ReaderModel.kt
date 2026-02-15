@@ -81,14 +81,24 @@ class ReaderModel @Inject constructor(
     private var eventJob = SupervisorJob()
     private var resetJob: Job? = null
 
+    // Flag to prevent resetScreen() from resetting state when init() is about to run.
+    // When transitioning between ReaderScreens, DisposableEffect.onDispose calls resetScreen()
+    // on the old screen and LaunchedEffect calls init() on the new screen. These race on
+    // different threads (Main vs IO) and resetScreen can corrupt state mid-init.
+    @Volatile
+    private var isInitializing = false
+
     private var scrollJob: Job? = null
 
     fun onEvent(event: ReaderEvent) {
         viewModelScope.launch(eventJob + Dispatchers.Main) {
             when (event) {
                 is ReaderEvent.OnLoadText -> {
+                    // Capture book id on Main before dispatching to IO to avoid
+                    // race with resetScreen() which can reset state between dispatch
+                    val currentBookId = _state.value.book.id
                     launch(Dispatchers.IO) {
-                        val text = getText.execute(_state.value.book.id)
+                        val text = getText.execute(currentBookId)
                         yield()
 
                         if (text.isEmpty()) {
@@ -107,7 +117,7 @@ class ReaderModel @Inject constructor(
                             activity = event.activity
                         )
 
-                        val lastOpened = getLatestHistory.execute(_state.value.book.id)?.time
+                        val lastOpened = getLatestHistory.execute(currentBookId)?.time
                         yield()
 
                         _state.update {
@@ -122,7 +132,10 @@ class ReaderModel @Inject constructor(
 
                         yield()
 
-                        updateBook.execute(_state.value.book)
+                        // Read the book from state immediately after the update above,
+                        // before any yield that could allow resetScreen to corrupt it
+                        val bookForUpdate = _state.value.book
+                        updateBook.execute(bookForUpdate)
 
                         LibraryScreen.refreshListChannel.trySend(0)
                         HistoryScreen.refreshListChannel.trySend(0)
@@ -176,7 +189,7 @@ class ReaderModel @Inject constructor(
 
                                 // Load bookmarks for the current book
                                 launch(Dispatchers.IO) {
-                                    val bookmarks = getBookmarksByBookId.execute(_state.value.book.id)
+                                    val bookmarks = getBookmarksByBookId.execute(currentBookId)
                                     _state.update {
                                         it.copy(bookmarks = bookmarks)
                                     }
@@ -898,7 +911,16 @@ class ReaderModel @Inject constructor(
         skipTextLoading: Boolean = false,
         reuseExistingText: Boolean = false
     ) {
+        // Set flag before launching to prevent resetScreen() from corrupting state.
+        // This is set on Main (from LaunchedEffect) before the IO coroutine dispatches,
+        // and resetScreen checks it on Main after yield(), so ordering is guaranteed.
+        isInitializing = true
+
         viewModelScope.launch(Dispatchers.IO) {
+            try {
+            // Cancel any pending reset immediately, before the async getBookById call.
+            resetJob?.cancel()
+
             val book = getBookById.execute(bookId)
 
             if (book == null) {
@@ -989,12 +1011,14 @@ class ReaderModel @Inject constructor(
                             )
                         )
                     } else {
-                        // For speed reading screen, load text directly and complete loading immediately
+                        // Load text directly and complete loading immediately.
+                        // Use captured bookId instead of _state.value.book.id to avoid
+                        // a race with resetScreen() which can reset state between dispatch.
                         launch(Dispatchers.IO) {
                             val text = try {
-                                getText.execute(_state.value.book.id)
+                                getText.execute(bookId)
                             } catch (e: Exception) {
-                                Log.e("READER", "Failed to load text for book ${_state.value.book.id}", e)
+                                Log.e("READER", "Failed to load text for book $bookId", e)
                                 emptyList<us.blindmint.codex.domain.reader.ReaderText>()
                             }
 
@@ -1012,11 +1036,11 @@ class ReaderModel @Inject constructor(
                             }
 
                             systemBarsVisibility(
-                                show = false, // Speed reading doesn't need fullscreen
+                                show = false,
                                 activity = activity
                             )
 
-                            val lastOpened = getLatestHistory.execute(_state.value.book.id)?.time
+                            val lastOpened = getLatestHistory.execute(bookId)?.time
                             yield()
 
                             _state.update {
@@ -1026,21 +1050,23 @@ class ReaderModel @Inject constructor(
                                         lastOpened = lastOpened
                                     ),
                                     text = text,
-                                    isLoading = false, // Complete loading immediately for speed reading
+                                    isLoading = false,
                                     errorMessage = null
                                 )
                             }
 
                             yield()
- 
-                            updateBook.execute(_state.value.book)
- 
+
+                            // Use captured book with lastOpened instead of _state.value.book,
+                            // which can be corrupted by a concurrent resetScreen()
+                            updateBook.execute(book.copy(lastOpened = lastOpened))
+
                             LibraryScreen.refreshListChannel.trySend(0)
                             HistoryScreen.refreshListChannel.trySend(0)
 
                             // Load bookmarks for the current book
                             launch(Dispatchers.IO) {
-                                val bookmarks = getBookmarksByBookId.execute(_state.value.book.id)
+                                val bookmarks = getBookmarksByBookId.execute(bookId)
                                 _state.update {
                                     it.copy(bookmarks = bookmarks)
                                 }
@@ -1072,6 +1098,9 @@ class ReaderModel @Inject constructor(
                 updateBook.execute(book)
                 LibraryScreen.refreshListChannel.trySend(0)
                 HistoryScreen.refreshListChannel.trySend(0)
+            }
+            } finally {
+                isInitializing = false
             }
         }
     }
@@ -1329,6 +1358,9 @@ class ReaderModel @Inject constructor(
             eventJob = SupervisorJob()
 
             yield()
+            // Skip the state reset if init() is in progress or about to run.
+            // This prevents corrupting state during reader-to-reader transitions.
+            if (isInitializing) return@launch
             _state.update { ReaderState() }
         }
     }

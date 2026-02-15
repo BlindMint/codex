@@ -40,6 +40,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.internal.immutableListOf
 import us.blindmint.codex.R
+import us.blindmint.codex.domain.library.book.Book
+import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.file.CachedFileCompat
 import us.blindmint.codex.domain.library.book.NullableBook
 import us.blindmint.codex.domain.navigator.NavigatorItem
@@ -191,14 +193,26 @@ class MainActivity : AppCompatActivity() {
                         initialScreen = if (state.value.showStartScreen) StartScreen
                         else LibraryScreen,
                         transitionSpec = { lastEvent ->
+                            val initialScreen = this.initialState
                             val targetScreen = this.targetState
                             val isReaderScreen = targetScreen is us.blindmint.codex.ui.reader.ReaderScreen ||
                                                  targetScreen is us.blindmint.codex.ui.reader.SpeedReadingScreen
 
-                            when (lastEvent) {
+                            // When switching between reader screens (e.g., opening a new book
+                            // from file manager while another is open), use an instant transition.
+                            // Both compositions share the same ReaderModel ViewModel, so if they
+                            // coexist during an animated transition they interfere with each other.
+                            val isReaderToReader =
+                                (initialScreen is us.blindmint.codex.ui.reader.ReaderScreen ||
+                                 initialScreen is us.blindmint.codex.ui.reader.SpeedReadingScreen) &&
+                                isReaderScreen
+
+                            if (isReaderToReader) {
+                                androidx.compose.animation.EnterTransition.None
+                                    .togetherWith(androidx.compose.animation.ExitTransition.None)
+                            } else when (lastEvent) {
                                 StackEvent.Default -> {
                                     if (isReaderScreen) {
-                                        // Use fade transition for reader screens to avoid sliding animation during loading
                                         Transitions.FadeTransitionIn
                                             .togetherWith(Transitions.FadeTransitionOut)
                                     } else {
@@ -209,7 +223,6 @@ class MainActivity : AppCompatActivity() {
 
                                 StackEvent.Pop -> {
                                     if (isReaderScreen) {
-                                        // Use fade transition for reader screens to avoid sliding animation during loading
                                         Transitions.FadeTransitionIn
                                             .togetherWith(Transitions.FadeTransitionOut)
                                     } else {
@@ -240,9 +253,14 @@ class MainActivity : AppCompatActivity() {
                                     Toast.makeText(this@MainActivity, it, Toast.LENGTH_SHORT).show()
                                 }
 
-                                // Navigate to the reader
+                                // Refresh library so the newly imported book appears
+                                LibraryScreen.refreshListChannel.trySend(0L)
+
+                                // Navigate to the reader using atomic pop-and-push to avoid
+                                // intermediate state emissions that cause AnimatedContent to
+                                // briefly compose/dispose transient screens
                                 HistoryScreen.insertHistoryChannel.trySend(state.bookId)
-                                navigator.push(ReaderScreen(state.bookId))
+                                navigator.popToRootAndPush(ReaderScreen(state.bookId))
                             }
                         }
 
@@ -318,12 +336,19 @@ class MainActivity : AppCompatActivity() {
      * Copies a content:// URI to permanent internal storage so the file remains
      * accessible after the temporary URI permission expires.
      * Returns the local File, or null if the copy fails.
+     * If a file with the same name already exists in imports, returns that file.
      */
     private fun copyToInternalStorage(uri: Uri, fileName: String): File? {
         val importsDir = File(filesDir, "imports")
         if (!importsDir.exists()) importsDir.mkdirs()
 
-        // Use a unique prefix to avoid collisions for files with the same name
+        val existingFile = importsDir.listFiles()?.find { file ->
+            file.name.endsWith("_$fileName")
+        }
+        if (existingFile != null && existingFile.exists()) {
+            return existingFile
+        }
+
         val targetFile = File(importsDir, "${System.currentTimeMillis()}_$fileName")
         val tempFile = File(importsDir, "${targetFile.name}.tmp")
 
@@ -351,80 +376,99 @@ class MainActivity : AppCompatActivity() {
         fileImportMutex.withLock {
             try {
                 val cachedFile = CachedFileCompat.fromUri(this@MainActivity, uri)
-                // Get absolute path; for content:// URIs that don't resolve to a path, fall back to URI string
-                val absolutePath = if (cachedFile.path.isNotBlank()) {
-                    cachedFile.path
-                } else {
-                    uri.toString()
+                
+                // Check if book already exists by checking for matching files in imports directory
+                // based on the original filename
+                val fileName = resolveFileName(uri)
+                val importsDir = File(filesDir, "imports")
+                val existingImportFile = importsDir.listFiles()?.find { file ->
+                    file.name.endsWith("_$fileName")
+                }
+                
+                if (existingImportFile != null && existingImportFile.exists()) {
+                    val existingBook = withContext(Dispatchers.IO) {
+                        getBookByFilePath.execute(existingImportFile.absolutePath)
+                    }
+                    if (existingBook != null) {
+                        fileImportState.value = FileImportState(
+                            bookId = existingBook.id,
+                            message = getString(R.string.opening_existing_book, existingBook.title)
+                        )
+                        return@withLock
+                    }
                 }
 
-                // Check if book already exists in library by absolute path
-                // This is URI-scheme-agnostic and works for both file:// and content:// URIs
-                val existingBook = withContext(Dispatchers.IO) {
-                    getBookByFilePath.execute(absolutePath)
-                }
-
-                if (existingBook != null) {
-                    // Book already exists - open it directly
-                    fileImportState.value = FileImportState(
-                        bookId = existingBook.id,
-                        message = getString(R.string.opening_existing_book, existingBook.title)
-                    )
-                } else {
-                    // For content:// URIs without a resolvable path, copy the file to internal
-                    // storage while the temporary URI permission is still valid
-                    val (importCachedFile, importPath) = if (cachedFile.path.isBlank()) {
-                        withContext(Dispatchers.IO) {
-                            val fileName = resolveFileName(uri)
-                            val localFile = copyToInternalStorage(uri, fileName)
-                            if (localFile != null) {
-                                val localUri = Uri.fromFile(localFile)
-                                val localCachedFile = CachedFileCompat.fromUri(this@MainActivity, localUri)
-                                Pair(localCachedFile, localFile.absolutePath)
-                            } else {
-                                // Copy failed — fall back to original URI (may still work
-                                // if the provider grants long-lived permissions)
-                                Pair(cachedFile, absolutePath)
-                            }
+                // Always copy to internal storage for external imports
+                // This ensures the file remains accessible after temporary URI permissions expire
+                var existingBookFromCopy: Book? = null
+                val (importCachedFile, importPath) = withContext(Dispatchers.IO) {
+                    val localFile = copyToInternalStorage(uri, fileName)
+                    if (localFile != null) {
+                        val existing = getBookByFilePath.execute(localFile.absolutePath)
+                        if (existing != null) {
+                            existingBookFromCopy = existing
+                            Pair(cachedFile, "")
+                        } else {
+                            val localUri = Uri.fromFile(localFile)
+                            val localCachedFile = CachedFileCompat.fromUri(this@MainActivity, localUri)
+                            Pair(localCachedFile, localFile.absolutePath)
                         }
                     } else {
-                        Pair(cachedFile, absolutePath)
+                        // Copy failed - cannot proceed without the file
+                        Pair(null as CachedFile?, "")
                     }
+                }
 
-                    // Import the book
-                    val result = withContext(Dispatchers.IO) {
-                        getBookFromFile.execute(importCachedFile)
+                existingBookFromCopy?.let { book ->
+                    fileImportState.value = FileImportState(
+                        bookId = book.id,
+                        message = getString(R.string.opening_existing_book, book.title)
+                    )
+                    return@withLock
+                }
+
+                if (importCachedFile == null) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@MainActivity,
+                            getString(R.string.error_something_went_wrong),
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
-                    when (result) {
-                        is NullableBook.NotNull -> {
-                            val bookTitle = result.bookWithCover!!.book.title
-                            // Always store the resolved path for consistent duplicate detection
-                            val bookWithCorrectPath = result.bookWithCover!!.copy(
-                                book = result.bookWithCover.book.copy(filePath = importPath)
-                            )
-                            withContext(Dispatchers.IO) {
-                                insertBook.execute(bookWithCorrectPath)
-                            }
-                            // Get the newly inserted book to get its ID
-                            val newBook = withContext(Dispatchers.IO) {
-                                getBookByFilePath.execute(importPath)
-                            }
-                            if (newBook != null) {
-                                fileImportState.value = FileImportState(
-                                    bookId = newBook.id,
-                                    message = getString(R.string.book_added, bookTitle)
-                                )
-                            }
+                    return@withLock
+                }
+
+                // Import the book
+                val result = withContext(Dispatchers.IO) {
+                    getBookFromFile.execute(importCachedFile)
+                }
+                when (result) {
+                    is NullableBook.NotNull -> {
+                        val bookTitle = result.bookWithCover!!.book.title
+                        val bookWithCorrectPath = result.bookWithCover!!.copy(
+                            book = result.bookWithCover.book.copy(filePath = importPath)
+                        )
+                        withContext(Dispatchers.IO) {
+                            insertBook.execute(bookWithCorrectPath)
                         }
-                        is NullableBook.Null -> {
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(
-                                    this@MainActivity,
-                                    result.message?.asString(this@MainActivity)
-                                        ?: getString(R.string.error_something_went_wrong),
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
+                        val newBook = withContext(Dispatchers.IO) {
+                            getBookByFilePath.execute(importPath)
+                        }
+                        if (newBook != null) {
+                            fileImportState.value = FileImportState(
+                                bookId = newBook.id,
+                                message = getString(R.string.book_added, bookTitle)
+                            )
+                        }
+                    }
+                    is NullableBook.Null -> {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@MainActivity,
+                                result.message?.asString(this@MainActivity)
+                                    ?: getString(R.string.error_something_went_wrong),
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     }
                 }

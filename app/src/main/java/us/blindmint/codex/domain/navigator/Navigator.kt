@@ -52,14 +52,15 @@ class Navigator @AssistedInject constructor(
         popping: Boolean = false,
         saveInBackStack: Boolean = true
     ) {
-        android.util.Log.d("NAV_DEBUG", "Navigator.push called with screen: ${targetScreen::class.simpleName}")
-
         // Special case: Allow multiple OpdsCategoryScreen instances for catalog navigation
         val isOpdsCategoryScreen = targetScreen::class.simpleName == "OpdsCategoryScreen"
         val skipDuplicateCheck = isOpdsCategoryScreen
 
-        if (!skipDuplicateCheck && lastItem.value::class == targetScreen::class) {
-            android.util.Log.d("NAV_DEBUG", "Screen type already on top, skipping push")
+        // Use items.value directly for the duplicate check instead of lastItem.value,
+        // because lastItem is derived via stateIn() and may be stale after a synchronous pop()
+        val currentTop = items.value.lastOrNull()
+
+        if (!skipDuplicateCheck && currentTop != null && currentTop::class == targetScreen::class) {
             return
         }
         if (!saveInBackStack) items.removeLast()
@@ -69,9 +70,10 @@ class Navigator @AssistedInject constructor(
             else StackEvent.Default
         )
 
-        if (!skipDuplicateCheck && lastItem.value::class == targetScreen::class) items.removeLast()
+        // Re-check after potential removeLast from saveInBackStack
+        val newTop = items.value.lastOrNull()
+        if (!skipDuplicateCheck && newTop != null && newTop::class == targetScreen::class) items.removeLast()
         items.add(targetScreen)
-        android.util.Log.d("NAV_DEBUG", "Screen pushed successfully. Stack size: ${items.value.size}")
     }
 
     fun pop(popping: Boolean = true) {
@@ -82,6 +84,17 @@ class Navigator @AssistedInject constructor(
             )
             items.removeLast()
         }
+    }
+
+    /**
+     * Atomically pops all screens above the root and pushes [targetScreen].
+     * Uses a single savedStateHandle write to avoid intermediate state emissions
+     * that would cause AnimatedContent to compose/dispose transient screens.
+     */
+    fun popToRootAndPush(targetScreen: Screen) {
+        changeStackEvent(StackEvent.Default)
+        val root = items.value.firstOrNull() ?: initialScreen
+        savedStateHandle["items"] = listOf(root, targetScreen)
     }
 
     @AssistedFactory

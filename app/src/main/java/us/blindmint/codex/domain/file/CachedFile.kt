@@ -51,11 +51,23 @@ class CachedFile(
 
     fun canAccess(): Boolean {
         return try {
-            context.contentResolver.query(uri, null, null, null, null)?.let {
-                it.close()
-                return true
+            when {
+                uri.scheme == "file" -> {
+                    val file = File(uri.path ?: return false)
+                    file.exists() && file.canRead()
+                }
+                uri.scheme.isNullOrBlank() && uri.path?.startsWith("/") == true -> {
+                    val file = File(uri.path!!)
+                    file.exists() && file.canRead()
+                }
+                else -> {
+                    context.contentResolver.query(uri, null, null, null, null)?.let {
+                        it.close()
+                        return true
+                    }
+                    throw Exception("Could not access URI: $uri")
+                }
             }
-            throw Exception("Could not access URI: $uri")
         } catch (e: Exception) {
             false
         }
@@ -63,8 +75,20 @@ class CachedFile(
 
     fun openInputStream(): InputStream? {
         return try {
-            context.contentResolver.openInputStream(uri)
-                ?: throw Exception("Failed to open InputStream for URI: $uri")
+            when {
+                uri.scheme == "file" -> {
+                    val file = File(uri.path ?: return null)
+                    if (file.exists() && file.canRead()) file.inputStream() else null
+                }
+                uri.scheme.isNullOrBlank() && uri.path?.startsWith("/") == true -> {
+                    val file = File(uri.path!!)
+                    if (file.exists() && file.canRead()) file.inputStream() else null
+                }
+                else -> {
+                    context.contentResolver.openInputStream(uri)
+                        ?: throw Exception("Failed to open InputStream for URI: $uri")
+                }
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             null
@@ -178,17 +202,49 @@ class CachedFile(
         val cacheDir = context.cacheDir
         val fileName = path.replace("_", "-").replace("/", "_").take(80) + "_${path.length}"
         val cacheFile = File(cacheDir, fileName)
+
+        // If already cached, return immediately
+        if (cacheFile.exists() && cacheFile.length() > 0) {
+            return cacheFile
+        }
+
         val tempFile = File(cacheDir, "$fileName.tmp")
 
         try {
-            context.contentResolver.openInputStream(uri)?.use { input ->
-                BufferedOutputStream(FileOutputStream(tempFile)).use { output ->
-                    input.copyTo(output)
+            val input = when {
+                uri.scheme == "file" -> {
+                    val sourceFile = File(uri.path ?: throw IllegalStateException("Invalid file URI path"))
+                    if (!sourceFile.exists() || !sourceFile.canRead()) {
+                        throw IllegalStateException("File not accessible: ${uri.path}")
+                    }
+                    sourceFile.inputStream()
                 }
-            } ?: throw IllegalStateException("Failed to open InputStream.")
+                uri.scheme.isNullOrBlank() && uri.path?.startsWith("/") == true -> {
+                    val sourceFile = File(uri.path!!)
+                    if (!sourceFile.exists() || !sourceFile.canRead()) {
+                        throw IllegalStateException("File not accessible: ${uri.path}")
+                    }
+                    sourceFile.inputStream()
+                }
+                else -> {
+                    context.contentResolver.openInputStream(uri)
+                        ?: throw IllegalStateException("Failed to open InputStream.")
+                }
+            }
+
+            input.use { inputStream ->
+                BufferedOutputStream(FileOutputStream(tempFile)).use { output ->
+                    inputStream.copyTo(output)
+                }
+            }
 
             if (!tempFile.renameTo(cacheFile)) {
-                throw IllegalStateException("Failed to rename .tmp file.")
+                // Another concurrent load may have already renamed; check if cache is valid
+                tempFile.delete()
+                if (cacheFile.exists() && cacheFile.length() > 0) {
+                    return cacheFile
+                }
+                throw IllegalStateException("Failed to rename .tmp file and no cached file exists.")
             }
         } catch (e: Exception) {
             e.printStackTrace()
