@@ -52,9 +52,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import us.blindmint.codex.data.util.CachedFileFactory
 import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.library.book.Book
 import kotlin.math.min
@@ -88,7 +90,7 @@ fun PdfReaderLayout(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var initialLoadComplete by remember { mutableStateOf(false) }
 
-    val loadedPages = remember { mutableMapOf<Int, ImageBitmap>() }
+    val loadedPages = remember { mutableMapOf<Int, Pair<ImageBitmap, android.graphics.Bitmap>>() }
     val renderMutex = remember { Mutex() }
 
     // Reading direction support
@@ -133,7 +135,9 @@ fun PdfReaderLayout(
     // Render a single PDF page to bitmap
     suspend fun renderPage(pageIndex: Int, renderer: PdfRenderer): ImageBitmap? {
         return renderMutex.withLock {
-            loadedPages[pageIndex]?.let { return@withLock it }
+            if (!kotlinx.coroutines.currentCoroutineContext().isActive) return@withLock null
+            
+            loadedPages[pageIndex]?.first?.let { return@withLock it }
 
             try {
                 if (pageIndex < 0 || pageIndex >= renderer.pageCount) return@withLock null
@@ -146,12 +150,14 @@ fun PdfReaderLayout(
                 page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                 page.close()
 
-                val imageBitmap = bitmap.asImageBitmap()
-                loadedPages[pageIndex] = imageBitmap
-                Log.d(TAG, "Rendered page ${pageIndex + 1}")
-                imageBitmap
+val imageBitmap = bitmap.asImageBitmap()
+loadedPages[pageIndex] = imageBitmap to bitmap
+Log.d(TAG, "Rendered page ${pageIndex + 1}")
+imageBitmap
             } catch (e: Exception) {
-                Log.w(TAG, "Failed to render page $pageIndex: ${e.message}", e)
+                if (kotlinx.coroutines.currentCoroutineContext().isActive) {
+                    Log.w(TAG, "Failed to render page $pageIndex: ${e.message}", e)
+                }
                 null
             }
         }
@@ -182,15 +188,27 @@ fun PdfReaderLayout(
     }
 
     // Load the PDF
-    LaunchedEffect(book.id) {
-        isLoading = true
-        errorMessage = null
+LaunchedEffect(book.id) {
+    isLoading = true
+    errorMessage = null
 
-        try {
+    scope.launch {
+        kotlinx.coroutines.delay(10000)
+        if (isLoading) {
+            errorMessage = "Loading timed out after 10 seconds"
+            isLoading = false
+        }
+    }
+
+    try {
             withContext(Dispatchers.IO) {
                 Log.d(TAG, "Loading PDF: ${book.title}")
-                val uri = book.filePath.toUri()
-                val cachedFile = CachedFile(context, uri)
+                val cachedFile = CachedFileFactory.fromBook(context, book)
+                if (cachedFile == null) {
+                    Log.e(TAG, "Failed to create CachedFile for PDF")
+                    errorMessage = "Failed to access PDF file"
+                    return@withContext
+                }
                 val rawFile = cachedFile.rawFile
 
                 if (rawFile == null) {
@@ -213,6 +231,9 @@ fun PdfReaderLayout(
                 }
             }
         } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) {
+                throw e
+            }
             Log.e(TAG, "Failed to load PDF", e)
             errorMessage = "Failed to load PDF: ${e.message}"
         } finally {
@@ -242,9 +263,19 @@ fun PdfReaderLayout(
     ) {
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize())
-        } else if (errorMessage != null) {
-            // Error state
-        } else if (totalPages > 0) {
+    } else if (errorMessage != null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            androidx.compose.material3.Text(
+                text = errorMessage!!,
+                color = backgroundColor,
+                style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    } else if (totalPages > 0) {
             // Restore initial page position
             LaunchedEffect(totalPages) {
                 if (initialPage in 0 until totalPages) {
@@ -284,7 +315,7 @@ fun PdfReaderLayout(
                         )
                     ) { physicalPage ->
                         val logicalPage = mapPhysicalToLogicalPage(physicalPage)
-                        var pageImage by remember(logicalPage) { mutableStateOf(loadedPages[logicalPage]) }
+                        var pageImage by remember(logicalPage) { mutableStateOf(loadedPages[logicalPage]?.first) }
 
                         LaunchedEffect(logicalPage) {
                             if (pageImage == null) {
@@ -368,7 +399,7 @@ fun PdfReaderLayout(
                             key = { _, page -> page }
                         ) { _, physicalPage ->
                             val logicalPage = mapPhysicalToLogicalPage(physicalPage)
-                            var pageImage by remember(logicalPage) { mutableStateOf(loadedPages[logicalPage]) }
+var pageImage by remember(logicalPage) { mutableStateOf(loadedPages[logicalPage]?.first) }
 
                             LaunchedEffect(logicalPage) {
                                 if (pageImage == null) {

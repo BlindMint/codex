@@ -64,6 +64,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import us.blindmint.codex.data.parser.comic.ArchiveReader
+import us.blindmint.codex.data.util.CachedFileFactory
 import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.presentation.core.util.LocalActivity
@@ -112,13 +113,13 @@ fun ComicReaderLayout(
     var comicLoaded by remember { mutableStateOf(false) }
     var initialLoadComplete by remember { mutableStateOf(false) }
 
-    // Lazy loading cache
-    val loadedPages = remember { mutableMapOf<Int, ImageBitmap>() }
+    // Lazy loading cache - stores Pair of (ImageBitmap for display, Bitmap for cleanup)
+    val loadedPages = remember { mutableMapOf<Int, Pair<ImageBitmap, android.graphics.Bitmap>>() }
 
     // Function to load a specific page
     fun loadPage(pageIndex: Int): ImageBitmap? {
         // Check if already loaded
-        loadedPages[pageIndex]?.let { return it }
+        loadedPages[pageIndex]?.first?.let { return it }
 
         // Load the page
         try {
@@ -130,12 +131,12 @@ fun ComicReaderLayout(
 
                     archive.getInputStream(entry).use { input ->
                         val bitmap = BitmapFactory.decodeStream(input)
-                        if (bitmap != null) {
-                            val imageBitmap = bitmap.asImageBitmap()
-                            loadedPages[pageIndex] = imageBitmap
-                            android.util.Log.d("CodexComic", "Loaded page ${pageIndex + 1}")
-                            return imageBitmap
-                        }
+    if (bitmap != null) {
+        val imageBitmap = bitmap.asImageBitmap()
+        loadedPages[pageIndex] = imageBitmap to bitmap
+        android.util.Log.d("CodexComic", "Loaded page ${pageIndex + 1}")
+        return imageBitmap
+    }
                     }
                 }
             }
@@ -240,15 +241,25 @@ fun ComicReaderLayout(
         isLoading = true
         errorMessage = null
 
+        scope.launch {
+            kotlinx.coroutines.delay(10000)
+            if (isLoading) {
+                errorMessage = "Loading timed out after 10 seconds"
+                isLoading = false
+            }
+        }
+
         try {
             withContext(Dispatchers.IO) {
                 android.util.Log.d("CodexComic", "Starting to load comic: ${book.title}")
                 android.util.Log.d("CodexComic", "Book filePath: ${book.filePath}")
 
-                val uri = book.filePath.toUri()
-                android.util.Log.d("CodexComic", "Parsed URI: $uri")
-
-                val cachedFile = CachedFile(context, uri)
+                val cachedFile = CachedFileFactory.fromBook(context, book)
+                if (cachedFile == null) {
+                    android.util.Log.e("CodexComic", "Failed to create CachedFile for comic")
+                    errorMessage = "Failed to access comic file"
+                    return@withContext
+                }
                 android.util.Log.d("CodexComic", "CachedFile created: ${cachedFile.name}, path: ${cachedFile.path}, size: ${cachedFile.size}")
 
                 val archiveReader = ArchiveReader()
@@ -270,6 +281,9 @@ fun ComicReaderLayout(
                 }
             }
         } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) {
+                throw e
+            }
             android.util.Log.e("CodexComic", "Failed to load comic archive", e)
             errorMessage = "Failed to load comic: ${e.message}"
         } finally {
@@ -280,17 +294,35 @@ fun ComicReaderLayout(
         }
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
+        DisposableEffect(book.id) {
+            onDispose {
+                archiveHandle?.close()
+                loadedPages.values.forEach { it.second.recycle() }
+                loadedPages.clear()
+            }
+        }
+
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+        ) {
         if (isLoading) {
             // Loading state - could add a loading indicator here
             Box(modifier = Modifier.fillMaxSize())
         } else if (errorMessage != null) {
-            // Error state - could add error UI here
-            } else if (totalPages > 0) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.compose.material3.Text(
+                    text = errorMessage!!,
+                    color = fontColor,
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        } else if (totalPages > 0) {
             // When pages are first loaded, restore to the initial page
             LaunchedEffect(totalPages) {
                 // Only scroll on initial load (when totalPages first becomes > 0)

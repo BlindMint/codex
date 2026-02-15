@@ -33,29 +33,50 @@ object CachedFileFactory {
         context: Context,
         bookEntity: BookEntity
     ): CachedFile? {
-        val uri = bookEntity.filePath.toUri()
+        val filePath = bookEntity.filePath
+        
+        // Check if this is an internal app storage path - treat as file:// URI directly
+        if (filePath.startsWith(context.filesDir.absolutePath) || 
+            filePath.startsWith(context.cacheDir.absolutePath)) {
+            val file = File(filePath)
+            return if (file.exists() && file.canRead()) {
+                CachedFileCompat.fromUri(
+                    context = context,
+                    uri = Uri.fromFile(file),
+                    builder = CachedFileCompat.build(
+                        name = file.name,
+                        path = filePath,
+                        isDirectory = false
+                    )
+                )
+            } else {
+                null
+            }
+        }
+        
+        val uri = filePath.toUri()
         return if (!uri.scheme.isNullOrBlank()) {
             val name = if (uri.scheme == "content") {
                 uri.lastPathSegment?.let { Uri.decode(it) } ?: "unknown"
             } else {
-                uri.lastPathSegment ?: bookEntity.filePath.substringAfterLast(File.separator)
+                uri.lastPathSegment ?: filePath.substringAfterLast(File.separator)
             }
             CachedFileCompat.fromUri(
                 context = context,
                 uri = uri,
                 builder = CachedFileCompat.build(
                     name = name,
-                    path = bookEntity.filePath,
+                    path = filePath,
                     isDirectory = false
                 )
             )
         } else {
             CachedFileCompat.fromFullPath(
                 context = context,
-                path = bookEntity.filePath,
+                path = filePath,
                 builder = CachedFileCompat.build(
-                    name = bookEntity.filePath.substringAfterLast(File.separator),
-                    path = bookEntity.filePath,
+                    name = filePath.substringAfterLast(File.separator),
+                    path = filePath,
                     isDirectory = false
                 )
             )
@@ -74,7 +95,23 @@ object CachedFileFactory {
         context: Context,
         book: Book
     ): CachedFile? {
-        val uri = book.filePath.toUri()
+        val filePath = book.filePath
+        
+        // Check if this is an internal app storage path - treat as file:// URI directly
+        if (filePath.startsWith(context.filesDir.absolutePath) || 
+            filePath.startsWith(context.cacheDir.absolutePath)) {
+            val file = File(filePath)
+            return if (file.exists() && file.canRead()) {
+                CachedFileCompat.fromUri(
+                    context = context,
+                    uri = Uri.fromFile(file)
+                )
+            } else {
+                null
+            }
+        }
+        
+        val uri = filePath.toUri()
         return if (!uri.scheme.isNullOrBlank()) {
             CachedFileCompat.fromUri(
                 context = context,
@@ -83,7 +120,7 @@ object CachedFileFactory {
         } else {
             CachedFileCompat.fromFullPath(
                 context = context,
-                path = book.filePath
+                path = filePath
             )
         }
     }
