@@ -59,5 +59,9 @@ data class ReaderState(
 
     // Comic navigation
     val currentComicPage: Int = 0,
-    val totalComicPages: Int = 0
+    val totalComicPages: Int = 0,
+
+    // Initial scroll position to restore (set when loading a book with saved progress)
+    val initialScrollIndex: Int = -1,
+    val initialScrollOffset: Int = 0
 )

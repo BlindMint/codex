@@ -950,57 +950,23 @@ class ReaderModel @Inject constructor(
                         )
                     }
                 } else {
-                    // Fresh initialization
-                    _state.update {
-                        ReaderState(
-                            book = book
-                        )
+                    // Fresh initialization - calculate initial scroll position from saved progress
+                    val (initialScrollIndex, initialScrollOffset) = if (book.scrollOffset > 0) {
+                        // Normal reader saved precise position - use it
+                        Log.d("READER", "Using saved position: scrollIndex=${book.scrollIndex}, scrollOffset=${book.scrollOffset}")
+                        Pair(book.scrollIndex, book.scrollOffset)
+                    } else {
+                        // Speed reader saved progress or no precise position - will convert after text loads
+                        Log.d("READER", "Will convert progress to position after text loads: progress=${book.progress}")
+                        Pair(-1, 0) // -1 indicates we need to calculate from progress after text is loaded
                     }
 
-                    // Load progress position for fresh initialization
-                    launch {
-                        snapshotFlow {
-                            _state.value.listState.layoutInfo.totalItemsCount
-                        }.collectLatest { itemsCount ->
-                            if (itemsCount == 0) return@collectLatest // Wait for list to start loading
-
-                            _state.value.book.apply {
-                                // Debug logging for progress loading
-                                Log.d("READER", "Loading book: progress=$progress, scrollIndex=$scrollIndex, scrollOffset=$scrollOffset")
-                                Log.d("READER", "Text has ${_state.value.text.size} items (lastIndex: ${_state.value.text.lastIndex})")
-
-                                val finalScrollIndex: Int
-                                val finalScrollOffset: Int
-
-                                if (scrollOffset > 0) {
-                                    // Normal reader saved precise position - use it
-                                    finalScrollIndex = scrollIndex
-                                    finalScrollOffset = scrollOffset
-                                    Log.d("READER", "Using saved position: scrollIndex=$finalScrollIndex, scrollOffset=$finalScrollOffset")
-                                } else {
-                                    // Speed reader saved progress - convert to position
-                                    finalScrollIndex = (progress * _state.value.text.lastIndex).toInt()
-                                        .coerceIn(0, _state.value.text.lastIndex)
-                                    finalScrollOffset = 0
-                                    Log.d("READER", "Converting progress to position: progress=$progress * text.lastIndex=${_state.value.text.lastIndex} = $finalScrollIndex")
-                                }
-
-                                Log.d("READER", "Final scroll position: index=$finalScrollIndex, offset=$finalScrollOffset")
-
-                                _state.value.listState.requestScrollToItem(
-                                    finalScrollIndex,
-                                    finalScrollOffset
-                                )
-                                updateChapter(index = finalScrollIndex)
-                            }
-
-                            _state.update {
-                                it.copy(
-                                    isLoading = false,
-                                    errorMessage = null
-                                )
-                            }
-                        }
+                    _state.update {
+                        ReaderState(
+                            book = book,
+                            initialScrollIndex = initialScrollIndex,
+                            initialScrollOffset = initialScrollOffset
+                        )
                     }
 
                     if (skipTextLoading) {
@@ -1043,6 +1009,17 @@ class ReaderModel @Inject constructor(
                             val lastOpened = getLatestHistory.execute(bookId)?.time
                             yield()
 
+                            // Calculate initial scroll position from progress if needed
+                            val finalInitialScrollIndex = if (_state.value.initialScrollIndex == -1 && text.isNotEmpty()) {
+                                // Convert progress to position
+                                val calculatedIndex = (book.progress * (text.size - 1)).toInt()
+                                    .coerceIn(0, text.size - 1)
+                                Log.d("READER", "Converting progress to position: progress=${book.progress} * text.lastIndex=${text.size - 1} = $calculatedIndex")
+                                calculatedIndex
+                            } else {
+                                _state.value.initialScrollIndex.coerceAtLeast(0)
+                            }
+
                             _state.update {
                                 it.copy(
                                     showMenu = false,
@@ -1051,7 +1028,8 @@ class ReaderModel @Inject constructor(
                                     ),
                                     text = text,
                                     isLoading = false,
-                                    errorMessage = null
+                                    errorMessage = null,
+                                    initialScrollIndex = finalInitialScrollIndex
                                 )
                             }
 
@@ -1156,7 +1134,7 @@ class ReaderModel @Inject constructor(
         } ?: (-1 to -1)
     }
 
-    private fun updateChapter(index: Int) {
+    fun updateChapter(index: Int) {
         viewModelScope.launch {
             val (currentChapter, currentChapterProgress) = calculateCurrentChapter(index)
             _state.update {
