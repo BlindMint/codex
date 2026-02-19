@@ -8,6 +8,7 @@ package us.blindmint.codex.ui.reader
 
 import android.content.pm.ActivityInfo
 import android.os.Parcelable
+import android.util.Log
 import android.view.WindowManager
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -469,6 +470,19 @@ data class ReaderScreen(
         }
         LaunchedEffect(listState) {
             screenModel.updateProgress(listState)
+        }
+
+        // Restore scroll position when text is loaded and initialScrollIndex is set
+        LaunchedEffect(state.value.text, state.value.initialScrollIndex) {
+            if (state.value.text.isNotEmpty() && state.value.initialScrollIndex >= 0) {
+                Log.d("READER", "UI restoring scroll position: index=${state.value.initialScrollIndex}, offset=${state.value.initialScrollOffset}")
+                listState.requestScrollToItem(
+                    state.value.initialScrollIndex,
+                    state.value.initialScrollOffset
+                )
+                // Update the chapter after scrolling
+                screenModel.updateChapter(index = state.value.initialScrollIndex)
+            }
         }
 
         DisposableEffect(mainState.value.screenOrientation) {
