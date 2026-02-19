@@ -79,3 +79,4 @@ to-do.md
 # One-time scripts (remove after use)
 upload-gitlab-apk.sh
 .claude
+telemetry-id
