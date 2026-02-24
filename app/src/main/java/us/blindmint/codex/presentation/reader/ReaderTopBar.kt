@@ -140,8 +140,7 @@ fun ReaderTopBar(
             },
             subtitle = subtitleComposable,
             actions = {
-                // Search icon - only for text-based books
-                if (!book.isPageBased) {
+                if (!book.isComic) {
                     IconButton(
                         icon = Icons.Rounded.Search,
                         contentDescription = R.string.search_in_book_content_desc,

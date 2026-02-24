@@ -232,6 +232,9 @@ dependencies {
     // Fuzzy search
     implementation("me.xdrop:fuzzywuzzy:1.4.0")
 
+    // xxHash for content hashing (deduplication)
+    implementation("org.lz4:lz4-java:1.8.0")
+
     // Credential encryption (EncryptedSharedPreferences - simpler approach)
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 

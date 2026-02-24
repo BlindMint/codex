@@ -14,5 +14,6 @@ data class SearchResult(
     val fullText: String,
     val matchedText: String,
     val beforeContext: String = "",
-    val afterContext: String = ""
+    val afterContext: String = "",
+    val pageNumber: Int? = null
 )
