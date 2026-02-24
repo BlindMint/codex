@@ -3,9 +3,9 @@
 
 # Codex
 
-[![GitHub Releases](https://img.shields.io/badge/github-v2.8.6-333333?logo=github&link=https://github.com/BlindMint/codex/releases/latest)](https://github.com/BlindMint/codex/releases/latest)
-[![GitLab Releases](https://img.shields.io/badge/gitlab-v2.8.6-/releases)
-[![Codeberg Releases](https://img.shields.io/badge/codeberg-v2.8.6-2185D0?logo=codeberg&link=https://codeberg.org/BlindMint/codex/releases)](https://codeberg.org/BlindMint/codex/releases)
+[![GitHub Releases](https://img.shields.io/badge/github-v2.9.0-333333?logo=github&link=https://github.com/BlindMint/codex/releases/latest)](https://github.com/BlindMint/codex/releases/latest)
+[![GitLab Releases](https://img.shields.io/badge/gitlab-v2.9.0-/releases)
+[![Codeberg Releases](https://img.shields.io/badge/codeberg-v2.9.0-2185D0?logo=codeberg&link=https://codeberg.org/BlindMint/codex/releases)](https://codeberg.org/BlindMint/codex/releases)
 
 ### Material You eBook Reader for Android
 
