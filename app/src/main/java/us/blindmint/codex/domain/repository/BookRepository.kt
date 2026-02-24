@@ -10,7 +10,6 @@ import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.BookWithCover
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.SpeedReaderWord
-import us.blindmint.codex.domain.util.CoverImage
 
 interface BookRepository {
 
@@ -42,11 +41,6 @@ interface BookRepository {
         book: Book
     )
 
-    suspend fun updateCoverImageOfBook(
-        bookWithOldCover: Book,
-        newCoverImage: CoverImage?
-    )
-
     suspend fun updateSpeedReaderProgress(
         bookId: Int,
         wordIndex: Int
@@ -65,19 +59,9 @@ interface BookRepository {
         books: List<Book>
     )
 
-    suspend fun canResetCover(
-        bookId: Int
-    ): Boolean
-
-    suspend fun resetCoverImage(
-        bookId: Int
-    ): Boolean
-
     suspend fun deleteProgressHistory(
         book: Book
     )
-
-    suspend fun preloadRecentBooksText()
 
     suspend fun getAllTags(): List<String>
 
@@ -99,5 +83,15 @@ interface BookRepository {
 
     suspend fun getBookByCalibreId(
         calibreId: String
+    ): Book?
+
+    suspend fun getBookByContentHash(
+        contentHash: String
+    ): Book?
+
+    suspend fun findExistingBook(
+        filePath: String,
+        fileName: String? = null,
+        fileSize: Long? = null
     ): Book?
 }

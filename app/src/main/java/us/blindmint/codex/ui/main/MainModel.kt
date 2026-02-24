@@ -1043,11 +1043,6 @@ class MainModel @Inject constructor(
 
             updateStateWithSavedHandle { settings }
             mainModelReady.update { true }
-
-            // Preload recent books text for instant loading
-            launch(Dispatchers.IO) {
-                bookRepository.preloadRecentBooksText()
-            }
         }
 
         val isReady = combine(

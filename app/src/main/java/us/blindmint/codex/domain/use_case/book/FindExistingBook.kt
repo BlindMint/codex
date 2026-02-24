@@ -6,14 +6,18 @@
 
 package us.blindmint.codex.domain.use_case.book
 
+import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.repository.BookRepository
 import javax.inject.Inject
 
-class ResetCoverImage @Inject constructor(
+class FindExistingBook @Inject constructor(
     private val repository: BookRepository
 ) {
-
-    suspend fun execute(bookId: Int): Boolean {
-        return repository.resetCoverImage(bookId)
+    suspend fun execute(
+        filePath: String,
+        fileName: String? = null,
+        fileSize: Long? = null
+    ): Book? {
+        return repository.findExistingBook(filePath, fileName, fileSize)
     }
 }

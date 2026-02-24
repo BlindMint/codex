@@ -198,6 +198,17 @@ fun SpeedReadingContent(
         if (isPlaying && words.isNotEmpty() && currentWordIndex < words.size) {
             val currentWordText = words.getOrNull(currentWordIndex)?.text ?: ""
 
+            // Closing quotes (end of dialogue): " » " › '
+            val closingQuotes = setOf(
+                '"',        // Regular double quote
+                '\u201D',   // " Right double quotation mark
+                '\u00BB',   // » Right guillemet
+                '\u201F',   // " Double high-reversed-9 quotation mark
+                '\u2019',   // ' Right single quotation mark
+                '\u203A',   // › Single right-pointing angle quotation mark
+                '\u2015'    // ‒ Single low-reversed-9 quotation mark
+            )
+
             // Check for sentence-ending punctuation (period, exclamation, question, colon)
             val isSentenceEnd = currentWordText.endsWith(".") ||
                                currentWordText.endsWith("!") ||
@@ -208,10 +219,14 @@ fun SpeedReadingContent(
             val isCommaPause = currentWordText.endsWith(",") ||
                               currentWordText.endsWith(";")
 
+            // Closing quote at end of word indicates end of dialogue
+            val hasClosingQuote = currentWordText.isNotEmpty() && currentWordText.last() in closingQuotes
+
             val wordDelay = (60.0 / wpm * 1000).toLong()
             val delayTime = when {
                 isSentenceEnd -> sentencePauseMs.toLong()
                 isCommaPause -> (wordDelay * 1.5).toLong() // 50% longer than normal word
+                hasClosingQuote -> (wordDelay * 1.5).toLong() // Medium pause after closing quote
                 else -> wordDelay
             }
             delay(delayTime)

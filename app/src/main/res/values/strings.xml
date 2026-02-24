@@ -153,6 +153,9 @@
     <string name="change_cover_desc">Choose new cover from your photos</string>
     <string name="delete_cover">Delete cover image</string>
     <string name="delete_cover_desc">Delete current cover image of the book</string>
+    <string name="select_page_for_cover">Select page for cover</string>
+    <string name="could_not_load_pages">Could not load pages</string>
+    <string name="use_page">Use page</string>
     <string name="author">Author</string>
     <string name="authors">Authors</string>
     <string name="series">Series</string>
@@ -894,6 +897,7 @@
     <string name="refresh_content_desc">Refresh</string>
     <string name="open_in_browser">Open in browser</string>
     <string name="opening_existing_book">Opening: %1$s</string>
+    <string name="hashing_book">Identifying book…</string>
 
     <!-- Comic Reader Settings -->
     <string name="books_tab">Books</string>

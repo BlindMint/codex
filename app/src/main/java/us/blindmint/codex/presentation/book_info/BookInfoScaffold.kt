@@ -23,7 +23,6 @@ import us.blindmint.codex.ui.book_info.BookInfoEvent
 fun BookInfoScaffold(
     book: Book,
     listState: LazyListState,
-    showChangeCoverBottomSheet: (BookInfoEvent.OnShowChangeCoverBottomSheet) -> Unit,
     showDetailsBottomSheet: (BookInfoEvent.OnShowDetailsBottomSheet) -> Unit,
     showDeleteDialog: (BookInfoEvent.OnShowDeleteDialog) -> Unit,
     showResetProgressDialog: (BookInfoEvent.OnShowResetProgressDialog) -> Unit,
@@ -55,7 +54,6 @@ fun BookInfoScaffold(
             book = book,
             listState = listState,
             paddingValues = paddingValues,
-            showChangeCoverBottomSheet = showChangeCoverBottomSheet,
             navigateToReader = navigateToReader,
             navigateToSpeedReading = navigateToSpeedReading,
             onCategoryChange = onCategoryChange

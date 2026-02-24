@@ -8,14 +8,12 @@ package us.blindmint.codex.domain.use_case.book
 
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.repository.BookRepository
-import us.blindmint.codex.domain.util.CoverImage
 import javax.inject.Inject
 
-class UpdateCoverImageOfBook @Inject constructor(
+class GetBookByContentHash @Inject constructor(
     private val repository: BookRepository
 ) {
-
-    suspend fun execute(bookWithOldCover: Book, newCoverImage: CoverImage?) {
-        repository.updateCoverImageOfBook(bookWithOldCover, newCoverImage)
+    suspend fun execute(contentHash: String): Book? {
+        return repository.getBookByContentHash(contentHash)
     }
 }

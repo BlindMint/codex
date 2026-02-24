@@ -16,12 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.domain.library.book.Book
-import us.blindmint.codex.ui.book_info.BookInfoEvent
 
 @Composable
 fun BookInfoLayoutInfo(
-    book: Book,
-    showChangeCoverBottomSheet: (BookInfoEvent.OnShowChangeCoverBottomSheet) -> Unit
+    book: Book
 ) {
     Row(
         modifier = Modifier
@@ -30,10 +28,7 @@ fun BookInfoLayoutInfo(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        BookInfoLayoutInfoCover(
-            book = book,
-            showChangeCoverBottomSheet = showChangeCoverBottomSheet
-        )
+        BookInfoLayoutInfoCover(book = book)
 
         Column(
             verticalArrangement = Arrangement.spacedBy(4.dp)
