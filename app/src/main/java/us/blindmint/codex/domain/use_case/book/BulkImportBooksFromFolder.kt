@@ -6,12 +6,15 @@
 
 package us.blindmint.codex.domain.use_case.book
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
+import dagger.hilt.android.qualifiers.ApplicationContext
 import us.blindmint.codex.data.repository.FileSystemRepositoryImpl
 import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.repository.FileSystemRepository
 import us.blindmint.codex.presentation.core.constants.provideExtensions
+import us.blindmint.codex.domain.util.ContentHasher
 import javax.inject.Inject
 
 private const val BULK_IMPORT = "BULK IMPORT"
@@ -25,7 +28,8 @@ data class BulkImportProgress(
 class BulkImportBooksFromFolder @Inject constructor(
     private val fileSystemRepository: FileSystemRepository,
     private val bookRepository: BookRepository,
-    private val insertBook: InsertBook
+    private val insertBook: InsertBook,
+    @ApplicationContext private val context: Context
 ) {
 
     suspend fun execute(
@@ -38,11 +42,9 @@ class BulkImportBooksFromFolder @Inject constructor(
         val existingPaths = bookRepository.getBooks("").map { it.filePath }
         var importedCount = 0
 
-        // Get all files recursively from the folder
         val allFiles = getAllFilesFromFolder(folderUri)
         Log.i(BULK_IMPORT, "Found ${allFiles.size} total files in folder")
 
-        // Filter to only include supported file types that haven't been imported yet
         val supportedFiles = allFiles.filter { cachedFile ->
             val isSupported = supportedExtensions.any { ext ->
                 cachedFile.name.endsWith(ext, ignoreCase = true)
@@ -59,24 +61,36 @@ class BulkImportBooksFromFolder @Inject constructor(
 
         supportedFiles.forEachIndexed { index, cachedFile ->
             try {
+                val contentHash = ContentHasher.computeHash(context, cachedFile.uri)
+                
+                val existingByHash = bookRepository.getBookByContentHash(contentHash)
+                if (existingByHash != null) {
+                    Log.i(BULK_IMPORT, "Skipping duplicate (by hash): ${cachedFile.name}")
+                    onProgress(BulkImportProgress(index + 1, supportedFiles.size, cachedFile.name))
+                    return@forEachIndexed
+                }
+
                 val nullableBook = fileSystemRepository.getBookFromFile(cachedFile)
                 when (nullableBook) {
                     is us.blindmint.codex.domain.library.book.NullableBook.NotNull -> {
-                        insertBook.execute(nullableBook.bookWithCover!!)
+                        val bookWithHash = nullableBook.bookWithCover!!.copy(
+                            book = nullableBook.bookWithCover.book.copy(
+                                contentHash = contentHash,
+                                fileSize = cachedFile.size
+                            )
+                        )
+                        insertBook.execute(bookWithHash)
                         importedCount++
                         Log.i(BULK_IMPORT, "Imported: ${cachedFile.name}")
-                        // Report progress after successful database insertion
                         onProgress(BulkImportProgress(importedCount, supportedFiles.size, cachedFile.name))
                     }
                     is us.blindmint.codex.domain.library.book.NullableBook.Null -> {
                         Log.w(BULK_IMPORT, "Failed to parse: ${cachedFile.name} - ${nullableBook.message}")
-                        // Still report progress for failed imports to show activity
                         onProgress(BulkImportProgress(index + 1, supportedFiles.size, cachedFile.name))
                     }
                 }
             } catch (e: Exception) {
                 Log.e(BULK_IMPORT, "Error importing ${cachedFile.name}: ${e.message}")
-                // Report progress even for errors
                 onProgress(BulkImportProgress(index + 1, supportedFiles.size, cachedFile.name))
             }
         }

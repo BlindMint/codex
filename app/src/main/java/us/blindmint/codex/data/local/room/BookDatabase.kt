@@ -31,7 +31,7 @@ import java.io.File
         BookmarkEntity::class,
         OpdsSourceEntity::class,
     ],
-    version = 24,
+    version = 25,
     exportSchema = false
 )
 abstract class BookDatabase : RoomDatabase() {
@@ -245,6 +245,17 @@ object DatabaseHelper {
     val MIGRATION_23_24 = object : Migration(23, 24) {
         override fun migrate(db: SupportSQLiteDatabase) {
             db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `opdsCalibreId` TEXT")
+        }
+    }
+
+    val MIGRATION_24_25 = object : Migration(24, 25) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `contentHash` TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `fileSize` INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_BookEntity_contentHash` ON `BookEntity` (`contentHash`)")
+            db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_BookEntity_filePath` ON `BookEntity` (`filePath`)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_BookEntity_opdsCalibreId` ON `BookEntity` (`opdsCalibreId`)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_BookEntity_opdsSourceId` ON `BookEntity` (`opdsSourceId`)")
         }
     }
 }

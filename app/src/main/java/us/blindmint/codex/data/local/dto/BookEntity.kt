@@ -7,13 +7,21 @@
 package us.blindmint.codex.data.local.dto
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import us.blindmint.codex.data.local.room.TypeConverters as CodexTypeConverters
 import us.blindmint.codex.domain.library.book.BookSource
 import us.blindmint.codex.domain.library.category.Category
 
-@Entity
+@Entity(
+    indices = [
+        Index(value = ["contentHash"]),
+        Index(value = ["filePath"], unique = true),
+        Index(value = ["opdsCalibreId"]),
+        Index(value = ["opdsSourceId"])
+    ]
+)
 @TypeConverters(CodexTypeConverters::class)
 data class BookEntity(
     @PrimaryKey(true) val id: Int = 0,
@@ -21,16 +29,17 @@ data class BookEntity(
     val authors: List<String> = emptyList(),
     val description: String?,
     val filePath: String,
+    val contentHash: String = "",
+    val fileSize: Long = 0,
     val scrollIndex: Int,
     val scrollOffset: Int,
     val progress: Float,
 
-    // Speed reader progress (separate from normal reader)
     val speedReaderWordIndex: Int = 0,
     val speedReaderHasBeenOpened: Boolean = false,
     val speedReaderTotalWords: Int = 0,
     val image: String? = null,
-    val category: Category = Category.PLANNING, // TODO: remove when UI updated
+    val category: Category = Category.PLANNING,
     val tags: List<String> = emptyList(),
     val series: List<String> = emptyList(),
     val publicationDate: Long? = null,
@@ -43,7 +52,6 @@ data class BookEntity(
     val opdsSourceId: Int? = null,
     val opdsCalibreId: String? = null,
     val metadataLastRefreshTime: Long? = null,
-    // Comic fields
     val isComic: Boolean = false,
     val pageCount: Int? = null,
     val currentPage: Int = 0,

@@ -23,19 +23,20 @@ data class Book(
     val description: String?,
 
     val filePath: String,
+    val contentHash: String = "",
+    val fileSize: Long = 0,
     val coverImage: Uri?,
 
     val scrollIndex: Int,
     val scrollOffset: Int,
     val progress: Float,
 
-    // Speed reader progress (separate from normal reader)
     val speedReaderWordIndex: Int = 0,
     val speedReaderHasBeenOpened: Boolean = false,
     val speedReaderTotalWords: Int = 0,
 
     val lastOpened: Long?,
-    val category: Category = Category.PLANNING, // TODO: remove when UI updated
+    val category: Category = Category.PLANNING,
 
     val tags: List<String> = emptyList(),
     val series: List<String> = emptyList(),
@@ -49,7 +50,6 @@ data class Book(
     val opdsSourceId: Int? = null,
     val opdsCalibreId: String? = null,
     val metadataLastRefreshTime: Long? = null,
-    // Comic fields
     val isComic: Boolean = false,
     val pageCount: Int? = null,
     val currentPage: Int = 0,

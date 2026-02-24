@@ -38,6 +38,7 @@ import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.category.Category
 import us.blindmint.codex.domain.storage.CodexDirectoryManager
 import us.blindmint.codex.domain.ui.UIText
+import us.blindmint.codex.domain.util.ContentHasher
 import java.util.UUID
 
 /**
@@ -470,7 +471,13 @@ class ImportOpdsBookUseCase @Inject constructor(
                 }
             }
 
-            val bookWithPath = parsedBook.book.copy(filePath = bookFile.uri.toString(), opdsCalibreId = calibreId)
+            val contentHash = ContentHasher.computeHashFromBytes(bookBytes)
+            val bookWithPath = parsedBook.book.copy(
+                filePath = bookFile.uri.toString(),
+                opdsCalibreId = calibreId,
+                contentHash = contentHash,
+                fileSize = bookBytes.size.toLong()
+            )
             val bookWithMetadata = opdsMetadataMapper.applyOpdsMetadataToBook(bookWithPath, opdsEntry)
 
             opfWriter.writeOpfFile(bookFolder, bookWithMetadata, opdsEntry)

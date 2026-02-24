@@ -13,6 +13,7 @@ import android.content.Intent
 import android.database.CursorWindow
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -48,9 +49,12 @@ import us.blindmint.codex.domain.navigator.NavigatorItem
 import us.blindmint.codex.domain.navigator.StackEvent
 import us.blindmint.codex.domain.ui.isDark
 import us.blindmint.codex.domain.ui.isPureDark
+import us.blindmint.codex.domain.use_case.book.FindExistingBook
+import us.blindmint.codex.domain.use_case.book.GetBookByContentHash
 import us.blindmint.codex.domain.use_case.book.GetBookByFilePath
 import us.blindmint.codex.domain.use_case.book.InsertBook
 import us.blindmint.codex.domain.use_case.file_system.GetBookFromFile
+import us.blindmint.codex.domain.util.ContentHasher
 import us.blindmint.codex.ui.reader.ReaderScreen
 import us.blindmint.codex.presentation.core.components.navigation_bar.NavigationBar
 import us.blindmint.codex.presentation.core.components.navigation_rail.NavigationRail
@@ -86,7 +90,8 @@ class MainActivity : AppCompatActivity() {
     // Injected use cases for handling file intents
     @Inject lateinit var getBookFromFile: GetBookFromFile
     @Inject lateinit var insertBook: InsertBook
-    @Inject lateinit var getBookByFilePath: GetBookByFilePath
+    @Inject lateinit var findExistingBook: FindExistingBook
+    @Inject lateinit var getBookByContentHash: GetBookByContentHash
 
     // Pending file URI from external intent
     private var pendingFileUri: Uri? = null
@@ -324,7 +329,9 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-        } catch (_: Exception) { }
+        } catch (e: Exception) {
+            Log.w("MainActivity", "Could not resolve file name from URI: $uri", e)
+        }
         // Fall back to URI last path segment
         return uri.lastPathSegment
             ?.substringAfterLast('/')
@@ -372,22 +379,43 @@ class MainActivity : AppCompatActivity() {
     }
 
     private suspend fun processFileImport(uri: Uri) {
-        // Use mutex to serialize imports and prevent race conditions
         fileImportMutex.withLock {
             try {
-                val cachedFile = CachedFileCompat.fromUri(this@MainActivity, uri)
-                
-                // Check if book already exists by checking for matching files in imports directory
-                // based on the original filename
                 val fileName = resolveFileName(uri)
+                
+                fileImportState.value = FileImportState(
+                    bookId = -1,
+                    message = getString(R.string.hashing_book)
+                )
+                
+                val contentHash = withContext(Dispatchers.IO) {
+                    ContentHasher.computeHash(this@MainActivity, uri)
+                }
+
+                val existingByHash = withContext(Dispatchers.IO) {
+                    getBookByContentHash.execute(contentHash)
+                }
+                
+                if (existingByHash != null) {
+                    fileImportState.value = FileImportState(
+                        bookId = existingByHash.id,
+                        message = getString(R.string.opening_existing_book, existingByHash.title)
+                    )
+                    return@withLock
+                }
+
                 val importsDir = File(filesDir, "imports")
                 val existingImportFile = importsDir.listFiles()?.find { file ->
                     file.name.endsWith("_$fileName")
                 }
-                
+
                 if (existingImportFile != null && existingImportFile.exists()) {
                     val existingBook = withContext(Dispatchers.IO) {
-                        getBookByFilePath.execute(existingImportFile.absolutePath)
+                        findExistingBook.execute(
+                            filePath = existingImportFile.absolutePath,
+                            fileName = fileName,
+                            fileSize = existingImportFile.length()
+                        )
                     }
                     if (existingBook != null) {
                         fileImportState.value = FileImportState(
@@ -398,33 +426,15 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                // Always copy to internal storage for external imports
-                // This ensures the file remains accessible after temporary URI permissions expire
-                var existingBookFromCopy: Book? = null
                 val (importCachedFile, importPath) = withContext(Dispatchers.IO) {
                     val localFile = copyToInternalStorage(uri, fileName)
                     if (localFile != null) {
-                        val existing = getBookByFilePath.execute(localFile.absolutePath)
-                        if (existing != null) {
-                            existingBookFromCopy = existing
-                            Pair(cachedFile, "")
-                        } else {
-                            val localUri = Uri.fromFile(localFile)
-                            val localCachedFile = CachedFileCompat.fromUri(this@MainActivity, localUri)
-                            Pair(localCachedFile, localFile.absolutePath)
-                        }
+                        val localUri = Uri.fromFile(localFile)
+                        val localCachedFile = CachedFileCompat.fromUri(this@MainActivity, localUri)
+                        Pair(localCachedFile, localFile.absolutePath)
                     } else {
-                        // Copy failed - cannot proceed without the file
                         Pair(null as CachedFile?, "")
                     }
-                }
-
-                existingBookFromCopy?.let { book ->
-                    fileImportState.value = FileImportState(
-                        bookId = book.id,
-                        message = getString(R.string.opening_existing_book, book.title)
-                    )
-                    return@withLock
                 }
 
                 if (importCachedFile == null) {
@@ -438,7 +448,6 @@ class MainActivity : AppCompatActivity() {
                     return@withLock
                 }
 
-                // Import the book
                 val result = withContext(Dispatchers.IO) {
                     getBookFromFile.execute(importCachedFile)
                 }
@@ -446,13 +455,17 @@ class MainActivity : AppCompatActivity() {
                     is NullableBook.NotNull -> {
                         val bookTitle = result.bookWithCover!!.book.title
                         val bookWithCorrectPath = result.bookWithCover!!.copy(
-                            book = result.bookWithCover.book.copy(filePath = importPath)
+                            book = result.bookWithCover.book.copy(
+                                filePath = importPath,
+                                contentHash = contentHash,
+                                fileSize = importCachedFile.size
+                            )
                         )
                         withContext(Dispatchers.IO) {
                             insertBook.execute(bookWithCorrectPath)
                         }
                         val newBook = withContext(Dispatchers.IO) {
-                            getBookByFilePath.execute(importPath)
+                            getBookByContentHash.execute(contentHash)
                         }
                         if (newBook != null) {
                             fileImportState.value = FileImportState(

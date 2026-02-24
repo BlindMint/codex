@@ -32,7 +32,6 @@ import me.xdrop.fuzzywuzzy.FuzzySearch
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.SpeedReaderWord
 import us.blindmint.codex.domain.repository.BookRepository
-import us.blindmint.codex.domain.util.CoverImage
 import java.io.BufferedOutputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -48,8 +47,6 @@ private const val GET_BOOKS_BY_ID = "GET BOOKS, REPO"
 private const val INSERT_BOOK = "INSERT BOOK, REPO"
 private const val UPDATE_BOOK = "UPDATE BOOK, REPO"
 private const val DELETE_BOOKS = "DELETE BOOKS, REPO"
-private const val CAN_RESET_COVER = "CAN RESET COVER, REPO"
-private const val RESET_COVER = "RESET COVER, REPO"
 
 @Suppress("DEPRECATION")
 @Singleton
@@ -61,11 +58,9 @@ class BookRepositoryImpl @Inject constructor(
     private val bookMapper: BookMapper
 ) : BookRepository {
 
-    // LRU cache for recently opened book text (100MB cache size for 3-5 books)
-    private val textCache = LruCache<Int, List<ReaderText>>(1024 * 1024 * 100)
+    private val textCache = LruCache<Int, List<ReaderText>>(5)
 
-    // LRU cache for speed reader words (50MB cache size for 10-15 books)
-    private val speedReaderWordCache = LruCache<Int, List<SpeedReaderWord>>(1024 * 1024 * 50)
+    private val speedReaderWordCache = LruCache<Int, List<SpeedReaderWord>>(10)
 
     /**
      * Creates a CachedFile from book.filePath, handling both file paths and content URIs.
@@ -339,11 +334,6 @@ class BookRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun updateCoverImageOfBook(bookWithOldCover: Book, newCoverImage: CoverImage?) {
-        // Implementation needed
-        TODO("Implement updateCoverImageOfBook")
-    }
-
     override suspend fun updateSpeedReaderProgress(bookId: Int, wordIndex: Int) {
         Log.d("SPEED_READER_DB", "Updating speed reader progress: bookId=$bookId, wordIndex=$wordIndex")
         database.updateSpeedReaderProgress(bookId, wordIndex)
@@ -359,13 +349,6 @@ class BookRepositoryImpl @Inject constructor(
     override suspend fun updateSpeedReaderTotalWords(bookId: Int, totalWords: Int) {
         Log.d("SPEED_READER_DB", "Updating speed reader total words: bookId=$bookId, totalWords=$totalWords")
         database.updateSpeedReaderTotalWords(bookId, totalWords)
-    }
-
-    override suspend fun canResetCover(bookId: Int): Boolean {
-        // Implementation
-        val book = database.findBookById(bookId)
-        val cachedFile = getCachedFile(book)
-        return cachedFile != null && cachedFile.canAccess()
     }
 
     override suspend fun deleteBooks(books: List<Book>) {
@@ -397,44 +380,12 @@ class BookRepositoryImpl @Inject constructor(
 
 
     /**
-     * Reset cover image to the default one from the book file.
-     */
-    override suspend fun resetCoverImage(bookId: Int): Boolean {
-        if (!canResetCover(bookId)) {
-            Log.w(RESET_COVER, "Cannot reset cover image.")
-            return false
-        }
-
-        val book = database.findBookById(bookId)
-        val cachedFile = getCachedFile(book)
-
-        if (cachedFile == null || !cachedFile.canAccess()) {
-            return false
-        }
-
-        val defaultCover = fileParser.parse(cachedFile)?.coverImage
-            ?: return false
-        updateCoverImageOfBook(bookMapper.toBook(book), defaultCover)
-
-        Log.i(RESET_COVER, "Successfully reset cover image.")
-        return true
-    }
-
-    /**
      * Delete progress history for a specific book.
      */
     override suspend fun deleteProgressHistory(book: Book) {
         Log.i("DELETE_HISTORY", "Deleting progress history for: ${book.title}")
         database.deleteBookProgressHistory(book.filePath)
         Log.i("DELETE_HISTORY", "Successfully deleted progress history.")
-    }
-
-    /**
-     * Preload text for recently opened books into cache for instant loading.
-     * Caches up to 3 most recent books to balance performance and memory usage.
-     */
-    override suspend fun preloadRecentBooksText() {
-        // Implementation here
     }
 
     override suspend fun getAllAuthors(): List<String> = withContext(Dispatchers.IO) {
@@ -535,14 +486,41 @@ class BookRepositoryImpl @Inject constructor(
                 .map { bookEntity -> bookMapper.toBook(bookEntity) }
         }
 
-    /**
-     * Get a book by its Calibre ID.
-     * Returns null if no book with that Calibre ID exists.
-     */
     override suspend fun getBookByCalibreId(calibreId: String): Book? {
         val entity = database.findBookByCalibreId(calibreId) ?: return null
         val book = bookMapper.toBook(entity)
         val lastHistory = database.getLatestHistoryForBook(book.id)
         return book.copy(lastOpened = lastHistory?.time)
+    }
+
+    override suspend fun getBookByContentHash(contentHash: String): Book? {
+        if (contentHash.isBlank()) return null
+        val entity = database.findBookByContentHash(contentHash) ?: return null
+        val book = bookMapper.toBook(entity)
+        val lastHistory = database.getLatestHistoryForBook(book.id)
+        return book.copy(lastOpened = lastHistory?.time)
+    }
+
+    override suspend fun findExistingBook(
+        filePath: String,
+        fileName: String?,
+        fileSize: Long?
+    ): Book? {
+        val pathLookupKeys = buildList {
+            add(filePath)
+            add(filePath.removePrefix("file://"))
+            if (!filePath.startsWith("file://")) add("file://$filePath")
+            add(Uri.decode(filePath))
+            add(Uri.decode(filePath).removePrefix("file://"))
+        }.distinct()
+
+        val existingByPath = database.findBooksByFilePaths(pathLookupKeys).firstOrNull()
+        if (existingByPath != null) {
+            val book = bookMapper.toBook(existingByPath)
+            val lastHistory = database.getLatestHistoryForBook(book.id)
+            return book.copy(lastOpened = lastHistory?.time)
+        }
+
+        return null
     }
 }
