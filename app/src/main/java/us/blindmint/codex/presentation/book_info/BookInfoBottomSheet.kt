@@ -17,7 +17,6 @@ import us.blindmint.codex.ui.book_info.BookInfoScreen
 fun BookInfoBottomSheet(
     bottomSheet: BottomSheet?,
     book: Book,
-    canResetCover: Boolean,
     isEditingMetadata: Boolean,
     editedBook: Book?,
     showConfirmSaveDialog: Boolean,
@@ -35,10 +34,6 @@ fun BookInfoBottomSheet(
     resetDescription: (BookInfoEvent.OnResetDescription) -> Unit,
     clearProgressHistory: (BookInfoEvent.OnClearProgressHistory) -> Unit,
     refreshMetadataFromOpds: (BookInfoEvent.OnRefreshMetadataFromOpds) -> Unit,
-    changeCover: (BookInfoEvent.OnChangeCover) -> Unit,
-    resetCover: (BookInfoEvent.OnResetCover) -> Unit,
-    deleteCover: (BookInfoEvent.OnDeleteCover) -> Unit,
-    checkCoverReset: (BookInfoEvent.OnCheckCoverReset) -> Unit,
     dismissBottomSheet: (BookInfoEvent.OnDismissBottomSheet) -> Unit,
     onEnterEditMode: () -> Unit,
     onConfirmEditMetadata: () -> Unit,
@@ -51,18 +46,6 @@ fun BookInfoBottomSheet(
     onCategoryChange: (Category) -> Unit
 ) {
     when (bottomSheet) {
-        BookInfoScreen.CHANGE_COVER_BOTTOM_SHEET -> {
-            BookInfoChangeCoverBottomSheet(
-                book = book,
-                canResetCover = canResetCover,
-                changeCover = changeCover,
-                resetCover = resetCover,
-                deleteCover = deleteCover,
-                checkCoverReset = checkCoverReset,
-                dismissBottomSheet = dismissBottomSheet
-            )
-        }
-
         BookInfoScreen.DETAILS_BOTTOM_SHEET -> {
             BookInfoDetailsBottomSheet(
                 book = book,

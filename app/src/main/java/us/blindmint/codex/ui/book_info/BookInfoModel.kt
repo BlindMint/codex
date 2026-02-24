@@ -6,7 +6,6 @@
 
 package us.blindmint.codex.ui.book_info
 
-import android.graphics.BitmapFactory
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -64,132 +63,6 @@ class BookInfoModel @Inject constructor(
                         it.copy(
                             bottomSheet = BookInfoScreen.EDIT_BOTTOM_SHEET
                         )
-                    }
-                }
-
-                is BookInfoEvent.OnShowChangeCoverBottomSheet -> {
-                    _state.update {
-                        it.copy(
-                            bottomSheet = BookInfoScreen.CHANGE_COVER_BOTTOM_SHEET
-                        )
-                    }
-                }
-
-                is BookInfoEvent.OnChangeCover -> {
-                    launch {
-                        val image = event.context.contentResolver?.openInputStream(event.uri)?.use {
-                            BitmapFactory.decodeStream(it)
-                        } ?: return@launch
-
-                        bookRepository.updateCoverImageOfBook(
-                            _state.value.book,
-                            image
-                        )
-
-                        val newCoverImage = bookRepository.getBooksById(
-                            listOf(_state.value.book.id)
-                        ).firstOrNull()?.coverImage ?: return@launch
-
-                        _state.update {
-                            it.copy(
-                                book = it.book.copy(
-                                    coverImage = newCoverImage
-                                ),
-                                bottomSheet = null,
-                                canResetCover = bookRepository.canResetCover(bookId = it.book.id)
-                            )
-                        }
-
-                        LibraryScreen.refreshListChannel.trySend(0)
-                        HistoryScreen.refreshListChannel.trySend(0)
-
-                        withContext(Dispatchers.Main) {
-                            event.context.getString(R.string.cover_image_changed)
-                                .showToast(context = event.context)
-                        }
-                    }
-                }
-
-                is BookInfoEvent.OnResetCover -> {
-                    launch {
-                        val result = bookRepository.resetCoverImage(_state.value.book.id)
-
-                        if (!result) {
-                            withContext(Dispatchers.Main) {
-                                event.context.getString(R.string.error_could_not_reset_cover)
-                                    .showToast(context = event.context)
-                            }
-                            return@launch
-                        }
-
-                        val book = bookRepository.getBooksById(listOf(_state.value.book.id)).firstOrNull()
-
-                        if (book == null) {
-                            withContext(Dispatchers.Main) {
-                                event.context.getString(R.string.error_something_went_wrong)
-                                    .showToast(context = event.context)
-                            }
-                            return@launch
-                        }
-
-                        _state.update {
-                            it.copy(
-                                book = book,
-                                bottomSheet = null,
-                                canResetCover = false
-                            )
-                        }
-
-                        withContext(Dispatchers.Main) {
-                            event.context.getString(R.string.cover_reset)
-                                .showToast(context = event.context)
-                        }
-
-                        LibraryScreen.refreshListChannel.trySend(0)
-                        HistoryScreen.refreshListChannel.trySend(0)
-                    }
-                }
-
-                is BookInfoEvent.OnDeleteCover -> {
-                    launch {
-                        if (_state.value.book.coverImage == null) {
-                            return@launch
-                        }
-
-                        bookRepository.updateCoverImageOfBook(
-                            bookWithOldCover = _state.value.book,
-                            newCoverImage = null
-                        )
-                        _state.update {
-                            it.copy(
-                                book = it.book.copy(
-                                    coverImage = null
-                                ),
-                                bottomSheet = null,
-                                canResetCover = bookRepository.canResetCover(bookId = it.book.id)
-                            )
-                        }
-
-                        LibraryScreen.refreshListChannel.trySend(0)
-                        HistoryScreen.refreshListChannel.trySend(0)
-
-                        withContext(Dispatchers.Main) {
-                            event.context.getString(R.string.cover_image_deleted)
-                                .showToast(context = event.context)
-                        }
-                    }
-                }
-
-                is BookInfoEvent.OnCheckCoverReset -> {
-                    launch(Dispatchers.IO) {
-                        if (_state.value.book.id == -1) return@launch
-                        bookRepository.canResetCover(_state.value.book.id).apply {
-                            _state.update {
-                                it.copy(
-                                    canResetCover = this
-                                )
-                            }
-                        }
                     }
                 }
 
@@ -807,7 +680,6 @@ class BookInfoModel @Inject constructor(
             if (changePath) {
                 onEvent(BookInfoEvent.OnShowPathDialog)
             }
-            onEvent(BookInfoEvent.OnCheckCoverReset)
         }
     }
 

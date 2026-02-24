@@ -27,13 +27,10 @@ import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.presentation.core.components.common.AsyncCoverImage
-import us.blindmint.codex.presentation.core.util.noRippleClickable
-import us.blindmint.codex.ui.book_info.BookInfoEvent
 
 @Composable
 fun BookInfoLayoutInfoCover(
-    book: Book,
-    showChangeCoverBottomSheet: (BookInfoEvent.OnShowChangeCoverBottomSheet) -> Unit
+    book: Book
 ) {
     val height = remember { 220.dp }
     val width = remember(height) { height * 0.66f }
@@ -44,12 +41,6 @@ fun BookInfoLayoutInfoCover(
             .width(width)
             .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .noRippleClickable(
-                onClick = {},
-                onLongClick = {
-                    showChangeCoverBottomSheet(BookInfoEvent.OnShowChangeCoverBottomSheet)
-                }
-            )
     ) {
         if (book.coverImage != null) {
             AsyncCoverImage(

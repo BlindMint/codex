@@ -7,7 +7,6 @@
 package us.blindmint.codex.ui.book_info
 
 import android.content.Context
-import android.net.Uri
 import androidx.compose.runtime.Immutable
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.category.Category
@@ -19,23 +18,6 @@ sealed class BookInfoEvent {
     data object OnShowDetailsBottomSheet : BookInfoEvent()
 
     data object OnShowEditBottomSheet : BookInfoEvent()
-
-    data object OnShowChangeCoverBottomSheet : BookInfoEvent()
-
-    data class OnChangeCover(
-        val uri: Uri,
-        val context: Context
-    ) : BookInfoEvent()
-
-    data class OnResetCover(
-        val context: Context
-    ) : BookInfoEvent()
-
-    data class OnDeleteCover(
-        val context: Context
-    ) : BookInfoEvent()
-
-    data object OnCheckCoverReset : BookInfoEvent()
 
     data object OnDismissBottomSheet : BookInfoEvent()
 

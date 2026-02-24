@@ -24,14 +24,12 @@ import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
 import us.blindmint.codex.presentation.core.constants.providePrimaryScrollbar
 import us.blindmint.codex.presentation.library.StatusChipsRow
-import us.blindmint.codex.ui.book_info.BookInfoEvent
 
 @Composable
 fun BookInfoLayout(
     book: Book,
     listState: LazyListState,
     paddingValues: PaddingValues,
-    showChangeCoverBottomSheet: (BookInfoEvent.OnShowChangeCoverBottomSheet) -> Unit,
     navigateToReader: () -> Unit,
     navigateToSpeedReading: (() -> Unit)? = null,
     onCategoryChange: (us.blindmint.codex.domain.library.category.Category) -> Unit
@@ -48,10 +46,7 @@ fun BookInfoLayout(
 
             Column(Modifier.fillMaxWidth()) {
                 Spacer(modifier = Modifier.height(paddingValues.calculateTopPadding() + 12.dp))
-                BookInfoLayoutInfo(
-                    book = book,
-                    showChangeCoverBottomSheet = showChangeCoverBottomSheet
-                )
+                BookInfoLayoutInfo(book = book)
             }
         }
 

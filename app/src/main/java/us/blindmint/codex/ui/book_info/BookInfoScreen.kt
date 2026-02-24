@@ -42,7 +42,6 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
         const val SERIES_DIALOG = "series_dialog"
         const val LANGUAGES_DIALOG = "languages_dialog"
 
-        const val CHANGE_COVER_BOTTOM_SHEET = "change_cover_bottom_sheet"
         const val DETAILS_BOTTOM_SHEET = "details_bottom_sheet"
         const val EDIT_BOTTOM_SHEET = "edit_bottom_sheet"
 
@@ -81,7 +80,6 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 bottomSheet = state.value.bottomSheet,
                 dialog = state.value.dialog,
                 listState = listState,
-                canResetCover = state.value.canResetCover,
                 isEditingMetadata = state.value.isEditingMetadata,
                 editedBook = state.value.editedBook,
                 showConfirmSaveDialog = state.value.showConfirmSaveDialog,
@@ -102,13 +100,8 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 resetDescription = screenModel::onEvent,
                 clearProgressHistory = screenModel::onEvent,
                 refreshMetadataFromOpds = screenModel::onEvent,
-                checkCoverReset = screenModel::onEvent,
-                changeCover = screenModel::onEvent,
-                resetCover = screenModel::onEvent,
-                deleteCover = screenModel::onEvent,
                 dismissBottomSheet = screenModel::onEvent,
                 dismissDialog = screenModel::onEvent,
-                showChangeCoverBottomSheet = screenModel::onEvent,
                 showDetailsBottomSheet = screenModel::onEvent,
                 showEditBottomSheet = screenModel::onEvent,
                 showDeleteDialog = screenModel::onEvent,

@@ -16,8 +16,6 @@ import us.blindmint.codex.presentation.core.constants.provideEmptyBook
 data class BookInfoState(
     val book: Book = provideEmptyBook(),
 
-    val canResetCover: Boolean = false,
-
     val dialog: Dialog? = null,
     val bottomSheet: BottomSheet? = null,
 
