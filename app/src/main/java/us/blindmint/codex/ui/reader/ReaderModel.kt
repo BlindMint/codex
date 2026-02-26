@@ -346,6 +346,8 @@ class ReaderModel @Inject constructor(
                         }
 
                         // Save position for text books
+                        // Use the progress already saved by the debounced scroll handler (which uses word-based calculation)
+                        // to avoid overwriting with less accurate simple index-based calculation
                         _state.value.listState.apply {
                             if (
                                 !_state.value.book.isPageBased &&
@@ -357,13 +359,13 @@ class ReaderModel @Inject constructor(
                                     val currentBook = _state.value.book
                                     val firstVisibleItemIndex = _state.value.listState.firstVisibleItemIndex
                                     val firstVisibleItemScrollOffset = _state.value.listState.firstVisibleItemScrollOffset
-                                    val textLastIndex = _state.value.text.lastIndex.coerceAtLeast(1)
-                                    val newProgress = (firstVisibleItemIndex.toFloat() / textLastIndex).coerceIn(0f, 1f)
+                                    // Use the existing accurate progress from the book state (updated by debounced scroll handler)
+                                    // instead of recalculating which would overwrite with a less accurate value
+                                    val currentProgress = currentBook.progress
 
                                     _state.update {
                                         it.copy(
                                             book = it.book.copy(
-                                                progress = newProgress,
                                                 scrollIndex = firstVisibleItemIndex,
                                                 scrollOffset = firstVisibleItemScrollOffset
                                             )
@@ -374,7 +376,7 @@ class ReaderModel @Inject constructor(
                             bookId = currentBook.id,
                             scrollIndex = firstVisibleItemIndex,
                             scrollOffset = firstVisibleItemScrollOffset,
-                            progress = newProgress
+                            progress = currentProgress
                         )
                             }
                         }

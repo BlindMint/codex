@@ -119,7 +119,8 @@ fun SpeedReadingContent(
     // Speed reader always starts from beginning of book
     val startingWordIndex = 0
 
-    var currentWordIndex by remember { mutableIntStateOf(initialWordIndex) }
+    // Use words.size as key to ensure state resets when book changes (new words loaded)
+    var currentWordIndex by remember(words.size) { mutableIntStateOf(initialWordIndex) }
     Log.d("SPEED_READER_CONTENT", "[INIT] currentWordIndex initialized from initialWordIndex=$initialWordIndex")
     var lastProgressSaveIndex by remember { mutableIntStateOf(startingWordIndex) }
     var lastNavigationDirection by remember { mutableIntStateOf(0) }

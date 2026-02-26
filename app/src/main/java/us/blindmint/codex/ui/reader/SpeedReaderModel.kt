@@ -44,25 +44,32 @@ class SpeedReaderModel @Inject constructor(
     // Progress tracking
     val currentProgress = mutableFloatStateOf(0f)
     val currentWordIndex = mutableIntStateOf(0)
+    // Initial bookmark position - set once when book loads, separate from changing currentWordIndex
+    val initialWordIndex = mutableIntStateOf(0)
 
     fun loadBook(bookId: Int, activity: Activity, onError: () -> Unit) {
+        // IMMEDIATELY set isReadyForDisplay to false to block stale LaunchedEffects
+        // This MUST happen synchronously, before any coroutine execution
+        isReadyForDisplay.value = false
+        
         viewModelScope.launch {
             Log.d("SPEED_READER_LOAD", "[1] loadBook() called - bookId=$bookId")
             Log.d("SPEED_READER_LOAD", "[1] Current book in state: ${book.value?.id}")
             Log.d("SPEED_READER_LOAD", "[1] currentWordIndex before load: ${currentWordIndex.intValue}")
             Log.d("SPEED_READER_LOAD", "[1] currentProgress before load: ${currentProgress.floatValue}")
 
-            // Clear previous state when loading a new book
-            if (book.value?.id != bookId) {
-                Log.d("SPEED_READER_LOAD", "[2] New book detected, clearing state")
-                book.value = null
-                words.value = emptyList()
-                isLoading.value = true
-                errorMessage.value = null
-                currentProgress.floatValue = 0f
-                currentWordIndex.intValue = -1 // Invalid until book loads
-                Log.d("SPEED_READER_LOAD", "[2] After clear - currentWordIndex=${currentWordIndex.intValue}, currentProgress=${currentProgress.floatValue}")
-            }
+            // ALWAYS clear previous state when loadBook is called to ensure clean state
+            // This handles cases where ViewModel might be reused between different books
+            Log.d("SPEED_READER_LOAD", "[2] Clearing state for new book load")
+            book.value = null
+            words.value = emptyList()
+            totalWords.intValue = 0
+            isLoading.value = true
+            errorMessage.value = null
+            currentProgress.floatValue = 0f
+            currentWordIndex.intValue = -1 // Invalid until book loads
+            initialWordIndex.intValue = -1 // Will be set after book loads
+            Log.d("SPEED_READER_LOAD", "[2] After clear - currentWordIndex=${currentWordIndex.intValue}, currentProgress=${currentProgress.floatValue}")
 
             Log.d("SPEED_READER_LOAD", "[3] Fetching book from database...")
             val loadedBook = getBookById.execute(bookId)
@@ -126,6 +133,9 @@ class SpeedReaderModel @Inject constructor(
 
                         val initialIndex = loadedBook.speedReaderWordIndex.coerceIn(0, loadedWords.size - 1)
                         Log.d("SPEED_READER_LOAD", "[6]   coerced initialIndex = $initialIndex (range: 0-${loadedWords.size - 1})")
+
+                        // Set the initial bookmark position (stays constant until next book load)
+                        initialWordIndex.intValue = initialIndex
 
                         // Set the correct word index AFTER text is loaded
                         currentWordIndex.intValue = initialIndex

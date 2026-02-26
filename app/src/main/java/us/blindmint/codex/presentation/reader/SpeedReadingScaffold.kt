@@ -99,7 +99,8 @@ fun SpeedReadingScaffold(
     onChangeProgress: (Float, Int) -> Unit,
     onSaveProgress: (Float, Int) -> Unit,
     onPlayPause: () -> Unit,
-    keepScreenOn: Boolean = true
+    keepScreenOn: Boolean = true,
+    isReadyForDisplay: Boolean = false
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
@@ -168,9 +169,16 @@ fun SpeedReadingScaffold(
     }
 
     // Initialize selectedWordIndex based on initial word index when words load
-    LaunchedEffect(words, initialWordIndex) {
-        Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect START] words.size=${words.size}, initialWordIndex=$initialWordIndex, isLoading=$isLoading")
+    // Only run when isReadyForDisplay is true to prevent stale data from previous book
+    LaunchedEffect(words, initialWordIndex, isReadyForDisplay) {
+        Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect START] words.size=${words.size}, initialWordIndex=$initialWordIndex, isLoading=$isLoading, isReadyForDisplay=$isReadyForDisplay")
         Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect START] currentWordIndex=$currentWordIndex, totalWords=$totalWords")
+
+        // Guard against stale data from previous book
+        if (!isReadyForDisplay) {
+            Log.w("SPEED_READER_SCAFFOLD", "[LaunchedEffect] Skipping - not ready for display")
+            return@LaunchedEffect
+        }
 
         if (words.isNotEmpty() && initialWordIndex >= 0) {
             val wordIndex = initialWordIndex.coerceIn(0, words.size - 1)
@@ -272,7 +280,7 @@ fun SpeedReadingScaffold(
                         action = {}
                     )
                 }
-            } else if (isLoading || words.isEmpty() || selectedWordIndex < 0) {
+            } else if (isLoading || !isReadyForDisplay || words.isEmpty() || selectedWordIndex < 0) {
                 // Show loading indicator until text is ready AND word index is set
                 Box(
                     modifier = Modifier

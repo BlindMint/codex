@@ -379,7 +379,7 @@ data class SpeedReadingScreen(
             chapterTitle = null, // Speed reader doesn't track chapters
             currentWordIndex = speedReaderModel.currentWordIndex.intValue,
             totalWords = totalWords,
-            initialWordIndex = speedReaderModel.currentWordIndex.intValue,
+            initialWordIndex = speedReaderModel.initialWordIndex.intValue,
             backgroundColor = backgroundColor.value,
             fontColor = fontColor.value,
             isLoading = !isReadyForDisplay,
@@ -426,10 +426,11 @@ data class SpeedReadingScreen(
                 speedReaderModel.updateProgress(progress, wordIndex)
             },
              onSaveProgress = { progress, wordIndex ->
-                 speedReaderModel.updateProgress(progress, wordIndex)
+                  speedReaderModel.updateProgress(progress, wordIndex)
              },
-             onPlayPause = {}
-         )
+             onPlayPause = {},
+             isReadyForDisplay = isReadyForDisplay
+          )
 
         // Speed reading settings bottom sheet
         SpeedReadingSettingsBottomSheet(
