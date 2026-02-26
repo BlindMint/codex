@@ -113,15 +113,11 @@ fun SpeedReadingContent(
     onSaveProgress: (Float, Int) -> Unit = { _, _ -> }, // Callback for immediate progress saves (no throttling)
     showBottomBar: Boolean = true
 ) {
-    // Log initial composition
-    Log.d("SPEED_READER_CONTENT", "[COMPOSITION START] words.size=${words.size}, currentWordIndex=$currentWordIndex, totalWords=$totalWords, initialWordIndex=$initialWordIndex, isPlaying=$isPlaying")
-
     // Speed reader always starts from beginning of book
     val startingWordIndex = 0
 
     // Use words.size as key to ensure state resets when book changes (new words loaded)
     var currentWordIndex by remember(words.size) { mutableIntStateOf(initialWordIndex) }
-    Log.d("SPEED_READER_CONTENT", "[INIT] currentWordIndex initialized from initialWordIndex=$initialWordIndex")
     var lastProgressSaveIndex by remember { mutableIntStateOf(startingWordIndex) }
     var lastNavigationDirection by remember { mutableIntStateOf(0) }
     var showQuickWpmMenu by remember { mutableStateOf(false) }
@@ -139,7 +135,6 @@ fun SpeedReadingContent(
     LaunchedEffect(initialWordIndex) {
         if (currentWordIndex != initialWordIndex) {
             currentWordIndex = initialWordIndex
-            Log.d("SPEED_READER_CONTENT", "[SYNC] Synced currentWordIndex to initialWordIndex=$initialWordIndex")
         }
     }
 

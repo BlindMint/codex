@@ -302,15 +302,6 @@ data class SpeedReadingScreen(
         val isReadyForDisplay = speedReaderModel.isReadyForDisplay.value
         val errorMessage = speedReaderModel.errorMessage.value
 
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION] Rendering SpeedReadingScaffold")
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   book.id=${book?.id}, book.title=${book?.title}")
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   words.size=${words.size}")
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   totalWords=$totalWords")
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   isLoading=$isLoading")
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   isReadyForDisplay=$isReadyForDisplay")
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   speedReaderModel.currentWordIndex.intValue=${speedReaderModel.currentWordIndex.intValue}")
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   speedReaderModel.currentProgress.floatValue=${speedReaderModel.currentProgress.floatValue}")
-
         // Use empty book as fallback when book hasn't loaded yet
         val displayBook = book ?: us.blindmint.codex.presentation.core.constants.provideEmptyBook()
 

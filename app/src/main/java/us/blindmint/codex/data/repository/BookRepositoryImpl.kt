@@ -335,11 +335,7 @@ class BookRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateSpeedReaderProgress(bookId: Int, wordIndex: Int) {
-        Log.d("SPEED_READER_DB", "Updating speed reader progress: bookId=$bookId, wordIndex=$wordIndex")
         database.updateSpeedReaderProgress(bookId, wordIndex)
-        // Verify the update worked
-        val updatedBook = database.findBookById(bookId)
-        Log.d("SPEED_READER_DB", "After update, speedReaderWordIndex=${updatedBook?.speedReaderWordIndex}")
     }
 
     override suspend fun updateNormalReaderProgress(bookId: Int, scrollIndex: Int, scrollOffset: Int, progress: Float) {

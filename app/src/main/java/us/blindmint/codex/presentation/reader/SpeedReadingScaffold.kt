@@ -171,32 +171,15 @@ fun SpeedReadingScaffold(
     // Initialize selectedWordIndex based on initial word index when words load
     // Only run when isReadyForDisplay is true to prevent stale data from previous book
     LaunchedEffect(words, initialWordIndex, isReadyForDisplay) {
-        Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect START] words.size=${words.size}, initialWordIndex=$initialWordIndex, isLoading=$isLoading, isReadyForDisplay=$isReadyForDisplay")
-        Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect START] currentWordIndex=$currentWordIndex, totalWords=$totalWords")
-
         // Guard against stale data from previous book
         if (!isReadyForDisplay) {
-            Log.w("SPEED_READER_SCAFFOLD", "[LaunchedEffect] Skipping - not ready for display")
             return@LaunchedEffect
         }
 
         if (words.isNotEmpty() && initialWordIndex >= 0) {
             val wordIndex = initialWordIndex.coerceIn(0, words.size - 1)
-
-            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect] Setting selectedWordIndex:")
-            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   initialWordIndex = $initialWordIndex")
-            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   words.size = ${words.size}")
-            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   coerced wordIndex = $wordIndex")
-            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   BEFORE: selectedWordIndex = $selectedWordIndex")
-
             selectedWordIndex = wordIndex
-
-            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   AFTER: selectedWordIndex = $selectedWordIndex")
-        } else {
-            Log.w("SPEED_READER_SCAFFOLD", "[LaunchedEffect] Skipping - words.isEmpty=${words.isEmpty()}, initialWordIndex=$initialWordIndex")
         }
-
-        Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect END] completed")
     }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -294,13 +277,6 @@ fun SpeedReadingScaffold(
                     )
                 }
             } else {
-                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL] Calling SpeedReadingContent with:")
-                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   words.size=${words.size}")
-                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   currentWordIndex=$currentWordIndex")
-                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   totalWords=$totalWords")
-                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   initialWordIndex=$initialWordIndex")
-                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   selectedWordIndex=$selectedWordIndex")
-
                 SpeedReadingContent(
                 words = words,
                 currentWordIndex = currentWordIndex,

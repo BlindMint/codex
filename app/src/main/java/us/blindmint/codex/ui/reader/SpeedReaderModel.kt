@@ -166,7 +166,6 @@ class SpeedReaderModel @Inject constructor(
 
     fun updateProgress(progress: Float, wordIndex: Int) {
         viewModelScope.launch {
-            Log.d("SPEED_READER", "Model updateProgress: progress=$progress, wordIndex=$wordIndex")
             currentProgress.floatValue = progress
             currentWordIndex.intValue = wordIndex
             saveProgressToDatabase(progress)
@@ -176,15 +175,12 @@ class SpeedReaderModel @Inject constructor(
     private suspend fun saveProgressToDatabase(progress: Float) {
         book.value?.let { currentBook ->
             val wordIndex = currentWordIndex.intValue
-            Log.d("SPEED_READER", "SpeedReaderModel saving to database: progress=$progress, wordIndex=$wordIndex, bookId=${currentBook.id}")
-
             try {
                 bookRepository.updateSpeedReaderProgress(currentBook.id, wordIndex)
-                Log.d("SPEED_READER", "Successfully saved speed reader progress to database: wordIndex=$wordIndex")
             } catch (e: Exception) {
                 Log.e("SPEED_READER", "Failed to save speed reader progress to database", e)
             }
-        } ?: Log.w("SPEED_READER", "Cannot save speed reader progress: book is null")
+        }
     }
 
     fun onLeave() {
