@@ -399,7 +399,7 @@ fun SpeedReadingWordPickerSheet(
 
             // Progress percentage indicator
             val displayProgress = remember(sliderProgress) {
-                (sliderProgress * 100).toInt()
+                String.format("%.1f", sliderProgress * 100)
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
