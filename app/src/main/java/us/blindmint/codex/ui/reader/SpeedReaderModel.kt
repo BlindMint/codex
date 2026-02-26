@@ -37,6 +37,8 @@ class SpeedReaderModel @Inject constructor(
     val words = mutableStateOf<List<SpeedReaderWord>>(emptyList())
     val totalWords = mutableIntStateOf(0)
     val isLoading = mutableStateOf(true)
+    // Track when UI is ready to show content (both words loaded AND position restored)
+    val isReadyForDisplay = mutableStateOf(false)
     val errorMessage = mutableStateOf<UIText?>(null)
 
     // Progress tracking
@@ -134,19 +136,20 @@ class SpeedReaderModel @Inject constructor(
                         } else 0f
                         currentProgress.floatValue = progress
 
+                        // Both data and position are ready - UI can now display content smoothly
                         isLoading.value = false
+                        isReadyForDisplay.value = true
 
                         Log.d("SPEED_READER_LOAD", "[7] FINAL STATE:")
                         Log.d("SPEED_READER_LOAD", "[7]   currentWordIndex.intValue = ${currentWordIndex.intValue}")
                         Log.d("SPEED_READER_LOAD", "[7]   currentProgress.floatValue = ${currentProgress.floatValue}")
                         Log.d("SPEED_READER_LOAD", "[7]   isLoading.value = ${isLoading.value}")
+                        Log.d("SPEED_READER_LOAD", "[7]   isReadyForDisplay.value = ${isReadyForDisplay.value}")
                     }
                 } catch (e: Exception) {
                     errorMessage.value = UIText.StringResource(R.string.error_could_not_get_text)
                     isLoading.value = false
                 }
-            } else if (!loadedBook.isComic) {
-                isLoading.value = false
             }
         }
     }

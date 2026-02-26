@@ -397,6 +397,23 @@ fun SpeedReadingWordPickerSheet(
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Progress percentage indicator
+            val displayProgress = remember(sliderProgress) {
+                (sliderProgress * 100).toInt()
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "$displayProgress%",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
             // Progress slider (matches main reader style)
             Slider(
                 value = sliderProgress,

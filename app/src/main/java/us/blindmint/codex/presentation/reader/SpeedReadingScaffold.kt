@@ -204,9 +204,9 @@ fun SpeedReadingScaffold(
                                 androidx.compose.material3.IconButton(onClick = {
                                     if (words.isNotEmpty()) {
                                         val totalWords = words.size
-                                        val currentWordIndex = (realTimeProgress * totalWords).toInt().coerceIn(0, totalWords - 1)
-                                        Log.d("SPEED_READER", "Exit: saving progress=$realTimeProgress, wordIndex=$currentWordIndex")
-                                        onSaveProgress(realTimeProgress, currentWordIndex)
+                                        val wordIndex = (realTimeProgress * totalWords).toInt().coerceIn(0, totalWords - 1)
+                                        Log.d("SPEED_READER", "Exit: saving progress=$realTimeProgress, wordIndex=$wordIndex")
+                                        onSaveProgress(realTimeProgress, wordIndex)
                                     }
                                     onExitSpeedReading()
                                 }) {

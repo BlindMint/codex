@@ -299,6 +299,7 @@ data class SpeedReadingScreen(
         val words = speedReaderModel.words.value
         val totalWords = speedReaderModel.totalWords.intValue
         val isLoading = speedReaderModel.isLoading.value
+        val isReadyForDisplay = speedReaderModel.isReadyForDisplay.value
         val errorMessage = speedReaderModel.errorMessage.value
 
         Log.d("SPEED_READER_SCREEN", "[COMPOSITION] Rendering SpeedReadingScaffold")
@@ -306,6 +307,7 @@ data class SpeedReadingScreen(
         Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   words.size=${words.size}")
         Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   totalWords=$totalWords")
         Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   isLoading=$isLoading")
+        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   isReadyForDisplay=$isReadyForDisplay")
         Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   speedReaderModel.currentWordIndex.intValue=${speedReaderModel.currentWordIndex.intValue}")
         Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   speedReaderModel.currentProgress.floatValue=${speedReaderModel.currentProgress.floatValue}")
 
@@ -380,7 +382,7 @@ data class SpeedReadingScreen(
             initialWordIndex = speedReaderModel.currentWordIndex.intValue,
             backgroundColor = backgroundColor.value,
             fontColor = fontColor.value,
-            isLoading = isLoading,
+            isLoading = !isReadyForDisplay,
             accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
             accentColor = speedReadingAccentColor.value,
             fontFamily = speedReaderFontFamily.font,

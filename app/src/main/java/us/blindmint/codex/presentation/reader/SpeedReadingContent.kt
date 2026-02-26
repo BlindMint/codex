@@ -181,15 +181,19 @@ fun SpeedReadingContent(
         onNavigateWord(lastNavigationDirection)
     }
 
-    // Countdown animation
+    // Countdown animation - skippable by tapping during countdown
     LaunchedEffect(showCountdown) {
         if (showCountdown) {
             countdownValue = 3
             while (countdownValue > 0) {
                 delay(1000)
+                // Check if countdown was skipped (showCountdown became false externally)
+                if (!showCountdown) break
                 countdownValue--
             }
-            showCountdown = false
+            if (showCountdown) {
+                showCountdown = false
+            }
         }
     }
 
@@ -252,6 +256,28 @@ fun SpeedReadingContent(
             onSaveProgress(newProgress, globalWordIndex)
         }
         wasPlaying = isPlaying
+    }
+
+    // Periodically save progress during active playback to prevent lost progress on crash/app kill
+    // Saves every 30 seconds (or ~1000-3000 words depending on WPM)
+    LaunchedEffect(isPlaying, currentWordIndex) {
+        if (isPlaying && words.isNotEmpty()) {
+            val saveIntervalWords = 1000 // Save every ~1000 words (adjustable)
+            var lastSavedWordIndex = -1
+            
+            while (isPlaying) {
+                val currentGlobalWordIndex = startingWordIndex + currentWordIndex
+                
+                // Save if we've advanced by saveIntervalWords words since last save
+                if (lastSavedWordIndex < 0 || currentGlobalWordIndex - lastSavedWordIndex >= saveIntervalWords) {
+                    val newProgress = (currentGlobalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                    onSaveProgress(newProgress, currentGlobalWordIndex)
+                    lastSavedWordIndex = currentGlobalWordIndex
+                }
+                
+                delay(500) // Check every half second
+            }
+        }
     }
 
     // Focal point position - configurable via settings
