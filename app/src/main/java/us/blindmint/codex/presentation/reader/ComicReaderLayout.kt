@@ -61,6 +61,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import us.blindmint.codex.data.parser.comic.ArchiveReader
@@ -71,6 +72,9 @@ import us.blindmint.codex.presentation.core.util.LocalActivity
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.reader.ReaderEvent
+
+private const val MAX_CACHED_PAGES = 50
+private const val PREFETCH_PAGES = 5
 
 @OptIn(FlowPreview::class)
 @Composable
@@ -96,6 +100,7 @@ fun ComicReaderLayout(
     showMenu: Boolean = false,
     showPageIndicator: Boolean = true,
     onLoadingComplete: () -> Unit = {},
+    onScrollRestorationComplete: () -> Unit = {},
     onMenuToggle: () -> Unit = {},
     onTotalPagesLoaded: (Int) -> Unit = {},
     onPageSelected: (Int) -> Unit = {}
@@ -114,7 +119,18 @@ fun ComicReaderLayout(
     var initialLoadComplete by remember { mutableStateOf(false) }
 
     // Lazy loading cache - stores Pair of (ImageBitmap for display, Bitmap for cleanup)
-    val loadedPages = remember { mutableMapOf<Int, Pair<ImageBitmap, android.graphics.Bitmap>>() }
+    // Using LinkedHashMap for LRU eviction order
+    val loadedPages = remember { 
+        object : LinkedHashMap<Int, Pair<ImageBitmap, android.graphics.Bitmap>>(16, 0.75f, true) {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, Pair<ImageBitmap, android.graphics.Bitmap>>?): Boolean {
+                if (size > MAX_CACHED_PAGES) {
+                    eldest?.value?.second?.recycle() // Free native memory
+                    return true
+                }
+                return false
+            }
+        }
+    }
 
     // Function to load a specific page
     fun loadPage(pageIndex: Int): ImageBitmap? {
@@ -157,6 +173,17 @@ fun ComicReaderLayout(
 
     val mapPhysicalToLogicalPage = { physicalPage: Int ->
         if (isRTL && totalPages > 0) totalPages - 1 - physicalPage else physicalPage
+    }
+
+    // Prefetch pages around current page
+    fun prefetchPages(currentPage: Int) {
+        val physicalPage = mapLogicalToPhysicalPage(currentPage)
+        for (offset in -PREFETCH_PAGES..PREFETCH_PAGES) {
+            val targetPage = physicalPage + offset
+            if (targetPage in 0 until totalPages && !loadedPages.containsKey(targetPage)) {
+                loadPage(mapPhysicalToLogicalPage(targetPage))
+            }
+        }
     }
 
     // Pager state for paged mode
@@ -214,6 +241,8 @@ fun ComicReaderLayout(
                 if (comicReaderMode == "PAGED" && totalPages > 0) {
                     val logicalPage = mapPhysicalToLogicalPage(physicalPage)
                     onPageChanged(logicalPage)
+                    // Prefetch pages around current position
+                    prefetchPages(logicalPage)
                 }
             }
     }
@@ -228,6 +257,8 @@ fun ComicReaderLayout(
                 if (comicReaderMode == "WEBTOON" && totalPages > 0) {
                     val logicalPage = mapPhysicalToLogicalPage(physicalIndex)
                     onPageChanged(logicalPage)
+                    // Prefetch pages around current position
+                    prefetchPages(logicalPage)
                 }
             }
     }
@@ -324,12 +355,22 @@ fun ComicReaderLayout(
             }
         } else if (totalPages > 0) {
             // When pages are first loaded, restore to the initial page
+            // Only call the scroll restoration complete callback after scroll animation finishes
             LaunchedEffect(totalPages) {
                 // Only scroll on initial load (when totalPages first becomes > 0)
                 if (initialPage >= 0 && initialPage < totalPages) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(initialPage)
                     pagerState.scrollToPage(targetPhysicalPage)
+                    // Wait for scroll animation to complete before signaling restoration complete
+                    // This ensures loading animation hides AFTER scroll, preventing visible jump
+                    kotlinx.coroutines.flow.flow {
+                        while (pagerState.isScrollInProgress) {
+                            emit(Unit)
+                        }
+                    }.first()
                 }
+                // Signal that scroll restoration is complete - loading can now be hidden
+                onScrollRestorationComplete()
             }
 
             // Keep both scroll states in sync with currentPage (the logical source of truth)

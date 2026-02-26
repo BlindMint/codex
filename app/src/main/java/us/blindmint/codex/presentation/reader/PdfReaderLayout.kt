@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
@@ -76,6 +77,7 @@ fun PdfReaderLayout(
     showMenu: Boolean = false,
     showPageIndicator: Boolean = true,
     onLoadingComplete: () -> Unit = {},
+    onScrollRestorationComplete: () -> Unit = {},
     onMenuToggle: () -> Unit = {},
     onTotalPagesLoaded: (Int) -> Unit = {},
     onPageSelected: (Int) -> Unit = {}
@@ -121,14 +123,29 @@ fun PdfReaderLayout(
     }
 
     // Position to the same logical page when reading direction changes
+    // Wait for scroll animation to complete before hiding loading
     LaunchedEffect(readingDirection, totalPages) {
         if (totalPages > 0 && storedLogicalPage >= 0) {
             val targetPhysicalPage = mapLogicalToPhysicalPage(storedLogicalPage)
             if (isVertical) {
                 lazyListState.scrollToItem(targetPhysicalPage)
+                // Wait for scroll to complete
+                kotlinx.coroutines.flow.flow {
+                    while (lazyListState.isScrollInProgress) {
+                        emit(Unit)
+                    }
+                }.first()
             } else {
                 pagerState.scrollToPage(targetPhysicalPage)
+                // Wait for scroll to complete
+                kotlinx.coroutines.flow.flow {
+                    while (pagerState.isScrollInProgress) {
+                        emit(Unit)
+                    }
+                }.first()
             }
+            // Signal that scroll restoration is complete - loading can now be hidden
+            onScrollRestorationComplete()
         }
     }
 
