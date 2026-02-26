@@ -683,12 +683,10 @@ fun SpeedReadingContent(
                             .size(72.dp)
                             .noRippleClickable {
                                 val wasPlaying = isPlaying
-                                Log.d("SPEED_READER", "Playback controls play/pause: wasPlaying=$wasPlaying, currentWordIndex=$currentWordIndex")
                                 onPlayPause()
                                 if (wasPlaying && !isPlaying) {
                                     val globalWordIndex = startingWordIndex + currentWordIndex
                                     val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-                                    Log.d("SPEED_READER", "Playback controls saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
                                     onSaveProgress(newProgress, globalWordIndex)
                                 }
                             },
