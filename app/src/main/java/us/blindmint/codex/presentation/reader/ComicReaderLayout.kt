@@ -192,12 +192,13 @@ fun ComicReaderLayout(
 
     // Pager state for paged mode
     val pagerState = rememberPagerState(
-        initialPage = mapLogicalToPhysicalPage(initialPage),
+        initialPage = if (totalPages > 0) mapLogicalToPhysicalPage(initialPage).coerceIn(0, totalPages - 1) else 0,
         pageCount = { maxOf(1, totalPages) }
     )
 
     // Lazy list state for webtoon mode
-    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = mapLogicalToPhysicalPage(initialPage))
+    // Start at 0 initially, will scroll to saved position after comic loads
+    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = 0)
 
     // Store the current logical page for positioning when direction changes
     var storedLogicalPage by remember { mutableIntStateOf(0) }
@@ -359,11 +360,19 @@ fun ComicReaderLayout(
             // Initial loading and scroll sync logic
             LaunchedEffect(totalPages) {
                 android.util.Log.d("ComicReaderLayout", "LaunchedEffect(totalPages) running")
-                android.util.Log.d("ComicReaderLayout", "  totalPages: $totalPages, initialPage: $initialPage")
+                android.util.Log.d("ComicReaderLayout", "  totalPages: $totalPages, initialPage: $initialPage, comicReaderMode: $comicReaderMode")
                 if (initialPage >= 0 && initialPage < totalPages) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(initialPage)
                     android.util.Log.d("ComicReaderLayout", "  Scrolling to initialPage $initialPage (physical: $targetPhysicalPage)")
-                    pagerState.scrollToPage(targetPhysicalPage)
+
+                    // Scroll the appropriate component based on reader mode
+                    if (comicReaderMode == "WEBTOON") {
+                        android.util.Log.d("ComicReaderLayout", "  Scrolling lazyListState to $targetPhysicalPage for WEBTOON mode")
+                        lazyListState.scrollToItem(targetPhysicalPage)
+                    } else {
+                        android.util.Log.d("ComicReaderLayout", "  Scrolling pagerState to $targetPhysicalPage for PAGED mode")
+                        pagerState.scrollToPage(targetPhysicalPage)
+                    }
                 } else {
                     android.util.Log.d("ComicReaderLayout", "  NOT scrolling - initialPage out of range")
                 }

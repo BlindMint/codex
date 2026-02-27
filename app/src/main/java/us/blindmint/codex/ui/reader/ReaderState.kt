@@ -66,5 +66,6 @@ data class ReaderState(
     val initialScrollOffset: Int = 0,
 
     // Track scroll restoration completion for smooth loading animation
-    val isScrollRestorationComplete: Boolean = false
+    val isScrollRestorationComplete: Boolean = false,
+    val isComicScrollRestorationComplete: Boolean = false
 )

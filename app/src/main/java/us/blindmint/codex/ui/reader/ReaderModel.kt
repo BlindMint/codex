@@ -885,10 +885,13 @@ class ReaderModel @Inject constructor(
 
                 is ReaderEvent.OnComicScrollRestorationComplete -> {
                     // Only hide loading after scroll to saved position is complete
+                    // Also enable database saves for page changes now that initial scroll is done
+                    android.util.Log.d("ComicPageChanged", "OnComicScrollRestorationComplete received - enabling database saves")
                     _state.update {
                         it.copy(
                             isLoading = false,
                             isScrollRestorationComplete = true,
+                            isComicScrollRestorationComplete = true,
                             errorMessage = null
                         )
                     }
@@ -904,18 +907,26 @@ class ReaderModel @Inject constructor(
 
                 is ReaderEvent.OnComicPageChanged -> {
                     launch(Dispatchers.IO) {
-                        // Capture the target page we're trying to restore to BEFORE updating state
-                        // This is the initial page the comic should open at
-                        val initialTargetPage = _state.value.currentComicPage
-                        val isAtInitialTarget = event.currentPage == initialTargetPage
+                        val scrollRestorationComplete = _state.value.isComicScrollRestorationComplete
 
                         android.util.Log.d("ComicPageChanged", "OnComicPageChanged event received")
                         android.util.Log.d("ComicPageChanged", "  event.currentPage: ${event.currentPage}")
-                        android.util.Log.d("ComicPageChanged", "  initialTargetPage (state before update): $initialTargetPage")
-                        android.util.Log.d("ComicPageChanged", "  isAtInitialTarget: $isAtInitialTarget")
+                        android.util.Log.d("ComicPageChanged", "  scrollRestorationComplete: $scrollRestorationComplete")
+
+                        // Ignore ALL page change events until scroll restoration is complete.
+                        // During initial load, the pager/list starts at page 0 and fires events
+                        // before the LaunchedEffect can scroll to the saved page. We must not
+                        // update state with these spurious page 0 values.
+                        if (!scrollRestorationComplete) {
+                            android.util.Log.d("ComicPageChanged", "  IGNORING - scroll restoration not complete")
+                            return@launch
+                        }
 
                         val currentBook = _state.value.book
                         val totalComicPages = _state.value.totalComicPages
+                        val newProgress = if (totalComicPages > 0) {
+                            (event.currentPage + 1).toFloat() / totalComicPages
+                        } else 0f
 
                         _state.update {
                             it.copy(
@@ -923,31 +934,18 @@ class ReaderModel @Inject constructor(
                                 book = it.book.copy(
                                     currentPage = event.currentPage,
                                     lastPageRead = event.currentPage,
-                                    progress = if (totalComicPages > 0) {
-                                        (event.currentPage + 1).toFloat() / totalComicPages
-                                    } else 0f
+                                    progress = newProgress
                                 )
                             )
                         }
 
-                        // Only persist to database if user has navigated AWAY from the initial target page
-                        // This prevents overwriting saved progress when comic first loads at wrong page
-                        // (e.g., loads at page 0 before scrolling to saved page 5)
-                        if (!isAtInitialTarget) {
-                            val newProgress = if (totalComicPages > 0) {
-                                (event.currentPage + 1).toFloat() / totalComicPages
-                            } else 0f
-
-                            android.util.Log.d("ComicPageChanged", "  SAVING to database: bookId=${currentBook.id}, lastPageRead=${event.currentPage}, progress=$newProgress")
-                            bookRepository.updateComicPdfProgress(
-                                bookId = currentBook.id,
-                                lastPageRead = event.currentPage,
-                                progress = newProgress
-                            )
-                            android.util.Log.d("ComicPageChanged", "  Database save complete")
-                        } else {
-                            android.util.Log.d("ComicPageChanged", "  SKIPPING database save (at initial target page)")
-                        }
+                        android.util.Log.d("ComicPageChanged", "  SAVING to database: bookId=${currentBook.id}, lastPageRead=${event.currentPage}, progress=$newProgress")
+                        bookRepository.updateComicPdfProgress(
+                            bookId = currentBook.id,
+                            lastPageRead = event.currentPage,
+                            progress = newProgress
+                        )
+                        android.util.Log.d("ComicPageChanged", "  Database save complete")
                     }
                 }
 
@@ -979,6 +977,7 @@ class ReaderModel @Inject constructor(
                         )
                     }
                 }
+
             }
         }
     }
@@ -1157,7 +1156,8 @@ class ReaderModel @Inject constructor(
                         ),
                         currentComicPage = resumePage,
                         showMenu = false,
-                        isLoading = true
+                        isLoading = true,
+                        isComicScrollRestorationComplete = false  // Will be set to true after initial scroll
                     )
                 }
  
