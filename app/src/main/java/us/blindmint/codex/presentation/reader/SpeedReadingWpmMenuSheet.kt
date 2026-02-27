@@ -13,8 +13,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -24,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import us.blindmint.codex.presentation.core.components.modal_bottom_sheet.ModalBottomSheet
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 
@@ -115,24 +119,22 @@ fun SpeedReadingWpmMenuSheet(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                // Bottom row: slider with - and + symbols
+                // Bottom row: slider with - and + buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(
-                        text = "-",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                            fontSize = 32.sp
-                        ),
-                        modifier = Modifier.noRippleClickable {
-                            onWpmChange((currentWpm - 10).coerceAtLeast(200))
-                        }
-                    )
+                    FilledTonalIconButton(
+                        onClick = { onWpmChange((currentWpm - 10).coerceAtLeast(200)) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Remove,
+                            contentDescription = "Decrease WPM by 10"
+                        )
+                    }
 
                     Slider(
                         value = currentWpm.toFloat(),
@@ -146,16 +148,14 @@ fun SpeedReadingWpmMenuSheet(
                         )
                     )
 
-                    Text(
-                        text = "+",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                            fontSize = 32.sp
-                        ),
-                        modifier = Modifier.noRippleClickable {
-                            onWpmChange((currentWpm + 10).coerceAtMost(1200))
-                        }
-                    )
+                    FilledTonalIconButton(
+                        onClick = { onWpmChange((currentWpm + 10).coerceAtMost(1200)) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Add,
+                            contentDescription = "Increase WPM by 10"
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
