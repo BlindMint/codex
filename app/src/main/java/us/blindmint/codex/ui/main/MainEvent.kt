@@ -102,6 +102,8 @@ sealed class MainEvent {
     data class OnChangeLibraryTitlePosition(val value: us.blindmint.codex.domain.library.display.LibraryTitlePosition) : MainEvent()
     data class OnChangeLibraryShowReadButton(val value: Boolean) : MainEvent()
     data class OnChangeLibraryShowProgress(val value: Boolean) : MainEvent()
+    data class OnChangeLibraryShowNormalProgress(val value: Boolean) : MainEvent()
+    data class OnChangeLibraryShowSpeedProgress(val value: Boolean) : MainEvent()
 
     // Background Image Events
     data class OnChangeBackgroundImage(val value: BackgroundImage?) : MainEvent()

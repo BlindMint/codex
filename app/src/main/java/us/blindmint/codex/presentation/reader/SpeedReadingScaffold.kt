@@ -17,6 +17,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import us.blindmint.codex.domain.ui.UIText
 import us.blindmint.codex.R
 import androidx.compose.material3.Scaffold
@@ -99,10 +102,12 @@ fun SpeedReadingScaffold(
     onChangeProgress: (Float, Int) -> Unit,
     onSaveProgress: (Float, Int) -> Unit,
     onPlayPause: () -> Unit,
-    keepScreenOn: Boolean = true
+    keepScreenOn: Boolean = true,
+    isReadyForDisplay: Boolean = false
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
+    var showLastWordDialog by remember { mutableStateOf(false) }
     var navigateWordCallback: ((Int) -> Unit)? by remember { mutableStateOf(null) }
     var showWordPicker by remember { mutableStateOf(false) }
     var wordPickerRefreshKey by remember { mutableIntStateOf(0) }
@@ -168,27 +173,17 @@ fun SpeedReadingScaffold(
     }
 
     // Initialize selectedWordIndex based on initial word index when words load
-    LaunchedEffect(words, initialWordIndex) {
-        Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect START] words.size=${words.size}, initialWordIndex=$initialWordIndex, isLoading=$isLoading")
-        Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect START] currentWordIndex=$currentWordIndex, totalWords=$totalWords")
+    // Only run when isReadyForDisplay is true to prevent stale data from previous book
+    LaunchedEffect(words, initialWordIndex, isReadyForDisplay) {
+        // Guard against stale data from previous book
+        if (!isReadyForDisplay) {
+            return@LaunchedEffect
+        }
 
         if (words.isNotEmpty() && initialWordIndex >= 0) {
             val wordIndex = initialWordIndex.coerceIn(0, words.size - 1)
-
-            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect] Setting selectedWordIndex:")
-            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   initialWordIndex = $initialWordIndex")
-            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   words.size = ${words.size}")
-            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   coerced wordIndex = $wordIndex")
-            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   BEFORE: selectedWordIndex = $selectedWordIndex")
-
             selectedWordIndex = wordIndex
-
-            Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect]   AFTER: selectedWordIndex = $selectedWordIndex")
-        } else {
-            Log.w("SPEED_READER_SCAFFOLD", "[LaunchedEffect] Skipping - words.isEmpty=${words.isEmpty()}, initialWordIndex=$initialWordIndex")
         }
-
-        Log.d("SPEED_READER_SCAFFOLD", "[LaunchedEffect END] completed")
     }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -204,9 +199,9 @@ fun SpeedReadingScaffold(
                                 androidx.compose.material3.IconButton(onClick = {
                                     if (words.isNotEmpty()) {
                                         val totalWords = words.size
-                                        val currentWordIndex = (realTimeProgress * totalWords).toInt().coerceIn(0, totalWords - 1)
-                                        Log.d("SPEED_READER", "Exit: saving progress=$realTimeProgress, wordIndex=$currentWordIndex")
-                                        onSaveProgress(realTimeProgress, currentWordIndex)
+                                        val wordIndex = (realTimeProgress * totalWords).toInt().coerceIn(0, totalWords - 1)
+                                        Log.d("SPEED_READER", "Exit: saving progress=$realTimeProgress, wordIndex=$wordIndex")
+                                        onSaveProgress(realTimeProgress, wordIndex)
                                     }
                                     onExitSpeedReading()
                                 }) {
@@ -272,7 +267,7 @@ fun SpeedReadingScaffold(
                         action = {}
                     )
                 }
-            } else if (isLoading || words.isEmpty() || selectedWordIndex < 0) {
+            } else if (isLoading || !isReadyForDisplay || words.isEmpty() || selectedWordIndex < 0) {
                 // Show loading indicator until text is ready AND word index is set
                 Box(
                     modifier = Modifier
@@ -286,13 +281,6 @@ fun SpeedReadingScaffold(
                     )
                 }
             } else {
-                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL] Calling SpeedReadingContent with:")
-                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   words.size=${words.size}")
-                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   currentWordIndex=$currentWordIndex")
-                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   totalWords=$totalWords")
-                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   initialWordIndex=$initialWordIndex")
-                Log.d("SPEED_READER_SCAFFOLD", "[CONTENT CALL]   selectedWordIndex=$selectedWordIndex")
-
                 SpeedReadingContent(
                 words = words,
                 currentWordIndex = currentWordIndex,
@@ -331,14 +319,52 @@ fun SpeedReadingScaffold(
                        // Also update the underlying book progress periodically
                        parentOnChangeProgress(progress, wordIndex)
                    },
-                   onSaveProgress = { progress, wordIndex ->
-                       // Immediate progress save for manual pauses (no throttling)
-                       realTimeProgress = progress
-                       onSaveProgress(progress, wordIndex)
-                   },
-                   showBottomBar = !isPlaying
-              )
+                    onSaveProgress = { progress, wordIndex ->
+                        // Immediate progress save for manual pauses (no throttling)
+                        realTimeProgress = progress
+                        onSaveProgress(progress, wordIndex)
+                    },
+                    onLastWordReached = {
+                        isPlaying = false
+                        showLastWordDialog = true
+                    },
+                    showBottomBar = !isPlaying
+               )
             }
+        }
+
+        // Last word reached dialog
+        if (showLastWordDialog) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showLastWordDialog = false },
+                title = { Text("End of Book Reached") },
+                text = { Text("You have reached the last word. Start from the beginning?") },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(
+                        onClick = {
+                            // Restart from beginning
+                            selectedWordIndex = 0
+                            realTimeProgress = 0f
+                            onSaveProgress(0f, 0)
+                            onWordPicked(0)
+                            parentOnChangeProgress(0f, 0)
+                            showLastWordDialog = false
+                            isPlaying = true
+                        }
+                    ) {
+                        Text("Restart")
+                    }
+                },
+                dismissButton = {
+                    androidx.compose.material3.TextButton(
+                        onClick = {
+                            showLastWordDialog = false
+                        }
+                    ) {
+                        Text("Dismiss")
+                    }
+                }
+            )
         }
 
         // Word Picker Sheet - only show when not loading

@@ -117,7 +117,6 @@ class BookRepositoryImpl @Inject constructor(
         val books = database.findBooksById(ids)
 
         return books.map { entity ->
-            Log.d("SPEED_READER_DB", "Loading book ${entity.id}, speedReaderWordIndex=${entity.speedReaderWordIndex}")
             val book = bookMapper.toBook(entity)
             val lastHistory = database.getLatestHistoryForBook(
                 book.id
@@ -335,11 +334,21 @@ class BookRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateSpeedReaderProgress(bookId: Int, wordIndex: Int) {
-        Log.d("SPEED_READER_DB", "Updating speed reader progress: bookId=$bookId, wordIndex=$wordIndex")
         database.updateSpeedReaderProgress(bookId, wordIndex)
-        // Verify the update worked
+    }
+
+    override suspend fun updateNormalReaderProgress(bookId: Int, scrollIndex: Int, scrollOffset: Int, progress: Float) {
+        Log.d("NORMAL_READER_DB", "Updating normal reader progress: bookId=$bookId, scrollIndex=$scrollIndex, scrollOffset=$scrollOffset, progress=$progress")
+        database.updateNormalReaderProgress(bookId, scrollIndex, scrollOffset, progress)
         val updatedBook = database.findBookById(bookId)
-        Log.d("SPEED_READER_DB", "After update, speedReaderWordIndex=${updatedBook?.speedReaderWordIndex}")
+        Log.d("NORMAL_READER_DB", "After update, scrollIndex=${updatedBook?.scrollIndex}, scrollOffset=${updatedBook?.scrollOffset}, progress=${updatedBook?.progress}")
+    }
+
+    override suspend fun updateComicPdfProgress(bookId: Int, lastPageRead: Int, progress: Float) {
+        Log.d("COMIC_PDF_PROGRESS", "Updating comic/PDF progress: bookId=$bookId, lastPageRead=$lastPageRead, progress=$progress")
+        database.updateComicPdfProgress(bookId, lastPageRead, progress)
+        val updatedBook = database.findBookById(bookId)
+        Log.d("COMIC_PDF_PROGRESS", "After update, lastPageRead=${updatedBook?.lastPageRead}, progress=${updatedBook?.progress}")
     }
 
     override suspend fun markSpeedReaderOpened(bookId: Int) {

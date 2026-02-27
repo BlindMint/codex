@@ -111,16 +111,14 @@ fun SpeedReadingContent(
     onShowWordPicker: () -> Unit = {},
     onProgressUpdate: (Float, Int) -> Unit = { _, _ -> }, // Callback for word-based progress updates
     onSaveProgress: (Float, Int) -> Unit = { _, _ -> }, // Callback for immediate progress saves (no throttling)
+    onLastWordReached: () -> Unit = {}, // Callback when playback reaches the last word
     showBottomBar: Boolean = true
 ) {
-    // Log initial composition
-    Log.d("SPEED_READER_CONTENT", "[COMPOSITION START] words.size=${words.size}, currentWordIndex=$currentWordIndex, totalWords=$totalWords, initialWordIndex=$initialWordIndex, isPlaying=$isPlaying")
-
     // Speed reader always starts from beginning of book
     val startingWordIndex = 0
 
-    var currentWordIndex by remember { mutableIntStateOf(initialWordIndex) }
-    Log.d("SPEED_READER_CONTENT", "[INIT] currentWordIndex initialized from initialWordIndex=$initialWordIndex")
+    // Use words.size as key to ensure state resets when book changes (new words loaded)
+    var currentWordIndex by remember(words.size) { mutableIntStateOf(initialWordIndex) }
     var lastProgressSaveIndex by remember { mutableIntStateOf(startingWordIndex) }
     var lastNavigationDirection by remember { mutableIntStateOf(0) }
     var showQuickWpmMenu by remember { mutableStateOf(false) }
@@ -138,7 +136,6 @@ fun SpeedReadingContent(
     LaunchedEffect(initialWordIndex) {
         if (currentWordIndex != initialWordIndex) {
             currentWordIndex = initialWordIndex
-            Log.d("SPEED_READER_CONTENT", "[SYNC] Synced currentWordIndex to initialWordIndex=$initialWordIndex")
         }
     }
 
@@ -181,15 +178,19 @@ fun SpeedReadingContent(
         onNavigateWord(lastNavigationDirection)
     }
 
-    // Countdown animation
+    // Countdown animation - skippable by tapping during countdown
     LaunchedEffect(showCountdown) {
         if (showCountdown) {
             countdownValue = 3
             while (countdownValue > 0) {
                 delay(1000)
+                // Check if countdown was skipped (showCountdown became false externally)
+                if (!showCountdown) break
                 countdownValue--
             }
-            showCountdown = false
+            if (showCountdown) {
+                showCountdown = false
+            }
         }
     }
 
@@ -230,7 +231,12 @@ fun SpeedReadingContent(
                 else -> wordDelay
             }
             delay(delayTime)
-            currentWordIndex = if (currentWordIndex < words.size - 1) currentWordIndex + 1 else 0
+            // Stop at last word instead of looping back to 0
+            if (currentWordIndex >= words.size - 1) {
+                onLastWordReached()
+            } else {
+                currentWordIndex = currentWordIndex + 1
+            }
         }
     }
 
@@ -252,6 +258,28 @@ fun SpeedReadingContent(
             onSaveProgress(newProgress, globalWordIndex)
         }
         wasPlaying = isPlaying
+    }
+
+    // Periodically save progress during active playback to prevent lost progress on crash/app kill
+    // Saves every 30 seconds (or ~1000-3000 words depending on WPM)
+    LaunchedEffect(isPlaying, currentWordIndex) {
+        if (isPlaying && words.isNotEmpty()) {
+            val saveIntervalWords = 1000 // Save every ~1000 words (adjustable)
+            var lastSavedWordIndex = -1
+            
+            while (isPlaying) {
+                val currentGlobalWordIndex = startingWordIndex + currentWordIndex
+                
+                // Save if we've advanced by saveIntervalWords words since last save
+                if (lastSavedWordIndex < 0 || currentGlobalWordIndex - lastSavedWordIndex >= saveIntervalWords) {
+                    val newProgress = (currentGlobalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
+                    onSaveProgress(newProgress, currentGlobalWordIndex)
+                    lastSavedWordIndex = currentGlobalWordIndex
+                }
+                
+                delay(500) // Check every half second
+            }
+        }
     }
 
     // Focal point position - configurable via settings
@@ -661,12 +689,10 @@ fun SpeedReadingContent(
                             .size(72.dp)
                             .noRippleClickable {
                                 val wasPlaying = isPlaying
-                                Log.d("SPEED_READER", "Playback controls play/pause: wasPlaying=$wasPlaying, currentWordIndex=$currentWordIndex")
                                 onPlayPause()
                                 if (wasPlaying && !isPlaying) {
                                     val globalWordIndex = startingWordIndex + currentWordIndex
                                     val newProgress = (globalWordIndex.toFloat() / totalWords).coerceIn(0f, 1f)
-                                    Log.d("SPEED_READER", "Playback controls saving: globalWordIndex=$globalWordIndex, newProgress=$newProgress")
                                     onSaveProgress(newProgress, globalWordIndex)
                                 }
                             },

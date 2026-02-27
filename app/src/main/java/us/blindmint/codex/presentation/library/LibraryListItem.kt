@@ -140,104 +140,124 @@ fun LibraryListItem(
                 )
             }
 
-            // Progress indicator
+            // Progress and play buttons
             val mainModel = androidx.hilt.navigation.compose.hiltViewModel<us.blindmint.codex.ui.main.MainModel>()
             val mainState = mainModel.state.collectAsStateWithLifecycle()
-            if (mainState.value.libraryShowProgress) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(4.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.secondary, RoundedCornerShape(8.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    StyledText(
-                        text = progress,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSecondary,
-                            fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.8f
-                        )
-                    )
-                }
-            }
 
-            // Play button - Split button for normal and speed reading
-            if (mainState.value.libraryShowReadButton && !book.data.isComic) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(4.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = MaterialTheme.shapes.small
-                        )
-                ) {
-                    // Main button - Normal Reading
+            if (mainState.value.libraryShowNormalProgress) {
+                if (!book.data.isComic) {
+                    // Speed reader button (left, only if opened and enabled)
+                    if (book.data.speedReaderHasBeenOpened && mainState.value.libraryShowSpeedProgress) {
+                        val speedProgress = if (book.data.speedReaderTotalWords > 0) {
+                            "${(book.data.speedReaderWordIndex.toFloat() / book.data.speedReaderTotalWords * 100).toInt()}%"
+                        } else {
+                            "0%"
+                        }
+
+                        FilledIconButton(
+                            onClick = { navigateToSpeedReading() },
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(start = 2.dp, bottom = 2.dp)
+                                .width(28.dp)
+                                .height(28.dp),
+                            shape = MaterialTheme.shapes.extraSmall,
+                            colors = IconButtonDefaults.iconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary,
+                                contentColor = MaterialTheme.colorScheme.onTertiary
+                            )
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                StyledText(
+                                    text = speedProgress,
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        textAlign = TextAlign.Center,
+                                        color = MaterialTheme.colorScheme.onTertiary,
+                                        fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.6f
+                                    ),
+                                    maxLines = 1
+                                )
+                                Icon(
+                                    imageVector = Icons.Rounded.Bolt,
+                                    contentDescription = "Speed Read",
+                                    modifier = Modifier.size(8.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    // Normal reader button (right)
                     FilledIconButton(
                         onClick = { navigateToReader() },
-                        modifier = Modifier.size(20.dp),
-                        shape = MaterialTheme.shapes.small,
-                        colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.PlayArrow,
-                            contentDescription = stringResource(id = R.string.continue_reading_content_desc),
-                            Modifier.size(12.dp)
-                        )
-                    }
-
-                    // Separator
-                    Box(
                         modifier = Modifier
-                            .width(1.dp)
-                            .height(20.dp * 0.6f)
-                            .align(Alignment.CenterVertically)
-                            .background(MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.3f))
-                    )
-
-                    // Trailing button - Speed Reading
-                    FilledIconButton(
-                        onClick = { navigateToSpeedReading() },
-                        modifier = Modifier.size(20.dp),
-                        shape = MaterialTheme.shapes.small,
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 2.dp, bottom = 2.dp)
+                            .width(28.dp)
+                            .height(28.dp),
+                        shape = MaterialTheme.shapes.extraSmall,
                         colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary
                         )
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Bolt,
-                            contentDescription = "Speed Read",
-                            Modifier.size(12.dp)
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            StyledText(
+                                text = progress,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSecondary,
+                                    fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.6f
+                                ),
+                                maxLines = 1
+                            )
+                            Icon(
+                                imageVector = Icons.Filled.PlayArrow,
+                                contentDescription = stringResource(id = R.string.continue_reading_content_desc),
+                                modifier = Modifier.size(8.dp)
+                            )
+                        }
                     }
-                }
-            } else if (mainState.value.libraryShowReadButton && book.data.isComic) {
-                // Keep existing single button for comics
-                FilledIconButton(
-                    onClick = { navigateToReader() },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(4.dp)
-                        .size(24.dp),
-                    shape = MaterialTheme.shapes.small,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.PlayArrow,
-                        contentDescription = stringResource(id = R.string.continue_reading_content_desc),
-                        Modifier.size(16.dp)
-                    )
+                } else {
+                    // Comics: single button at bottom-right
+                    FilledIconButton(
+                        onClick = { navigateToReader() },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 2.dp, bottom = 2.dp)
+                            .width(28.dp)
+                            .height(28.dp),
+                        shape = MaterialTheme.shapes.extraSmall,
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary
+                        )
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            StyledText(
+                                text = progress,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSecondary,
+                                    fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.6f
+                                ),
+                                maxLines = 1
+                            )
+                            Icon(
+                                imageVector = Icons.Filled.PlayArrow,
+                                contentDescription = stringResource(id = R.string.continue_reading_content_desc),
+                                modifier = Modifier.size(8.dp)
+                            )
+                        }
+                    }
                 }
             }
         }

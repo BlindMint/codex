@@ -64,6 +64,12 @@ interface BookDao {
     @Query("UPDATE bookentity SET speedReaderWordIndex = :wordIndex, speedReaderHasBeenOpened = 1 WHERE id = :id")
     suspend fun updateSpeedReaderProgress(id: Int, wordIndex: Int)
 
+    @Query("UPDATE bookentity SET scrollIndex = :scrollIndex, scrollOffset = :scrollOffset, progress = :progress WHERE id = :id")
+    suspend fun updateNormalReaderProgress(id: Int, scrollIndex: Int, scrollOffset: Int, progress: Float)
+
+    @Query("UPDATE bookentity SET lastPageRead = :lastPageRead, progress = :progress WHERE id = :id")
+    suspend fun updateComicPdfProgress(id: Int, lastPageRead: Int, progress: Float)
+
     @Query("UPDATE bookentity SET speedReaderHasBeenOpened = 1 WHERE id = :id")
     suspend fun markSpeedReaderOpened(id: Int)
 

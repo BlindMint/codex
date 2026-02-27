@@ -63,5 +63,9 @@ data class ReaderState(
 
     // Initial scroll position to restore (set when loading a book with saved progress)
     val initialScrollIndex: Int = -1,
-    val initialScrollOffset: Int = 0
+    val initialScrollOffset: Int = 0,
+
+    // Track scroll restoration completion for smooth loading animation
+    val isScrollRestorationComplete: Boolean = false,
+    val isComicScrollRestorationComplete: Boolean = false
 )

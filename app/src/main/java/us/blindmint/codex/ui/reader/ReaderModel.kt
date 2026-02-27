@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -44,6 +45,7 @@ import us.blindmint.codex.domain.ui.UIText
 import us.blindmint.codex.domain.use_case.book.GetBookById
 import us.blindmint.codex.domain.use_case.book.GetText
 import us.blindmint.codex.domain.use_case.book.UpdateBook
+import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.use_case.bookmark.GetBookmarksByBookId
 import us.blindmint.codex.domain.use_case.bookmark.InsertBookmark
 import us.blindmint.codex.domain.use_case.bookmark.DeleteBookmark
@@ -70,7 +72,8 @@ class ReaderModel @Inject constructor(
     private val getBookmarksByBookId: GetBookmarksByBookId,
     private val insertBookmark: InsertBookmark,
     private val deleteBookmark: DeleteBookmark,
-    private val deleteBookmarksByBookId: DeleteBookmarksByBookId
+    private val deleteBookmarksByBookId: DeleteBookmarksByBookId,
+    private val bookRepository: BookRepository
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -120,6 +123,9 @@ class ReaderModel @Inject constructor(
                         val lastOpened = getLatestHistory.execute(currentBookId)?.time
                         yield()
 
+                        // Invalidate word cache when new text is loaded
+                        invalidateWordCache()
+
                         _state.update {
                             it.copy(
                                 showMenu = false,
@@ -154,38 +160,45 @@ class ReaderModel @Inject constructor(
                                     val finalScrollIndex: Int
                                     val finalScrollOffset: Int
 
-                                 if (scrollOffset > 0) {
-                                     // Normal reader saved precise position - use it
-                                     finalScrollIndex = scrollIndex
-                                     finalScrollOffset = scrollOffset
-                                     Log.d("READER", "Using saved position: scrollIndex=$finalScrollIndex, scrollOffset=$finalScrollOffset")
-                                 } else {
-                                     // Use progress as fraction of total text items
-                                     finalScrollIndex = (progress * _state.value.text.lastIndex).toInt()
-                                         .coerceIn(0, _state.value.text.lastIndex)
-                                     finalScrollOffset = 0
-                                     Log.d("READER", "Converting progress to position: progress=$progress * text.lastIndex=${_state.value.text.lastIndex} = $finalScrollIndex")
-                                 }
+                                  if (scrollOffset > 0) {
+                                      // Normal reader saved precise position - use it
+                                      finalScrollIndex = scrollIndex
+                                      finalScrollOffset = scrollOffset
+                                      Log.d("READER", "Using saved position: scrollIndex=$finalScrollIndex, scrollOffset=$finalScrollOffset")
+                                  } else {
+                                      // Use progress as fraction of total text items
+                                      finalScrollIndex = (progress * _state.value.text.lastIndex).toInt()
+                                          .coerceIn(0, _state.value.text.lastIndex)
+                                      finalScrollOffset = 0
+                                      Log.d("READER", "Converting progress to position: progress=$progress * text.lastIndex=${_state.value.text.lastIndex} = $finalScrollIndex")
+                                  }
 
                                     Log.d("READER", "Final scroll position: index=$finalScrollIndex, offset=$finalScrollOffset")
 
-                                 _state.value.listState.requestScrollToItem(
-                                     finalScrollIndex,
-                                     finalScrollOffset
-                                 )
-                                 updateChapter(index = finalScrollIndex)
+                                  _state.value.listState.requestScrollToItem(
+                                      finalScrollIndex,
+                                      finalScrollOffset
+                                  )
+                                  updateChapter(index = finalScrollIndex)
 
-                                 // Add a small delay to allow the scroll animation to complete
-                                 // before hiding the loading animation
-                                 delay(300)
-                             }
+                                  // Wait for scroll animation to actually complete before hiding loading
+                                  // This ensures smooth transition without visible jump
+                                  snapshotFlow {
+                                      val layoutInfo = _state.value.listState.layoutInfo
+                                      val isAtTarget = layoutInfo.visibleItemsInfo.any { it.index == finalScrollIndex } ||
+                                                       finalScrollIndex >= layoutInfo.totalItemsCount - 1
+                                      val isNotScrolling = !_state.value.listState.isScrollInProgress
+                                      isAtTarget && isNotScrolling
+                                  }.first { complete -> complete }
+                              }
 
-                             _state.update {
-                                 it.copy(
-                                     isLoading = false,
-                                     errorMessage = null
-                                 )
-                             }
+                              _state.update {
+                                  it.copy(
+                                      isLoading = false,
+                                      isScrollRestorationComplete = true,
+                                      errorMessage = null
+                                  )
+                              }
 
                                 // Load bookmarks for the current book
                                 launch(Dispatchers.IO) {
@@ -227,6 +240,7 @@ class ReaderModel @Inject constructor(
 
                 is ReaderEvent.OnChangeProgress -> {
                     launch(Dispatchers.IO) {
+                        val currentBook = _state.value.book
                         _state.update {
                             it.copy(
                                 book = it.book.copy(
@@ -236,11 +250,13 @@ class ReaderModel @Inject constructor(
                                 )
                             )
                         }
- 
-                        updateBook.execute(_state.value.book)
- 
-                        LibraryScreen.refreshListChannel.trySend(300)
-                        HistoryScreen.refreshListChannel.trySend(300)
+
+                        bookRepository.updateNormalReaderProgress(
+                            bookId = currentBook.id,
+                            scrollIndex = event.firstVisibleItemIndex,
+                            scrollOffset = event.firstVisibleItemOffset,
+                            progress = event.progress
+                        )
                     }
                 }
 
@@ -327,6 +343,8 @@ class ReaderModel @Inject constructor(
                         }
 
                         // Save position for text books
+                        // Use the progress already saved by the debounced scroll handler (which uses word-based calculation)
+                        // to avoid overwriting with less accurate simple index-based calculation
                         _state.value.listState.apply {
                             if (
                                 !_state.value.book.isPageBased &&
@@ -335,38 +353,57 @@ class ReaderModel @Inject constructor(
                                 _state.value.text.isNotEmpty() &&
                                 _state.value.errorMessage == null
                             ) {
+                                    val currentBook = _state.value.book
+                                    val firstVisibleItemIndex = _state.value.listState.firstVisibleItemIndex
+                                    val firstVisibleItemScrollOffset = _state.value.listState.firstVisibleItemScrollOffset
+                                    // Use the existing accurate progress from the book state (updated by debounced scroll handler)
+                                    // instead of recalculating which would overwrite with a less accurate value
+                                    val currentProgress = currentBook.progress
+
                                     _state.update {
                                         it.copy(
                                             book = it.book.copy(
-                                                // Save progress snapped to current item (coarser granularity)
-                                                progress = (firstVisibleItemIndex.toFloat() / _state.value.text.lastIndex)
-                                                    .coerceIn(0f, 1f),
-                                                scrollIndex = _state.value.listState.firstVisibleItemIndex,
-                                                scrollOffset = _state.value.listState.firstVisibleItemScrollOffset
+                                                scrollIndex = firstVisibleItemIndex,
+                                                scrollOffset = firstVisibleItemScrollOffset
                                             )
                                         )
                                     }
 
-                        updateBook.execute(_state.value.book)
+                        bookRepository.updateNormalReaderProgress(
+                            bookId = currentBook.id,
+                            scrollIndex = firstVisibleItemIndex,
+                            scrollOffset = firstVisibleItemScrollOffset,
+                            progress = currentProgress
+                        )
                             }
                         }
 
                         // Save position for page-based books (comics and PDFs)
-                                if (_state.value.book.isPageBased && !_state.value.isLoading) {
+                                // Only save if comic has finished loading
+                                if (_state.value.book.isPageBased && !_state.value.isLoading && _state.value.isScrollRestorationComplete) {
+                                    val currentBook = _state.value.book
+                                    val totalComicPages = _state.value.totalComicPages
+                                    val currentComicPage = _state.value.currentComicPage
+                                    
+                                    val newProgress = if (totalComicPages > 0) {
+                                        (currentComicPage + 1).toFloat() / totalComicPages
+                                    } else 0f
+
                                     _state.update {
                                         it.copy(
                                             book = it.book.copy(
-                                                currentPage = it.currentComicPage,
-                                                lastPageRead = it.currentComicPage,
-                                                 progress = if (it.totalComicPages > 0) {
-                                                     (it.currentComicPage + 1).toFloat() / it.totalComicPages
-                                                 } else 0f
-                                                 // Comics don't use scrollIndex/scrollOffset
+                                                currentPage = currentComicPage,
+                                                lastPageRead = currentComicPage,
+                                                 progress = newProgress
                                             )
                                         )
                                     }
 
-                        updateBook.execute(_state.value.book)
+                                    bookRepository.updateComicPdfProgress(
+                                        bookId = currentBook.id,
+                                        lastPageRead = currentComicPage,
+                                        progress = newProgress
+                                    )
                         }
 
                         WindowCompat.getInsetsController(
@@ -842,9 +879,19 @@ class ReaderModel @Inject constructor(
                 }
 
                 is ReaderEvent.OnComicLoadingComplete -> {
+                    // Comic/PDF content loaded, but wait for scroll restoration to complete
+                    // before hiding loading animation - handled by OnComicScrollRestorationComplete
+                }
+
+                is ReaderEvent.OnComicScrollRestorationComplete -> {
+                    // Only hide loading after scroll to saved position is complete
+                    // Also enable database saves for page changes now that initial scroll is done
+                    android.util.Log.d("ComicPageChanged", "OnComicScrollRestorationComplete received - enabling database saves")
                     _state.update {
                         it.copy(
                             isLoading = false,
+                            isScrollRestorationComplete = true,
+                            isComicScrollRestorationComplete = true,
                             errorMessage = null
                         )
                     }
@@ -860,45 +907,77 @@ class ReaderModel @Inject constructor(
 
                 is ReaderEvent.OnComicPageChanged -> {
                     launch(Dispatchers.IO) {
+                        val scrollRestorationComplete = _state.value.isComicScrollRestorationComplete
+
+                        android.util.Log.d("ComicPageChanged", "OnComicPageChanged event received")
+                        android.util.Log.d("ComicPageChanged", "  event.currentPage: ${event.currentPage}")
+                        android.util.Log.d("ComicPageChanged", "  scrollRestorationComplete: $scrollRestorationComplete")
+
+                        // Ignore ALL page change events until scroll restoration is complete.
+                        // During initial load, the pager/list starts at page 0 and fires events
+                        // before the LaunchedEffect can scroll to the saved page. We must not
+                        // update state with these spurious page 0 values.
+                        if (!scrollRestorationComplete) {
+                            android.util.Log.d("ComicPageChanged", "  IGNORING - scroll restoration not complete")
+                            return@launch
+                        }
+
+                        val currentBook = _state.value.book
+                        val totalComicPages = _state.value.totalComicPages
+                        val newProgress = if (totalComicPages > 0) {
+                            (event.currentPage + 1).toFloat() / totalComicPages
+                        } else 0f
+
                         _state.update {
                             it.copy(
                                 currentComicPage = event.currentPage,
                                 book = it.book.copy(
                                     currentPage = event.currentPage,
                                     lastPageRead = event.currentPage,
-                                    progress = if (it.totalComicPages > 0) {
-                                        (event.currentPage + 1).toFloat() / it.totalComicPages
-                                    } else 0f
+                                    progress = newProgress
                                 )
                             )
                         }
- 
-                        updateBook.execute(_state.value.book)
-                        LibraryScreen.refreshListChannel.trySend(300)
-                        HistoryScreen.refreshListChannel.trySend(300)
+
+                        android.util.Log.d("ComicPageChanged", "  SAVING to database: bookId=${currentBook.id}, lastPageRead=${event.currentPage}, progress=$newProgress")
+                        bookRepository.updateComicPdfProgress(
+                            bookId = currentBook.id,
+                            lastPageRead = event.currentPage,
+                            progress = newProgress
+                        )
+                        android.util.Log.d("ComicPageChanged", "  Database save complete")
                     }
                 }
 
                 is ReaderEvent.OnComicPageSelected -> {
                     launch(Dispatchers.IO) {
+                        val currentBook = _state.value.book
+                        val totalComicPages = _state.value.totalComicPages
                         _state.update {
                             it.copy(
                                 currentComicPage = event.page,
                                 book = it.book.copy(
                                     currentPage = event.page,
                                     lastPageRead = event.page,
-                                    progress = if (it.totalComicPages > 0) {
-                                        (event.page + 1).toFloat() / it.totalComicPages
+                                    progress = if (totalComicPages > 0) {
+                                        (event.page + 1).toFloat() / totalComicPages
                                     } else 0f
                                 )
                             )
                         }
 
-                        updateBook.execute(_state.value.book)
-                        LibraryScreen.refreshListChannel.trySend(300)
-                        HistoryScreen.refreshListChannel.trySend(300)
+                        val newProgress = if (totalComicPages > 0) {
+                            (event.page + 1).toFloat() / totalComicPages
+                        } else 0f
+
+                        bookRepository.updateComicPdfProgress(
+                            bookId = currentBook.id,
+                            lastPageRead = event.page,
+                            progress = newProgress
+                        )
                     }
                 }
+
             }
         }
     }
@@ -1061,15 +1140,24 @@ class ReaderModel @Inject constructor(
 
                 val lastOpened = getLatestHistory.execute(book.id)
 
-                // Single state update to prevent triggering LaunchedEffect multiple times
+                val effectivePageCount = book.pageCount ?: Int.MAX_VALUE
+                val resumePage = book.lastPageRead.coerceIn(0, effectivePageCount)
+
+                Log.d("ComicResume", "Loading comic: ${book.title}")
+                Log.d("ComicResume", "  book.lastPageRead: ${book.lastPageRead}")
+                Log.d("ComicResume", "  book.pageCount: ${book.pageCount}")
+                Log.d("ComicResume", "  effectivePageCount: $effectivePageCount")
+                Log.d("ComicResume", "  resumePage (coerced): $resumePage")
+
                 _state.update {
                     ReaderState(
                         book = book.copy(
                             lastOpened = lastOpened?.time
                         ),
-                        currentComicPage = book.lastPageRead.coerceIn(0, book.pageCount ?: 0),
+                        currentComicPage = resumePage,
                         showMenu = false,
-                        isLoading = true
+                        isLoading = true,
+                        isComicScrollRestorationComplete = false  // Will be set to true after initial scroll
                     )
                 }
  
@@ -1085,20 +1173,56 @@ class ReaderModel @Inject constructor(
 
     @OptIn(FlowPreview::class)
     fun updateProgress(listState: LazyListState) {
+        // Skip if book is not loaded yet (empty/default book object)
+        if (_state.value.book.id == -1 || _state.value.book.title.isBlank()) {
+            Log.d("ReaderProgress", "Skipping progress update - book not loaded yet")
+            return
+        }
+
+        // Skip progress tracking for page-based formats (comics, PDFs) - they have their own tracking
+        Log.d("ReaderProgress", "updateProgress called for book: ${_state.value.book.title}")
+        Log.d("ReaderProgress", "  isComic: ${_state.value.book.isComic}")
+        Log.d("ReaderProgress", "  isPdf: ${_state.value.book.isPdf}")
+        Log.d("ReaderProgress", "  isPageBased: ${_state.value.book.isPageBased}")
+
+        if (_state.value.book.isPageBased) {
+            Log.d("ReaderProgress", "  Skipping progress tracking for page-based book")
+            return
+        }
+
+        Log.d("ReaderProgress", "  Continuing with normal reader progress tracking")
+        
         viewModelScope.launch(Dispatchers.Main) {
             snapshotFlow {
                 listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
             }.distinctUntilChanged().debounce(300).collectLatest { (index, offset) ->
+                // Skip if book is not loaded or is page-based (comics/PDFs have their own tracking)
+                val currentBook = _state.value.book
+                if (currentBook.id == -1 || currentBook.title.isBlank() || currentBook.isPageBased) {
+                    Log.d("ReaderProgress", "Skipping progress update in collectLatest - book not loaded or is page-based")
+                    return@collectLatest
+                }
+
                 // Snap to nearest paragraph start and calculate word-based progress for speed reader compatibility
                 val snappedIndex = findNearestParagraphStart(index)
-                val wordBasedProgress = calculateWordBasedProgress(snappedIndex)
-                if (wordBasedProgress == _state.value.book.progress) return@collectLatest
+
+                // Check if user has scrolled to the very end of the book
+                // If can't scroll forward, we're at the end - set progress to 100%
+                val isAtEnd = !listState.canScrollForward
+                val wordBasedProgress = if (isAtEnd) {
+                    1f
+                } else {
+                    calculateWordBasedProgress(snappedIndex)
+                }
+
+                if (wordBasedProgress == currentBook.progress) return@collectLatest
                 val (currentChapter, currentChapterProgress) = calculateCurrentChapter(snappedIndex)
 
                 Log.i(
                     READER,
                     "Changed progress|currentChapter: $wordBasedProgress; ${currentChapter?.title}"
                 )
+
                 _state.update {
                     it.copy(
                         book = it.book.copy(
@@ -1110,11 +1234,13 @@ class ReaderModel @Inject constructor(
                         currentChapterProgress = currentChapterProgress
                     )
                 }
- 
-                updateBook.execute(_state.value.book)
- 
-                LibraryScreen.refreshListChannel.trySend(0)
-                HistoryScreen.refreshListChannel.trySend(0)
+
+                bookRepository.updateNormalReaderProgress(
+                    bookId = currentBook.id,
+                    scrollIndex = snappedIndex,
+                    scrollOffset = offset,
+                    progress = wordBasedProgress
+                )
             }
         }
     }
@@ -1210,27 +1336,42 @@ class ReaderModel @Inject constructor(
         }
     }
 
+    // Cache for word-based progress calculation - computed once when text loads
+    private var cachedTotalWords: Int? = null
+    private var cachedWordCounts: List<Int>? = null
+
+    private fun invalidateWordCache() {
+        cachedTotalWords = null
+        cachedWordCounts = null
+    }
+
     // Calculate word-based progress for speed reader compatibility
     private fun calculateWordBasedProgress(textItemIndex: Int): Float {
-        val totalWords = _state.value.text.sumOf { readerText ->
-            when (readerText) {
-                is ReaderText.Text -> readerText.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }.size
-                else -> 0
+        val text = _state.value.text
+        if (text.isEmpty()) return 0f
+
+        // Build cache if not available
+        if (cachedTotalWords == null || cachedWordCounts == null) {
+            val wordCounts = mutableListOf<Int>()
+            var runningTotal = 0
+            for (readerText in text) {
+                val wordCount = when (readerText) {
+                    is ReaderText.Text -> readerText.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }.size
+                    else -> 0
+                }
+                runningTotal += wordCount
+                wordCounts.add(runningTotal)
             }
+            cachedWordCounts = wordCounts
+            cachedTotalWords = runningTotal
         }
 
+        val totalWords = cachedTotalWords ?: return 0f
         if (totalWords == 0) return 0f
 
-        // Count words up to the target text item
-        var wordCount = 0
-        for (i in 0 until textItemIndex.coerceIn(0, _state.value.text.lastIndex)) {
-            when (val item = _state.value.text[i]) {
-                is ReaderText.Text -> {
-                    wordCount += item.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }.size
-                }
-                else -> {} // Skip non-text items
-            }
-        }
+        // Use cached cumulative word counts for O(1) lookup
+        val safeIndex = textItemIndex.coerceIn(0, text.lastIndex)
+        val wordCount = cachedWordCounts?.getOrNull(safeIndex) ?: 0
 
         return wordCount.toFloat() / totalWords.toFloat()
     }
@@ -1331,6 +1472,8 @@ class ReaderModel @Inject constructor(
     }
 
     fun resetScreen() {
+        android.util.Log.d("ReaderModel", "resetScreen() called - stacktrace:")
+        android.util.Log.d("ReaderModel", android.util.Log.getStackTraceString(Exception()))
         resetJob = viewModelScope.launch(Dispatchers.Main) {
             eventJob.cancel()
             eventJob = SupervisorJob()
@@ -1338,8 +1481,18 @@ class ReaderModel @Inject constructor(
             yield()
             // Skip the state reset if init() is in progress or about to run.
             // This prevents corrupting state during reader-to-reader transitions.
-            if (isInitializing) return@launch
+            if (isInitializing) {
+                android.util.Log.d("ReaderModel", "resetScreen() skipped - isInitializing=true")
+                return@launch
+            }
+            android.util.Log.d("ReaderModel", "resetScreen() executing state reset")
+            android.util.Log.d("ReaderModel", "  Current state before reset: currentComicPage=${_state.value.currentComicPage}, book=${_state.value.book.title}")
+            // Refresh library list so progress indicators update immediately
+            LibraryScreen.refreshListChannel.trySend(0)
+            HistoryScreen.refreshListChannel.trySend(0)
+            invalidateWordCache()
             _state.update { ReaderState() }
+            android.util.Log.d("ReaderModel", "resetScreen() state reset complete")
         }
     }
 

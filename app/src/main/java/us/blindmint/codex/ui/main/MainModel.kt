@@ -681,19 +681,23 @@ class MainModel @Inject constructor(
                 }
             )
 
-            is MainEvent.OnChangeLibraryShowReadButton -> handleDatastoreUpdate(
-                key = DataStoreConstants.LIBRARY_SHOW_READ_BUTTON,
+            // Deprecated events - kept for backwards compatibility
+            is MainEvent.OnChangeLibraryShowReadButton -> { /* deprecated */ }
+            is MainEvent.OnChangeLibraryShowProgress -> { /* deprecated */ }
+
+            is MainEvent.OnChangeLibraryShowNormalProgress -> handleDatastoreUpdate(
+                key = DataStoreConstants.LIBRARY_SHOW_NORMAL_PROGRESS,
                 value = event.value,
                 updateState = {
-                    it.copy(libraryShowReadButton = this)
+                    it.copy(libraryShowNormalProgress = this)
                 }
             )
 
-            is MainEvent.OnChangeLibraryShowProgress -> handleDatastoreUpdate(
-                key = DataStoreConstants.LIBRARY_SHOW_PROGRESS,
+            is MainEvent.OnChangeLibraryShowSpeedProgress -> handleDatastoreUpdate(
+                key = DataStoreConstants.LIBRARY_SHOW_SPEED_PROGRESS,
                 value = event.value,
                 updateState = {
-                    it.copy(libraryShowProgress = this)
+                    it.copy(libraryShowSpeedProgress = this)
                 }
             )
 

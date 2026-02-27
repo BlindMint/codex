@@ -69,6 +69,7 @@ testdata/
 # Other
 *.cache
 *.lock
+package-lock.json
 .externalNativeBuild
 .cxx
 to-do.md

@@ -66,8 +66,8 @@ import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryGridSizeOption
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryLayoutOption
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryListSizeOption
-import us.blindmint.codex.presentation.settings.library.display.components.LibraryShowProgressOption
-import us.blindmint.codex.presentation.settings.library.display.components.LibraryShowReadButtonOption
+import us.blindmint.codex.presentation.settings.library.display.components.LibraryShowSpeedProgressOption
+import us.blindmint.codex.presentation.settings.library.display.components.LibraryShowNormalProgressOption
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryTitlePositionOption
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -379,9 +379,9 @@ private fun LibraryDisplayTabContent(
             LibraryTitlePositionOption()
         }
 
-        LibraryShowReadButtonOption()
+        LibraryShowNormalProgressOption()
 
-        LibraryShowProgressOption()
+        LibraryShowSpeedProgressOption()
     }
 }
 

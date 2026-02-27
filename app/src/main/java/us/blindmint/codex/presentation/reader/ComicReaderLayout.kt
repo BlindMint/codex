@@ -7,6 +7,7 @@
 package us.blindmint.codex.presentation.reader
 
 import android.content.Context
+import android.util.Log
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -43,7 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import kotlin.math.min
@@ -61,6 +61,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import us.blindmint.codex.data.parser.comic.ArchiveReader
@@ -71,6 +72,9 @@ import us.blindmint.codex.presentation.core.util.LocalActivity
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.reader.ReaderEvent
+
+private const val MAX_CACHED_PAGES = 50
+private const val PREFETCH_PAGES = 5
 
 @OptIn(FlowPreview::class)
 @Composable
@@ -96,10 +100,15 @@ fun ComicReaderLayout(
     showMenu: Boolean = false,
     showPageIndicator: Boolean = true,
     onLoadingComplete: () -> Unit = {},
+    onScrollRestorationComplete: () -> Unit = {},
     onMenuToggle: () -> Unit = {},
     onTotalPagesLoaded: (Int) -> Unit = {},
     onPageSelected: (Int) -> Unit = {}
 ) {
+    android.util.Log.d("ComicReaderLayout", "ComicReaderLayout called for: ${book.title}")
+    android.util.Log.d("ComicReaderLayout", "  initialPage: $initialPage")
+    android.util.Log.d("ComicReaderLayout", "  currentPage: $currentPage")
+
     val context = LocalContext.current
     val activity = LocalActivity.current
     val mainModel = hiltViewModel<MainModel>()
@@ -114,7 +123,18 @@ fun ComicReaderLayout(
     var initialLoadComplete by remember { mutableStateOf(false) }
 
     // Lazy loading cache - stores Pair of (ImageBitmap for display, Bitmap for cleanup)
-    val loadedPages = remember { mutableMapOf<Int, Pair<ImageBitmap, android.graphics.Bitmap>>() }
+    // Using LinkedHashMap for LRU eviction order
+    val loadedPages = remember { 
+        object : LinkedHashMap<Int, Pair<ImageBitmap, android.graphics.Bitmap>>(16, 0.75f, true) {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, Pair<ImageBitmap, android.graphics.Bitmap>>?): Boolean {
+                if (size > MAX_CACHED_PAGES) {
+                    eldest?.value?.second?.recycle() // Free native memory
+                    return true
+                }
+                return false
+            }
+        }
+    }
 
     // Function to load a specific page
     fun loadPage(pageIndex: Int): ImageBitmap? {
@@ -159,13 +179,25 @@ fun ComicReaderLayout(
         if (isRTL && totalPages > 0) totalPages - 1 - physicalPage else physicalPage
     }
 
+    // Prefetch pages around current page
+    fun prefetchPages(currentPage: Int) {
+        val physicalPage = mapLogicalToPhysicalPage(currentPage)
+        for (offset in -PREFETCH_PAGES..PREFETCH_PAGES) {
+            val targetPage = physicalPage + offset
+            if (targetPage in 0 until totalPages && !loadedPages.containsKey(targetPage)) {
+                loadPage(mapPhysicalToLogicalPage(targetPage))
+            }
+        }
+    }
+
     // Pager state for paged mode
     val pagerState = rememberPagerState(
-        initialPage = 0,
+        initialPage = if (totalPages > 0) mapLogicalToPhysicalPage(initialPage).coerceIn(0, totalPages - 1) else 0,
         pageCount = { maxOf(1, totalPages) }
     )
 
     // Lazy list state for webtoon mode
+    // Start at 0 initially, will scroll to saved position after comic loads
     val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = 0)
 
     // Store the current logical page for positioning when direction changes
@@ -185,8 +217,6 @@ fun ComicReaderLayout(
             }
             if (comicReaderMode == "PAGED") {
                 pagerState.scrollToPage(targetPhysicalPage)
-            } else {
-                lazyListState.scrollToItem(targetPhysicalPage)
             }
         }
     }
@@ -214,6 +244,8 @@ fun ComicReaderLayout(
                 if (comicReaderMode == "PAGED" && totalPages > 0) {
                     val logicalPage = mapPhysicalToLogicalPage(physicalPage)
                     onPageChanged(logicalPage)
+                    // Prefetch pages around current position
+                    prefetchPages(logicalPage)
                 }
             }
     }
@@ -228,6 +260,8 @@ fun ComicReaderLayout(
                 if (comicReaderMode == "WEBTOON" && totalPages > 0) {
                     val logicalPage = mapPhysicalToLogicalPage(physicalIndex)
                     onPageChanged(logicalPage)
+                    // Prefetch pages around current position
+                    prefetchPages(logicalPage)
                 }
             }
     }
@@ -294,19 +328,19 @@ fun ComicReaderLayout(
         }
     }
 
-        DisposableEffect(book.id) {
-            onDispose {
-                archiveHandle?.close()
-                loadedPages.values.forEach { it.second.recycle() }
-                loadedPages.clear()
-            }
+    DisposableEffect(book.id) {
+        onDispose {
+            archiveHandle?.close()
+            loadedPages.values.forEach { it.second.recycle() }
+            loadedPages.clear()
         }
+    }
 
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .background(backgroundColor)
-        ) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
         if (isLoading) {
             // Loading state - could add a loading indicator here
             Box(modifier = Modifier.fillMaxSize())
@@ -323,32 +357,52 @@ fun ComicReaderLayout(
                 )
             }
         } else if (totalPages > 0) {
-            // When pages are first loaded, restore to the initial page
+            // Initial loading and scroll sync logic
             LaunchedEffect(totalPages) {
-                // Only scroll on initial load (when totalPages first becomes > 0)
+                android.util.Log.d("ComicReaderLayout", "LaunchedEffect(totalPages) running")
+                android.util.Log.d("ComicReaderLayout", "  totalPages: $totalPages, initialPage: $initialPage, comicReaderMode: $comicReaderMode")
                 if (initialPage >= 0 && initialPage < totalPages) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(initialPage)
-                    pagerState.scrollToPage(targetPhysicalPage)
+                    android.util.Log.d("ComicReaderLayout", "  Scrolling to initialPage $initialPage (physical: $targetPhysicalPage)")
+
+                    // Scroll the appropriate component based on reader mode
+                    if (comicReaderMode == "WEBTOON") {
+                        android.util.Log.d("ComicReaderLayout", "  Scrolling lazyListState to $targetPhysicalPage for WEBTOON mode")
+                        lazyListState.scrollToItem(targetPhysicalPage)
+                    } else {
+                        android.util.Log.d("ComicReaderLayout", "  Scrolling pagerState to $targetPhysicalPage for PAGED mode")
+                        pagerState.scrollToPage(targetPhysicalPage)
+                    }
+                } else {
+                    android.util.Log.d("ComicReaderLayout", "  NOT scrolling - initialPage out of range")
                 }
+                onScrollRestorationComplete()
             }
 
             // Keep both scroll states in sync with currentPage (the logical source of truth)
-            // This ensures seamless transitions when switching between Paged (LTR/RTL) and Webtoon (Vertical).
-            // The inactive scroll state is kept synchronized so it's ready if we switch reading modes.
             LaunchedEffect(currentPage, totalPages, isRTL, initialLoadComplete) {
-                // Skip initial load to avoid race condition with LaunchedEffect(totalPages) above
-                if (!initialLoadComplete) return@LaunchedEffect
+                android.util.Log.d("ComicReaderLayout", "LaunchedEffect(currentPage, ...) running")
+                android.util.Log.d("ComicReaderLayout", "  currentPage: $currentPage, totalPages: $totalPages, initialLoadComplete: $initialLoadComplete")
+
+                // Don't sync until initial load is complete to avoid interfering with initial page restoration
+                if (!initialLoadComplete) {
+                    android.util.Log.d("ComicReaderLayout", "  Returning early - initial load not complete")
+                    return@LaunchedEffect
+                }
 
                 if (currentPage >= 0 && currentPage < totalPages && totalPages > 0) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(currentPage)
+                    android.util.Log.d("ComicReaderLayout", "  Target physical page for currentPage $currentPage: $targetPhysicalPage")
 
-                    // Always sync both scroll states to the logical currentPage position
-                    // Even though only one is visible at a time, keeping both in sync means
-                    // switching modes is instant - no need to wait for a scroll animation
                     if (pagerState.currentPage != targetPhysicalPage) {
+                        android.util.Log.d("ComicReaderLayout", "  Pager at ${pagerState.currentPage}, scrolling to $targetPhysicalPage")
                         pagerState.scrollToPage(targetPhysicalPage)
+                    } else {
+                        android.util.Log.d("ComicReaderLayout", "  Pager already at correct page")
                     }
+
                     if (lazyListState.firstVisibleItemIndex != targetPhysicalPage) {
+                        android.util.Log.d("ComicReaderLayout", "  LazyList scrolling to $targetPhysicalPage")
                         lazyListState.scrollToItem(targetPhysicalPage)
                     }
                 }

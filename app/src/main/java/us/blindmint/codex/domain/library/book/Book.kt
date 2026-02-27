@@ -59,11 +59,7 @@ data class Book(
     val isFavorite: Boolean = false
 ) : Parcelable {
     val displayProgress: Float
-        get() = if (speedReaderHasBeenOpened && speedReaderTotalWords > 0) {
-            speedReaderWordIndex.toFloat() / speedReaderTotalWords.toFloat()
-        } else {
-            progress
-        }
+        get() = progress
 
     val isPdf: Boolean
         get() = Uri.decode(filePath).lowercase().endsWith(".pdf")

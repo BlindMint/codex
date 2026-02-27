@@ -68,17 +68,17 @@ object LibrarySettingsScreen : Screen, Parcelable, SearchableSettings {
             title = "Display",
             preferenceItems = listOf(
                 Preference.PreferenceItem.SwitchPreference(
-                    title = "Show progress",
-                    checked = state.value.libraryShowProgress,
+                    title = "Show normal progress",
+                    checked = state.value.libraryShowNormalProgress,
                     onCheckedChanged = {
-                        mainModel.onEvent(MainEvent.OnChangeLibraryShowProgress(it))
+                        mainModel.onEvent(MainEvent.OnChangeLibraryShowNormalProgress(it))
                     },
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    title = "Show read button",
-                    checked = state.value.libraryShowReadButton,
+                    title = "Show speed progress",
+                    checked = state.value.libraryShowSpeedProgress,
                     onCheckedChanged = {
-                        mainModel.onEvent(MainEvent.OnChangeLibraryShowReadButton(it))
+                        mainModel.onEvent(MainEvent.OnChangeLibraryShowSpeedProgress(it))
                     },
                 ),
             ),

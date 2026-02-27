@@ -155,6 +155,8 @@ sealed class ReaderEvent {
     // Comic events
     data object OnComicLoadingComplete : ReaderEvent()
 
+    data object OnComicScrollRestorationComplete : ReaderEvent()
+
     data class OnComicTotalPagesLoaded(
         val totalPages: Int
     ) : ReaderEvent()

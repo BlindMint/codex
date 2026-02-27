@@ -421,6 +421,8 @@
     <string name="library_title_position_inside">Inside</string>
     <string name="library_show_read_button_option">Show read button</string>
     <string name="library_show_progress_option">Show progress</string>
+    <string name="library_show_normal_progress_option">Show normal progress</string>
+    <string name="library_show_speed_progress_option">Show speed progress</string>
 
     <!-- Color presets -->
     <string name="red_color">Red</string>

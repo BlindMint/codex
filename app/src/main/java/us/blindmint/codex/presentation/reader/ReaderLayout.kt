@@ -143,8 +143,12 @@ fun ReaderLayout(
                 showMenu = showMenu,
                 showPageIndicator = !fullscreenMode,
                 onLoadingComplete = {
-                    // Signal that comic loading is complete
+                    // Signal that comic loading is complete (content loaded)
                     onReaderEvent(ReaderEvent.OnComicLoadingComplete)
+                },
+                onScrollRestorationComplete = {
+                    // Signal that scroll to saved position is complete - safe to hide loading
+                    onReaderEvent(ReaderEvent.OnComicScrollRestorationComplete)
                 },
                 onMenuToggle = {
                     menuVisibility(
@@ -185,6 +189,9 @@ fun ReaderLayout(
                 showPageIndicator = !fullscreenMode,
                 onLoadingComplete = {
                     onReaderEvent(ReaderEvent.OnComicLoadingComplete)
+                },
+                onScrollRestorationComplete = {
+                    onReaderEvent(ReaderEvent.OnComicScrollRestorationComplete)
                 },
                 onMenuToggle = {
                     menuVisibility(

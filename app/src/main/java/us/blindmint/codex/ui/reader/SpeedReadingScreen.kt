@@ -299,15 +299,8 @@ data class SpeedReadingScreen(
         val words = speedReaderModel.words.value
         val totalWords = speedReaderModel.totalWords.intValue
         val isLoading = speedReaderModel.isLoading.value
+        val isReadyForDisplay = speedReaderModel.isReadyForDisplay.value
         val errorMessage = speedReaderModel.errorMessage.value
-
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION] Rendering SpeedReadingScaffold")
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   book.id=${book?.id}, book.title=${book?.title}")
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   words.size=${words.size}")
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   totalWords=$totalWords")
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   isLoading=$isLoading")
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   speedReaderModel.currentWordIndex.intValue=${speedReaderModel.currentWordIndex.intValue}")
-        Log.d("SPEED_READER_SCREEN", "[COMPOSITION]   speedReaderModel.currentProgress.floatValue=${speedReaderModel.currentProgress.floatValue}")
 
         // Use empty book as fallback when book hasn't loaded yet
         val displayBook = book ?: us.blindmint.codex.presentation.core.constants.provideEmptyBook()
@@ -377,10 +370,10 @@ data class SpeedReadingScreen(
             chapterTitle = null, // Speed reader doesn't track chapters
             currentWordIndex = speedReaderModel.currentWordIndex.intValue,
             totalWords = totalWords,
-            initialWordIndex = speedReaderModel.currentWordIndex.intValue,
+            initialWordIndex = speedReaderModel.initialWordIndex.intValue,
             backgroundColor = backgroundColor.value,
             fontColor = fontColor.value,
-            isLoading = isLoading,
+            isLoading = !isReadyForDisplay,
             accentCharacterEnabled = speedReadingAccentCharacterEnabled.value,
             accentColor = speedReadingAccentColor.value,
             fontFamily = speedReaderFontFamily.font,
@@ -424,10 +417,11 @@ data class SpeedReadingScreen(
                 speedReaderModel.updateProgress(progress, wordIndex)
             },
              onSaveProgress = { progress, wordIndex ->
-                 speedReaderModel.updateProgress(progress, wordIndex)
+                  speedReaderModel.updateProgress(progress, wordIndex)
              },
-             onPlayPause = {}
-         )
+             onPlayPause = {},
+             isReadyForDisplay = isReadyForDisplay
+          )
 
         // Speed reading settings bottom sheet
         SpeedReadingSettingsBottomSheet(
