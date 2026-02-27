@@ -1487,6 +1487,9 @@ class ReaderModel @Inject constructor(
             }
             android.util.Log.d("ReaderModel", "resetScreen() executing state reset")
             android.util.Log.d("ReaderModel", "  Current state before reset: currentComicPage=${_state.value.currentComicPage}, book=${_state.value.book.title}")
+            // Refresh library list so progress indicators update immediately
+            LibraryScreen.refreshListChannel.trySend(0)
+            HistoryScreen.refreshListChannel.trySend(0)
             invalidateWordCache()
             _state.update { ReaderState() }
             android.util.Log.d("ReaderModel", "resetScreen() state reset complete")

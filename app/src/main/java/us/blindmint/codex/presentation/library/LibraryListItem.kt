@@ -146,7 +146,7 @@ fun LibraryListItem(
 
             if (mainState.value.libraryShowNormalProgress) {
                 if (!book.data.isComic) {
-                    // Speed reader column (left, only if opened and enabled)
+                    // Speed reader button (left, only if opened and enabled)
                     if (book.data.speedReaderHasBeenOpened && mainState.value.libraryShowSpeedProgress) {
                         val speedProgress = if (book.data.speedReaderTotalWords > 0) {
                             "${(book.data.speedReaderWordIndex.toFloat() / book.data.speedReaderTotalWords * 100).toInt()}%"
@@ -154,143 +154,107 @@ fun LibraryListItem(
                             "0%"
                         }
 
-                        Column(
+                        FilledIconButton(
+                            onClick = { navigateToSpeedReading() },
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
                                 .padding(start = 2.dp, bottom = 2.dp)
                                 .width(28.dp)
-                                .clip(MaterialTheme.shapes.extraSmall)
-                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                .height(28.dp),
+                            shape = MaterialTheme.shapes.extraSmall,
+                            colors = IconButtonDefaults.iconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary,
+                                contentColor = MaterialTheme.colorScheme.onTertiary
+                            )
                         ) {
-                            if (mainState.value.libraryShowSpeedProgress) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(MaterialTheme.colorScheme.tertiary)
-                                        .padding(horizontal = 2.dp, vertical = 2.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    StyledText(
-                                        text = speedProgress,
-                                        style = MaterialTheme.typography.bodySmall.copy(
-                                            textAlign = TextAlign.Center,
-                                            color = MaterialTheme.colorScheme.onTertiary,
-                                            fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.6f
-                                        ),
-                                        maxLines = 1
-                                    )
-                                }
-                            }
-                            FilledIconButton(
-                                onClick = { navigateToSpeedReading() },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(18.dp),
-                                shape = MaterialTheme.shapes.extraSmall,
-                                colors = IconButtonDefaults.iconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
                             ) {
+                                StyledText(
+                                    text = speedProgress,
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        textAlign = TextAlign.Center,
+                                        color = MaterialTheme.colorScheme.onTertiary,
+                                        fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.6f
+                                    ),
+                                    maxLines = 1
+                                )
                                 Icon(
                                     imageVector = Icons.Rounded.Bolt,
                                     contentDescription = "Speed Read",
-                                    modifier = Modifier.size(10.dp)
+                                    modifier = Modifier.size(8.dp)
                                 )
                             }
                         }
                     }
 
-                    // Normal reader column (right)
-                    Column(
+                    // Normal reader button (right)
+                    FilledIconButton(
+                        onClick = { navigateToReader() },
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(end = 2.dp, bottom = 2.dp)
                             .width(28.dp)
-                            .clip(MaterialTheme.shapes.extraSmall)
-                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .height(28.dp),
+                        shape = MaterialTheme.shapes.extraSmall,
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary
+                        )
                     ) {
-                        if (mainState.value.libraryShowNormalProgress) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.secondary)
-                                    .padding(horizontal = 2.dp, vertical = 2.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                StyledText(
-                                    text = progress,
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        textAlign = TextAlign.Center,
-                                        color = MaterialTheme.colorScheme.onSecondary,
-                                        fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.6f
-                                    ),
-                                    maxLines = 1
-                                )
-                            }
-                        }
-                        FilledIconButton(
-                            onClick = { navigateToReader() },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(18.dp),
-                            shape = MaterialTheme.shapes.extraSmall,
-                            colors = IconButtonDefaults.iconButtonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
+                            StyledText(
+                                text = progress,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSecondary,
+                                    fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.6f
+                                ),
+                                maxLines = 1
+                            )
                             Icon(
                                 imageVector = Icons.Filled.PlayArrow,
                                 contentDescription = stringResource(id = R.string.continue_reading_content_desc),
-                                modifier = Modifier.size(10.dp)
+                                modifier = Modifier.size(8.dp)
                             )
                         }
                     }
                 } else {
-                    // Comics: single play button at bottom-right (styled like normal reader)
-                    Column(
+                    // Comics: single button at bottom-right
+                    FilledIconButton(
+                        onClick = { navigateToReader() },
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(end = 2.dp, bottom = 2.dp)
                             .width(28.dp)
-                            .clip(MaterialTheme.shapes.extraSmall)
-                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .height(28.dp),
+                        shape = MaterialTheme.shapes.extraSmall,
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary
+                        )
                     ) {
-                        if (mainState.value.libraryShowNormalProgress) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.secondary)
-                                    .padding(horizontal = 2.dp, vertical = 2.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                StyledText(
-                                    text = progress,
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        textAlign = TextAlign.Center,
-                                        color = MaterialTheme.colorScheme.onSecondary,
-                                        fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.6f
-                                    ),
-                                    maxLines = 1
-                                )
-                            }
-                        }
-                        FilledIconButton(
-                            onClick = { navigateToReader() },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(18.dp),
-                            shape = MaterialTheme.shapes.extraSmall,
-                            colors = IconButtonDefaults.iconButtonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
+                            StyledText(
+                                text = progress,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSecondary,
+                                    fontSize = MaterialTheme.typography.bodySmall.fontSize * 0.6f
+                                ),
+                                maxLines = 1
+                            )
                             Icon(
                                 imageVector = Icons.Filled.PlayArrow,
                                 contentDescription = stringResource(id = R.string.continue_reading_content_desc),
-                                modifier = Modifier.size(10.dp)
+                                modifier = Modifier.size(8.dp)
                             )
                         }
                     }
