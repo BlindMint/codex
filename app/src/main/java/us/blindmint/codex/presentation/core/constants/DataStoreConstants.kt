@@ -98,8 +98,8 @@ object DataStoreConstants {
     val LIBRARY_ALWAYS_SHOW_DEFAULT_TAB = booleanPreferencesKey("library_always_show_default_tab")
     val LIBRARY_SHOW_BOOK_COUNT = booleanPreferencesKey("library_show_book_count")
     val LIBRARY_TITLE_POSITION = stringPreferencesKey("library_title_position")
-    val LIBRARY_SHOW_READ_BUTTON = booleanPreferencesKey("library_show_read_button")
-    val LIBRARY_SHOW_PROGRESS = booleanPreferencesKey("library_show_progress")
+    val LIBRARY_SHOW_NORMAL_PROGRESS = booleanPreferencesKey("library_show_normal_progress")
+    val LIBRARY_SHOW_SPEED_PROGRESS = booleanPreferencesKey("library_show_speed_progress")
 
     // Background image settings
     val BACKGROUND_IMAGE = stringPreferencesKey("background_image")

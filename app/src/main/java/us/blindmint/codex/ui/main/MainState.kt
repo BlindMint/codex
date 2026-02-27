@@ -179,8 +179,8 @@ data class MainState(
     val libraryAlwaysShowDefaultTab: Boolean = provideDefaultValue { false },
     val libraryShowBookCount: Boolean = provideDefaultValue { true },
     val libraryTitlePosition: LibraryTitlePosition = provideDefaultValue { LibraryTitlePosition.BELOW },
-    val libraryShowReadButton: Boolean = provideDefaultValue { true },
-    val libraryShowProgress: Boolean = provideDefaultValue { true },
+    val libraryShowNormalProgress: Boolean = provideDefaultValue { true },
+    val libraryShowSpeedProgress: Boolean = provideDefaultValue { true },
 
     // Settings
     val autoColorPresetSelected: Boolean = provideDefaultValue { false },
@@ -530,13 +530,13 @@ data class MainState(
                         LIBRARY_TITLE_POSITION, convert = { toLibraryTitlePosition() }
                     ) { libraryTitlePosition },
 
-                    libraryShowReadButton = provideValue(
-                        LIBRARY_SHOW_READ_BUTTON
-                    ) { libraryShowReadButton },
+                    libraryShowNormalProgress = provideValue(
+                        LIBRARY_SHOW_NORMAL_PROGRESS
+                    ) { libraryShowNormalProgress },
 
-                    libraryShowProgress = provideValue(
-                        LIBRARY_SHOW_PROGRESS
-                    ) { libraryShowProgress },
+                    libraryShowSpeedProgress = provideValue(
+                        LIBRARY_SHOW_SPEED_PROGRESS
+                    ) { libraryShowSpeedProgress },
 
                     // Comic Reader Settings
                     comicReadingDirection = provideValue(

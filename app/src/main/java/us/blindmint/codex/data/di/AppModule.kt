@@ -77,7 +77,8 @@ object AppModule {
                 DatabaseHelper.MIGRATION_21_22, // adds usernameEncrypted and passwordEncrypted to OpdsSourceEntity
                 DatabaseHelper.MIGRATION_22_23,
                 DatabaseHelper.MIGRATION_23_24,
-                DatabaseHelper.MIGRATION_24_25
+                DatabaseHelper.MIGRATION_24_25,
+                DatabaseHelper.MIGRATION_25_26 // fixes isComic field for existing comic books
             )
             .allowMainThreadQueries()
             .build()

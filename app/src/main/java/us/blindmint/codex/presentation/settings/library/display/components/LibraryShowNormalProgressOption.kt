@@ -16,15 +16,15 @@ import us.blindmint.codex.ui.main.MainEvent
 import us.blindmint.codex.ui.main.MainModel
 
 @Composable
-fun LibraryShowReadButtonOption() {
+fun LibraryShowNormalProgressOption() {
     val mainModel = hiltViewModel<MainModel>()
     val state = mainModel.state.collectAsStateWithLifecycle()
 
     SwitchWithTitle(
-        selected = state.value.libraryShowReadButton,
-        title = stringResource(id = R.string.library_show_read_button_option),
+        selected = state.value.libraryShowNormalProgress,
+        title = stringResource(id = R.string.library_show_normal_progress_option),
         onClick = {
-            mainModel.onEvent(MainEvent.OnChangeLibraryShowReadButton(!state.value.libraryShowReadButton))
+            mainModel.onEvent(MainEvent.OnChangeLibraryShowNormalProgress(!state.value.libraryShowNormalProgress))
         }
     )
 }

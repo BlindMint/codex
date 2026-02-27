@@ -137,12 +137,14 @@ fun PdfReaderLayout(
                 }.first()
             } else {
                 pagerState.scrollToPage(targetPhysicalPage)
-                // Wait for scroll to complete
-                kotlinx.coroutines.flow.flow {
-                    while (pagerState.isScrollInProgress) {
-                        emit(Unit)
-                    }
-                }.first()
+                // Wait for scroll to complete (only if scroll is in progress)
+                if (pagerState.isScrollInProgress) {
+                    kotlinx.coroutines.flow.flow {
+                        while (pagerState.isScrollInProgress) {
+                            emit(Unit)
+                        }
+                    }.first()
+                }
             }
             // Signal that scroll restoration is complete - loading can now be hidden
             onScrollRestorationComplete()

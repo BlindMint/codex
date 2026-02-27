@@ -111,6 +111,7 @@ fun SpeedReadingContent(
     onShowWordPicker: () -> Unit = {},
     onProgressUpdate: (Float, Int) -> Unit = { _, _ -> }, // Callback for word-based progress updates
     onSaveProgress: (Float, Int) -> Unit = { _, _ -> }, // Callback for immediate progress saves (no throttling)
+    onLastWordReached: () -> Unit = {}, // Callback when playback reaches the last word
     showBottomBar: Boolean = true
 ) {
     // Speed reader always starts from beginning of book
@@ -230,7 +231,12 @@ fun SpeedReadingContent(
                 else -> wordDelay
             }
             delay(delayTime)
-            currentWordIndex = if (currentWordIndex < words.size - 1) currentWordIndex + 1 else 0
+            // Stop at last word instead of looping back to 0
+            if (currentWordIndex >= words.size - 1) {
+                onLastWordReached()
+            } else {
+                currentWordIndex = currentWordIndex + 1
+            }
         }
     }
 

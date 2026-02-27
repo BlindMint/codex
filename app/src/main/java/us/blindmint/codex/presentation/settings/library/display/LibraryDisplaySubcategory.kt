@@ -22,8 +22,8 @@ import us.blindmint.codex.presentation.settings.library.display.components.Libra
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryLayoutOption
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryListSizeOption
 import us.blindmint.codex.ui.main.MainModel
-import us.blindmint.codex.presentation.settings.library.display.components.LibraryShowProgressOption
-import us.blindmint.codex.presentation.settings.library.display.components.LibraryShowReadButtonOption
+import us.blindmint.codex.presentation.settings.library.display.components.LibraryShowSpeedProgressOption
+import us.blindmint.codex.presentation.settings.library.display.components.LibraryShowNormalProgressOption
 import us.blindmint.codex.presentation.settings.library.display.components.LibraryTitlePositionOption
 
 fun LazyListScope.LibraryDisplaySubcategory(
@@ -63,11 +63,11 @@ fun LazyListScope.LibraryDisplaySubcategory(
         }
 
         item {
-            LibraryShowReadButtonOption()
+            LibraryShowNormalProgressOption()
         }
 
         item {
-            LibraryShowProgressOption()
+            LibraryShowSpeedProgressOption()
         }
     }
 }

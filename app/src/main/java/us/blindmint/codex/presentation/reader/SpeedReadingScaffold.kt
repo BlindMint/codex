@@ -17,6 +17,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import us.blindmint.codex.domain.ui.UIText
 import us.blindmint.codex.R
 import androidx.compose.material3.Scaffold
@@ -104,6 +107,7 @@ fun SpeedReadingScaffold(
 ) {
     var alwaysShowPlayPause by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
+    var showLastWordDialog by remember { mutableStateOf(false) }
     var navigateWordCallback: ((Int) -> Unit)? by remember { mutableStateOf(null) }
     var showWordPicker by remember { mutableStateOf(false) }
     var wordPickerRefreshKey by remember { mutableIntStateOf(0) }
@@ -315,14 +319,52 @@ fun SpeedReadingScaffold(
                        // Also update the underlying book progress periodically
                        parentOnChangeProgress(progress, wordIndex)
                    },
-                   onSaveProgress = { progress, wordIndex ->
-                       // Immediate progress save for manual pauses (no throttling)
-                       realTimeProgress = progress
-                       onSaveProgress(progress, wordIndex)
-                   },
-                   showBottomBar = !isPlaying
-              )
+                    onSaveProgress = { progress, wordIndex ->
+                        // Immediate progress save for manual pauses (no throttling)
+                        realTimeProgress = progress
+                        onSaveProgress(progress, wordIndex)
+                    },
+                    onLastWordReached = {
+                        isPlaying = false
+                        showLastWordDialog = true
+                    },
+                    showBottomBar = !isPlaying
+               )
             }
+        }
+
+        // Last word reached dialog
+        if (showLastWordDialog) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showLastWordDialog = false },
+                title = { Text("End of Book Reached") },
+                text = { Text("You have reached the last word. Start from the beginning?") },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(
+                        onClick = {
+                            // Restart from beginning
+                            selectedWordIndex = 0
+                            realTimeProgress = 0f
+                            onSaveProgress(0f, 0)
+                            onWordPicked(0)
+                            parentOnChangeProgress(0f, 0)
+                            showLastWordDialog = false
+                            isPlaying = true
+                        }
+                    ) {
+                        Text("Restart")
+                    }
+                },
+                dismissButton = {
+                    androidx.compose.material3.TextButton(
+                        onClick = {
+                            showLastWordDialog = false
+                        }
+                    ) {
+                        Text("Dismiss")
+                    }
+                }
+            )
         }
 
         // Word Picker Sheet - only show when not loading

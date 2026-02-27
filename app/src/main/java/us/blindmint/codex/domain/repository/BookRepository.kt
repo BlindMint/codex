@@ -53,6 +53,12 @@ interface BookRepository {
         progress: Float
     )
 
+    suspend fun updateComicPdfProgress(
+        bookId: Int,
+        lastPageRead: Int,
+        progress: Float
+    )
+
     suspend fun markSpeedReaderOpened(
         bookId: Int
     )

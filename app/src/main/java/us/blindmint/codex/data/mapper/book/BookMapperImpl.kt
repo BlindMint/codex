@@ -54,6 +54,24 @@ class BookMapperImpl @Inject constructor() : BookMapper {
     }
 
     override suspend fun toBook(bookEntity: BookEntity): Book {
+        // Detect comic files by extension if isComic flag is incorrect
+        // This fixes books added before the isComic field was properly set
+        val decodedPath = android.net.Uri.decode(bookEntity.filePath).lowercase()
+        val fileExtension = decodedPath.substringAfterLast('.', "")
+        val isComicByExtension = fileExtension in listOf("cbr", "cbz", "cb7")
+        val actualIsComic = bookEntity.isComic || isComicByExtension
+
+        // Debug logging
+        android.util.Log.d("BookMapper", "Loading book: ${bookEntity.title}")
+        android.util.Log.d("BookMapper", "  filePath: ${bookEntity.filePath}")
+        android.util.Log.d("BookMapper", "  decodedPath: $decodedPath")
+        android.util.Log.d("BookMapper", "  fileExtension: $fileExtension")
+        android.util.Log.d("BookMapper", "  bookEntity.isComic: ${bookEntity.isComic}")
+        android.util.Log.d("BookMapper", "  isComicByExtension: $isComicByExtension")
+        android.util.Log.d("BookMapper", "  actualIsComic: $actualIsComic")
+        android.util.Log.d("BookMapper", "  bookEntity.lastPageRead: ${bookEntity.lastPageRead}")
+        android.util.Log.d("BookMapper", "  bookEntity.progress: ${bookEntity.progress}")
+
         return Book(
             id = bookEntity.id,
             title = bookEntity.title,
@@ -83,7 +101,7 @@ class BookMapperImpl @Inject constructor() : BookMapper {
             opdsSourceId = bookEntity.opdsSourceId,
             opdsCalibreId = bookEntity.opdsCalibreId,
             metadataLastRefreshTime = bookEntity.metadataLastRefreshTime,
-            isComic = bookEntity.isComic,
+            isComic = actualIsComic,
             pageCount = bookEntity.pageCount,
             currentPage = bookEntity.currentPage,
             lastPageRead = bookEntity.lastPageRead,

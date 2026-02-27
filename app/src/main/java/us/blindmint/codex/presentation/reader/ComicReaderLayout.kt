@@ -7,6 +7,7 @@
 package us.blindmint.codex.presentation.reader
 
 import android.content.Context
+import android.util.Log
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -43,7 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import kotlin.math.min
@@ -105,6 +105,10 @@ fun ComicReaderLayout(
     onTotalPagesLoaded: (Int) -> Unit = {},
     onPageSelected: (Int) -> Unit = {}
 ) {
+    android.util.Log.d("ComicReaderLayout", "ComicReaderLayout called for: ${book.title}")
+    android.util.Log.d("ComicReaderLayout", "  initialPage: $initialPage")
+    android.util.Log.d("ComicReaderLayout", "  currentPage: $currentPage")
+
     val context = LocalContext.current
     val activity = LocalActivity.current
     val mainModel = hiltViewModel<MainModel>()
@@ -188,12 +192,12 @@ fun ComicReaderLayout(
 
     // Pager state for paged mode
     val pagerState = rememberPagerState(
-        initialPage = 0,
+        initialPage = mapLogicalToPhysicalPage(initialPage),
         pageCount = { maxOf(1, totalPages) }
     )
 
     // Lazy list state for webtoon mode
-    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = 0)
+    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = mapLogicalToPhysicalPage(initialPage))
 
     // Store the current logical page for positioning when direction changes
     var storedLogicalPage by remember { mutableIntStateOf(0) }
@@ -212,8 +216,6 @@ fun ComicReaderLayout(
             }
             if (comicReaderMode == "PAGED") {
                 pagerState.scrollToPage(targetPhysicalPage)
-            } else {
-                lazyListState.scrollToItem(targetPhysicalPage)
             }
         }
     }
@@ -325,19 +327,19 @@ fun ComicReaderLayout(
         }
     }
 
-        DisposableEffect(book.id) {
-            onDispose {
-                archiveHandle?.close()
-                loadedPages.values.forEach { it.second.recycle() }
-                loadedPages.clear()
-            }
+    DisposableEffect(book.id) {
+        onDispose {
+            archiveHandle?.close()
+            loadedPages.values.forEach { it.second.recycle() }
+            loadedPages.clear()
         }
+    }
 
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .background(backgroundColor)
-        ) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
         if (isLoading) {
             // Loading state - could add a loading indicator here
             Box(modifier = Modifier.fillMaxSize())
@@ -354,42 +356,44 @@ fun ComicReaderLayout(
                 )
             }
         } else if (totalPages > 0) {
-            // When pages are first loaded, restore to the initial page
-            // Only call the scroll restoration complete callback after scroll animation finishes
+            // Initial loading and scroll sync logic
             LaunchedEffect(totalPages) {
-                // Only scroll on initial load (when totalPages first becomes > 0)
+                android.util.Log.d("ComicReaderLayout", "LaunchedEffect(totalPages) running")
+                android.util.Log.d("ComicReaderLayout", "  totalPages: $totalPages, initialPage: $initialPage")
                 if (initialPage >= 0 && initialPage < totalPages) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(initialPage)
+                    android.util.Log.d("ComicReaderLayout", "  Scrolling to initialPage $initialPage (physical: $targetPhysicalPage)")
                     pagerState.scrollToPage(targetPhysicalPage)
-                    // Wait for scroll animation to complete before signaling restoration complete
-                    // This ensures loading animation hides AFTER scroll, preventing visible jump
-                    kotlinx.coroutines.flow.flow {
-                        while (pagerState.isScrollInProgress) {
-                            emit(Unit)
-                        }
-                    }.first()
+                } else {
+                    android.util.Log.d("ComicReaderLayout", "  NOT scrolling - initialPage out of range")
                 }
-                // Signal that scroll restoration is complete - loading can now be hidden
                 onScrollRestorationComplete()
             }
 
             // Keep both scroll states in sync with currentPage (the logical source of truth)
-            // This ensures seamless transitions when switching between Paged (LTR/RTL) and Webtoon (Vertical).
-            // The inactive scroll state is kept synchronized so it's ready if we switch reading modes.
             LaunchedEffect(currentPage, totalPages, isRTL, initialLoadComplete) {
-                // Skip initial load to avoid race condition with LaunchedEffect(totalPages) above
-                if (!initialLoadComplete) return@LaunchedEffect
+                android.util.Log.d("ComicReaderLayout", "LaunchedEffect(currentPage, ...) running")
+                android.util.Log.d("ComicReaderLayout", "  currentPage: $currentPage, totalPages: $totalPages, initialLoadComplete: $initialLoadComplete")
+
+                // Don't sync until initial load is complete to avoid interfering with initial page restoration
+                if (!initialLoadComplete) {
+                    android.util.Log.d("ComicReaderLayout", "  Returning early - initial load not complete")
+                    return@LaunchedEffect
+                }
 
                 if (currentPage >= 0 && currentPage < totalPages && totalPages > 0) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(currentPage)
+                    android.util.Log.d("ComicReaderLayout", "  Target physical page for currentPage $currentPage: $targetPhysicalPage")
 
-                    // Always sync both scroll states to the logical currentPage position
-                    // Even though only one is visible at a time, keeping both in sync means
-                    // switching modes is instant - no need to wait for a scroll animation
                     if (pagerState.currentPage != targetPhysicalPage) {
+                        android.util.Log.d("ComicReaderLayout", "  Pager at ${pagerState.currentPage}, scrolling to $targetPhysicalPage")
                         pagerState.scrollToPage(targetPhysicalPage)
+                    } else {
+                        android.util.Log.d("ComicReaderLayout", "  Pager already at correct page")
                     }
+
                     if (lazyListState.firstVisibleItemIndex != targetPhysicalPage) {
+                        android.util.Log.d("ComicReaderLayout", "  LazyList scrolling to $targetPhysicalPage")
                         lazyListState.scrollToItem(targetPhysicalPage)
                     }
                 }

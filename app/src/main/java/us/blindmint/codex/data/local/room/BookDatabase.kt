@@ -31,7 +31,7 @@ import java.io.File
         BookmarkEntity::class,
         OpdsSourceEntity::class,
     ],
-    version = 25,
+    version = 26,
     exportSchema = false
 )
 abstract class BookDatabase : RoomDatabase() {
@@ -256,6 +256,23 @@ object DatabaseHelper {
             db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_BookEntity_filePath` ON `BookEntity` (`filePath`)")
             db.execSQL("CREATE INDEX IF NOT EXISTS `index_BookEntity_opdsCalibreId` ON `BookEntity` (`opdsCalibreId`)")
             db.execSQL("CREATE INDEX IF NOT EXISTS `index_BookEntity_opdsSourceId` ON `BookEntity` (`opdsSourceId`)")
+        }
+    }
+
+    val MIGRATION_25_26 = object : Migration(25, 26) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Fix existing comic books that have isComic set to 0
+            // Detect comics by file extension (.cbr, .cbz, .cb7)
+            db.execSQL("""
+                UPDATE `BookEntity`
+                SET `isComic` = 1
+                WHERE `isComic` = 0
+                AND (
+                    LOWER(`filePath`) LIKE '%.cbr' OR
+                    LOWER(`filePath`) LIKE '%.cbz' OR
+                    LOWER(`filePath`) LIKE '%.cb7'
+                )
+            """.trimIndent())
         }
     }
 }
