@@ -65,6 +65,10 @@ object LibraryScreen : Screen, Parcelable {
     @IgnoredOnParcel
     val refreshListChannel: Channel<Long> = Channel(Channel.CONFLATED)
 
+    /** Silent refresh that updates book data without showing the pull-to-refresh indicator. */
+    @IgnoredOnParcel
+    val silentRefreshChannel: Channel<Unit> = Channel(Channel.CONFLATED)
+
     @IgnoredOnParcel
     val scrollToPageCompositionChannel: Channel<Int> = Channel(Channel.CONFLATED)
 

@@ -77,6 +77,13 @@ class LibraryModel @Inject constructor(
                 )
             }
         }
+
+        /* Silent refresh — no spinner, used when returning from reader */
+        viewModelScope.launch(Dispatchers.IO) {
+            LibraryScreen.silentRefreshChannel.receiveAsFlow().collectLatest {
+                getBooksFromDatabase()
+            }
+        }
         /* - - - - - - - - - - - - - - - - - - - */
     }
 
