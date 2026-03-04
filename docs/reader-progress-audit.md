@@ -147,9 +147,9 @@ val snappedIndex = findNearestParagraphStart(firstVisibleItemIndex)
 | # | Issue | Severity | Status |
 |---|-------|----------|--------|
 | 1 | Speed reader library refresh spinner | Medium | **Fixed** |
-| 2 | Old `calculateProgress()` used in chapter/bookmark jumps | Low | Open |
-| 3 | Comic reader DB write on every page turn | Low | Open |
-| 4 | Speed reader `onLeave()` save may be cancelled | Low | Open |
+| 2 | Old `calculateProgress()` used in chapter/bookmark jumps | Low | **Fixed** |
+| 3 | Comic reader DB write on every page turn | Low | **Fixed** |
+| 4 | Speed reader `onLeave()` save may be cancelled | Low | **Fixed** |
 | 5 | Speed reader doesn't update `progress` field | Medium | By design (note) |
-| 6 | Scroll slider uses index-based vs word-based mapping | Low | Open |
-| 7 | Exit saves raw index vs snapped index | Very Low | Open |
+| 6 | Scroll slider uses index-based vs word-based mapping | Low | **Fixed** |
+| 7 | Exit saves raw index vs snapped index | Very Low | **Fixed** |

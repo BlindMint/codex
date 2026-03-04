@@ -14,6 +14,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.reader.SpeedReaderWord
@@ -184,7 +186,7 @@ class SpeedReaderModel @Inject constructor(
     }
 
     fun onLeave() {
-        viewModelScope.launch {
+        viewModelScope.launch(NonCancellable + Dispatchers.IO) {
             saveProgressToDatabase(currentProgress.floatValue)
         }
     }
