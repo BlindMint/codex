@@ -304,13 +304,14 @@ class HistoryModel @Inject constructor(
         val history = historyRepository.getHistory().sortedByDescending {
             it.time
         }.run {
-            val books = bookRepository.getBooksById(
+            val booksMap = bookRepository.getBooksById(
                 this.map { it.bookId }.distinct()
-            ).toMutableList()
+            ).associateBy { it.id }
 
+            val lowerQuery = query.lowercase().trim()
             mapNotNull {
-                val book = books.find { book -> book.id == it.bookId } ?: return@mapNotNull null
-                if (!book.title.lowercase().trim().contains(query.lowercase().trim())) {
+                val book = booksMap[it.bookId] ?: return@mapNotNull null
+                if (lowerQuery.isNotEmpty() && !book.title.lowercase().trim().contains(lowerQuery)) {
                     return@mapNotNull null
                 }
 

@@ -7,13 +7,14 @@
 package us.blindmint.codex.data.local.dto
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
  * Entity to store progress history for books that have been removed from the library.
  * This allows seamless resumption when the same book is re-added.
  */
-@Entity
+@Entity(indices = [Index(value = ["filePath"])])
 data class BookProgressHistoryEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val filePath: String, // Unique identifier for the book file

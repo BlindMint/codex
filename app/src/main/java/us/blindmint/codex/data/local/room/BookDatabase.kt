@@ -31,7 +31,7 @@ import java.io.File
         BookmarkEntity::class,
         OpdsSourceEntity::class,
     ],
-    version = 26,
+    version = 27,
     exportSchema = false
 )
 abstract class BookDatabase : RoomDatabase() {
@@ -273,6 +273,15 @@ object DatabaseHelper {
                     LOWER(`filePath`) LIKE '%.cb7'
                 )
             """.trimIndent())
+        }
+    }
+
+    val MIGRATION_26_27 = object : Migration(26, 27) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Add indices on frequently-queried foreign key columns
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_HistoryEntity_bookId` ON `HistoryEntity` (`bookId`)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_BookmarkEntity_bookId` ON `BookmarkEntity` (`bookId`)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_BookProgressHistoryEntity_filePath` ON `BookProgressHistoryEntity` (`filePath`)")
         }
     }
 }

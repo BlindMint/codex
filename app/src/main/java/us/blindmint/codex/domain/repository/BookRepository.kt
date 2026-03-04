@@ -84,6 +84,15 @@ interface BookRepository {
 
     suspend fun getAllLanguages(): List<String>
 
+    data class LibraryMetadata(
+        val authors: List<String>,
+        val series: List<String>,
+        val tags: List<String>,
+        val languages: List<String>
+    )
+
+    suspend fun getAllMetadata(): LibraryMetadata
+
     suspend fun getPublicationYearRange(): Pair<Int, Int>
 
     suspend fun getBooksByOpdsSourceUrl(

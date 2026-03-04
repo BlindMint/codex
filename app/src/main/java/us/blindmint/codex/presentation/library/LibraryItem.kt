@@ -43,7 +43,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.R
 import us.blindmint.codex.domain.library.book.SelectableBook
 import us.blindmint.codex.presentation.core.components.common.AsyncCoverImage
@@ -58,7 +57,10 @@ fun LibraryItem(
     navigateToBookInfo: () -> Unit,
     navigateToReader: () -> Unit,
     modifier: Modifier = Modifier,
-    navigateToSpeedReading: () -> Unit = {}
+    navigateToSpeedReading: () -> Unit = {},
+    showNormalProgress: Boolean = true,
+    showSpeedProgress: Boolean = true,
+    titlePosition: us.blindmint.codex.domain.library.display.LibraryTitlePosition = us.blindmint.codex.domain.library.display.LibraryTitlePosition.BELOW
 ) {
     val backgroundColor = if (book.selected) MaterialTheme.colorScheme.secondary
     else Color.Transparent
@@ -68,10 +70,6 @@ fun LibraryItem(
     val progress = rememberSaveable(book.data.progress) {
         "${book.data.progress.calculateProgress(1)}%"
     }
-
-    // Get main state for settings
-    val mainModel = androidx.hilt.navigation.compose.hiltViewModel<us.blindmint.codex.ui.main.MainModel>()
-    val mainState = mainModel.state.collectAsStateWithLifecycle()
 
     Column(
         modifier
@@ -123,10 +121,10 @@ fun LibraryItem(
                 )
             }
 
-            if (mainState.value.libraryShowNormalProgress) {
+            if (showNormalProgress) {
                 val showSpeedButton = !book.data.isComic &&
                         book.data.speedReaderHasBeenOpened &&
-                        mainState.value.libraryShowSpeedProgress
+                        showSpeedProgress
 
                 if (showSpeedButton) {
                     val speedProgress = remember(book.data.speedReaderWordIndex, book.data.speedReaderTotalWords) {
@@ -219,7 +217,7 @@ fun LibraryItem(
         }
         // Title display based on title position setting
 
-        when (mainState.value.libraryTitlePosition) {
+        when (titlePosition) {
             us.blindmint.codex.domain.library.display.LibraryTitlePosition.BELOW -> {
                 Spacer(modifier = Modifier.height(6.dp))
                 StyledText(

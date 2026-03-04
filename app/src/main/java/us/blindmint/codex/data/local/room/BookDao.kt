@@ -83,7 +83,7 @@ interface BookDao {
     suspend fun getHistory(): List<HistoryEntity>
 
     @Query("SELECT * FROM historyentity WHERE bookId = :bookId ORDER BY time DESC LIMIT 1")
-    fun getLatestHistoryForBook(bookId: Int): HistoryEntity?
+    suspend fun getLatestHistoryForBook(bookId: Int): HistoryEntity?
 
     @Query("SELECT * FROM historyentity WHERE bookId IN (:bookIds) ORDER BY time DESC")
     suspend fun getLatestHistoryForBooks(bookIds: List<Int>): List<HistoryEntity>
@@ -140,6 +140,15 @@ interface BookDao {
 
     @Query("SELECT * FROM colorpresetentity")
     suspend fun getColorPresets(): List<ColorPresetEntity>
+
+    @Query("UPDATE colorpresetentity SET isSelected = 0 WHERE isSelected = 1")
+    suspend fun deselectAllPresets()
+
+    @Query("UPDATE colorpresetentity SET isSelected = 1 WHERE id = :id")
+    suspend fun selectPresetById(id: Int)
+
+    @Query("UPDATE colorpresetentity SET `order` = :order WHERE id = :id")
+    suspend fun updateColorPresetOrder(id: Int, order: Int)
 
     @Delete
     suspend fun deleteColorPreset(colorPreset: ColorPresetEntity)

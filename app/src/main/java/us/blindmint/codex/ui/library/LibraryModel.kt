@@ -713,10 +713,11 @@ class LibraryModel @Inject constructor(
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val tags = bookRepository.getAllTags()
-                val authors = bookRepository.getAllAuthors()
-                val series = bookRepository.getAllSeries()
-                val languages = bookRepository.getAllLanguages()
+                val metadata = bookRepository.getAllMetadata()
+                val tags = metadata.tags
+                val authors = metadata.authors
+                val series = metadata.series
+                val languages = metadata.languages
                 val (minYear, maxYear) = bookRepository.getPublicationYearRange()
 
                 withContext(Dispatchers.Main) {

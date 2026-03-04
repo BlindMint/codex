@@ -1351,6 +1351,22 @@ class ReaderModel @Inject constructor(
         }
     }
 
+    // Count words without allocating intermediate lists
+    private fun countWords(text: String): Int {
+        if (text.isBlank()) return 0
+        var count = 0
+        var inWord = false
+        for (char in text) {
+            if (char.isWhitespace()) {
+                inWord = false
+            } else if (!inWord) {
+                count++
+                inWord = true
+            }
+        }
+        return count
+    }
+
     // Cache for word-based progress calculation - computed once when text loads
     private var cachedTotalWords: Int? = null
     private var cachedWordCounts: List<Int>? = null
@@ -1371,7 +1387,7 @@ class ReaderModel @Inject constructor(
             var runningTotal = 0
             for (readerText in text) {
                 val wordCount = when (readerText) {
-                    is ReaderText.Text -> readerText.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }.size
+                    is ReaderText.Text -> countWords(readerText.line.text)
                     else -> 0
                 }
                 runningTotal += wordCount

@@ -25,6 +25,10 @@ class PdfTextParser @Inject constructor(
     private val markdownParser: MarkdownParser
 ) : BaseTextParser() {
 
+    companion object {
+        private val WHITESPACE_REGEX = "\\s+".toRegex()
+    }
+
     override val tag = PDF_TAG
 
     override suspend fun parse(cachedFile: CachedFile): List<ReaderText> {
@@ -49,10 +53,10 @@ class PdfTextParser @Inject constructor(
 
             // Optimized text processing for PDFs - remove excessive yields and simplify processing
             // For PDFs, we can be more aggressive about line breaks and skip complex joining logic
-            val text = oldText.replace("\\s+".toRegex(), " ") // Simple space normalization
+            val text = oldText.replace(WHITESPACE_REGEX, " ") // Simple space normalization
 
             // Split into paragraphs and filter empty lines
-            val paragraphs = text.split(pdfStripper.paragraphStart.toRegex())
+            val paragraphs = text.split(pdfStripper.paragraphStart)
                 .flatMap { it.split("\n") }
                 .map { it.trim() }
                 .filter { it.isNotBlank() }

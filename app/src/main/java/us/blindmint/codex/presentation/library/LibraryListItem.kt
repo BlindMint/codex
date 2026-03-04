@@ -44,7 +44,6 @@ import us.blindmint.codex.domain.library.book.SelectableBook
 import us.blindmint.codex.presentation.core.components.common.AsyncCoverImage
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.util.calculateProgress
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun LibraryListItem(
@@ -55,7 +54,9 @@ fun LibraryListItem(
     navigateToReader: () -> Unit,
     modifier: Modifier = Modifier,
     navigateToSpeedReading: () -> Unit = {},
-    listSize: Int = 1 // 0=Small, 1=Medium, 2=Large
+    listSize: Int = 1, // 0=Small, 1=Medium, 2=Large
+    showNormalProgress: Boolean = true,
+    showSpeedProgress: Boolean = true
 ) {
     val backgroundColor = if (book.selected) MaterialTheme.colorScheme.secondary
     else Color.Transparent
@@ -141,13 +142,10 @@ fun LibraryListItem(
             }
 
             // Progress and play buttons
-            val mainModel = androidx.hilt.navigation.compose.hiltViewModel<us.blindmint.codex.ui.main.MainModel>()
-            val mainState = mainModel.state.collectAsStateWithLifecycle()
-
-            if (mainState.value.libraryShowNormalProgress) {
+            if (showNormalProgress) {
                 if (!book.data.isComic) {
                     // Speed reader button (left, only if opened and enabled)
-                    if (book.data.speedReaderHasBeenOpened && mainState.value.libraryShowSpeedProgress) {
+                    if (book.data.speedReaderHasBeenOpened && showSpeedProgress) {
                         val speedProgress = if (book.data.speedReaderTotalWords > 0) {
                             "${(book.data.speedReaderWordIndex.toFloat() / book.data.speedReaderTotalWords * 100).toInt()}%"
                         } else {

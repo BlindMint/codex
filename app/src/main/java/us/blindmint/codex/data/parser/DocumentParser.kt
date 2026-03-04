@@ -23,6 +23,12 @@ import javax.inject.Inject
 class DocumentParser @Inject constructor(
     private val markdownParser: MarkdownParser
 ) {
+    companion object {
+        private val BOLD_ITALIC_REGEX = Regex("""\*\*\*\s*(.*?)\s*\*\*\*""")
+        private val BOLD_REGEX = Regex("""\*\*\s*(.*?)\s*\*\*""")
+        private val ITALIC_REGEX = Regex("""_\s*(.*?)\s*_""")
+        private val IMAGE_REGEX = Regex("""\[\[(.*?)\|(.*?)]]""")
+    }
     /**
      * Parses document to get it's text.
      * Fixes issues such as manual line breaking in <p>.
@@ -117,18 +123,16 @@ class DocumentParser @Inject constructor(
                 yield()
 
                 val formattedLine = line.replace(
-                    Regex("""\*\*\*\s*(.*?)\s*\*\*\*"""), "_**$1**_"
+                    BOLD_ITALIC_REGEX, "_**$1**_"
                 ).replace(
-                    Regex("""\*\*\s*(.*?)\s*\*\*"""), "**$1**"
+                    BOLD_REGEX, "**$1**"
                 ).replace(
-                    Regex("""_\s*(.*?)\s*_"""), "_$1_"
+                    ITALIC_REGEX, "_$1_"
                 ).trim()
-
-                val imageRegex = Regex("""\[\[(.*?)\|(.*?)]]""")
 
                 if (line.containsVisibleText()) {
                     when {
-                        imageRegex.matches(line) -> {
+                        IMAGE_REGEX.matches(line) -> {
                             val trimmedLine = line.removeSurrounding("[[", "]]")
                             val src = trimmedLine.substringBefore("|")
                             val alt = "_${trimmedLine.substringAfter("|")}_"

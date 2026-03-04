@@ -33,11 +33,8 @@ class ColorPresetRepositoryImpl @Inject constructor(
     }
 
     override suspend fun selectColorPreset(colorPreset: ColorPreset) {
-        dao.getColorPresets().map {
-            it.copy(isSelected = it.id == colorPreset.id)
-        }.forEach {
-            dao.updateColorPreset(it)
-        }
+        dao.deselectAllPresets()
+        dao.selectPresetById(colorPreset.id)
     }
 
     override suspend fun getColorPresets(): List<ColorPreset> {
@@ -47,12 +44,8 @@ class ColorPresetRepositoryImpl @Inject constructor(
     }
 
     override suspend fun reorderColorPresets(orderedColorPresets: List<ColorPreset>) {
-        dao.deleteColorPresets()
-
         orderedColorPresets.forEachIndexed { index, colorPreset ->
-            dao.updateColorPreset(
-                colorPresetMapper.toColorPresetEntity(colorPreset, order = index)
-            )
+            dao.updateColorPresetOrder(colorPreset.id, index)
         }
     }
 
