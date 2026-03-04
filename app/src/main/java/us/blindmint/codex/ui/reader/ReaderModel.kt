@@ -1208,11 +1208,15 @@ class ReaderModel @Inject constructor(
 
                 // Check if user has scrolled to the very end of the book
                 // If can't scroll forward, we're at the end - set progress to 100%
-                val isAtEnd = !listState.canScrollForward
+                // Guard: only snap to 100% if word-based progress is already past 90%
+                // to avoid falsely showing 100% when the list hasn't been laid out yet
+                // (canScrollForward is false before layout completes)
+                val rawProgress = calculateWordBasedProgress(snappedIndex)
+                val isAtEnd = !listState.canScrollForward && rawProgress > 0.9f
                 val wordBasedProgress = if (isAtEnd) {
                     1f
                 } else {
-                    calculateWordBasedProgress(snappedIndex)
+                    rawProgress
                 }
 
                 if (wordBasedProgress == currentBook.progress) return@collectLatest
