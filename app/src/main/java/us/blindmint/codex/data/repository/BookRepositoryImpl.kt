@@ -76,16 +76,20 @@ class BookRepositoryImpl @Inject constructor(
      */
     override suspend fun getBooks(query: String): List<Book> {
         Log.i(GET_BOOKS, "Searching for books with query: \"$query\".")
-        
-        val allBooks = database.getAllBooks()
-        
-        val filteredBooks = if (query.isBlank()) {
-            allBooks
+
+        // For non-blank queries, use a DB LIKE pre-filter to reduce the candidate set
+        // before running the more expensive FuzzyWuzzy comparison.
+        val candidates = if (query.isBlank()) {
+            database.getAllBooks()
         } else {
-            allBooks.filter { bookEntity ->
-                // Fuzzy match on title
+            database.searchBooksByTitleOrAuthor(query)
+        }
+
+        val filteredBooks = if (query.isBlank()) {
+            candidates
+        } else {
+            candidates.filter { bookEntity ->
                 val titleMatch = FuzzySearch.partialRatio(query.lowercase(), bookEntity.title.lowercase()) > 60
-                // Fuzzy match on authors
                 val authorMatch = bookEntity.authors.any { author ->
                     FuzzySearch.partialRatio(query.lowercase(), author.lowercase()) > 60
                 }
@@ -93,19 +97,14 @@ class BookRepositoryImpl @Inject constructor(
             }
         }
 
-        Log.i(GET_BOOKS, "Found ${filteredBooks.size} books.")
+        Log.i(GET_BOOKS, "Found ${filteredBooks.size} books (from ${candidates.size} candidates).")
 
         val bookIds = filteredBooks.map { it.id }
         val histories = database.getLatestHistoryForBooks(bookIds)
         val historyMap: Map<Int, HistoryEntity?> = histories.groupBy { it.bookId }.mapValues { entry -> entry.value.firstOrNull() }
 
         return filteredBooks.map { entity ->
-            val book = bookMapper.toBook(entity)
-            val lastHistory = historyMap[entity.id]
-
-            book.copy(
-                lastOpened = lastHistory?.time
-            )
+            bookMapper.toBook(entity).copy(lastOpened = historyMap[entity.id]?.time)
         }
     }
 
@@ -116,15 +115,12 @@ class BookRepositoryImpl @Inject constructor(
         Log.i(GET_BOOKS_BY_ID, "Getting books with ids: $ids.")
         val books = database.findBooksById(ids)
 
-        return books.map { entity ->
-            val book = bookMapper.toBook(entity)
-            val lastHistory = database.getLatestHistoryForBook(
-                book.id
-            )
+        // Batch history lookup instead of N+1 individual queries
+        val histories = database.getLatestHistoryForBooks(books.map { it.id })
+        val historyMap = histories.groupBy { it.bookId }.mapValues { it.value.firstOrNull() }
 
-            book.copy(
-                lastOpened = lastHistory?.time
-            )
+        return books.map { entity ->
+            bookMapper.toBook(entity).copy(lastOpened = historyMap[entity.id]?.time)
         }
     }
 
@@ -398,51 +394,19 @@ class BookRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getAllAuthors(): List<String> = withContext(Dispatchers.IO) {
-        val allBooks = database.getAllBooks()
-        val authorsSet = mutableSetOf<String>()
-        allBooks.forEach { book ->
-            authorsSet.addAll(book.authors.filter { it.isNotBlank() })
-        }
-
-        // Check if any books have no authors
-        val hasUnknownAuthors = allBooks.any { it.authors.isEmpty() }
-
-        val sortedAuthors = authorsSet.sorted()
-        if (hasUnknownAuthors) {
-            listOf("Unknown") + sortedAuthors
-        } else {
-            sortedAuthors
-        }
+        getAllMetadata().authors
     }
 
     override suspend fun getAllSeries(): List<String> = withContext(Dispatchers.IO) {
-        val allBooks = database.getAllBooks()
-        val seriesSet = mutableSetOf<String>()
-        allBooks.forEach { book ->
-            seriesSet.addAll(book.series.filter { it.isNotBlank() })
-        }
-
-        seriesSet.sorted()
+        getAllMetadata().series
     }
 
     override suspend fun getAllTags(): List<String> = withContext(Dispatchers.IO) {
-        val allBooks = database.getAllBooks()
-        val tagsSet = mutableSetOf<String>()
-        allBooks.forEach { book ->
-            tagsSet.addAll(book.tags)
-        }
-
-        tagsSet.sorted()
+        getAllMetadata().tags
     }
 
     override suspend fun getAllLanguages(): List<String> = withContext(Dispatchers.IO) {
-        val allBooks = database.getAllBooks()
-        val languagesSet = mutableSetOf<String>()
-        allBooks.forEach { book ->
-            languagesSet.addAll(book.languages.filter { it.isNotBlank() })
-        }
-
-        languagesSet.sorted()
+        getAllMetadata().languages
     }
 
     override suspend fun getAllMetadata(): BookRepository.LibraryMetadata = withContext(Dispatchers.IO) {
@@ -503,8 +467,7 @@ class BookRepositoryImpl @Inject constructor(
      */
     override suspend fun getBooksByOpdsSourceUrl(opdsSourceUrl: String): List<Book> =
         withContext(Dispatchers.IO) {
-            database.getAllBooks()
-                .filter { it.opdsSourceUrl == opdsSourceUrl }
+            database.findBooksByOpdsSourceUrl(opdsSourceUrl)
                 .map { bookEntity -> bookMapper.toBook(bookEntity) }
         }
 
@@ -514,8 +477,7 @@ class BookRepositoryImpl @Inject constructor(
      */
     override suspend fun getBooksByOpdsSourceId(opdsSourceId: Int): List<Book> =
         withContext(Dispatchers.IO) {
-            database.getAllBooks()
-                .filter { it.opdsSourceId == opdsSourceId }
+            database.findBooksByOpdsSourceId(opdsSourceId)
                 .map { bookEntity -> bookMapper.toBook(bookEntity) }
         }
 
@@ -555,5 +517,9 @@ class BookRepositoryImpl @Inject constructor(
         }
 
         return null
+    }
+
+    override suspend fun getAllFilePathsAndHashes(): List<Pair<String, String>> {
+        return database.getAllFilePathsAndHashes().map { it.filePath to it.contentHash }
     }
 }

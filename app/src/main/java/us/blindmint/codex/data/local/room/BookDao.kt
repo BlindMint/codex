@@ -34,6 +34,13 @@ interface BookDao {
     @Query("SELECT * FROM bookentity")
     suspend fun getAllBooks(): List<BookEntity>
 
+    /**
+     * Lightweight query returning only filePath and contentHash.
+     * Used for duplicate detection during import without loading full entities.
+     */
+    @Query("SELECT filePath, contentHash FROM bookentity")
+    suspend fun getAllFilePathsAndHashes(): List<FilePathHash>
+
     @Query("SELECT * FROM bookentity WHERE id=:id")
     suspend fun findBookById(id: Int): BookEntity
 
@@ -183,6 +190,20 @@ interface BookDao {
     // Distinct value extraction is handled in the repository layer for these fields
     // Tags extraction still uses this method since tags are also List<String>
 
+    /**
+     * DB-level pre-filter for search: matches books whose title or authors JSON contain the query
+     * as a substring. Used to reduce the FuzzyWuzzy candidate set from the full library to only
+     * likely matches, dramatically cutting search time for large libraries.
+     */
+    @Query("SELECT * FROM bookentity WHERE LOWER(title) LIKE '%' || LOWER(:query) || '%' OR LOWER(authors) LIKE '%' || LOWER(:query) || '%'")
+    suspend fun searchBooksByTitleOrAuthor(query: String): List<BookEntity>
+
+    @Query("SELECT * FROM bookentity WHERE opdsSourceUrl = :url")
+    suspend fun findBooksByOpdsSourceUrl(url: String): List<BookEntity>
+
+    @Query("SELECT * FROM bookentity WHERE opdsSourceId = :sourceId")
+    suspend fun findBooksByOpdsSourceId(sourceId: Int): List<BookEntity>
+
     // Get all books for metadata extraction (used for tags, authors, series, languages)
     @Query("SELECT * FROM bookentity ORDER BY title ASC")
     suspend fun getAllBooksOrderedByTitle(): List<BookEntity>
@@ -194,5 +215,14 @@ interface BookDao {
     data class PublicationYearRange(
         val minYear: Long? = null,
         val maxYear: Long? = null
+    )
+
+    /**
+     * Lightweight data class for duplicate detection during import.
+     * Only contains the fields needed for checking existing books.
+     */
+    data class FilePathHash(
+        val filePath: String,
+        val contentHash: String
     )
 }

@@ -116,4 +116,10 @@ interface BookRepository {
         fileName: String? = null,
         fileSize: Long? = null
     ): Book?
+
+    /**
+     * Lightweight query returning only filePath and contentHash.
+     * Used for duplicate detection during import without loading full entities.
+     */
+    suspend fun getAllFilePathsAndHashes(): List<Pair<String, String>>
 }

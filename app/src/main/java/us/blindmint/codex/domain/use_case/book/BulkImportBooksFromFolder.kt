@@ -39,7 +39,8 @@ class BulkImportBooksFromFolder @Inject constructor(
         Log.i(BULK_IMPORT, "Starting bulk import from folder: $folderUri")
 
         val supportedExtensions = provideExtensions()
-        val existingPaths = bookRepository.getBooks("").map { it.filePath }
+        val existingPathsAndHashes = bookRepository.getAllFilePathsAndHashes()
+        val existingPaths = existingPathsAndHashes.map { it.first }
         var importedCount = 0
 
         val allFiles = getAllFilesFromFolder(folderUri)

@@ -61,7 +61,8 @@ class AutoImportCodexBooksUseCase @Inject constructor(
         val supportedExtensions = provideExtensions()
         Log.d(AUTO_IMPORT, "Supported extensions: $supportedExtensions")
 
-        val existingPaths = bookRepository.getBooks("").map { it.filePath }
+        val existingPathsAndHashes = bookRepository.getAllFilePathsAndHashes()
+        val existingPaths = existingPathsAndHashes.map { it.first }
         Log.d(AUTO_IMPORT, "Found ${existingPaths.size} existing books in library")
 
         // Double-check that we have access to the directory
