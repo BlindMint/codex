@@ -946,6 +946,11 @@ show_completion_summary() {
     fi
 
     echo ""
+    echo "Changelog:"
+    echo ""
+    echo "$CHANGELOG"
+    echo ""
+
     echo "Git Status:"
     echo "  Commit: ${commit_hash} \"Release v${NEW_VERSION}\""
     echo "  Tag:    v${NEW_VERSION}"
@@ -970,10 +975,6 @@ show_completion_summary() {
     echo "Copy/Paste Release Content:"
     echo ""
     echo "# Release v${NEW_VERSION}"
-    echo ""
-    echo "## Changelog"
-    echo ""
-    echo "$CHANGELOG"
     echo ""
 
     if [[ -n "${GITLAB_APK_URL:-}" ]]; then
