@@ -113,7 +113,10 @@ fun SpeedReadingScaffold(
     var wordPickerRefreshKey by remember { mutableIntStateOf(0) }
     // Calculate current progress from word index and total words
     val currentProgress = remember(currentWordIndex, totalWords) {
-        if (totalWords > 0) currentWordIndex.toFloat() / totalWords else 0f
+        if (totalWords > 0) {
+            if (currentWordIndex >= totalWords - 1) 1f
+            else currentWordIndex.toFloat() / totalWords
+        } else 0f
     }
 
     val activity = LocalActivity.current

@@ -14,6 +14,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.reader.SpeedReaderWord
@@ -142,7 +144,8 @@ class SpeedReaderModel @Inject constructor(
 
                         // Update progress based on current word index and total words
                         val progress = if (loadedWords.size > 0) {
-                            initialIndex.toFloat() / loadedWords.size
+                            if (initialIndex >= loadedWords.size - 1) 1f
+                            else initialIndex.toFloat() / loadedWords.size
                         } else 0f
                         currentProgress.floatValue = progress
 
@@ -184,7 +187,7 @@ class SpeedReaderModel @Inject constructor(
     }
 
     fun onLeave() {
-        viewModelScope.launch {
+        viewModelScope.launch(NonCancellable + Dispatchers.IO) {
             saveProgressToDatabase(currentProgress.floatValue)
         }
     }

@@ -46,10 +46,12 @@ class FileSystemRepositoryImpl @Inject constructor(
     override suspend fun getFiles(query: String): List<SelectableFile> {
         Log.i(GET_FILES, "Getting files from device, query: \"$query\".")
 
-        val existingPaths = database
+        val existingPathsSet = database
             .getAllBooks()
-            .map { it.filePath }
+            .map { it.filePath.lowercase() }
+            .toHashSet()
         val supportedExtensions = provideExtensions()
+        val trimmedQuery = query.trim()
 
         /**
          * Verify that [CachedFile] is valid and can be shown correctly.
@@ -61,16 +63,14 @@ class FileSystemRepositoryImpl @Inject constructor(
             }.let { if (!it) return false }
 
             // Second: Ensuring query to match
-            if (query.isNotBlank()) {
-                name.contains(query.trim(), ignoreCase = true).let {
+            if (trimmedQuery.isNotBlank()) {
+                name.contains(trimmedQuery, ignoreCase = true).let {
                     if (!it) return false
                 }
             }
 
-            // Third: Ensuring that a file is not added already
-            existingPaths.none { existingPath ->
-                existingPath.equals(path, ignoreCase = true)
-            }.let { if (!it) return false }
+            // Third: Ensuring that a file is not added already (O(1) lookup)
+            if (existingPathsSet.contains(path.lowercase())) return false
 
             return true
         }

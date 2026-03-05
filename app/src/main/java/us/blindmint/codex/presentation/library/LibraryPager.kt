@@ -80,7 +80,10 @@ fun LibraryPager(
                                 navigateToBookInfo = { navigateToBookInfo(book.data.id) },
                                 navigateToReader = { navigateToReader(book.data.id) },
                                 navigateToSpeedReading = { navigateToSpeedReading(book.data.id) },
-                                modifier = Modifier.animateItem()
+                                modifier = Modifier.animateItem(),
+                                showNormalProgress = mainState.value.libraryShowNormalProgress,
+                                showSpeedProgress = mainState.value.libraryShowSpeedProgress,
+                                titlePosition = mainState.value.libraryTitlePosition
                             )
                         }
                     }
@@ -110,7 +113,9 @@ fun LibraryPager(
                                 navigateToReader = { navigateToReader(book.data.id) },
                                 navigateToSpeedReading = { navigateToSpeedReading(book.data.id) },
                                 modifier = Modifier.animateItem(),
-                                listSize = mainState.value.libraryListSize
+                                listSize = mainState.value.libraryListSize,
+                                showNormalProgress = mainState.value.libraryShowNormalProgress,
+                                showSpeedProgress = mainState.value.libraryShowSpeedProgress
                             )
                         }
                     }

@@ -10,7 +10,11 @@ import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.SpeedReaderWord
 
 object SpeedReaderWordExtractor {
-    
+
+    private val CONTROL_CHARS_REGEX = Regex("[\\n\\r\\t]")
+    private val WHITESPACE_REGEX = Regex("\\s+")
+    private val DASH_BETWEEN_LETTERS_REGEX = Regex("([\\p{L}])([—–])([\\p{L}])")
+
     fun extract(readerText: List<ReaderText>): List<SpeedReaderWord> {
         val words = mutableListOf<SpeedReaderWord>()
         var globalIndex = 0
@@ -19,8 +23,8 @@ object SpeedReaderWordExtractor {
         for (item in readerText) {
             if (item is ReaderText.Text) {
                 val cleanedLine = item.line.text
-                    .replace(Regex("[\\n\\r\\t]"), " ")
-                    .replace(Regex("\\s+"), " ")
+                    .replace(CONTROL_CHARS_REGEX, " ")
+                    .replace(WHITESPACE_REGEX, " ")
                     .trim()
 
                 val lineWords = cleanedLine.split(" ").filter { it.isNotBlank() }
@@ -79,55 +83,42 @@ object SpeedReaderWordExtractor {
 
     private fun preprocessText(readerText: List<ReaderText>): String {
         val estimatedCapacity = readerText.sumOf { if (it is ReaderText.Text) it.line.text.length else 0 } + 1000
+        // Single pass: convert control chars to spaces, collapse whitespace, join text items
         val builder = StringBuilder(estimatedCapacity)
-
-        var lastWasNonWhitespace = false
+        var inWhitespace = true // Start true to skip leading whitespace
 
         for (item in readerText) {
             if (item is ReaderText.Text) {
-                var text = item.line.text
-
-                val processedText = buildString {
-                    for (char in text) {
-                        when {
-                            char == '\n' || char == '\r' || char == '\t' -> append(' ')
-                            else -> append(char)
+                val text = item.line.text
+                // Add separator space between text items
+                if (builder.isNotEmpty() && !inWhitespace) {
+                    builder.append(' ')
+                    inWhitespace = true
+                }
+                for (char in text) {
+                    if (char == '\n' || char == '\r' || char == '\t' || char.isWhitespace()) {
+                        if (!inWhitespace) {
+                            builder.append(' ')
+                            inWhitespace = true
                         }
+                    } else {
+                        builder.append(char)
+                        inWhitespace = false
                     }
-                }.trim()
-
-                if (processedText.isNotEmpty()) {
-                    if (lastWasNonWhitespace) {
-                        builder.append(' ')
-                    }
-                    builder.append(processedText)
-                    lastWasNonWhitespace = true
                 }
             }
         }
 
-        val result = builder.toString()
+        // Trim trailing whitespace
+        while (builder.isNotEmpty() && builder[builder.lastIndex].isWhitespace()) {
+            builder.deleteCharAt(builder.lastIndex)
+        }
 
-        val collapsed = buildString {
-            var inWhitespace = false
-            for (char in result) {
-                if (char.isWhitespace()) {
-                    if (!inWhitespace) {
-                        append(' ')
-                        inWhitespace = true
-                    }
-                } else {
-                    append(char)
-                    inWhitespace = false
-                }
-            }
-        }.trim()
-
-        return collapsed.replace(Regex("([\\p{L}])([—–])([\\p{L}])"), "$1 $2 $3")
+        return DASH_BETWEEN_LETTERS_REGEX.replace(builder, "$1 $2 $3")
     }
 
     private fun splitIntoWords(text: String): List<String> {
-        return text.split(Regex("(?<=\\s)|(?=\\s)")).filter { it.isNotBlank() }
+        return text.split(WHITESPACE_REGEX).filter { it.isNotBlank() }
     }
 
     private fun isSentenceEnding(word: String): Boolean {

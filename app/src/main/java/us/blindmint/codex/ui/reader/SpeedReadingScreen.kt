@@ -135,7 +135,7 @@ data class SpeedReadingScreen(
         androidx.compose.runtime.DisposableEffect(Unit) {
             onDispose {
                 speedReaderModel.onLeave()
-                LibraryScreen.refreshListChannel.trySend(0)
+                LibraryScreen.silentRefreshChannel.trySend(Unit)
                 HistoryScreen.refreshListChannel.trySend(0)
                 val window = activity.window
                 val insetsController = WindowCompat.getInsetsController(window, view)

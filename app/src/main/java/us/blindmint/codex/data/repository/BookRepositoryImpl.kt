@@ -445,6 +445,30 @@ class BookRepositoryImpl @Inject constructor(
         languagesSet.sorted()
     }
 
+    override suspend fun getAllMetadata(): BookRepository.LibraryMetadata = withContext(Dispatchers.IO) {
+        val allBooks = database.getAllBooks()
+        val authors = mutableSetOf<String>()
+        val series = mutableSetOf<String>()
+        val tags = mutableSetOf<String>()
+        val languages = mutableSetOf<String>()
+        var hasUnknownAuthors = false
+
+        allBooks.forEach { book ->
+            authors.addAll(book.authors.filter { it.isNotBlank() })
+            series.addAll(book.series.filter { it.isNotBlank() })
+            tags.addAll(book.tags)
+            languages.addAll(book.languages.filter { it.isNotBlank() })
+            if (book.authors.isEmpty()) hasUnknownAuthors = true
+        }
+
+        BookRepository.LibraryMetadata(
+            authors = if (hasUnknownAuthors) listOf("Unknown") + authors.sorted() else authors.sorted(),
+            series = series.sorted(),
+            tags = tags.sorted(),
+            languages = languages.sorted()
+        )
+    }
+
     override suspend fun getPublicationYearRange(): Pair<Int, Int> {
         val yearRange = database.getPublicationYearRange()
         val calendar = java.util.Calendar.getInstance()

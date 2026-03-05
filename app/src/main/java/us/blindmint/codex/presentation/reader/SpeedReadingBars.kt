@@ -68,7 +68,10 @@ fun SpeedReadingTopBar(
     onShowSettings: () -> Unit
 ) {
     val progress = remember(currentWordIndex, totalWords) {
-        if (totalWords > 0) currentWordIndex.toFloat() / totalWords else 0f
+        if (totalWords > 0) {
+            if (currentWordIndex >= totalWords - 1) 1f
+            else currentWordIndex.toFloat() / totalWords
+        } else 0f
     }
 
     val animatedProgress = animateFloatAsState(

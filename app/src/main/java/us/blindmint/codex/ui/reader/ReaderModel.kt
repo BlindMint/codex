@@ -92,6 +92,7 @@ class ReaderModel @Inject constructor(
     private var isInitializing = false
 
     private var scrollJob: Job? = null
+    private var comicProgressSaveJob: Job? = null
 
     fun onEvent(event: ReaderEvent) {
         viewModelScope.launch(eventJob + Dispatchers.Main) {
@@ -272,7 +273,7 @@ class ReaderModel @Inject constructor(
                             updateChapter(index = chapterIndex)
                             onEvent(
                                 ReaderEvent.OnChangeProgress(
-                                    progress = calculateProgress(chapterIndex),
+                                    progress = calculateWordBasedProgress(chapterIndex),
                                     firstVisibleItemIndex = chapterIndex,
                                     firstVisibleItemOffset = 0
                                 )
@@ -291,7 +292,7 @@ class ReaderModel @Inject constructor(
                             updateChapter(index = event.scrollIndex)
                             onEvent(
                                 ReaderEvent.OnChangeProgress(
-                                    progress = calculateProgress(event.scrollIndex),
+                                    progress = calculateWordBasedProgress(event.scrollIndex),
                                     firstVisibleItemIndex = event.scrollIndex,
                                     firstVisibleItemOffset = event.scrollOffset
                                 )
@@ -306,7 +307,7 @@ class ReaderModel @Inject constructor(
                         delay(300)
                         yield()
 
-                        val scrollTo = (_state.value.text.lastIndex * event.progress).roundToInt()
+                        val scrollTo = wordProgressToTextIndex(event.progress)
                         _state.value.listState.requestScrollToItem(scrollTo)
                         updateChapter(scrollTo)
                     }
@@ -323,7 +324,7 @@ class ReaderModel @Inject constructor(
                             updateChapter(checkpoint.index)
                             onEvent(
                                 ReaderEvent.OnChangeProgress(
-                                    progress = calculateProgress(checkpoint.index),
+                                    progress = calculateWordBasedProgress(checkpoint.index),
                                     firstVisibleItemIndex = checkpoint.index,
                                     firstVisibleItemOffset = checkpoint.offset,
                                 )
@@ -354,8 +355,10 @@ class ReaderModel @Inject constructor(
                                 _state.value.errorMessage == null
                             ) {
                                     val currentBook = _state.value.book
-                                    val firstVisibleItemIndex = _state.value.listState.firstVisibleItemIndex
+                                    val rawIndex = _state.value.listState.firstVisibleItemIndex
                                     val firstVisibleItemScrollOffset = _state.value.listState.firstVisibleItemScrollOffset
+                                    // Snap to paragraph start for consistency with the debounced progress handler
+                                    val snappedIndex = findNearestParagraphStart(rawIndex)
                                     // Use the existing accurate progress from the book state (updated by debounced scroll handler)
                                     // instead of recalculating which would overwrite with a less accurate value
                                     val currentProgress = currentBook.progress
@@ -363,7 +366,7 @@ class ReaderModel @Inject constructor(
                                     _state.update {
                                         it.copy(
                                             book = it.book.copy(
-                                                scrollIndex = firstVisibleItemIndex,
+                                                scrollIndex = snappedIndex,
                                                 scrollOffset = firstVisibleItemScrollOffset
                                             )
                                         )
@@ -371,7 +374,7 @@ class ReaderModel @Inject constructor(
 
                         bookRepository.updateNormalReaderProgress(
                             bookId = currentBook.id,
-                            scrollIndex = firstVisibleItemIndex,
+                            scrollIndex = snappedIndex,
                             scrollOffset = firstVisibleItemScrollOffset,
                             progress = currentProgress
                         )
@@ -928,6 +931,7 @@ class ReaderModel @Inject constructor(
                             (event.currentPage + 1).toFloat() / totalComicPages
                         } else 0f
 
+                        // Update in-memory state immediately for responsive UI
                         _state.update {
                             it.copy(
                                 currentComicPage = event.currentPage,
@@ -939,13 +943,20 @@ class ReaderModel @Inject constructor(
                             )
                         }
 
-                        android.util.Log.d("ComicPageChanged", "  SAVING to database: bookId=${currentBook.id}, lastPageRead=${event.currentPage}, progress=$newProgress")
-                        bookRepository.updateComicPdfProgress(
-                            bookId = currentBook.id,
-                            lastPageRead = event.currentPage,
-                            progress = newProgress
-                        )
-                        android.util.Log.d("ComicPageChanged", "  Database save complete")
+                        // Debounce the database write to avoid burst writes during fast page flipping.
+                        // The OnLeave handler saves the final page regardless, so intermediate saves
+                        // only need to be periodic for crash resilience.
+                        comicProgressSaveJob?.cancel()
+                        comicProgressSaveJob = viewModelScope.launch(Dispatchers.IO) {
+                            delay(500)
+                            android.util.Log.d("ComicPageChanged", "  SAVING to database: bookId=${currentBook.id}, lastPageRead=${event.currentPage}, progress=$newProgress")
+                            bookRepository.updateComicPdfProgress(
+                                bookId = currentBook.id,
+                                lastPageRead = event.currentPage,
+                                progress = newProgress
+                            )
+                            android.util.Log.d("ComicPageChanged", "  Database save complete")
+                        }
                     }
                 }
 
@@ -1208,11 +1219,15 @@ class ReaderModel @Inject constructor(
 
                 // Check if user has scrolled to the very end of the book
                 // If can't scroll forward, we're at the end - set progress to 100%
-                val isAtEnd = !listState.canScrollForward
+                // Guard: only snap to 100% if word-based progress is already past 90%
+                // to avoid falsely showing 100% when the list hasn't been laid out yet
+                // (canScrollForward is false before layout completes)
+                val rawProgress = calculateWordBasedProgress(snappedIndex)
+                val isAtEnd = !listState.canScrollForward && rawProgress > 0.9f
                 val wordBasedProgress = if (isAtEnd) {
                     1f
                 } else {
-                    calculateWordBasedProgress(snappedIndex)
+                    rawProgress
                 }
 
                 if (wordBasedProgress == currentBook.progress) return@collectLatest
@@ -1336,6 +1351,22 @@ class ReaderModel @Inject constructor(
         }
     }
 
+    // Count words without allocating intermediate lists
+    private fun countWords(text: String): Int {
+        if (text.isBlank()) return 0
+        var count = 0
+        var inWord = false
+        for (char in text) {
+            if (char.isWhitespace()) {
+                inWord = false
+            } else if (!inWord) {
+                count++
+                inWord = true
+            }
+        }
+        return count
+    }
+
     // Cache for word-based progress calculation - computed once when text loads
     private var cachedTotalWords: Int? = null
     private var cachedWordCounts: List<Int>? = null
@@ -1356,7 +1387,7 @@ class ReaderModel @Inject constructor(
             var runningTotal = 0
             for (readerText in text) {
                 val wordCount = when (readerText) {
-                    is ReaderText.Text -> readerText.line.text.split("\\s+".toRegex()).filter { it.isNotBlank() }.size
+                    is ReaderText.Text -> countWords(readerText.line.text)
                     else -> 0
                 }
                 runningTotal += wordCount
@@ -1374,6 +1405,35 @@ class ReaderModel @Inject constructor(
         val wordCount = cachedWordCounts?.getOrNull(safeIndex) ?: 0
 
         return wordCount.toFloat() / totalWords.toFloat()
+    }
+
+    // Inverse of calculateWordBasedProgress: maps a word-based progress fraction to a text item index.
+    // Uses binary search on the cached cumulative word counts for O(log n) lookup.
+    private fun wordProgressToTextIndex(progress: Float): Int {
+        val text = _state.value.text
+        if (text.isEmpty()) return 0
+
+        // Ensure cache is built
+        calculateWordBasedProgress(0)
+
+        val totalWords = cachedTotalWords ?: return 0
+        val wordCounts = cachedWordCounts ?: return 0
+        if (totalWords == 0) return 0
+
+        val targetWords = (progress * totalWords).toInt()
+
+        // Binary search for the first index whose cumulative word count >= targetWords
+        var low = 0
+        var high = wordCounts.lastIndex
+        while (low < high) {
+            val mid = (low + high) / 2
+            if (wordCounts[mid] < targetWords) {
+                low = mid + 1
+            } else {
+                high = mid
+            }
+        }
+        return low.coerceIn(0, text.lastIndex)
     }
 
     // Find the nearest paragraph start before the given index

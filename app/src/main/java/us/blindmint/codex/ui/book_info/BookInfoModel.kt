@@ -58,14 +58,6 @@ class BookInfoModel @Inject constructor(
                     }
                 }
 
-                is BookInfoEvent.OnShowEditBottomSheet -> {
-                    _state.update {
-                        it.copy(
-                            bottomSheet = BookInfoScreen.EDIT_BOTTOM_SHEET
-                        )
-                    }
-                }
-
                 is BookInfoEvent.OnDismissBottomSheet -> {
                     _state.update {
                         it.copy(
@@ -368,27 +360,6 @@ class BookInfoModel @Inject constructor(
                     }
                 }
 
-                is BookInfoEvent.OnResetTitle -> {
-                    withContext(Dispatchers.Main) {
-                        event.context.getString(R.string.reset_no_original)
-                            .showToast(context = event.context)
-                    }
-                }
-
-                is BookInfoEvent.OnResetAuthor -> {
-                    withContext(Dispatchers.Main) {
-                        event.context.getString(R.string.reset_no_original)
-                            .showToast(context = event.context)
-                    }
-                }
-
-                is BookInfoEvent.OnResetDescription -> {
-                    withContext(Dispatchers.Main) {
-                        event.context.getString(R.string.reset_no_original)
-                            .showToast(context = event.context)
-                    }
-                }
-
                 is BookInfoEvent.OnShowTagsDialog -> {
                     _state.update {
                         it.copy(
@@ -546,45 +517,10 @@ class BookInfoModel @Inject constructor(
                     LibraryScreen.refreshListChannel.trySend(0)
                 }
 
-                is BookInfoEvent.OnEnterEditMode -> {
-                    _state.update {
-                        it.copy(
-                            isEditingMetadata = true,
-                            editedBook = it.book.copy()
-                        )
-                    }
-                }
-
                 is BookInfoEvent.OnUpdateEditedBook -> {
                     _state.update {
                         it.copy(
                             editedBook = event.updatedBook
-                        )
-                    }
-                }
-
-                is BookInfoEvent.OnConfirmEditMetadata -> {
-                    _state.update {
-                        it.copy(
-                            showConfirmSaveDialog = true
-                        )
-                    }
-                }
-
-                is BookInfoEvent.OnCancelEditMetadata -> {
-                    _state.update {
-                        it.copy(
-                            showConfirmCancelDialog = true
-                        )
-                    }
-                }
-
-                is BookInfoEvent.OnSilentCancelEditMetadata -> {
-                    _state.update {
-                        it.copy(
-                            isEditingMetadata = false,
-                            editedBook = null,
-                            showConfirmCancelDialog = false
                         )
                     }
                 }
@@ -597,9 +533,7 @@ class BookInfoModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 book = bookToSave,
-                                isEditingMetadata = false,
-                                editedBook = null,
-                                showConfirmSaveDialog = false
+                                editedBook = null
                             )
                         }
 
@@ -614,21 +548,9 @@ class BookInfoModel @Inject constructor(
                     }
                 }
 
-                is BookInfoEvent.OnDismissSaveDialog -> {
+                is BookInfoEvent.OnCancelChanges -> {
                     _state.update {
-                        it.copy(
-                            showConfirmSaveDialog = false
-                        )
-                    }
-                }
-
-                is BookInfoEvent.OnDismissCancelDialog -> {
-                    _state.update {
-                        it.copy(
-                            showConfirmCancelDialog = false,
-                            isEditingMetadata = false,
-                            editedBook = null
-                        )
+                        it.copy(editedBook = null)
                     }
                 }
 

@@ -17,8 +17,6 @@ sealed class BookInfoEvent {
 
     data object OnShowDetailsBottomSheet : BookInfoEvent()
 
-    data object OnShowEditBottomSheet : BookInfoEvent()
-
     data object OnDismissBottomSheet : BookInfoEvent()
 
     data object OnShowTitleDialog : BookInfoEvent()
@@ -86,18 +84,6 @@ sealed class BookInfoEvent {
 
     data object OnDismissDialog : BookInfoEvent()
 
-    data class OnResetTitle(
-        val context: Context
-    ) : BookInfoEvent()
-
-    data class OnResetAuthor(
-        val context: Context
-    ) : BookInfoEvent()
-
-    data class OnResetDescription(
-        val context: Context
-    ) : BookInfoEvent()
-
     // Metadata editing events (Tags, Series, Languages)
     data object OnShowTagsDialog : BookInfoEvent()
 
@@ -138,21 +124,11 @@ sealed class BookInfoEvent {
 
     data object OnToggleFavorite : BookInfoEvent()
 
-    data object OnEnterEditMode : BookInfoEvent()
-
-    data object OnConfirmEditMetadata : BookInfoEvent()
-
-    data object OnCancelEditMetadata : BookInfoEvent()
-
-    data object OnSilentCancelEditMetadata : BookInfoEvent()
-
     data class OnConfirmSaveChanges(
         val context: Context
     ) : BookInfoEvent()
 
-    data object OnDismissSaveDialog : BookInfoEvent()
-
-    data object OnDismissCancelDialog : BookInfoEvent()
+    data object OnCancelChanges : BookInfoEvent()
 
     data class OnUpdateEditedBook(
         val updatedBook: Book

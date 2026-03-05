@@ -123,7 +123,10 @@ fun SpeedReadingWordPickerSheet(
 
     // Current word index is passed directly
     val currentProgress = remember(currentWordIndex, totalWords) {
-        if (totalWords > 0) currentWordIndex.toFloat() / totalWords else 0f
+        if (totalWords > 0) {
+            if (currentWordIndex >= totalWords - 1) 1f
+            else currentWordIndex.toFloat() / totalWords
+        } else 0f
     }
 
     // Find the current word position
@@ -139,12 +142,12 @@ fun SpeedReadingWordPickerSheet(
     // Progress slider state (derived from selected word)
     val sliderProgress: Float by remember(selectedWord, allWords) {
         derivedStateOf {
-            if (selectedWord != null && allWords.isNotEmpty()) {
-                selectedWord!!.globalWordIndex.toFloat() / allWords.size.toFloat()
-            } else if (allWords.isNotEmpty()) {
-                currentWordIndex.toFloat() / allWords.size.toFloat()
-            } else {
+            if (allWords.isEmpty()) {
                 0f
+            } else {
+                val idx = selectedWord?.globalWordIndex ?: currentWordIndex
+                if (idx >= allWords.size - 1) 1f
+                else idx.toFloat() / allWords.size.toFloat()
             }
         }
     }
@@ -463,9 +466,10 @@ fun SpeedReadingWordPickerSheet(
                     onClick = {
                         selectedWord?.let { word ->
                             // Calculate progress from global word index
-                            val totalWords = allWords.size
-                            val newProgress = if (totalWords > 0) {
-                                word.globalWordIndex.toFloat() / totalWords.toFloat()
+                            val total = allWords.size
+                            val newProgress = if (total > 0) {
+                                if (word.globalWordIndex >= total - 1) 1f
+                                else word.globalWordIndex.toFloat() / total.toFloat()
                             } else {
                                 0f
                             }

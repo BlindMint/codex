@@ -45,7 +45,7 @@ class DataStoreRepositoryImpl @Inject constructor(
         Log.i(GET_ALL_SETTINGS, "Getting all settings.")
         val result = CompletableDeferred<MainState>()
 
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             val keys = dataStore.getAllData()
             val data = ConcurrentHashMap<String, Any>()
 

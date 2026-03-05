@@ -7,9 +7,10 @@
 package us.blindmint.codex.data.local.dto
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity
+@Entity(indices = [Index(value = ["bookId"])])
 data class HistoryEntity(
     @PrimaryKey(true)
     val id: Int = 0,

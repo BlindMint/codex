@@ -78,9 +78,9 @@ object AppModule {
                 DatabaseHelper.MIGRATION_22_23,
                 DatabaseHelper.MIGRATION_23_24,
                 DatabaseHelper.MIGRATION_24_25,
-                DatabaseHelper.MIGRATION_25_26 // fixes isComic field for existing comic books
+                DatabaseHelper.MIGRATION_25_26, // fixes isComic field for existing comic books
+                DatabaseHelper.MIGRATION_26_27  // adds indices on HistoryEntity.bookId, BookmarkEntity.bookId, BookProgressHistoryEntity.filePath
             )
-            .allowMainThreadQueries()
             .build()
             .dao
     }

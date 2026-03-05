@@ -43,7 +43,6 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
         const val LANGUAGES_DIALOG = "languages_dialog"
 
         const val DETAILS_BOTTOM_SHEET = "details_bottom_sheet"
-        const val EDIT_BOTTOM_SHEET = "edit_bottom_sheet"
 
         val changePathChannel: Channel<Boolean> = Channel(Channel.CONFLATED)
     }
@@ -80,10 +79,8 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 bottomSheet = state.value.bottomSheet,
                 dialog = state.value.dialog,
                 listState = listState,
-                isEditingMetadata = state.value.isEditingMetadata,
                 editedBook = state.value.editedBook,
-                showConfirmSaveDialog = state.value.showConfirmSaveDialog,
-                showConfirmCancelDialog = state.value.showConfirmCancelDialog,
+                showDetailsBottomSheet = screenModel::onEvent,
                 showTitleDialog = screenModel::onEvent,
                 actionTitleDialog = screenModel::onEvent,
                 showAuthorDialog = screenModel::onEvent,
@@ -95,26 +92,15 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 showTagsDialog = screenModel::onEvent,
                 showSeriesDialog = screenModel::onEvent,
                 showLanguagesDialog = screenModel::onEvent,
-                resetTitle = screenModel::onEvent,
-                resetAuthor = screenModel::onEvent,
-                resetDescription = screenModel::onEvent,
-                clearProgressHistory = screenModel::onEvent,
                 refreshMetadataFromOpds = screenModel::onEvent,
-                dismissBottomSheet = screenModel::onEvent,
-                dismissDialog = screenModel::onEvent,
-                showDetailsBottomSheet = screenModel::onEvent,
-                showEditBottomSheet = screenModel::onEvent,
                 showDeleteDialog = screenModel::onEvent,
                 showResetProgressDialog = screenModel::onEvent,
                 actionDeleteDialog = screenModel::onEvent,
                 actionResetReadingProgress = screenModel::onEvent,
-                onEnterEditMode = { screenModel.onEvent(BookInfoEvent.OnEnterEditMode) },
-                onConfirmEditMetadata = { screenModel.onEvent(BookInfoEvent.OnConfirmEditMetadata) },
-                onCancelEditMetadata = { screenModel.onEvent(BookInfoEvent.OnCancelEditMetadata) },
-                onSilentCancelEditMetadata = { screenModel.onEvent(BookInfoEvent.OnSilentCancelEditMetadata) },
+                dismissDialog = screenModel::onEvent,
+                dismissBottomSheet = screenModel::onEvent,
                 onConfirmSaveChanges = { context -> screenModel.onEvent(BookInfoEvent.OnConfirmSaveChanges(context)) },
-                onDismissSaveDialog = { screenModel.onEvent(BookInfoEvent.OnDismissSaveDialog) },
-                onDismissCancelDialog = { screenModel.onEvent(BookInfoEvent.OnDismissCancelDialog) },
+                onCancelChanges = { screenModel.onEvent(BookInfoEvent.OnCancelChanges) },
                 onUpdateEditedBook = { updatedBook -> screenModel.onEvent(BookInfoEvent.OnUpdateEditedBook(updatedBook)) },
                 onCategoryChange = { category -> screenModel.onEvent(BookInfoEvent.OnChangeCategory(category)) },
                 toggleFavorite = { screenModel.onEvent(BookInfoEvent.OnToggleFavorite) },
