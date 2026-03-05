@@ -263,8 +263,7 @@ fun BulkEditBottomSheet(
             onItemsChanged = { tags ->
                 pendingTags = tags
                 showTagsEditor = false
-            },
-            onDismiss = { showTagsEditor = false }
+            }
         )
     }
 
@@ -275,8 +274,7 @@ fun BulkEditBottomSheet(
             onItemsChanged = { series ->
                 pendingSeries = series
                 showSeriesEditor = false
-            },
-            onDismiss = { showSeriesEditor = false }
+            }
         )
     }
 
@@ -287,8 +285,7 @@ fun BulkEditBottomSheet(
             onItemsChanged = { languages ->
                 pendingLanguages = languages
                 showLanguagesEditor = false
-            },
-            onDismiss = { showLanguagesEditor = false }
+            }
         )
     }
 
@@ -299,8 +296,7 @@ fun BulkEditBottomSheet(
             onItemsChanged = { authors ->
                 pendingAuthors = authors
                 showAuthorsEditor = false
-            },
-            onDismiss = { showAuthorsEditor = false }
+            }
         )
     }
 }

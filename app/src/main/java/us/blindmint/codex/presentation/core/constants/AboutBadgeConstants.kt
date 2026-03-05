@@ -15,7 +15,7 @@ fun provideAboutBadges() = listOf(
         drawable = R.drawable.github,
         imageVector = null,
         contentDescription = R.string.github_badge,
-        url = "https://www.github.com/BlindMint"
+        url = "https://github.com/BlindMint/codex"
     ),
     Badge(
         id = "gitlab",
@@ -29,6 +29,6 @@ fun provideAboutBadges() = listOf(
         drawable = R.drawable.codeberg,
         imageVector = null,
         contentDescription = R.string.codeberg_badge,
-        url = "https://www.codeberg.org/BlindMint"
+        url = "https://codeberg.org/BlindMint/codex"
     ),
 )
