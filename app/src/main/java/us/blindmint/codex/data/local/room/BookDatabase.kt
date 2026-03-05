@@ -253,6 +253,12 @@ object DatabaseHelper {
             db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `contentHash` TEXT NOT NULL DEFAULT ''")
             db.execSQL("ALTER TABLE `BookEntity` ADD COLUMN `fileSize` INTEGER NOT NULL DEFAULT 0")
             db.execSQL("CREATE INDEX IF NOT EXISTS `index_BookEntity_contentHash` ON `BookEntity` (`contentHash`)")
+            // Remove duplicate filePaths before creating unique index to avoid migration failure
+            db.execSQL("""
+                DELETE FROM `BookEntity` WHERE `id` NOT IN (
+                    SELECT MIN(`id`) FROM `BookEntity` GROUP BY `filePath`
+                )
+            """.trimIndent())
             db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_BookEntity_filePath` ON `BookEntity` (`filePath`)")
             db.execSQL("CREATE INDEX IF NOT EXISTS `index_BookEntity_opdsCalibreId` ON `BookEntity` (`opdsCalibreId`)")
             db.execSQL("CREATE INDEX IF NOT EXISTS `index_BookEntity_opdsSourceId` ON `BookEntity` (`opdsSourceId`)")

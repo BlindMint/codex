@@ -13,8 +13,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import us.blindmint.codex.data.repository.FileSystemRepositoryImpl
 import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.repository.FileSystemRepository
-import us.blindmint.codex.presentation.core.constants.provideExtensions
 import us.blindmint.codex.domain.util.ContentHasher
+import us.blindmint.codex.presentation.core.constants.provideExtensions
 import javax.inject.Inject
 
 private const val BULK_IMPORT = "BULK IMPORT"
@@ -61,18 +61,27 @@ class BulkImportBooksFromFolder @Inject constructor(
 
         supportedFiles.forEachIndexed { index, cachedFile ->
             try {
-                val contentHash = ContentHasher.computeHash(context, cachedFile.uri)
-                
-                val existingByHash = bookRepository.getBookByContentHash(contentHash)
-                if (existingByHash != null) {
-                    Log.i(BULK_IMPORT, "Skipping duplicate (by hash): ${cachedFile.name}")
-                    onProgress(BulkImportProgress(index + 1, supportedFiles.size, cachedFile.name))
-                    return@forEachIndexed
-                }
-
                 val nullableBook = fileSystemRepository.getBookFromFile(cachedFile)
                 when (nullableBook) {
                     is us.blindmint.codex.domain.library.book.NullableBook.NotNull -> {
+                        // Partial hash (first 64 KB) — fast duplicate detection for renamed/moved files.
+                        // Done after parse so files that fail to parse are never hashed.
+                        val contentHash = try {
+                            ContentHasher.computePartialHash(context, cachedFile.uri)
+                        } catch (e: Exception) {
+                            Log.w(BULK_IMPORT, "Could not hash ${cachedFile.name}: ${e.message}")
+                            ""
+                        }
+
+                        if (contentHash.isNotEmpty()) {
+                            val existingByHash = bookRepository.getBookByContentHash(contentHash)
+                            if (existingByHash != null) {
+                                Log.i(BULK_IMPORT, "Skipping duplicate (by hash): ${cachedFile.name}")
+                                onProgress(BulkImportProgress(index + 1, supportedFiles.size, cachedFile.name))
+                                return@forEachIndexed
+                            }
+                        }
+
                         val bookWithHash = nullableBook.bookWithCover!!.copy(
                             book = nullableBook.bookWithCover.book.copy(
                                 contentHash = contentHash,

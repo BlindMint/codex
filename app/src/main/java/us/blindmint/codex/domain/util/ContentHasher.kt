@@ -18,10 +18,30 @@ object ContentHasher {
     private val hashFactory = XXHashFactory.fastestInstance()
     private const val SEED: Long = 0x9747B28CL
     private const val BUFFER_SIZE = 8192
+    private const val PARTIAL_HASH_LIMIT = 65536 // 64 KB
 
     suspend fun computeHash(context: Context, uri: Uri): String = withContext(Dispatchers.IO) {
         context.contentResolver.openInputStream(uri)?.use { input ->
             computeHashFromStream(input)
+        } ?: throw IOException("Cannot open file: $uri")
+    }
+
+    /**
+     * Reads only the first 64 KB of the file to produce a fast approximate hash.
+     * Sufficient for duplicate detection during bulk import — files sharing the
+     * same first 64 KB are overwhelmingly the same content.
+     */
+    suspend fun computePartialHash(context: Context, uri: Uri): String = withContext(Dispatchers.IO) {
+        context.contentResolver.openInputStream(uri)?.use { input ->
+            val hasher = hashFactory.newStreamingHash64(SEED)
+            val buffer = ByteArray(BUFFER_SIZE)
+            var remaining = PARTIAL_HASH_LIMIT
+            var bytesRead = 0
+            while (remaining > 0 && input.read(buffer, 0, minOf(BUFFER_SIZE, remaining)).also { bytesRead = it } != -1) {
+                hasher.update(buffer, 0, bytesRead)
+                remaining -= bytesRead
+            }
+            hasher.value.toString(16).padStart(16, '0')
         } ?: throw IOException("Cannot open file: $uri")
     }
 
