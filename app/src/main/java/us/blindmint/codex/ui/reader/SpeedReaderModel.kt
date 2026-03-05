@@ -144,7 +144,8 @@ class SpeedReaderModel @Inject constructor(
 
                         // Update progress based on current word index and total words
                         val progress = if (loadedWords.size > 0) {
-                            initialIndex.toFloat() / loadedWords.size
+                            if (initialIndex >= loadedWords.size - 1) 1f
+                            else initialIndex.toFloat() / loadedWords.size
                         } else 0f
                         currentProgress.floatValue = progress
 

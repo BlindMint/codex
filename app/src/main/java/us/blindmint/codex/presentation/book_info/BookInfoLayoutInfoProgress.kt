@@ -40,8 +40,9 @@ fun BookInfoLayoutInfoProgress(
     // Calculate speed reader progress as word index / total words
     val speedProgress = remember(book.speedReaderWordIndex, book.speedReaderTotalWords) {
         if (book.speedReaderTotalWords > 0) {
-            val progress = (book.speedReaderWordIndex.toFloat() / book.speedReaderTotalWords).calculateProgress(1)
-            "$progress%"
+            val raw = if (book.speedReaderWordIndex >= book.speedReaderTotalWords - 1) 1f
+                else book.speedReaderWordIndex.toFloat() / book.speedReaderTotalWords
+            "${raw.calculateProgress(1)}%"
         } else {
             "0%"
         }
@@ -86,7 +87,8 @@ fun BookInfoLayoutInfoProgress(
                 LinearProgressIndicator(
                     progress = {
                         if (book.speedReaderTotalWords > 0) {
-                            (book.speedReaderWordIndex.toFloat() / book.speedReaderTotalWords).coerceIn(0f, 1f)
+                            if (book.speedReaderWordIndex >= book.speedReaderTotalWords - 1) 1f
+                            else (book.speedReaderWordIndex.toFloat() / book.speedReaderTotalWords).coerceIn(0f, 1f)
                         } else {
                             0f
                         }
