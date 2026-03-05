@@ -47,6 +47,7 @@ import us.blindmint.codex.domain.file.CachedFileCompat
 import us.blindmint.codex.domain.library.book.NullableBook
 import us.blindmint.codex.domain.navigator.NavigatorItem
 import us.blindmint.codex.domain.navigator.StackEvent
+import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.ui.isDark
 import us.blindmint.codex.domain.ui.isPureDark
 import us.blindmint.codex.domain.use_case.book.FindExistingBook
@@ -92,6 +93,7 @@ class MainActivity : AppCompatActivity() {
     @Inject lateinit var insertBook: InsertBook
     @Inject lateinit var findExistingBook: FindExistingBook
     @Inject lateinit var getBookByContentHash: GetBookByContentHash
+    @Inject lateinit var bookRepository: BookRepository
 
     // Pending file URI from external intent
     private var pendingFileUri: Uri? = null
@@ -118,6 +120,9 @@ class MainActivity : AppCompatActivity() {
 
         // Handle file open intent from external file managers
         handleIncomingIntent(intent)
+
+        // Clean up orphaned files in imports folder
+        cleanupOrphanedImports()
 
         // Bigger Cursor size for Room
         try {
@@ -386,9 +391,9 @@ class MainActivity : AppCompatActivity() {
                     bookId = -1,
                     message = getString(R.string.hashing_book)
                 )
-                
+
                 val contentHash = withContext(Dispatchers.IO) {
-                    ContentHasher.computeHash(this@MainActivity, uri)
+                    ContentHasher.computePartialHash(this@MainActivity, uri)
                 }
 
                 val existingByHash = withContext(Dispatchers.IO) {
@@ -493,6 +498,48 @@ class MainActivity : AppCompatActivity() {
                         Toast.LENGTH_LONG
                     ).show()
                 }
+            }
+        }
+    }
+
+    /**
+     * Removes orphaned files from the imports folder.
+     * Files not referenced by any book in the database are deleted.
+     * Runs asynchronously in the background.
+     */
+    private fun cleanupOrphanedImports() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val importsDir = File(filesDir, "imports")
+                if (!importsDir.exists() || !importsDir.isDirectory) {
+                    return@launch
+                }
+
+                val importFiles = importsDir.listFiles() ?: return@launch
+                if (importFiles.isEmpty()) {
+                    return@launch
+                }
+
+                val existingPathsAndHashes = withContext(Dispatchers.IO) {
+                    bookRepository.getAllFilePathsAndHashes()
+                }
+                val validPaths = existingPathsAndHashes.map { it.first }.toSet()
+
+                var deletedCount = 0
+                importFiles.forEach { file ->
+                    val filePath = file.absolutePath
+                    if (filePath !in validPaths) {
+                        if (file.delete()) {
+                            deletedCount++
+                        }
+                    }
+                }
+
+                if (deletedCount > 0) {
+                    Log.i("MainActivity", "Cleaned up $deletedCount orphaned import files")
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error cleaning up orphaned imports", e)
             }
         }
     }

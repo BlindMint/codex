@@ -6,8 +6,11 @@
 
 package us.blindmint.codex.presentation.book_info
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.util.BottomSheet
 import us.blindmint.codex.domain.util.Dialog
@@ -65,33 +68,36 @@ fun BookInfoContent(
         navigateBack = navigateBack
     )
 
-    BookInfoBottomSheet(
-        bottomSheet = bottomSheet,
-        book = book,
-        editedBook = editedBook,
-        showTagsDialog = showTagsDialog,
-        showSeriesDialog = showSeriesDialog,
-        showLanguagesDialog = showLanguagesDialog,
-        refreshMetadataFromOpds = refreshMetadataFromOpds,
-        dismissBottomSheet = dismissBottomSheet,
-        onConfirmSaveChanges = onConfirmSaveChanges,
-        onCancelChanges = onCancelChanges,
-        onUpdateEditedBook = onUpdateEditedBook,
-        onCategoryChange = onCategoryChange
-    )
+    Box(Modifier.fillMaxSize()) {
+        BookInfoScaffold(
+            book = book,
+            listState = listState,
+            showDetailsBottomSheet = showDetailsBottomSheet,
+            showDeleteDialog = showDeleteDialog,
+            showResetProgressDialog = showResetProgressDialog,
+            toggleFavorite = toggleFavorite,
+            navigateToReader = navigateToReader,
+            navigateToSpeedReading = navigateToSpeedReading,
+            onCategoryChange = onCategoryChange,
+            navigateBack = navigateBack
+        )
 
-    BookInfoScaffold(
-        book = book,
-        listState = listState,
-        showDetailsBottomSheet = showDetailsBottomSheet,
-        showDeleteDialog = showDeleteDialog,
-        showResetProgressDialog = showResetProgressDialog,
-        toggleFavorite = toggleFavorite,
-        navigateToReader = navigateToReader,
-        navigateToSpeedReading = navigateToSpeedReading,
-        onCategoryChange = onCategoryChange,
-        navigateBack = navigateBack
-    )
+        // Rendered after BookInfoScaffold so it draws on top when visible
+        BookInfoBottomSheet(
+            bottomSheet = bottomSheet,
+            book = book,
+            editedBook = editedBook,
+            showTagsDialog = showTagsDialog,
+            showSeriesDialog = showSeriesDialog,
+            showLanguagesDialog = showLanguagesDialog,
+            refreshMetadataFromOpds = refreshMetadataFromOpds,
+            dismissBottomSheet = dismissBottomSheet,
+            onConfirmSaveChanges = onConfirmSaveChanges,
+            onCancelChanges = onCancelChanges,
+            onUpdateEditedBook = onUpdateEditedBook,
+            onCategoryChange = onCategoryChange
+        )
+    }
 
     BookInfoBackHandler(
         navigateBack = navigateBack
