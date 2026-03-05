@@ -150,22 +150,27 @@ class LibraryModel @Inject constructor(
                         )
                     }
                     searchQueryChange?.cancel()
-                    searchQueryChange = launch(Dispatchers.IO) {
-                        delay(500)
-                        yield()
-                        onEvent(LibraryEvent.OnSearch)
+                    refreshJob?.cancel() // prevent stale in-flight search from writing results
+                    if (event.query.isBlank()) {
+                        // Empty query: skip debounce, load all books immediately
+                        refreshJob = launch(Dispatchers.IO) { getBooksFromDatabase() }
+                    } else {
+                        searchQueryChange = launch(Dispatchers.IO) {
+                            delay(500)
+                            yield()
+                            onEvent(LibraryEvent.OnSearch)
+                        }
                     }
                 }
             }
 
             is LibraryEvent.OnSearch -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    onEvent(
-                        LibraryEvent.OnRefreshList(
-                            loading = false,
-                            hideSearch = false
-                        )
-                    )
+                // Bypass OnRefreshList entirely so isRefreshing is never set.
+                // The debounce in OnSearchQueryChange covers the processing delay;
+                // results then appear via animateItem() with no spinner.
+                refreshJob?.cancel()
+                refreshJob = viewModelScope.launch(Dispatchers.IO) {
+                    getBooksFromDatabase()
                 }
             }
 

@@ -75,7 +75,10 @@ fun BookInfoDetailsPanel(
     val hasChanges = editedBook != null && (
         editedBook.title != book.title ||
         editedBook.authors != book.authors ||
-        editedBook.description != book.description
+        editedBook.description != book.description ||
+        editedBook.tags != book.tags ||
+        editedBook.series != book.series ||
+        editedBook.languages != book.languages
     )
 
     val cachedFile = remember(displayBook.filePath) {

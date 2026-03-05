@@ -6,23 +6,11 @@
 
 package us.blindmint.codex.presentation.settings
 
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
- * Data class representing a main settings menu item
- *
- * @deprecated Use [Preference.PreferenceItem] with [PreferenceScreen] instead.
- * This class is kept for backward compatibility and will be removed in future versions.
+ * Data class representing a main settings menu item (Appearance, Reader, Library, etc.).
+ * Used by [SettingsLayout] and [FuzzySearchHelper] for the top-level settings navigation.
  */
-@Deprecated(
-    message = "Use Preference.PreferenceItem with PreferenceScreen instead",
-    replaceWith = ReplaceWith(
-        "Preference.PreferenceItem",
-        imports = ["us.blindmint.codex.presentation.settings.Preference"]
-    ),
-    level = DeprecationLevel.WARNING
-)
 data class SettingsItem(
     val id: String,
     val title: String,
