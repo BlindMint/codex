@@ -185,6 +185,7 @@ fun ReaderLayout(
                 },
                 backgroundColor = backgroundColor,
                 readingDirection = mainState.value.comicReadingDirection,
+                comicScaleType = mainState.value.comicScaleType,
                 showMenu = showMenu,
                 showPageIndicator = !fullscreenMode,
                 onLoadingComplete = {
