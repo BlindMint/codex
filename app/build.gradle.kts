@@ -183,6 +183,10 @@ dependencies {
         exclude(group = "org.bouncycastle", module = "bcutil-jdk15to18")
     }
 
+    // AndroidX PDF (Jetpack) - provides built-in PDF viewing with search
+    implementation("androidx.pdf:pdf-viewer:1.0.0-alpha15")
+    implementation("androidx.pdf:pdf-viewer-fragment:1.0.0-alpha15")
+
     // Bouncy Castle (JDK 8+ compatible - works with JDK 21)
     implementation("org.bouncycastle:bcprov-jdk18on:1.83")
     implementation("org.bouncycastle:bcpkix-jdk18on:1.83")

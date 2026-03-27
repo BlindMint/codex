@@ -290,7 +290,8 @@ fun ReaderScaffold(
              onTextSelected = onTextSelected,
              onReaderEvent = onReaderEvent,
              searchQuery = searchQuery,
-             searchHighlightColor = searchHighlightColor
+             searchHighlightColor = searchHighlightColor,
+             showSearch = isSearchVisible
         )
 
         // Search scrollbar - visible when search bar is active and setting is enabled

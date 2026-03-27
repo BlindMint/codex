@@ -108,7 +108,8 @@ fun ReaderLayout(
     onTextSelected: (ReaderEvent.OnTextSelected) -> Unit,
     onReaderEvent: (ReaderEvent) -> Unit,
     searchQuery: String,
-    searchHighlightColor: ComposeColor
+    searchHighlightColor: ComposeColor,
+    showSearch: Boolean = false
 ) {
     val activity = LocalActivity.current
     val mainModel = hiltViewModel<MainModel>()
@@ -173,10 +174,10 @@ fun ReaderLayout(
         return
     }
 
-    // PDF native page rendering
+    // PDF native page rendering - using AndroidX PDF
     if (book.isPdf) {
         Column(Modifier.fillMaxSize()) {
-            PdfReaderLayout(
+            AndroidXPdfReaderLayout(
                 book = book,
                 initialPage = currentComicPage,
                 currentPage = currentComicPage,
@@ -210,6 +211,7 @@ fun ReaderLayout(
                 onPageSelected = { page ->
                     onReaderEvent(ReaderEvent.OnComicPageSelected(page))
                 },
+                isSearchVisible = showSearch,
                 modifier = Modifier.weight(1f)
             )
         }
