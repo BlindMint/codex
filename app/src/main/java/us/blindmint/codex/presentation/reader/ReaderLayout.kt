@@ -174,10 +174,10 @@ fun ReaderLayout(
         return
     }
 
-    // PDF native page rendering - using AndroidX PDF
+    // PDF native page rendering - using MuPDF for high quality rendering and search
     if (book.isPdf) {
         Column(Modifier.fillMaxSize()) {
-            AndroidXPdfReaderLayout(
+            MuPdfReaderLayout(
                 book = book,
                 initialPage = currentComicPage,
                 currentPage = currentComicPage,
