@@ -989,6 +989,12 @@ class ReaderModel @Inject constructor(
                     }
                 }
 
+                is ReaderEvent.OnToggleInverseColor -> {
+                    _state.update {
+                        it.copy(isInverseColorEnabled = !it.isInverseColorEnabled)
+                    }
+                }
+
             }
         }
     }

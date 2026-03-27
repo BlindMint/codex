@@ -168,4 +168,6 @@ sealed class ReaderEvent {
     data class OnComicPageSelected(
         val page: Int
     ) : ReaderEvent()
+
+    data object OnToggleInverseColor : ReaderEvent()
 }

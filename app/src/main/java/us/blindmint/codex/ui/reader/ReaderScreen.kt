@@ -659,7 +659,9 @@ data class ReaderScreen(
                comicProgressBarPadding = comicProgressBarPadding,
                comicProgressBarAlignment = mainState.value.comicProgressBarAlignment,
                comicProgressBarFontSize = comicProgressBarFontSize,
-               comicReadingDirection = mainState.value.comicReadingDirection
+               comicReadingDirection = mainState.value.comicReadingDirection,
+               isInverseColorEnabled = state.value.isInverseColorEnabled,
+               onToggleInverseColor = { screenModel.onEvent(ReaderEvent.OnToggleInverseColor) }
            )
 
 

@@ -894,6 +894,8 @@
     <string name="previous_result_content_desc">Previous result</string>
     <string name="next_result_content_desc">Next result</string>
     <string name="search_in_book_content_desc">Search in book</string>
+    <string name="enable_inverse_color_content_desc">Enable inverse color (dark mode)</string>
+    <string name="disable_inverse_color_content_desc">Disable inverse color (light mode)</string>
     <string name="close_content_desc">Close</string>
     <string name="refresh_content_desc">Refresh</string>
     <string name="open_in_browser">Open in browser</string>
