@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -29,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -275,6 +278,18 @@ fun ImageBasedReaderLayout(
                         val logicalPage = mapPhysicalToLogicalPage(physicalPage)
                         var pageImage by remember(logicalPage) { mutableStateOf<ImageBitmap?>(null) }
 
+                        // Zoom state for this page
+                        var scale by remember { mutableFloatStateOf(1f) }
+                        var offsetX by remember { mutableFloatStateOf(0f) }
+                        var offsetY by remember { mutableFloatStateOf(0f) }
+
+                        // Reset zoom when page changes
+                        LaunchedEffect(logicalPage) {
+                            scale = 1f
+                            offsetX = 0f
+                            offsetY = 0f
+                        }
+
                         LaunchedEffect(logicalPage) {
                             if (pageImage == null) {
                                 withContext(Dispatchers.IO) {
@@ -287,34 +302,43 @@ fun ImageBasedReaderLayout(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .pointerInput(showMenu, isRTL) {
-                                    detectTapGestures { offset ->
-                                        val width = size.width.toFloat()
-                                        val x = offset.x
-                                        var handledNavigation = false
+                                    detectTransformGestures { centroid, pan, zoom, _ ->
+                                        val newScale = (scale * zoom).coerceIn(1f, 5f)
+                                        
+                                        if (newScale > 1f) {
+                                            scale = newScale
+                                            offsetX += pan.x
+                                            offsetY += pan.y
+                                        } else {
+                                            scale = 1f
+                                            offsetX = 0f
+                                            offsetY = 0f
+                                            
+                                            val width = size.width.toFloat()
+                                            val x = centroid.x
+                                            var handledNavigation = false
 
-                                        if (!showMenu) {
-                                            // Left edge tap
-                                            if (x < width * 0.2f) {
-                                                scope.launch {
-                                                    if (pagerState.currentPage > 0) {
-                                                        pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                                            if (!showMenu) {
+                                                if (x < width * 0.2f) {
+                                                    scope.launch {
+                                                        if (pagerState.currentPage > 0) {
+                                                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                                                        }
                                                     }
-                                                }
-                                                handledNavigation = true
-                                            }
-                                            // Right edge tap
-                                            else if (x > width * 0.8f) {
-                                                scope.launch {
-                                                    if (pagerState.currentPage < totalPages - 1) {
-                                                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                                    handledNavigation = true
+                                                } else if (x > width * 0.8f) {
+                                                    scope.launch {
+                                                        if (pagerState.currentPage < totalPages - 1) {
+                                                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                                        }
                                                     }
+                                                    handledNavigation = true
                                                 }
-                                                handledNavigation = true
                                             }
-                                        }
 
-                                        if (!handledNavigation) {
-                                            onMenuToggle()
+                                            if (!handledNavigation) {
+                                                onMenuToggle()
+                                            }
                                         }
                                     }
                                 }
@@ -324,7 +348,14 @@ fun ImageBasedReaderLayout(
                                     bitmap = pageImage!!,
                                     contentDescription = null,
                                     contentScale = contentScale,
-                                    modifier = Modifier.fillMaxSize()
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .graphicsLayer(
+                                            scaleX = scale,
+                                            scaleY = scale,
+                                            translationX = offsetX,
+                                            translationY = offsetY
+                                        )
                                 )
                             } else {
                                 Box(
@@ -357,6 +388,17 @@ fun ImageBasedReaderLayout(
                             val logicalPage = mapPhysicalToLogicalPage(physicalPage)
                             var pageImage by remember(logicalPage) { mutableStateOf<ImageBitmap?>(null) }
 
+                            // Zoom state for this page
+                            var scale by remember { mutableFloatStateOf(1f) }
+                            var offsetX by remember { mutableFloatStateOf(0f) }
+                            var offsetY by remember { mutableFloatStateOf(0f) }
+
+                            LaunchedEffect(logicalPage) {
+                                scale = 1f
+                                offsetX = 0f
+                                offsetY = 0f
+                            }
+
                             LaunchedEffect(logicalPage) {
                                 if (pageImage == null) {
                                     withContext(Dispatchers.IO) {
@@ -375,10 +417,30 @@ fun ImageBasedReaderLayout(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .pointerInput(showMenu) {
-                                            detectTapGestures {
-                                                onMenuToggle()
+                                            detectTransformGestures { centroid, pan, zoom, _ ->
+                                                val newScale = (scale * zoom).coerceIn(1f, 5f)
+                                                
+                                                if (newScale > 1f) {
+                                                    scale = newScale
+                                                    offsetX += pan.x
+                                                    offsetY += pan.y
+                                                } else {
+                                                    scale = 1f
+                                                    offsetX = 0f
+                                                    offsetY = 0f
+                                                    
+                                                    if (!showMenu) {
+                                                        onMenuToggle()
+                                                    }
+                                                }
                                             }
                                         }
+                                        .graphicsLayer(
+                                            scaleX = scale,
+                                            scaleY = scale,
+                                            translationX = offsetX,
+                                            translationY = offsetY
+                                        )
                                 )
                             } else {
                                 Box(

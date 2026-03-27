@@ -11,10 +11,10 @@ import android.util.Log
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import androidx.core.net.toUri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -121,12 +123,12 @@ fun ComicReaderLayout(
         }
     }
 
-    // Function to load a specific page
+    // Function to load a specific page with high quality
     suspend fun loadPage(pageIndex: Int): ImageBitmap? {
         // Check if already loaded
         loadedPages[pageIndex]?.first?.let { return it }
 
-        // Load the page
+        // Load the page with high quality options
         try {
             archiveHandle?.let { archive ->
                 // archive.entries already only contains image files (filtered by ArchiveHandle)
@@ -135,11 +137,17 @@ fun ComicReaderLayout(
                     Log.d("CodexComic", "Lazy loading page ${pageIndex + 1}")
 
                     archive.getInputStream(entry).use { input ->
-                        val bitmap = BitmapFactory.decodeStream(input)
+                        // High quality bitmap options
+                        val options = BitmapFactory.Options().apply {
+                            inPreferredConfig = Bitmap.Config.ARGB_8888
+                            inSampleSize = 1  // Full resolution, no downsampling
+                            inMutable = false
+                        }
+                        val bitmap = BitmapFactory.decodeStream(input, null, options)
                         if (bitmap != null) {
                             val imageBitmap = bitmap.asImageBitmap()
                             loadedPages[pageIndex] = imageBitmap to bitmap
-                            Log.d("CodexComic", "Loaded page ${pageIndex + 1}")
+                            Log.d("CodexComic", "Loaded page ${pageIndex + 1} at full quality")
                             return imageBitmap
                         }
                     }
@@ -307,6 +315,18 @@ private fun ComicPage(
 ) {
     val isRTL = comicReadingDirection == "RTL"
 
+    // Zoom and pan state
+    var scale by remember { mutableFloatStateOf(1f) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
+
+    // Reset zoom when changing pages
+    LaunchedEffect(imageBitmap) {
+        scale = 1f
+        offsetX = 0f
+        offsetY = 0f
+    }
+
     // Apply tap inversion logic
     val shouldInvertHorizontal = comicInvertTaps == "HORIZONTAL" || comicInvertTaps == "BOTH"
 
@@ -318,67 +338,99 @@ private fun ComicPage(
         modifier = Modifier
             .fillMaxSize()
             .pointerInput(comicTapZone, isRTL, showMenu) {
-                detectTapGestures { offset ->
-                    val width = size.width.toFloat()
-                    val height = size.height.toFloat()
-                    val x = offset.x
-                    val y = offset.y
+                detectTransformGestures { centroid, pan, zoom, _ ->
+                    // Apply zoom with limits
+                    val newScale = (scale * zoom).coerceIn(1f, 5f)
+                    
+                    if (newScale > 1f) {
+                        // When zoomed, allow panning
+                        scale = newScale
+                        offsetX += pan.x
+                        offsetY += pan.y
+                    } else {
+                        // When not zoomed, handle tap navigation
+                        scale = 1f
+                        offsetX = 0f
+                        offsetY = 0f
+                        
+                        val width = size.width.toFloat()
+                        val height = size.height.toFloat()
+                        val x = centroid.x
+                        val y = centroid.y
 
-                    var handledNavigation = false
+                        var handledNavigation = false
 
-                    // Only allow navigation if menu is not open
-                    if (!showMenu) {
-                        when (comicTapZone) {
-                            0 -> { // Default
-                                if (x < width * 0.2f) {
-                                    if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
-                                    handledNavigation = true
-                                } else if (x > width * 0.8f) {
-                                    if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
+                        if (!showMenu) {
+                            when (comicTapZone) {
+                                0 -> { // Default
+                                    if (x < width * 0.2f) {
+                                        if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
+                                        handledNavigation = true
+                                    } else if (x > width * 0.8f) {
+                                        if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
+                                        handledNavigation = true
+                                    }
+                                }
+                                1 -> { // L-shaped navigation
+                                    if (x < width * 0.3f || (x < width * 0.5f && y > height * 0.7f)) {
+                                        if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
+                                        handledNavigation = true
+                                    } else if (x > width * 0.7f || (x > width * 0.5f && y > height * 0.7f)) {
+                                        if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
+                                        handledNavigation = true
+                                    }
+                                }
+                                2 -> { // Kindle-ish
+                                    if (x < width * 0.2f) {
+                                        if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
+                                        handledNavigation = true
+                                    } else if (x > width * 0.8f) {
+                                        if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
+                                        handledNavigation = true
+                                    }
+                                }
+                                3 -> { // Edge
+                                    if (x < width * 0.1f) {
+                                        if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
+                                        handledNavigation = true
+                                    } else if (x > width * 0.9f) {
+                                        if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
+                                        handledNavigation = true
+                                    }
+                                }
+                                4 -> { // Right and left
+                                    if (x < width * 0.5f) {
+                                        if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
+                                    } else {
+                                        if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
+                                    }
                                     handledNavigation = true
                                 }
                             }
-                            1 -> { // L-shaped navigation
-                                if (x < width * 0.3f || (x < width * 0.5f && y > height * 0.7f)) {
-                                    if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
-                                    handledNavigation = true
-                                } else if (x > width * 0.7f || (x > width * 0.5f && y > height * 0.7f)) {
-                                    if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
-                                    handledNavigation = true
-                                }
-                            }
-                            2 -> { // Kindle-ish
-                                if (x < width * 0.2f) {
-                                    if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
-                                    handledNavigation = true
-                                } else if (x > width * 0.8f) {
-                                    if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
-                                    handledNavigation = true
-                                }
-                            }
-                            3 -> { // Edge
-                                if (x < width * 0.1f) {
-                                    if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
-                                    handledNavigation = true
-                                } else if (x > width * 0.9f) {
-                                    if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
-                                    handledNavigation = true
-                                }
-                            }
-                            4 -> { // Right and left
-                                if (x < width * 0.5f) {
-                                    if (isRTL) adjustedOnNextPage() else adjustedOnPreviousPage()
-                                } else {
-                                    if (isRTL) adjustedOnPreviousPage() else adjustedOnNextPage()
-                                }
-                                handledNavigation = true
-                            }
-                            // 5 = Disabled, no navigation
+                        }
+
+                        if (!handledNavigation) {
+                            onMenuToggle()
                         }
                     }
-
-                    // If tap wasn't handled by navigation zones, toggle menu
-                    if (!handledNavigation) {
+                }
+            }
+    ) {
+        Image(
+            bitmap = imageBitmap,
+            contentDescription = null,
+            contentScale = contentScale,
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer(
+                    scaleX = scale,
+                    scaleY = scale,
+                    translationX = offsetX,
+                    translationY = offsetY
+                )
+        )
+    }
+}
                         onMenuToggle()
                     }
                 }
