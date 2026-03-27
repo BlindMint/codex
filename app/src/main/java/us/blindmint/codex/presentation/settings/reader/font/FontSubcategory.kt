@@ -16,10 +16,10 @@ import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
 import us.blindmint.codex.presentation.settings.reader.font.components.CustomFontsOption
-import us.blindmint.codex.presentation.settings.reader.font.components.FontFamilyOption
+import us.blindmint.codex.presentation.settings.reader.font.components.FontFamilyChipsOption
 import us.blindmint.codex.presentation.settings.reader.font.components.FontSizeOption
 import us.blindmint.codex.presentation.settings.reader.font.components.FontStyleOption
-import us.blindmint.codex.presentation.settings.reader.font.components.FontThicknessOption
+import us.blindmint.codex.presentation.settings.reader.font.components.FontThicknessChipsOption
 import us.blindmint.codex.presentation.settings.reader.font.components.LetterSpacingOption
 
 fun LazyListScope.FontSubcategory(
@@ -35,11 +35,11 @@ fun LazyListScope.FontSubcategory(
         showDivider = showDivider
     ) {
         item {
-            FontFamilyOption()
+            FontFamilyChipsOption()
         }
 
         item {
-            FontThicknessOption()
+            FontThicknessChipsOption()
         }
 
         item {
@@ -52,6 +52,10 @@ fun LazyListScope.FontSubcategory(
 
         item {
             LetterSpacingOption()
+        }
+
+        item {
+            CustomFontsOption()
         }
     }
 }

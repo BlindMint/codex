@@ -24,7 +24,7 @@ import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
 import us.blindmint.codex.presentation.settings.reader.text.components.LineHeightOption
 import us.blindmint.codex.presentation.settings.reader.text.components.ParagraphHeightOption
 import us.blindmint.codex.presentation.settings.reader.text.components.ParagraphIndentationOption
-import us.blindmint.codex.presentation.settings.reader.text.components.TextAlignmentOption
+import us.blindmint.codex.presentation.settings.reader.text.components.TextAlignmentChipsOption
 import us.blindmint.codex.ui.main.MainModel
 
 fun LazyListScope.TextSubcategory(
@@ -40,7 +40,7 @@ fun LazyListScope.TextSubcategory(
         showDivider = showDivider
     ) {
         item {
-            TextAlignmentOption()
+            TextAlignmentChipsOption()
         }
 
         item {
