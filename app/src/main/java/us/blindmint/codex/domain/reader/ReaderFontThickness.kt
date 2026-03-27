@@ -15,7 +15,11 @@ enum class ReaderFontThickness(val thickness: FontWeight) {
     EXTRA_LIGHT(FontWeight.ExtraLight),
     LIGHT(FontWeight.Light),
     NORMAL(FontWeight.Normal),
-    MEDIUM(FontWeight.Medium)
+    MEDIUM(FontWeight.Medium),
+    SEMI_BOLD(FontWeight.SemiBold),
+    BOLD(FontWeight.Bold),
+    EXTRA_BOLD(FontWeight.ExtraBold),
+    BLACK(FontWeight.Black)
 }
 
 fun String.toFontThickness(): ReaderFontThickness {

@@ -90,7 +90,8 @@ fun FontThicknessDialog(
                     listOf(
                         ReaderFontThickness.THIN,
                         ReaderFontThickness.EXTRA_LIGHT,
-                        ReaderFontThickness.LIGHT
+                        ReaderFontThickness.LIGHT,
+                        ReaderFontThickness.NORMAL
                     ).forEach { thickness ->
                         FilterChip(
                             modifier = Modifier.height(36.dp),
@@ -103,6 +104,10 @@ fun FontThicknessDialog(
                                         ReaderFontThickness.LIGHT -> stringResource(id = R.string.font_thickness_light)
                                         ReaderFontThickness.NORMAL -> stringResource(id = R.string.font_thickness_normal)
                                         ReaderFontThickness.MEDIUM -> stringResource(id = R.string.font_thickness_medium)
+                                        ReaderFontThickness.SEMI_BOLD -> stringResource(id = R.string.font_thickness_semi_bold)
+                                        ReaderFontThickness.BOLD -> stringResource(id = R.string.font_thickness_bold)
+                                        ReaderFontThickness.EXTRA_BOLD -> stringResource(id = R.string.font_thickness_extra_bold)
+                                        ReaderFontThickness.BLACK -> stringResource(id = R.string.font_thickness_black)
                                     },
                                     style = androidx.compose.material3.MaterialTheme.typography.labelLarge.copy(
                                         fontFamily = fontFamily.font,
@@ -126,8 +131,9 @@ fun FontThicknessDialog(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     listOf(
-                        ReaderFontThickness.NORMAL,
-                        ReaderFontThickness.MEDIUM
+                        ReaderFontThickness.MEDIUM,
+                        ReaderFontThickness.SEMI_BOLD,
+                        ReaderFontThickness.BOLD
                     ).forEach { thickness ->
                         FilterChip(
                             modifier = Modifier.height(36.dp),
@@ -140,6 +146,51 @@ fun FontThicknessDialog(
                                         ReaderFontThickness.LIGHT -> stringResource(id = R.string.font_thickness_light)
                                         ReaderFontThickness.NORMAL -> stringResource(id = R.string.font_thickness_normal)
                                         ReaderFontThickness.MEDIUM -> stringResource(id = R.string.font_thickness_medium)
+                                        ReaderFontThickness.SEMI_BOLD -> stringResource(id = R.string.font_thickness_semi_bold)
+                                        ReaderFontThickness.BOLD -> stringResource(id = R.string.font_thickness_bold)
+                                        ReaderFontThickness.EXTRA_BOLD -> stringResource(id = R.string.font_thickness_extra_bold)
+                                        ReaderFontThickness.BLACK -> stringResource(id = R.string.font_thickness_black)
+                                    },
+                                    style = androidx.compose.material3.MaterialTheme.typography.labelLarge.copy(
+                                        fontFamily = fontFamily.font,
+                                        fontWeight = thickness.thickness
+                                    ),
+                                    maxLines = 1
+                                )
+                            },
+                            onClick = {
+                                onThicknessSelected(thickness)
+                                onDismissRequest()
+                            },
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    listOf(
+                        ReaderFontThickness.EXTRA_BOLD,
+                        ReaderFontThickness.BLACK
+                    ).forEach { thickness ->
+                        FilterChip(
+                            modifier = Modifier.height(36.dp),
+                            selected = thickness == state.value.fontThickness,
+                            label = {
+                                StyledText(
+                                    text = when (thickness) {
+                                        ReaderFontThickness.THIN -> stringResource(id = R.string.font_thickness_thin)
+                                        ReaderFontThickness.EXTRA_LIGHT -> stringResource(id = R.string.font_thickness_extra_light)
+                                        ReaderFontThickness.LIGHT -> stringResource(id = R.string.font_thickness_light)
+                                        ReaderFontThickness.NORMAL -> stringResource(id = R.string.font_thickness_normal)
+                                        ReaderFontThickness.MEDIUM -> stringResource(id = R.string.font_thickness_medium)
+                                        ReaderFontThickness.SEMI_BOLD -> stringResource(id = R.string.font_thickness_semi_bold)
+                                        ReaderFontThickness.BOLD -> stringResource(id = R.string.font_thickness_bold)
+                                        ReaderFontThickness.EXTRA_BOLD -> stringResource(id = R.string.font_thickness_extra_bold)
+                                        ReaderFontThickness.BLACK -> stringResource(id = R.string.font_thickness_black)
                                     },
                                     style = androidx.compose.material3.MaterialTheme.typography.labelLarge.copy(
                                         fontFamily = fontFamily.font,

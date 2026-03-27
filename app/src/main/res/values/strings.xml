@@ -498,6 +498,10 @@
     <string name="font_thickness_light">Light</string>
     <string name="font_thickness_normal">Normal</string>
     <string name="font_thickness_medium">Medium</string>
+    <string name="font_thickness_semi_bold">Semi bold</string>
+    <string name="font_thickness_bold">Bold</string>
+    <string name="font_thickness_extra_bold">Extra bold</string>
+    <string name="font_thickness_black">Black</string>
 
     <!-- Progress Count properties -->
     <string name="progress_count_percentage">Percentage</string>
