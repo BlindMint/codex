@@ -109,8 +109,7 @@ fun ReaderLayout(
     onReaderEvent: (ReaderEvent) -> Unit,
     searchQuery: String,
     searchHighlightColor: ComposeColor,
-    showSearch: Boolean = false,
-    isInverseColorEnabled: Boolean = false
+    showSearch: Boolean = false
 ) {
     val activity = LocalActivity.current
     val mainModel = hiltViewModel<MainModel>()
@@ -213,7 +212,6 @@ fun ReaderLayout(
                     onReaderEvent(ReaderEvent.OnComicPageSelected(page))
                 },
                 isSearchVisible = showSearch,
-                isInverseColorEnabled = isInverseColorEnabled,
                 modifier = Modifier.weight(1f)
             )
         }

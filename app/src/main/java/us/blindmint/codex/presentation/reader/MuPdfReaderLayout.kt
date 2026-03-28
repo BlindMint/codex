@@ -6,23 +6,21 @@
 
 package us.blindmint.codex.presentation.reader
 
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.foundation.background
 import com.artifex.mupdf.viewer.DocumentView
 import us.blindmint.codex.domain.library.book.Book
 
@@ -43,8 +41,7 @@ fun MuPdfReaderLayout(
     onMenuToggle: () -> Unit = {},
     onTotalPagesLoaded: (Int) -> Unit = {},
     onPageSelected: (Int) -> Unit = {},
-    isSearchVisible: Boolean = false,
-    isInverseColorEnabled: Boolean = false
+    isSearchVisible: Boolean = false
 ) {
     val context = LocalContext.current
 
@@ -56,29 +53,8 @@ fun MuPdfReaderLayout(
         Uri.parse(book.filePath)
     }
 
-    val inverseColorFilter = remember(isInverseColorEnabled) {
-        if (isInverseColorEnabled) {
-            ColorFilter.colorMatrix(ColorMatrix(floatArrayOf(
-                -1f, 0f, 0f, 0f, 255f,
-                0f, -1f, 0f, 0f, 255f,
-                0f, 0f, -1f, 0f, 255f,
-                0f, 0f, 0f, 1f, 0f
-            )))
-        } else null
-    }
-
-    val effectiveBackgroundColor = if (isInverseColorEnabled) Color.Black else backgroundColor
-
     AndroidView(
-        modifier = modifier
-            .then(
-                if (inverseColorFilter != null) {
-                    Modifier.graphicsLayer(colorFilter = inverseColorFilter)
-                } else Modifier
-            )
-            .then(
-                Modifier.background(effectiveBackgroundColor)
-            ),
+        modifier = modifier,
         factory = { ctx ->
             DocumentView(ctx).apply {
                 addPageChangeListener(object : DocumentView.PageChangeListener {

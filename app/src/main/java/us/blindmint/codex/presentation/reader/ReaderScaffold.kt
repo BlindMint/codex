@@ -145,9 +145,7 @@ fun ReaderScaffold(
     comicProgressBarPadding: Dp = 4.dp,
     comicProgressBarAlignment: HorizontalAlignment = HorizontalAlignment.CENTER,
     comicProgressBarFontSize: TextUnit = 8.sp,
-    comicReadingDirection: String = "LTR",
-    isInverseColorEnabled: Boolean = false,
-    onToggleInverseColor: () -> Unit = {}
+    comicReadingDirection: String = "LTR"
 ) {
     // State to track actual bar heights
     var topBarHeight by remember { mutableStateOf(0) }
@@ -187,9 +185,7 @@ fun ReaderScaffold(
                          showSearch = showSearch,
                          hideSearch = hideSearch,
                          navigateBack = navigateBack,
-                         navigateToBookInfo = navigateToBookInfo,
-                         isInverseColorEnabled = isInverseColorEnabled,
-                         onToggleInverseColor = onToggleInverseColor
+                         navigateToBookInfo = navigateToBookInfo
                      )
                 }
 
@@ -289,15 +285,14 @@ fun ReaderScaffold(
             showMenu = showMenu,
             currentComicPage = currentComicPage,
             totalComicPages = totalComicPages,
-             menuVisibility = menuVisibility,
-             openTranslator = openTranslator,
-              onTextSelected = onTextSelected,
-              onReaderEvent = onReaderEvent,
-              searchQuery = searchQuery,
-              searchHighlightColor = searchHighlightColor,
-              showSearch = isSearchVisible,
-              isInverseColorEnabled = isInverseColorEnabled
-         )
+            menuVisibility = menuVisibility,
+            openTranslator = openTranslator,
+             onTextSelected = onTextSelected,
+             onReaderEvent = onReaderEvent,
+             searchQuery = searchQuery,
+             searchHighlightColor = searchHighlightColor,
+             showSearch = isSearchVisible
+        )
 
         // Search scrollbar - visible when search bar is active and setting is enabled
         if (isSearchVisible && showSearchScrollbar) {
