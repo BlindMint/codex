@@ -70,4 +70,9 @@ Codex is an open source, ad-free, Administratum-approved eBook (& dataslate) rea
 - [Book's Story](https://github.com/Acclorite/book-story) (GitHub)
 - [Tachiyomi (Mihon)](https://github.com/mihonapp/mihon) (GitHub)
 - [Kitsune](https://github.com/Drumber/Kitsune) (GitHub)
-- [Voyager](https://voyager.adriel.cafe/) (Voyager Website)  
+- [Voyager](https://voyager.adriel.cafe/) (Voyager Website)
+
+## Dependencies and Licenses
+
+- [MuPDF](https://www.mupdf.com/) (PDF rendering and text features) — licensed under the GNU AGPLv3.
+  The complete app complies with AGPLv3 requirements through compatibility with our GPL-3.0 license. See LICENSE for details.  

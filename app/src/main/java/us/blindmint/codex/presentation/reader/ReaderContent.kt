@@ -160,7 +160,9 @@ fun ReaderContent(
     comicProgressBarPadding: Dp = 4.dp,
     comicProgressBarAlignment: HorizontalAlignment = HorizontalAlignment.CENTER,
     comicProgressBarFontSize: TextUnit = 8.sp,
-    comicReadingDirection: String = "LTR"
+    comicReadingDirection: String = "LTR",
+    isInverseColorEnabled: Boolean = false,
+    onToggleInverseColor: () -> Unit = {}
 ) {
     val activity = LocalActivity.current
     ReaderBottomSheet(
@@ -258,12 +260,14 @@ fun ReaderContent(
              totalComicPages = totalComicPages,
              onComicPageSelected = onComicPageSelected,
              comicProgressBar = comicProgressBar,
-              comicProgressCount = comicProgressCount,
-              comicProgressBarPadding = comicProgressBarPadding,
-              comicProgressBarAlignment = comicProgressBarAlignment,
-              comicProgressBarFontSize = comicProgressBarFontSize,
-              comicReadingDirection = comicReadingDirection
-          )
+             comicProgressCount = comicProgressCount,
+             comicProgressBarPadding = comicProgressBarPadding,
+             comicProgressBarAlignment = comicProgressBarAlignment,
+             comicProgressBarFontSize = comicProgressBarFontSize,
+             comicReadingDirection = comicReadingDirection,
+             isInverseColorEnabled = isInverseColorEnabled,
+             onToggleInverseColor = onToggleInverseColor
+           )
     } else {
         ReaderErrorPlaceholder(
             errorMessage = errorMessage,

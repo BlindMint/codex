@@ -67,5 +67,8 @@ data class ReaderState(
 
     // Track scroll restoration completion for smooth loading animation
     val isScrollRestorationComplete: Boolean = false,
-    val isComicScrollRestorationComplete: Boolean = false
+    val isComicScrollRestorationComplete: Boolean = false,
+
+    // Inverse color mode for PDF faux dark mode
+    val isInverseColorEnabled: Boolean = false
 )

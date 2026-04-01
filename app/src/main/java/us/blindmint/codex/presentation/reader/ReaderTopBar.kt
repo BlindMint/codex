@@ -17,8 +17,10 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Bookmark
+import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.WbSunny
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LinearProgressIndicator
@@ -61,7 +63,9 @@ fun ReaderTopBar(
     showSearch: (ReaderEvent.OnShowSearchPersistent) -> Unit,
     hideSearch: (ReaderEvent.OnHideSearch) -> Unit,
     navigateToBookInfo: (changePath: Boolean) -> Unit,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    isInverseColorEnabled: Boolean = false,
+    onToggleInverseColor: () -> Unit = {}
 ) {
     val activity = LocalActivity.current
     val animatedChapterProgress = animateFloatAsState(
@@ -140,6 +144,22 @@ fun ReaderTopBar(
             },
             subtitle = subtitleComposable,
             actions = {
+                // Inverse color toggle - only for page-based books (comics and PDFs)
+                if (book.isPageBased) {
+                    IconButton(
+                        icon = if (isInverseColorEnabled) Icons.Rounded.WbSunny else Icons.Rounded.DarkMode,
+                        contentDescription = if (isInverseColorEnabled) {
+                            R.string.disable_inverse_color_content_desc
+                        } else {
+                            R.string.enable_inverse_color_content_desc
+                        },
+                        disableOnClick = false,
+                        enabled = !lockMenu
+                    ) {
+                        onToggleInverseColor()
+                    }
+                }
+
                 if (!book.isComic) {
                     IconButton(
                         icon = Icons.Rounded.Search,
