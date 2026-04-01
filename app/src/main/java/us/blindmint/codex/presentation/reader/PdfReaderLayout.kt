@@ -7,14 +7,13 @@
 package us.blindmint.codex.presentation.reader
 
 import android.graphics.Bitmap
-import android.graphics.pdf.PdfRenderer
-import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -32,18 +31,27 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.artifex.mupdf.fitz.Document
+import com.artifex.mupdf.fitz.Matrix
+import com.artifex.mupdf.fitz.StructuredText
+import com.artifex.mupdf.fitz.android.AndroidDrawDevice
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import us.blindmint.codex.data.util.CachedFileFactory
-import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.library.book.Book
+import us.blindmint.codex.ui.reader.ReaderEvent
+import kotlin.math.abs
 import kotlin.math.min
 
 private const val TAG = "CodexPdf"
+
+/** MuPDF rendering scale. 2× gives clear, high-DPI output on most screens. */
+private const val RENDER_SCALE = 2.0f
+
+private const val MAX_CACHED_PAGES = 50
 
 @Composable
 fun PdfReaderLayout(
@@ -61,132 +69,95 @@ fun PdfReaderLayout(
     onScrollRestorationComplete: () -> Unit = {},
     onMenuToggle: () -> Unit = {},
     onTotalPagesLoaded: (Int) -> Unit = {},
-    onPageSelected: (Int) -> Unit = {}
+    onPageSelected: (Int) -> Unit = {},
+    onTextSelected: (ReaderEvent.OnTextSelected) -> Unit = {}
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    var pdfRenderer by remember { mutableStateOf<PdfRenderer?>(null) }
-    var fileDescriptor by remember { mutableStateOf<ParcelFileDescriptor?>(null) }
+    var document by remember { mutableStateOf<Document?>(null) }
+    // MuPDF Document is not thread-safe; serialize all access
+    val documentMutex = remember { Mutex() }
+
     var totalPages by remember { mutableIntStateOf(0) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var initialLoadComplete by remember { mutableStateOf(false) }
 
-    // Lazy loading cache - stores Pair of (ImageBitmap for display, Bitmap for cleanup)
-    // Using LinkedHashMap for LRU eviction order
-    val MAX_CACHED_PAGES = 50
-    val PREFETCH_PAGES = 5
+    // LRU cache: ImageBitmap for display + Bitmap for recycling
     val loadedPages = remember {
-        object : LinkedHashMap<Int, Pair<ImageBitmap, android.graphics.Bitmap>>(16, 0.75f, true) {
-            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, Pair<ImageBitmap, android.graphics.Bitmap>>?): Boolean {
+        object : LinkedHashMap<Int, Pair<ImageBitmap, Bitmap>>(16, 0.75f, true) {
+            override fun removeEldestEntry(
+                eldest: MutableMap.MutableEntry<Int, Pair<ImageBitmap, Bitmap>>?
+            ): Boolean {
                 if (size > MAX_CACHED_PAGES) {
-                    eldest?.value?.second?.recycle() // Free native memory
+                    eldest?.value?.second?.recycle()
                     return true
                 }
                 return false
             }
         }
     }
-    val renderMutex = remember { Mutex() }
 
-    // Render a single PDF page to bitmap
-    suspend fun renderPage(pageIndex: Int, renderer: PdfRenderer): ImageBitmap? {
-        return renderMutex.withLock {
-            if (!kotlinx.coroutines.currentCoroutineContext().isActive) return@withLock null
-
-            loadedPages[pageIndex]?.first?.let { return@withLock it }
-
+    suspend fun renderPage(pageIndex: Int): ImageBitmap? {
+        loadedPages[pageIndex]?.first?.let { return it }
+        return documentMutex.withLock {
             try {
-                if (pageIndex < 0 || pageIndex >= renderer.pageCount) return@withLock null
-
-                val page = renderer.openPage(pageIndex)
-                val width = page.width * 2
-                val height = page.height * 2
-                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-                bitmap.eraseColor(android.graphics.Color.WHITE)
-                page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                page.close()
-
-                val imageBitmap = bitmap.asImageBitmap()
-                loadedPages[pageIndex] = imageBitmap to bitmap
-                Log.d(TAG, "Rendered page ${pageIndex + 1}")
-                imageBitmap
-            } catch (e: Exception) {
-                if (kotlinx.coroutines.currentCoroutineContext().isActive) {
-                    Log.w(TAG, "Failed to render page $pageIndex: ${e.message}", e)
+                val doc = document ?: return@withLock null
+                val page = doc.loadPage(pageIndex)
+                val bitmap = AndroidDrawDevice.drawPage(page, Matrix(RENDER_SCALE, RENDER_SCALE))
+                page.destroy()
+                bitmap?.let {
+                    val imageBitmap = it.asImageBitmap()
+                    loadedPages[pageIndex] = imageBitmap to it
+                    imageBitmap
                 }
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to render page $pageIndex", e)
                 null
             }
         }
     }
 
-    // Load the PDF
     LaunchedEffect(book.id) {
         isLoading = true
         errorMessage = null
 
-        scope.launch {
-            kotlinx.coroutines.delay(10000)
-            if (isLoading) {
-                errorMessage = "Loading timed out after 10 seconds"
-                isLoading = false
-            }
-        }
-
         try {
             withContext(Dispatchers.IO) {
-                Log.d(TAG, "Loading PDF: ${book.title}")
-                val cachedFile = CachedFileFactory.fromBook(context, book)
-                if (cachedFile == null) {
-                    Log.e(TAG, "Failed to create CachedFile for PDF")
+                val cachedFile = CachedFileFactory.fromBook(context, book) ?: run {
                     errorMessage = "Failed to access PDF file"
                     return@withContext
                 }
-                val rawFile = cachedFile.rawFile
-
-                if (rawFile == null) {
+                val rawFile = cachedFile.rawFile ?: run {
                     errorMessage = "Failed to cache PDF file"
                     return@withContext
                 }
 
-                val fd = ParcelFileDescriptor.open(rawFile, ParcelFileDescriptor.MODE_READ_ONLY)
-                val renderer = PdfRenderer(fd)
+                val doc = Document.openDocument(rawFile.absolutePath)
+                document = doc
+                val pageCount = doc.countPages()
+                totalPages = pageCount
+                onTotalPagesLoaded(pageCount)
+                Log.d(TAG, "Opened PDF '${book.title}' — $pageCount pages")
 
-                fileDescriptor = fd
-                pdfRenderer = renderer
-                totalPages = renderer.pageCount
-                onTotalPagesLoaded(renderer.pageCount)
-                Log.d(TAG, "PDF loaded, pages: ${renderer.pageCount}")
-
-                // Pre-load first few pages
-                for (i in 0 until min(3, renderer.pageCount)) {
-                    renderPage(i, renderer)
+                for (i in 0 until min(3, pageCount)) {
+                    renderPage(i)
                 }
             }
         } catch (e: Exception) {
-            if (e is kotlinx.coroutines.CancellationException) {
-                throw e
-            }
-            Log.e(TAG, "Failed to load PDF", e)
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            Log.e(TAG, "Failed to open PDF", e)
             errorMessage = "Failed to load PDF: ${e.message}"
         } finally {
             isLoading = false
-            initialLoadComplete = true
             onLoadingComplete()
         }
     }
 
-    // Cleanup
     DisposableEffect(book.id) {
         onDispose {
-            try {
-                pdfRenderer?.close()
-                fileDescriptor?.close()
-            } catch (e: Exception) {
-                Log.w(TAG, "Error closing PDF resources", e)
-            }
-            // Recycle all bitmaps to free native memory
+            document?.destroy()
+            document = null
             loadedPages.values.forEach { it.second.recycle() }
             loadedPages.clear()
         }
@@ -197,22 +168,22 @@ fun PdfReaderLayout(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize())
-        } else if (errorMessage != null) {
-            Box(
+        when {
+            isLoading -> Box(modifier = Modifier.fillMaxSize())
+
+            errorMessage != null -> Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = errorMessage!!,
-                    color = backgroundColor,
-                    style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(16.dp)
                 )
             }
-        } else if (totalPages > 0) {
-            ImageBasedReaderLayout(
+
+            totalPages > 0 -> ImageBasedReaderLayout(
                 bookTitle = book.title,
                 currentPage = currentPage,
                 initialPage = initialPage,
@@ -229,10 +200,92 @@ fun PdfReaderLayout(
                 onScrollRestorationComplete = onScrollRestorationComplete,
                 onMenuToggle = onMenuToggle,
                 onPageSelected = onPageSelected,
-                loadPage = { pageIndex ->
-                    pdfRenderer?.let { renderPage(pageIndex, it) }
+                loadPage = { renderPage(it) },
+                onLongPress = { pageIndex, bitmapX, bitmapY ->
+                    scope.launch(Dispatchers.IO) {
+                        try {
+                            val result = documentMutex.withLock {
+                                val doc = document ?: return@withLock null
+                                val page = doc.loadPage(pageIndex)
+                                val structText = page.toStructuredText()
+                                val pageX = bitmapX / RENDER_SCALE
+                                val pageY = bitmapY / RENDER_SCALE
+                                val wordAndLine = findWordAtPoint(structText, pageX, pageY)
+                                structText.destroy()
+                                page.destroy()
+                                wordAndLine
+                            }
+                            result?.let { (word, lineText) ->
+                                withContext(Dispatchers.Main) {
+                                    onTextSelected(
+                                        ReaderEvent.OnTextSelected(
+                                            selectedText = word,
+                                            paragraphText = lineText
+                                        )
+                                    )
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Text extraction failed at ($bitmapX, $bitmapY)", e)
+                        }
+                    }
                 }
             )
         }
     }
+}
+
+/**
+ * Finds the word at the given page-coordinate point using MuPDF StructuredText.
+ * Returns a (word, fullLineText) pair, or null if no text is at that position.
+ */
+private fun findWordAtPoint(
+    structuredText: StructuredText,
+    pageX: Float,
+    pageY: Float
+): Pair<String, String>? {
+    for (block in structuredText.getBlocks()) {
+        for (line in block.lines) {
+            val bbox = line.bbox
+            // Check if tap Y falls within this line's vertical bounds
+            if (pageY < bbox.y0 || pageY > bbox.y1) continue
+
+            val chars = line.chars
+            if (chars.isEmpty()) continue
+
+            val lineText = chars.map { it.c.toChar() }.joinToString("")
+
+            // Find the character directly under the tap X
+            var tapIndex = chars.indexOfFirst { ch ->
+                !ch.isWhitespace() && pageX >= ch.quad.ul_x && pageX <= ch.quad.ur_x
+            }
+
+            // Fall back to the closest non-whitespace character
+            if (tapIndex == -1) {
+                var minDist = Float.MAX_VALUE
+                chars.forEachIndexed { i, ch ->
+                    if (!ch.isWhitespace()) {
+                        val midX = (ch.quad.ul_x + ch.quad.ur_x) / 2f
+                        val dist = abs(midX - pageX)
+                        if (dist < minDist) {
+                            minDist = dist
+                            tapIndex = i
+                        }
+                    }
+                }
+            }
+
+            if (tapIndex == -1) continue
+
+            // Expand left and right to word boundaries (whitespace = boundary)
+            var start = tapIndex
+            var end = tapIndex
+            while (start > 0 && !chars[start - 1].isWhitespace()) start--
+            while (end < chars.size - 1 && !chars[end + 1].isWhitespace()) end++
+
+            val word = lineText.substring(start, end + 1).trim()
+            if (word.isNotBlank()) return word to lineText
+        }
+    }
+    return null
 }

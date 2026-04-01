@@ -174,10 +174,10 @@ fun ReaderLayout(
         return
     }
 
-    // PDF native page rendering - using MuPDF for high quality rendering and search
+    // PDF native page rendering
     if (book.isPdf) {
         Column(Modifier.fillMaxSize()) {
-            MuPdfReaderLayout(
+            PdfReaderLayout(
                 book = book,
                 initialPage = currentComicPage,
                 currentPage = currentComicPage,
@@ -211,7 +211,7 @@ fun ReaderLayout(
                 onPageSelected = { page ->
                     onReaderEvent(ReaderEvent.OnComicPageSelected(page))
                 },
-                isSearchVisible = showSearch,
+                onTextSelected = onTextSelected,
                 modifier = Modifier.weight(1f)
             )
         }

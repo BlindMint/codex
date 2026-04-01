@@ -250,5 +250,11 @@
                 android:value="true" />
         </service>
 
+        <!-- MuPDF activity - explicitly set exported to satisfy Android 12+ requirement -->
+        <activity
+            android:name="com.artifex.mupdf.viewer.DocumentActivity"
+            android:exported="false"
+            tools:node="merge" />
+
     </application>
 </manifest>

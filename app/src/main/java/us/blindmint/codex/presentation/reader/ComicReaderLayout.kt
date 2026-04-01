@@ -431,16 +431,3 @@ private fun ComicPage(
         )
     }
 }
-                        onMenuToggle()
-                    }
-                }
-            }
-    ) {
-        Image(
-            bitmap = imageBitmap,
-            contentDescription = null,
-            contentScale = contentScale,
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
