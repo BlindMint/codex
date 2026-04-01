@@ -409,104 +409,107 @@ fun ImageBasedReaderLayout(
                         }
                     }
                 } else {
-                    LazyColumn(
-                        state = lazyListState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(
-                            top = (WindowInsets.displayCutout.asPaddingValues()
-                                .calculateTopPadding())
-                                .coerceAtLeast(18.dp),
-                            bottom = (WindowInsets.displayCutout.asPaddingValues()
-                                .calculateBottomPadding())
-                                .coerceAtLeast(18.dp),
-                        )
-                    ) {
-                        itemsIndexed(
-                            (0 until totalPages).toList(),
-                            key = { _, page -> page }
-                        ) { _, physicalPage ->
-                            val logicalPage = mapPhysicalToLogicalPage(physicalPage)
-                            var pageImage by remember(logicalPage) { mutableStateOf<ImageBitmap?>(null) }
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        LazyColumn(
+                            state = lazyListState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(
+                                top = (WindowInsets.displayCutout.asPaddingValues()
+                                    .calculateTopPadding())
+                                    .coerceAtLeast(18.dp),
+                                bottom = (WindowInsets.displayCutout.asPaddingValues()
+                                    .calculateBottomPadding())
+                                    .coerceAtLeast(18.dp),
+                            )
+                        ) {
+                            itemsIndexed(
+                                (0 until totalPages).toList(),
+                                key = { _, page -> page }
+                            ) { _, physicalPage ->
+                                val logicalPage = mapPhysicalToLogicalPage(physicalPage)
+                                var pageImage by remember(logicalPage) { mutableStateOf<ImageBitmap?>(null) }
 
-                            LaunchedEffect(logicalPage) {
-                                if (pageImage == null) {
-                                    withContext(Dispatchers.IO) {
-                                        pageImage = loadPage(logicalPage)
+                                LaunchedEffect(logicalPage) {
+                                    if (pageImage == null) {
+                                        withContext(Dispatchers.IO) {
+                                            pageImage = loadPage(logicalPage)
+                                        }
+                                    }
+                                }
+
+                                if (pageImage != null) {
+                                    val webtoonContentScale = if (contentScale == ContentScale.Fit) ContentScale.FillWidth else contentScale
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .pointerInput(onLongPress, logicalPage) {
+                                                if (onLongPress == null) return@pointerInput
+                                                detectLongPressNonBlocking { startPos ->
+                                                    if (verticalZoomScale != 1f) return@detectLongPressNonBlocking
+                                                    val bitmapW = pageImage?.width?.toFloat() ?: return@detectLongPressNonBlocking
+                                                    val bitmapH = pageImage?.height?.toFloat() ?: return@detectLongPressNonBlocking
+                                                    val containerW = size.width.toFloat()
+                                                    val fitScale = containerW / bitmapW
+                                                    val bitmapX = startPos.x / fitScale
+                                                    val bitmapY = startPos.y / fitScale
+                                                    if (bitmapX in 0f..bitmapW && bitmapY in 0f..bitmapH) {
+                                                        onLongPress(logicalPage, bitmapX, bitmapY)
+                                                    }
+                                                }
+                                            }
+                                    ) {
+                                        Image(
+                                            bitmap = pageImage!!,
+                                            contentDescription = null,
+                                            contentScale = webtoonContentScale,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .graphicsLayer(
+                                                    scaleX = verticalZoomScale,
+                                                    scaleY = verticalZoomScale,
+                                                    translationX = verticalOffsetX,
+                                                    translationY = verticalOffsetY
+                                                )
+                                        )
+                                    }
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 16.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
                                     }
                                 }
                             }
+                        }
 
-                            if (pageImage != null) {
-                                val webtoonContentScale = if (contentScale == ContentScale.Fit) ContentScale.FillWidth else contentScale
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .pointerInput(onLongPress, logicalPage) {
-                                            if (onLongPress == null) return@pointerInput
-                                            detectLongPressNonBlocking { startPos ->
-                                                if (verticalZoomScale != 1f) return@detectLongPressNonBlocking
-                                                val bitmapW = pageImage?.width?.toFloat() ?: return@detectLongPressNonBlocking
-                                                val bitmapH = pageImage?.height?.toFloat() ?: return@detectLongPressNonBlocking
-                                                val containerW = size.width.toFloat()
-                                                val fitScale = containerW / bitmapW
-                                                val bitmapX = startPos.x / fitScale
-                                                val bitmapY = startPos.y / fitScale
-                                                if (bitmapX in 0f..bitmapW && bitmapY in 0f..bitmapH) {
-                                                    onLongPress(logicalPage, bitmapX, bitmapY)
-                                                }
-                                            }
+                        // Global tap and zoom overlay for vertical mode
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .pointerInput(showMenu, verticalZoomScale) {
+                                    detectTapGestures(
+                                        onTap = {
+                                            onMenuToggle()
                                         }
-                                        .pointerInput(showMenu, verticalZoomScale) {
-                                            detectTapGestures(
-                                                onTap = {
-                                                    if (showMenu) {
-                                                        onMenuToggle()
-                                                        return@detectTapGestures
-                                                    }
-                                                    if (verticalZoomScale > 1f) return@detectTapGestures
-                                                    onMenuToggle()
-                                                }
-                                            )
-                                        }
-                                        .pointerInput(Unit) {
-                                            detectTransformGestures { _, pan, zoom, _ ->
-                                                val newScale = (verticalZoomScale * zoom).coerceIn(1f, 5f)
-                                                if (newScale > 1f) {
-                                                    verticalZoomScale = newScale
-                                                    verticalOffsetY += pan.y
-                                                    verticalOffsetX = (verticalOffsetX + pan.x).coerceIn(-500f, 500f)
-                                                } else {
-                                                    verticalZoomScale = 1f
-                                                    verticalOffsetX = 0f
-                                                    verticalOffsetY = 0f
-                                                }
-                                            }
-                                        }
-                                ) {
-                                    Image(
-                                        bitmap = pageImage!!,
-                                        contentDescription = null,
-                                        contentScale = webtoonContentScale,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .graphicsLayer(
-                                                scaleX = verticalZoomScale,
-                                                scaleY = verticalZoomScale,
-                                                translationX = verticalOffsetX,
-                                                translationY = verticalOffsetY
-                                            )
                                     )
                                 }
-                            } else {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 16.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
+                                .pointerInput(Unit) {
+                                    detectTransformGestures { _, pan, zoom, _ ->
+                                        val newScale = (verticalZoomScale * zoom).coerceIn(1f, 5f)
+                                        if (newScale > 1f) {
+                                            verticalZoomScale = newScale
+                                            verticalOffsetY += pan.y
+                                            verticalOffsetX = (verticalOffsetX + pan.x).coerceIn(-500f, 500f)
+                                        } else {
+                                            verticalZoomScale = 1f
+                                            verticalOffsetX = 0f
+                                            verticalOffsetY = 0f
+                                        }
+                                    }
                                 }
-                            }
-                        }
+                        )
                     }
                 }
             }
