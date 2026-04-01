@@ -85,6 +85,10 @@ fun FontThicknessOption() {
         ReaderFontThickness.LIGHT -> stringResource(id = R.string.font_thickness_light)
         ReaderFontThickness.NORMAL -> stringResource(id = R.string.font_thickness_normal)
         ReaderFontThickness.MEDIUM -> stringResource(id = R.string.font_thickness_medium)
+        ReaderFontThickness.SEMI_BOLD -> stringResource(id = R.string.font_thickness_semi_bold)
+        ReaderFontThickness.BOLD -> stringResource(id = R.string.font_thickness_bold)
+        ReaderFontThickness.EXTRA_BOLD -> stringResource(id = R.string.font_thickness_extra_bold)
+        ReaderFontThickness.BLACK -> stringResource(id = R.string.font_thickness_black)
     }
 
     GenericOption(
