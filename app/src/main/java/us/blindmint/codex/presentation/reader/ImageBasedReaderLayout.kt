@@ -12,7 +12,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -43,6 +42,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -119,7 +120,8 @@ fun ImageBasedReaderLayout(
     onPageSelected: (Int) -> Unit,
     loadPage: suspend (Int) -> ImageBitmap?,
     modifier: Modifier = Modifier,
-    onLongPress: ((pageIndex: Int, bitmapX: Float, bitmapY: Float) -> Unit)? = null
+    onLongPress: ((pageIndex: Int, bitmapX: Float, bitmapY: Float) -> Unit)? = null,
+    invertColors: Boolean = false
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -149,6 +151,21 @@ fun ImageBasedReaderLayout(
             6 -> ContentScale.Fit
             else -> ContentScale.Fit
         }
+    }
+
+    val imageColorFilter: ColorFilter? = if (invertColors) {
+        ColorFilter.colorMatrix(
+            ColorMatrix(
+                floatArrayOf(
+                    -1f, 0f, 0f, 0f, 255f,
+                    0f, -1f, 0f, 0f, 255f,
+                    0f, 0f, -1f, 0f, 255f,
+                    0f, 0f, 0f, 1f, 0f
+                )
+            )
+        )
+    } else {
+        null
     }
 
     val mapLogicalToPhysicalPage = { logicalPage: Int ->
@@ -292,16 +309,6 @@ fun ImageBasedReaderLayout(
                         val logicalPage = mapPhysicalToLogicalPage(physicalPage)
                         var pageImage by remember(logicalPage) { mutableStateOf<ImageBitmap?>(null) }
 
-                        var scale by remember { mutableFloatStateOf(1f) }
-                        var offsetX by remember { mutableFloatStateOf(0f) }
-                        var offsetY by remember { mutableFloatStateOf(0f) }
-
-                        LaunchedEffect(logicalPage) {
-                            scale = 1f
-                            offsetX = 0f
-                            offsetY = 0f
-                        }
-
                         LaunchedEffect(logicalPage) {
                             if (pageImage == null) {
                                 withContext(Dispatchers.IO) {
@@ -313,10 +320,51 @@ fun ImageBasedReaderLayout(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .pointerInput(onLongPress, logicalPage) {
+                                .pointerInput(showMenu) {
+                                    awaitEachGesture {
+                                        val down = awaitFirstDown(requireUnconsumed = false)
+                                        val startPos = down.position
+                                        var upPos = startPos
+
+                                        do {
+                                            val event = awaitPointerEvent()
+                                            val change = event.changes.firstOrNull() ?: break
+                                            if (!change.pressed) {
+                                                upPos = change.position
+                                            }
+                                        } while (event.changes.any { it.pressed })
+
+                                        if ((upPos - startPos).getDistance() < viewConfiguration.touchSlop) {
+                                            if (showMenu) {
+                                                onMenuToggle()
+                                            } else {
+                                                val width = size.width.toFloat()
+                                                when {
+                                                    upPos.x < width * 0.2f -> {
+                                                        scope.launch {
+                                                            if (pagerState.currentPage > 0) {
+                                                                pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                                                            }
+                                                        }
+                                                    }
+
+                                                    upPos.x > width * 0.8f -> {
+                                                        scope.launch {
+                                                            if (pagerState.currentPage < totalPages - 1) {
+                                                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                                            }
+                                                        }
+                                                    }
+
+                                                    else -> onMenuToggle()
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                .pointerInput(onLongPress, logicalPage, pageImage) {
                                     if (onLongPress == null) return@pointerInput
                                     detectLongPressNonBlocking { startPos ->
-                                        if (scale != 1f) return@detectLongPressNonBlocking
                                         val bitmapW = pageImage?.width?.toFloat() ?: return@detectLongPressNonBlocking
                                         val bitmapH = pageImage?.height?.toFloat() ?: return@detectLongPressNonBlocking
                                         val containerW = size.width.toFloat()
@@ -326,6 +374,7 @@ fun ImageBasedReaderLayout(
                                         val fitScale: Float
                                         val imgOffsetX: Float
                                         val imgOffsetY: Float
+
                                         if (bitmapAspect > containerAspect) {
                                             fitScale = containerW / bitmapW
                                             imgOffsetX = 0f
@@ -335,52 +384,12 @@ fun ImageBasedReaderLayout(
                                             imgOffsetX = (containerW - bitmapW * fitScale) / 2f
                                             imgOffsetY = 0f
                                         }
+
                                         val bitmapX = (startPos.x - imgOffsetX) / fitScale
                                         val bitmapY = (startPos.y - imgOffsetY) / fitScale
+
                                         if (bitmapX in 0f..bitmapW && bitmapY in 0f..bitmapH) {
                                             onLongPress(logicalPage, bitmapX, bitmapY)
-                                        }
-                                    }
-                                }
-                                .pointerInput(showMenu, isRTL, totalPages, scale) {
-                                    detectTapGestures(
-                                        onTap = { offset ->
-                                            if (showMenu) {
-                                                onMenuToggle()
-                                                return@detectTapGestures
-                                            }
-                                            if (scale > 1f) return@detectTapGestures
-                                            val width = size.width.toFloat()
-                                            val x = offset.x
-                                            if (x < width * 0.2f) {
-                                                scope.launch {
-                                                    if (pagerState.currentPage > 0) {
-                                                        pagerState.animateScrollToPage(pagerState.currentPage - 1)
-                                                    }
-                                                }
-                                            } else if (x > width * 0.8f) {
-                                                scope.launch {
-                                                    if (pagerState.currentPage < totalPages - 1) {
-                                                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                                                    }
-                                                }
-                                            } else {
-                                                onMenuToggle()
-                                            }
-                                        }
-                                    )
-                                }
-                                .pointerInput(Unit) {
-                                    detectTransformGestures { _, pan, zoom, _ ->
-                                        val newScale = (scale * zoom).coerceIn(1f, 5f)
-                                        if (newScale > 1f) {
-                                            scale = newScale
-                                            offsetX += pan.x
-                                            offsetY += pan.y
-                                        } else {
-                                            scale = 1f
-                                            offsetX = 0f
-                                            offsetY = 0f
                                         }
                                     }
                                 }
@@ -390,14 +399,8 @@ fun ImageBasedReaderLayout(
                                     bitmap = pageImage!!,
                                     contentDescription = null,
                                     contentScale = contentScale,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .graphicsLayer(
-                                            scaleX = scale,
-                                            scaleY = scale,
-                                            translationX = offsetX,
-                                            translationY = offsetY
-                                        )
+                                    colorFilter = imageColorFilter,
+                                    modifier = Modifier.fillMaxSize()
                                 )
                             } else {
                                 Box(
@@ -442,10 +445,32 @@ fun ImageBasedReaderLayout(
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .pointerInput(onLongPress, logicalPage) {
+                                            .pointerInput(showMenu) {
+                                                awaitEachGesture {
+                                                    val down = awaitFirstDown(requireUnconsumed = false)
+                                                    val startPos = down.position
+                                                    var upPos = startPos
+
+                                                    do {
+                                                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                                                        val change = event.changes.firstOrNull() ?: break
+                                                        if (!change.pressed) {
+                                                            upPos = change.position
+                                                        }
+                                                    } while (event.changes.any { it.pressed })
+
+                                                    if ((upPos - startPos).getDistance() < viewConfiguration.touchSlop) {
+                                                        val width = size.width.toFloat()
+                                                        if (!showMenu && (upPos.x < width * 0.2f || upPos.x > width * 0.8f)) {
+                                                            return@awaitEachGesture
+                                                        }
+                                                        onMenuToggle()
+                                                    }
+                                                }
+                                            }
+                                            .pointerInput(onLongPress, logicalPage, pageImage) {
                                                 if (onLongPress == null) return@pointerInput
                                                 detectLongPressNonBlocking { startPos ->
-                                                    if (verticalZoomScale != 1f) return@detectLongPressNonBlocking
                                                     val bitmapW = pageImage?.width?.toFloat() ?: return@detectLongPressNonBlocking
                                                     val bitmapH = pageImage?.height?.toFloat() ?: return@detectLongPressNonBlocking
                                                     val containerW = size.width.toFloat()
@@ -462,6 +487,7 @@ fun ImageBasedReaderLayout(
                                             bitmap = pageImage!!,
                                             contentDescription = null,
                                             contentScale = webtoonContentScale,
+                                            colorFilter = imageColorFilter,
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .graphicsLayer(
@@ -483,33 +509,6 @@ fun ImageBasedReaderLayout(
                                 }
                             }
                         }
-
-                        // Global tap and zoom overlay for vertical mode
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .pointerInput(showMenu, verticalZoomScale) {
-                                    detectTapGestures(
-                                        onTap = {
-                                            onMenuToggle()
-                                        }
-                                    )
-                                }
-                                .pointerInput(Unit) {
-                                    detectTransformGestures { _, pan, zoom, _ ->
-                                        val newScale = (verticalZoomScale * zoom).coerceIn(1f, 5f)
-                                        if (newScale > 1f) {
-                                            verticalZoomScale = newScale
-                                            verticalOffsetY += pan.y
-                                            verticalOffsetX = (verticalOffsetX + pan.x).coerceIn(-500f, 500f)
-                                        } else {
-                                            verticalZoomScale = 1f
-                                            verticalOffsetX = 0f
-                                            verticalOffsetY = 0f
-                                        }
-                                    }
-                                }
-                        )
                     }
                 }
             }

@@ -70,7 +70,8 @@ fun PdfReaderLayout(
     onMenuToggle: () -> Unit = {},
     onTotalPagesLoaded: (Int) -> Unit = {},
     onPageSelected: (Int) -> Unit = {},
-    onTextSelected: (ReaderEvent.OnTextSelected) -> Unit = {}
+    onTextSelected: (ReaderEvent.OnTextSelected) -> Unit = {},
+    invertColors: Boolean = false
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -229,7 +230,8 @@ fun PdfReaderLayout(
                             Log.w(TAG, "Text extraction failed at ($bitmapX, $bitmapY)", e)
                         }
                     }
-                }
+                },
+                invertColors = invertColors
             )
         }
     }

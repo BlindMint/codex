@@ -101,6 +101,7 @@ fun ReaderLayout(
     showPageIndicator: Boolean = true,
     isLoading: Boolean,
     showMenu: Boolean,
+    isInverseColorEnabled: Boolean = false,
     currentComicPage: Int = 0,
     totalComicPages: Int = 0,
     menuVisibility: (ReaderEvent.OnMenuVisibility) -> Unit,
@@ -167,7 +168,8 @@ fun ReaderLayout(
                 onPageSelected = { page ->
                     onReaderEvent(ReaderEvent.OnComicPageSelected(page))
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                invertColors = isInverseColorEnabled
             )
 
         }
@@ -212,7 +214,8 @@ fun ReaderLayout(
                     onReaderEvent(ReaderEvent.OnComicPageSelected(page))
                 },
                 onTextSelected = onTextSelected,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                invertColors = isInverseColorEnabled
             )
         }
         return

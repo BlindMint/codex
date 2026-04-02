@@ -90,7 +90,8 @@ fun ComicReaderLayout(
     onScrollRestorationComplete: () -> Unit = {},
     onMenuToggle: () -> Unit = {},
     onTotalPagesLoaded: (Int) -> Unit = {},
-    onPageSelected: (Int) -> Unit = {}
+    onPageSelected: (Int) -> Unit = {},
+    invertColors: Boolean = false
 ) {
     Log.d("ComicReaderLayout", "ComicReaderLayout called for: ${book.title}")
     Log.d("ComicReaderLayout", "  initialPage: $initialPage")
@@ -268,7 +269,8 @@ fun ComicReaderLayout(
                 onPageSelected = onPageSelected,
                 loadPage = { pageIndex ->
                     loadPage(pageIndex)
-                }
+                },
+                invertColors = invertColors
             )
         }
     }

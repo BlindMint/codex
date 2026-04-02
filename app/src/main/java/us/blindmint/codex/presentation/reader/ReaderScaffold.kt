@@ -145,7 +145,8 @@ fun ReaderScaffold(
     comicProgressBarPadding: Dp = 4.dp,
     comicProgressBarAlignment: HorizontalAlignment = HorizontalAlignment.CENTER,
     comicProgressBarFontSize: TextUnit = 8.sp,
-    comicReadingDirection: String = "LTR"
+    comicReadingDirection: String = "LTR",
+    isInverseColorEnabled: Boolean = false
 ) {
     // State to track actual bar heights
     var topBarHeight by remember { mutableStateOf(0) }
@@ -291,7 +292,8 @@ fun ReaderScaffold(
              onReaderEvent = onReaderEvent,
              searchQuery = searchQuery,
              searchHighlightColor = searchHighlightColor,
-             showSearch = isSearchVisible
+             showSearch = isSearchVisible,
+             isInverseColorEnabled = isInverseColorEnabled
         )
 
         // Search scrollbar - visible when search bar is active and setting is enabled
