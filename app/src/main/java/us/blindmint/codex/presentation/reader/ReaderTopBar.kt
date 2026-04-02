@@ -144,8 +144,8 @@ fun ReaderTopBar(
             },
             subtitle = subtitleComposable,
             actions = {
-                // Inverse color toggle - only for page-based books (comics and PDFs)
-                if (book.isPageBased) {
+                // Inverse color toggle - only for PDFs
+                if (book.isPdf) {
                     IconButton(
                         icon = if (isInverseColorEnabled) Icons.Rounded.WbSunny else Icons.Rounded.DarkMode,
                         contentDescription = if (isInverseColorEnabled) {
