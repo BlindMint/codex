@@ -146,7 +146,8 @@ fun ReaderScaffold(
     comicProgressBarAlignment: HorizontalAlignment = HorizontalAlignment.CENTER,
     comicProgressBarFontSize: TextUnit = 8.sp,
     comicReadingDirection: String = "LTR",
-    isInverseColorEnabled: Boolean = false
+    isInverseColorEnabled: Boolean = false,
+    onToggleInverseColor: () -> Unit = {}
 ) {
     // State to track actual bar heights
     var topBarHeight by remember { mutableStateOf(0) }
@@ -183,10 +184,12 @@ fun ReaderScaffold(
                          showChaptersDrawer = showChaptersDrawer,
                          showBookmarksDrawer = showBookmarksDrawer,
                          isSearchVisible = isSearchVisible || (showMenu && searchBarPersistent),
-                         showSearch = showSearch,
-                         hideSearch = hideSearch,
-                         navigateBack = navigateBack,
-                         navigateToBookInfo = navigateToBookInfo
+                     showSearch = showSearch,
+                     hideSearch = hideSearch,
+                     navigateBack = navigateBack,
+                     navigateToBookInfo = navigateToBookInfo,
+                     isInverseColorEnabled = isInverseColorEnabled,
+                     onToggleInverseColor = onToggleInverseColor
                      )
                 }
 

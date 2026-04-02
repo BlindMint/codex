@@ -265,7 +265,8 @@ fun ReaderContent(
              comicProgressBarAlignment = comicProgressBarAlignment,
              comicProgressBarFontSize = comicProgressBarFontSize,
              comicReadingDirection = comicReadingDirection,
-             isInverseColorEnabled = isInverseColorEnabled
+             isInverseColorEnabled = isInverseColorEnabled,
+             onToggleInverseColor = onToggleInverseColor
             )
     } else {
         ReaderErrorPlaceholder(
