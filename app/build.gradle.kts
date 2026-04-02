@@ -185,8 +185,7 @@ dependencies {
 
     // MuPDF - high quality PDF rendering with built-in search
     // Licensed under AGPLv3, compatible with GPL-3.0 project
-    implementation("com.artifex.mupdf:viewer:1.15.+")
-    implementation("com.artifex.mupdf:fitz:1.15.+")
+    implementation(project(":mupdf-android-fitz"))
 
     // Bouncy Castle (JDK 8+ compatible - works with JDK 21)
     implementation("org.bouncycastle:bcprov-jdk18on:1.83")
