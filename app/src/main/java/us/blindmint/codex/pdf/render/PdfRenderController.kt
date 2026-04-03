@@ -43,7 +43,8 @@ class PdfRenderController(
         val bitmap = session.renderPagePreview(
             pageIndex = request.pageIndex,
             viewport = request.viewport,
-            zoomScale = request.zoomScale
+            zoomScale = request.zoomScale,
+            invertColors = request.invertColors
         ) ?: error("Failed to render page ${request.pageIndex}")
 
         cache.put(request, bitmap)

@@ -34,8 +34,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -58,6 +60,7 @@ import us.blindmint.codex.presentation.core.util.LocalActivity
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.ui.main.MainModel
 import us.blindmint.codex.ui.reader.ReaderEvent
+import kotlin.math.max
 import kotlin.math.min
 
 private const val MAX_CACHED_PAGES = 50
@@ -261,6 +264,7 @@ fun ComicReaderLayout(
                 readingDirection = comicReadingDirection,
                 readerMode = comicReaderMode,
                 comicScaleType = comicScaleType,
+                comicTapZone = comicTapZone,
                 showMenu = showMenu,
                 showPageIndicator = showPageIndicator,
                 onLoadingComplete = onLoadingComplete,
@@ -270,6 +274,7 @@ fun ComicReaderLayout(
                 loadPage = { pageIndex ->
                     loadPage(pageIndex)
                 },
+                onLongPress = { _, _, _ -> onMenuToggle() },
                 invertColors = invertColors
             )
         }
@@ -341,22 +346,43 @@ private fun ComicPage(
             .fillMaxSize()
             .pointerInput(comicTapZone, isRTL, showMenu) {
                 detectTransformGestures { centroid, pan, zoom, _ ->
-                    // Apply zoom with limits
-                    val newScale = (scale * zoom).coerceIn(1f, 5f)
-                    
-                    if (newScale > 1f) {
-                        // When zoomed, allow panning
+                    val containerSize = Size(size.width.toFloat(), size.height.toFloat())
+                    val contentSize = Size(
+                        imageBitmap.width.toFloat(),
+                        imageBitmap.height.toFloat()
+                    )
+                    val fitScale = min(
+                        containerSize.width / contentSize.width,
+                        containerSize.height / contentSize.height
+                    )
+                    val minScale = fitScale
+                    val maxScale = max(fitScale * 5f, 5f)
+                    val zoomThreshold = 1.02f * fitScale
+                    val containerCenterX = containerSize.width / 2
+                    val containerCenterY = containerSize.height / 2
+
+                    val newScale = (scale * zoom).coerceIn(minScale, maxScale)
+                    val isZoomChange = zoom != 1f
+
+                    if (newScale > zoomThreshold) {
+                        if (isZoomChange) {
+                            val focusX = centroid.x
+                            val focusY = centroid.y
+                            val scaleRatio = newScale / scale
+                            offsetX = offsetX * scaleRatio + (containerCenterX - focusX) * (1f - scaleRatio)
+                            offsetY = offsetY * scaleRatio + (containerCenterY - focusY) * (1f - scaleRatio)
+                        } else {
+                            offsetX += pan.x / scale
+                            offsetY += pan.y / scale
+                        }
                         scale = newScale
-                        offsetX += pan.x
-                        offsetY += pan.y
                     } else {
-                        // When not zoomed, handle tap navigation
-                        scale = 1f
+                        scale = fitScale
                         offsetX = 0f
                         offsetY = 0f
-                        
-                        val width = size.width.toFloat()
-                        val height = size.height.toFloat()
+
+                        val width = containerSize.width
+                        val height = containerSize.height
                         val x = centroid.x
                         val y = centroid.y
 
@@ -428,7 +454,8 @@ private fun ComicPage(
                     scaleX = scale,
                     scaleY = scale,
                     translationX = offsetX,
-                    translationY = offsetY
+                    translationY = offsetY,
+                    transformOrigin = TransformOrigin.Center
                 )
         )
     }

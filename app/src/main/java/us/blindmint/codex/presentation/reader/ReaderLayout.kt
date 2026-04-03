@@ -102,6 +102,7 @@ fun ReaderLayout(
     isLoading: Boolean,
     showMenu: Boolean,
     isInverseColorEnabled: Boolean = false,
+    onToggleInverseColor: () -> Unit = {},
     currentComicPage: Int = 0,
     totalComicPages: Int = 0,
     menuVisibility: (ReaderEvent.OnMenuVisibility) -> Unit,

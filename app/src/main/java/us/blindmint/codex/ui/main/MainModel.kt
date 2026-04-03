@@ -827,6 +827,30 @@ class MainModel @Inject constructor(
                 }
             )
 
+            is MainEvent.OnChangeComicCustomBackgroundColor -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_CUSTOM_BACKGROUND_COLOR,
+                value = event.value,
+                updateState = {
+                    it.copy(comicCustomBackgroundColor = this)
+                }
+            )
+
+            is MainEvent.OnChangeComicVolumeKeysEnabled -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_VOLUME_KEYS_ENABLED,
+                value = event.value,
+                updateState = {
+                    it.copy(comicVolumeKeysEnabled = this)
+                }
+            )
+
+            is MainEvent.OnChangeComicVolumeKeysInverted -> handleDatastoreUpdate(
+                key = DataStoreConstants.COMIC_VOLUME_KEYS_INVERTED,
+                value = event.value,
+                updateState = {
+                    it.copy(comicVolumeKeysInverted = this)
+                }
+            )
+
             // Speed Reader Events
             is MainEvent.OnChangeSpeedReadingWpm -> handleDatastoreUpdate(
                 key = DataStoreConstants.SPEED_READING_WPM,

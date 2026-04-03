@@ -296,8 +296,9 @@ fun ReaderScaffold(
              searchQuery = searchQuery,
              searchHighlightColor = searchHighlightColor,
              showSearch = isSearchVisible,
-             isInverseColorEnabled = isInverseColorEnabled
-        )
+             isInverseColorEnabled = isInverseColorEnabled,
+             onToggleInverseColor = onToggleInverseColor
+         )
 
         // Search scrollbar - visible when search bar is active and setting is enabled
         if (isSearchVisible && showSearchScrollbar) {

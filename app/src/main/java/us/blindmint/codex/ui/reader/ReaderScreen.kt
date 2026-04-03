@@ -11,6 +11,7 @@ import android.os.Parcelable
 import android.util.Log
 import android.view.WindowManager
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -167,6 +168,28 @@ data class ReaderScreen(
         val fontColor = animateColorAsState(
             targetValue = settingsState.value.selectedColorPreset.fontColor
         )
+
+        val isDarkTheme = isSystemInDarkTheme()
+        val comicBackgroundColor = animateColorAsState(
+            targetValue = when (mainState.value.comicBackgroundColor) {
+                "DEFAULT" -> if (isDarkTheme) Color.Black else Color.White
+                "GRAY" -> Color(0xFF808080)
+                "WHITE" -> Color.White
+                "BLACK" -> Color.Black
+                "CUSTOM" -> try {
+                    Color(android.graphics.Color.parseColor("#${mainState.value.comicCustomBackgroundColor}"))
+                } catch (_: Exception) {
+                    if (isDarkTheme) Color.Black else Color.White
+                }
+                else -> if (isDarkTheme) Color.Black else Color.White
+            }
+        )
+
+        val effectiveBackgroundColor = if (state.value.book.isPageBased) {
+            comicBackgroundColor.value
+        } else {
+            backgroundColor.value
+        }
 
         val lineHeight = remember(
             mainState.value.fontSize,
@@ -563,7 +586,7 @@ data class ReaderScreen(
             paragraphHeight = paragraphHeight,
             sidePadding = sidePadding,
             bottomBarPadding = bottomBarPadding,
-            backgroundColor = backgroundColor.value,
+            backgroundColor = effectiveBackgroundColor,
             fontColor = fontColor.value,
             images = mainState.value.images,
             imagesCornersRoundness = imagesCornersRoundness,

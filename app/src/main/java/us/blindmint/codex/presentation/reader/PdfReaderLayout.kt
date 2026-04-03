@@ -8,6 +8,10 @@ package us.blindmint.codex.presentation.reader
 
 import android.graphics.Bitmap
 import android.util.Log
+import android.view.GestureDetector
+import android.view.MotionEvent
+import android.view.ScaleGestureDetector
+import android.view.ViewConfiguration
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -38,6 +42,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,9 +51,11 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -61,6 +68,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import us.blindmint.codex.data.util.CachedFileFactory
 import us.blindmint.codex.domain.library.book.Book
+import us.blindmint.codex.domain.reader.ReaderPageState
 import us.blindmint.codex.pdf.engine.PdfDocumentSession
 import us.blindmint.codex.pdf.model.PdfCropBounds
 import us.blindmint.codex.pdf.model.PdfPageGeometry
@@ -80,6 +88,13 @@ import kotlin.math.max
 private const val TAG = "CodexPdf"
 private const val VERTICAL_PAGE_SPACING_PX = 12f
 
+private data class PdfGestureCallbacks(
+    val onTap: (tapX: Float, width: Float) -> Unit,
+    val onLongPress: (tapX: Float, tapY: Float) -> Unit,
+    val onZoomPan: (zoomFactor: Float, panX: Float, panY: Float) -> Unit,
+    val onGestureEnd: () -> Unit
+)
+
 private data class PdfVisiblePage(
     val pageIndex: Int,
     val topPx: Float,
@@ -94,6 +109,99 @@ private data class PdfTransientZoom(
     val panY: Float = 0f,
     val active: Boolean = false
 )
+
+private fun Modifier.pdfGestureInterop(callbacks: PdfGestureCallbacks): Modifier {
+    return this.pointerInteropFilter {
+        val gestureState = PdfGestureInteropStateHolder.state ?: return@pointerInteropFilter false
+        gestureState.handleMotionEvent(it, callbacks)
+    }
+}
+
+private object PdfGestureInteropStateHolder {
+    var state: PdfGestureInteropState? = null
+}
+
+private class PdfGestureInteropState {
+    private var accumulatedPanX = 0f
+    private var accumulatedPanY = 0f
+    private var gestureDetector: GestureDetector? = null
+    private var scaleDetector: ScaleGestureDetector? = null
+    private var lastX = 0f
+    private var lastY = 0f
+
+    var lastScaleFocusX = 0f
+    var lastScaleFocusY = 0f
+
+    var callbacks: PdfGestureCallbacks? = null
+    var widthProvider: (() -> Float)? = null
+    var contextProvider: (() -> android.content.Context)? = null
+
+    fun handleMotionEvent(event: MotionEvent, currentCallbacks: PdfGestureCallbacks): Boolean {
+        callbacks = currentCallbacks
+        ensureDetectors()
+        gestureDetector?.onTouchEvent(event)
+        scaleDetector?.onTouchEvent(event)
+
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                lastX = event.x
+                lastY = event.y
+                lastScaleFocusX = event.x
+                lastScaleFocusY = event.y
+            }
+            MotionEvent.ACTION_MOVE -> {
+                if (scaleDetector?.isInProgress != true && event.pointerCount == 1) {
+                    val dx = event.x - lastX
+                    val dy = event.y - lastY
+                    val context = contextProvider?.invoke() ?: return true
+                    val slop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
+                    if (abs(dx) > slop || abs(dy) > slop) {
+                        callbacks?.onZoomPan?.invoke(1f, dx, dy)
+                    }
+                    lastX = event.x
+                    lastY = event.y
+                }
+            }
+
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                callbacks?.onGestureEnd?.invoke()
+                accumulatedPanX = 0f
+                accumulatedPanY = 0f
+            }
+        }
+
+        return true
+    }
+
+    private fun ensureDetectors() {
+        if (gestureDetector != null && scaleDetector != null) return
+        val context = contextProvider?.invoke() ?: return
+        gestureDetector = GestureDetector(
+            context,
+            object : GestureDetector.SimpleOnGestureListener() {
+                override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                    callbacks?.onTap?.invoke(e.x, widthProvider?.invoke() ?: 0f)
+                    return true
+                }
+
+                override fun onLongPress(e: MotionEvent) {
+                    callbacks?.onLongPress?.invoke(e.x, e.y)
+                }
+            }
+        )
+        scaleDetector = ScaleGestureDetector(
+            context,
+            object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                override fun onScale(detector: ScaleGestureDetector): Boolean {
+                    lastScaleFocusX = detector.focusX
+                    lastScaleFocusY = detector.focusY
+                    callbacks?.onZoomPan?.invoke(detector.scaleFactor, 0f, 0f)
+                    return true
+                }
+            }
+        )
+    }
+}
 
 @Composable
 fun PdfReaderLayout(
@@ -118,6 +226,7 @@ fun PdfReaderLayout(
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
+    val currentOnTextSelected by rememberUpdatedState(onTextSelected)
 
     var session by remember { mutableStateOf<PdfDocumentSession?>(null) }
     var renderController by remember { mutableStateOf<PdfRenderController?>(null) }
@@ -144,6 +253,7 @@ fun PdfReaderLayout(
     val pageBitmaps = remember { mutableStateMapOf<Int, Bitmap>() }
     val pageTiles = remember { mutableStateMapOf<Int, List<PdfTileBitmap>>() }
     val activeBitmapVersions = remember { mutableStateMapOf<Int, Int>() }
+    val pageStates = remember { mutableStateMapOf<Int, ReaderPageState>() }
 
     val isVertical = readingDirection == "VERTICAL"
 
@@ -168,6 +278,18 @@ fun PdfReaderLayout(
     val effectiveZoom = committedZoom * transientZoom.scale
     val effectivePanX = committedPanX + transientZoom.panX
     val effectivePanY = committedPanY + transientZoom.panY
+    val interopState = remember { PdfGestureInteropState() }
+
+    DisposableEffect(Unit) {
+        interopState.contextProvider = { context }
+        interopState.widthProvider = { viewport?.widthPx?.toFloat() ?: 0f }
+        PdfGestureInteropStateHolder.state = interopState
+        onDispose {
+            if (PdfGestureInteropStateHolder.state === interopState) {
+                PdfGestureInteropStateHolder.state = null
+            }
+        }
+    }
 
     SideEffect {
         Log.d(
@@ -261,36 +383,48 @@ fun PdfReaderLayout(
     }
 
     suspend fun renderPage(pageIndex: Int, zoom: Float = committedZoom, panX: Float = committedPanX, panY: Float = committedPanY) {
-        val activeController = renderController ?: return
-        val currentViewport = viewport ?: return
-        val layout = pageLayouts[pageIndex] ?: updatePageLayout(pageIndex, zoom)
-        val result = activeController.render(
-            PdfRenderRequest(
-                pageIndex = pageIndex,
-                viewport = currentViewport,
-                zoomScale = zoom,
-                invertColors = invertColors
-            )
-        )
-        if (layout != null) {
-            pageTiles[pageIndex] = activeController.getVisibleTiles(
-                layout.visibleTileRequests(
+        val activeController = renderController ?: run {
+            pageStates[pageIndex] = ReaderPageState.Error("No render controller")
+            return
+        }
+        val currentViewport = viewport ?: run {
+            pageStates[pageIndex] = ReaderPageState.Error("No viewport")
+            return
+        }
+        pageStates[pageIndex] = ReaderPageState.Loading
+        try {
+            val layout = pageLayouts[pageIndex] ?: updatePageLayout(pageIndex, zoom)
+            val result = activeController.render(
+                PdfRenderRequest(
+                    pageIndex = pageIndex,
                     viewport = currentViewport,
                     zoomScale = zoom,
-                    panX = panX,
-                    panY = panY,
-                    invertColors = invertColors
+                    invertColors = false
                 )
             )
-        }
-        val bitmap = result.bitmap
-        val oldBitmap = pageBitmaps.put(pageIndex, bitmap)
-        activeBitmapVersions[pageIndex] = (activeBitmapVersions[pageIndex] ?: 0) + 1
-        if (oldBitmap != null && oldBitmap !== bitmap && !oldBitmap.isRecycled) {
-            withContext(Dispatchers.Main) {
-                withFrameNanos { }
-                oldBitmap.recycle()
+            if (layout != null) {
+                pageTiles[pageIndex] = activeController.getVisibleTiles(
+                    layout.visibleTileRequests(
+                        viewport = currentViewport,
+                        zoomScale = zoom,
+                        panX = panX,
+                        panY = panY,
+                        invertColors = false
+                    )
+                )
             }
+            val bitmap = result.bitmap
+            val oldBitmap = pageBitmaps.put(pageIndex, bitmap)
+            activeBitmapVersions[pageIndex] = (activeBitmapVersions[pageIndex] ?: 0) + 1
+            if (oldBitmap != null && oldBitmap !== bitmap && !oldBitmap.isRecycled) {
+                withContext(Dispatchers.Main) {
+                    withFrameNanos { }
+                    oldBitmap.recycle()
+                }
+            }
+            pageStates[pageIndex] = ReaderPageState.Ready
+        } catch (e: Exception) {
+            pageStates[pageIndex] = ReaderPageState.Error(e.message ?: "Unknown error", e)
         }
     }
 
@@ -301,6 +435,58 @@ fun PdfReaderLayout(
         val maxPanX = max(0f, (layout.displayWidthPx - currentViewport.widthPx) / 2f)
         val maxPanY = max(0f, (layout.displayHeightPx - currentViewport.heightPx) / 2f)
         return panX.coerceIn(-maxPanX, maxPanX) to panY.coerceIn(-maxPanY, maxPanY)
+    }
+
+    fun handlePdfLongPress(
+        pageIndex: Int,
+        pressX: Float,
+        pressY: Float,
+        pageLayout: PdfPageLayout?,
+        effectiveZoom: Float,
+        effectivePanX: Float,
+        effectivePanY: Float
+    ) {
+        val activeSession = session ?: return
+        val currentViewport = viewport ?: return
+        if (pageLayout == null) return
+
+        val contentLeftPx = pageLayout.contentLeftPx
+        val contentTopPx = pageLayout.contentTopPx
+
+        val bitmapX = (pressX - contentLeftPx - effectivePanX) / effectiveZoom
+        val bitmapY = (pressY - contentTopPx - effectivePanY) / effectiveZoom
+
+        scope.launch {
+            val selection = withContext(Dispatchers.IO) {
+                activeSession.findWordAtBitmapPoint(
+                    pageIndex = pageIndex,
+                    bitmapX = bitmapX,
+                    bitmapY = bitmapY,
+                    viewport = currentViewport,
+                    zoomScale = committedZoom
+                )
+            }
+
+            if (selection != null) {
+                selectionState = PdfSelectionState(
+                    selectedText = selection.word,
+                    paragraphText = selection.lineText,
+                    bounds = PdfSelectionBounds(
+                        pageIndex = pageIndex,
+                        left = selection.left,
+                        top = selection.top,
+                        right = selection.right,
+                        bottom = selection.bottom
+                    )
+                )
+                currentOnTextSelected(
+                    ReaderEvent.OnTextSelected(
+                        selectedText = selection.word,
+                        paragraphText = selection.lineText
+                    )
+                )
+            }
+        }
     }
 
     LaunchedEffect(book.id) {
@@ -422,6 +608,7 @@ fun PdfReaderLayout(
             pageBitmaps.clear()
             pageTiles.clear()
             activeBitmapVersions.clear()
+            pageStates.clear()
         }
     }
 
@@ -434,21 +621,70 @@ fun PdfReaderLayout(
                     viewport = PdfViewport(size.width, size.height)
                 }
             }
-            .pointerInput(isVertical, pagedIndex, totalPages) {
-                detectTransformGestures { _, pan, zoom, _ ->
-                    val nextScale = (transientZoom.scale * zoom).coerceIn(0.75f / committedZoom, 5f / committedZoom)
-                    transientZoom = PdfTransientZoom(
-                        scale = nextScale,
-                        panX = transientZoom.panX + if (!isVertical && nextScale <= 1.02f / committedZoom) 0f else pan.x,
-                        panY = transientZoom.panY + pan.y,
-                        active = true
-                    )
-                }
-            }
-            .pointerInput(isVertical, effectiveZoom) {
-                detectDragGestures(
-                    onDragEnd = {
-                        val committedScale = (committedZoom * transientZoom.scale).coerceIn(0.75f, 5f)
+            .pdfGestureInterop(
+                PdfGestureCallbacks(
+                    onTap = { _, _ -> onMenuToggle() },
+                    onLongPress = { x, y ->
+                        val targetPage = if (isVertical) currentPage else pagedIndex
+                        val targetLayout = pageLayouts[targetPage]
+                        val effZoom = committedZoom * transientZoom.scale
+                        val effPanX = committedPanX + transientZoom.panX
+                        val effPanY = committedPanY + transientZoom.panY
+                        handlePdfLongPress(targetPage, x, y, targetLayout, effZoom, effPanX, effPanY)
+                    },
+                    onZoomPan = { zoomFactor, panX, panY ->
+                        val nextScale = (transientZoom.scale * zoomFactor).coerceIn(1f / committedZoom, 5f / committedZoom)
+                        val notZoomed = nextScale <= 1.02f / committedZoom
+                        val deltaX: Float
+                        val deltaY: Float
+                        if (zoomFactor != 1f) {
+                            val focusX = interopState.lastScaleFocusX
+                            val focusY = interopState.lastScaleFocusY
+                            val layout = if (!isVertical) pageLayouts[pagedIndex] else null
+                            val contentOriginX = if (isVertical) {
+                                val pages = buildVerticalPages()
+                                val pageInfo = pages.firstOrNull { it.pageIndex == currentPage }
+                                pageInfo?.leftPx ?: 0f
+                            } else {
+                                layout?.contentLeftPx ?: 0f
+                            }
+                            val contentOriginY = if (isVertical) {
+                                val pages = buildVerticalPages()
+                                val pageInfo = pages.firstOrNull { it.pageIndex == currentPage }
+                                (pageInfo?.topPx ?: 0f) - verticalScrollPx
+                            } else {
+                                layout?.contentTopPx ?: 0f
+                            }
+                            val currentEffPanX = committedPanX + transientZoom.panX
+                            val currentEffPanY = committedPanY + transientZoom.panY
+                            val focusInContentX = (focusX - contentOriginX - currentEffPanX) / committedZoom
+                            val focusInContentY = (focusY - contentOriginY - currentEffPanY) / committedZoom
+                            deltaX = focusInContentX * (zoomFactor - 1f) * committedZoom
+                            deltaY = focusInContentY * (zoomFactor - 1f) * committedZoom
+                        } else {
+                            deltaX = panX
+                            deltaY = panY
+                        }
+                        transientZoom = PdfTransientZoom(
+                            scale = nextScale,
+                            // Suppress pan in both axes when not zoomed: the appropriate handler
+                            // (verticalScrollPx or pagedSwipeAccumulatedX) takes over instead.
+                            panX = transientZoom.panX + if (notZoomed) 0f else deltaX,
+                            panY = transientZoom.panY + if (notZoomed) 0f else deltaY,
+                            active = true
+                        )
+                        if (isVertical && effectiveZoom <= 1.02f && abs(panY) > 0f) {
+                            val maxScroll = max(
+                                0f,
+                                (buildVerticalPages().lastOrNull()?.let { it.topPx + it.heightPx } ?: 0f) - (viewport?.heightPx ?: 0)
+                            )
+                            verticalScrollPx = (verticalScrollPx - panY).coerceIn(0f, maxScroll)
+                        } else if (!isVertical && committedZoom <= 1.02f && zoomFactor == 1f) {
+                            pagedSwipeAccumulatedX += panX
+                        }
+                    },
+                    onGestureEnd = {
+                        val committedScale = (committedZoom * transientZoom.scale).coerceIn(1f, 5f)
                         val targetPage = if (isVertical) currentPage else pagedIndex
                         val (panX, panY) = clampPan(
                             pageIndex = targetPage,
@@ -466,7 +702,6 @@ fun PdfReaderLayout(
                                 else -> pagedIndex
                             }
                             if (nextIndex != pagedIndex) {
-                                // Positive direction → new page enters from the right (next page, LTR forward)
                                 val direction = if (nextIndex > pagedIndex) 1f else -1f
                                 val fromIndex = pagedIndex
                                 pagedIndex = nextIndex
@@ -493,30 +728,9 @@ fun PdfReaderLayout(
                         }
                         pagedSwipeAccumulatedX = 0f
                         transientZoom = PdfTransientZoom()
-                    },
-                    onDragCancel = {
-                        pagedSwipeAccumulatedX = 0f
-                        transientZoom = PdfTransientZoom()
                     }
-                ) { change, dragAmount ->
-                    change.consume()
-                    if (effectiveZoom > 1.02f) {
-                        transientZoom = transientZoom.copy(
-                            panX = transientZoom.panX + if (isVertical) 0f else dragAmount.x,
-                            panY = transientZoom.panY + dragAmount.y,
-                            active = true
-                        )
-                    } else if (isVertical) {
-                        val maxScroll = max(
-                            0f,
-                            (buildVerticalPages().lastOrNull()?.let { it.topPx + it.heightPx } ?: 0f) - (viewport?.heightPx ?: 0)
-                        )
-                        verticalScrollPx = (verticalScrollPx - dragAmount.y).coerceIn(0f, maxScroll)
-                    } else {
-                        pagedSwipeAccumulatedX += dragAmount.x
-                    }
-                }
-            }
+                )
+            )
     ) {
         SideEffect {
             Log.d(
@@ -570,7 +784,14 @@ fun PdfReaderLayout(
                             contentWidthPx = page.widthPx,
                             contentHeightPx = page.heightPx,
                             colorFilter = imageColorFilter,
-                            onTap = { _, _ -> onMenuToggle() }
+                            onTap = { _, _ -> onMenuToggle() },
+                            onLongPress = { x, y ->
+                                val targetLayout = pageLayouts[page.pageIndex]
+                                val effZoom = committedZoom * transientZoom.scale
+                                val effPanX = committedPanX + transientZoom.panX
+                                val effPanY = committedPanY + transientZoom.panY
+                                handlePdfLongPress(page.pageIndex, x, y, targetLayout, effZoom, effPanX, effPanY)
+                            }
                         )
                     }
                 } else {
@@ -608,7 +829,8 @@ fun PdfReaderLayout(
                                 contentWidthPx = fromLayout.displayWidthPx,
                                 contentHeightPx = fromLayout.displayHeightPx,
                                 colorFilter = imageColorFilter,
-                                onTap = { _, _ -> } // ignore taps on outgoing page
+                                onTap = { _, _ -> },
+                                onLongPress = { _, _ -> }
                             )
                         }
                         // Incoming (current) page slides in on top
@@ -691,6 +913,13 @@ fun PdfReaderLayout(
 
                                         else -> onMenuToggle()
                                     }
+                                },
+                                onLongPress = { x, y ->
+                                    val targetLayout = pageLayouts[pagedIndex]
+                                    val effZoom = committedZoom * transientZoom.scale
+                                    val effPanX = committedPanX + transientZoom.panX
+                                    val effPanY = committedPanY + transientZoom.panY
+                                    handlePdfLongPress(pagedIndex, x, y, targetLayout, effZoom, effPanX, effPanY)
                                 }
                             )
                         } else {
@@ -730,16 +959,19 @@ private fun PdfPageSurface(
     contentWidthPx: Float?,
     contentHeightPx: Float?,
     colorFilter: ColorFilter?,
-    onTap: (tapX: Float, width: Float) -> Unit
+    onTap: (tapX: Float, width: Float) -> Unit,
+    onLongPress: (tapX: Float, tapY: Float) -> Unit
 ) {
     val density = LocalDensity.current
     Box(
         modifier = modifier
             .background(Color.Transparent)
             .pointerInput(onTap) {
-                detectTapGestures { offset ->
-                    onTap(offset.x, size.width.toFloat())
-                }
+                detectTapGestures(
+                    onTap = { offset ->
+                        onTap(offset.x, size.width.toFloat())
+                    }
+                )
             }
     ) {
         val bitmap = pageBitmap
@@ -755,7 +987,8 @@ private fun PdfPageSurface(
                     .graphicsLayer(
                         scaleX = uiScale,
                         scaleY = uiScale,
-                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0f)
+                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin.Center,
+                        clip = true
                     )
             ) {
                 Image(
@@ -779,7 +1012,8 @@ private fun PdfPageSurface(
                             dstSize = IntSize(
                                 width = (tile.request.tileRect.widthPx * widthScale).toInt().coerceAtLeast(1),
                                 height = (tile.request.tileRect.heightPx * heightScale).toInt().coerceAtLeast(1)
-                            )
+                            ),
+                            colorFilter = colorFilter
                         )
                     }
 

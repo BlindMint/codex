@@ -53,12 +53,17 @@ class PdfDocumentSession private constructor(
     suspend fun renderPagePreview(
         pageIndex: Int,
         viewport: PdfViewport,
-        zoomScale: Float
+        zoomScale: Float,
+        invertColors: Boolean
     ): Bitmap? = mutex.withLock {
         val page = document.loadPage(pageIndex)
         try {
             val matrix = page.createRenderMatrix(viewport, zoomScale)
-            AndroidDrawDevice.drawPage(page, matrix)
+            AndroidDrawDevice.drawPage(page, matrix)?.also { bitmap ->
+                if (invertColors) {
+                    bitmap.invertLuminanceCompat()
+                }
+            }
         } finally {
             page.destroy()
         }
