@@ -26,8 +26,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -240,12 +241,8 @@ fun PdfReaderLayout(
     var transientZoom by remember { mutableStateOf(PdfTransientZoom()) }
     var verticalScrollPx by remember { mutableFloatStateOf(0f) }
     var pagedIndex by remember { mutableIntStateOf(initialPage) }
-    var pagedSwipeAccumulatedX by remember { mutableFloatStateOf(0f) }
     var selectionState by remember { mutableStateOf(PdfSelectionState()) }
     var lastReadingDirection by remember { mutableStateOf(readingDirection) }
-    val pagedTransitionOffset = remember { Animatable(0f) }
-    val pagedOutgoingOffset = remember { Animatable(0f) }
-    var transitionFromIndex by remember { mutableStateOf<Int?>(null) }
 
     val pageGeometries = remember { mutableStateMapOf<Int, PdfPageGeometry>() }
     val pageCropBounds = remember { mutableStateMapOf<Int, PdfCropBounds>() }
@@ -505,7 +502,6 @@ fun PdfReaderLayout(
         transientZoom = PdfTransientZoom()
         verticalScrollPx = 0f
         pagedIndex = initialPage
-        transitionFromIndex = null
 
         try {
             withContext(Dispatchers.IO) {
@@ -567,15 +563,16 @@ fun PdfReaderLayout(
         if (totalPages <= 0) return@LaunchedEffect
         withContext(Dispatchers.IO) {
             if (isVertical) {
+                val pages = buildVerticalPages()
                 val preloadMargin = currentViewport.heightPx.toFloat()
-                val pages = buildVerticalPages().filter {
+                val visiblePages = pages.filter {
                     it.topPx + it.heightPx >= verticalScrollPx - preloadMargin &&
                         it.topPx <= verticalScrollPx + currentViewport.heightPx + preloadMargin
                 }
-                pages.forEach { renderPage(it.pageIndex) }
-                if (pages.isNotEmpty() && !transientZoom.active) {
+                visiblePages.forEach { renderPage(it.pageIndex) }
+                if (visiblePages.isNotEmpty() && !transientZoom.active) {
                     val viewportCenter = verticalScrollPx + currentViewport.heightPx / 2f
-                    val currentVisible = pages.minByOrNull { abs((it.topPx + it.heightPx / 2f) - viewportCenter) }?.pageIndex
+                    val currentVisible = visiblePages.minByOrNull { abs((it.topPx + it.heightPx / 2f) - viewportCenter) }?.pageIndex
                     if (currentVisible != null && currentVisible != currentPage) {
                         withContext(Dispatchers.Main) {
                             onPageChanged(currentVisible)
@@ -621,116 +618,6 @@ fun PdfReaderLayout(
                     viewport = PdfViewport(size.width, size.height)
                 }
             }
-            .pdfGestureInterop(
-                PdfGestureCallbacks(
-                    onTap = { _, _ -> onMenuToggle() },
-                    onLongPress = { x, y ->
-                        val targetPage = if (isVertical) currentPage else pagedIndex
-                        val targetLayout = pageLayouts[targetPage]
-                        val effZoom = committedZoom * transientZoom.scale
-                        val effPanX = committedPanX + transientZoom.panX
-                        val effPanY = committedPanY + transientZoom.panY
-                        handlePdfLongPress(targetPage, x, y, targetLayout, effZoom, effPanX, effPanY)
-                    },
-                    onZoomPan = { zoomFactor, panX, panY ->
-                        val nextScale = (transientZoom.scale * zoomFactor).coerceIn(1f / committedZoom, 5f / committedZoom)
-                        val notZoomed = nextScale <= 1.02f / committedZoom
-                        val deltaX: Float
-                        val deltaY: Float
-                        if (zoomFactor != 1f) {
-                            val focusX = interopState.lastScaleFocusX
-                            val focusY = interopState.lastScaleFocusY
-                            val layout = if (!isVertical) pageLayouts[pagedIndex] else null
-                            val contentOriginX = if (isVertical) {
-                                val pages = buildVerticalPages()
-                                val pageInfo = pages.firstOrNull { it.pageIndex == currentPage }
-                                pageInfo?.leftPx ?: 0f
-                            } else {
-                                layout?.contentLeftPx ?: 0f
-                            }
-                            val contentOriginY = if (isVertical) {
-                                val pages = buildVerticalPages()
-                                val pageInfo = pages.firstOrNull { it.pageIndex == currentPage }
-                                (pageInfo?.topPx ?: 0f) - verticalScrollPx
-                            } else {
-                                layout?.contentTopPx ?: 0f
-                            }
-                            val currentEffPanX = committedPanX + transientZoom.panX
-                            val currentEffPanY = committedPanY + transientZoom.panY
-                            val focusInContentX = (focusX - contentOriginX - currentEffPanX) / committedZoom
-                            val focusInContentY = (focusY - contentOriginY - currentEffPanY) / committedZoom
-                            deltaX = focusInContentX * (zoomFactor - 1f) * committedZoom
-                            deltaY = focusInContentY * (zoomFactor - 1f) * committedZoom
-                        } else {
-                            deltaX = panX
-                            deltaY = panY
-                        }
-                        transientZoom = PdfTransientZoom(
-                            scale = nextScale,
-                            // Suppress pan in both axes when not zoomed: the appropriate handler
-                            // (verticalScrollPx or pagedSwipeAccumulatedX) takes over instead.
-                            panX = transientZoom.panX + if (notZoomed) 0f else deltaX,
-                            panY = transientZoom.panY + if (notZoomed) 0f else deltaY,
-                            active = true
-                        )
-                        if (isVertical && effectiveZoom <= 1.02f && abs(panY) > 0f) {
-                            val maxScroll = max(
-                                0f,
-                                (buildVerticalPages().lastOrNull()?.let { it.topPx + it.heightPx } ?: 0f) - (viewport?.heightPx ?: 0)
-                            )
-                            verticalScrollPx = (verticalScrollPx - panY).coerceIn(0f, maxScroll)
-                        } else if (!isVertical && committedZoom <= 1.02f && zoomFactor == 1f) {
-                            pagedSwipeAccumulatedX += panX
-                        }
-                    },
-                    onGestureEnd = {
-                        val committedScale = (committedZoom * transientZoom.scale).coerceIn(1f, 5f)
-                        val targetPage = if (isVertical) currentPage else pagedIndex
-                        val (panX, panY) = clampPan(
-                            pageIndex = targetPage,
-                            zoom = committedScale,
-                            panX = committedPanX + transientZoom.panX,
-                            panY = committedPanY + transientZoom.panY
-                        )
-                        committedZoom = committedScale
-                        committedPanX = panX
-                        committedPanY = panY
-                        if (!isVertical && committedScale <= 1.02f) {
-                            val nextIndex = when {
-                                pagedSwipeAccumulatedX > 140f && pagedIndex > 0 -> pagedIndex - 1
-                                pagedSwipeAccumulatedX < -140f && pagedIndex < totalPages - 1 -> pagedIndex + 1
-                                else -> pagedIndex
-                            }
-                            if (nextIndex != pagedIndex) {
-                                val direction = if (nextIndex > pagedIndex) 1f else -1f
-                                val fromIndex = pagedIndex
-                                pagedIndex = nextIndex
-                                onPageChanged(nextIndex)
-                                onPageSelected(nextIndex)
-                                transitionFromIndex = fromIndex
-                                scope.launch {
-                                    val vpWidth = viewport?.widthPx?.toFloat() ?: 400f
-                                    pagedOutgoingOffset.snapTo(0f)
-                                    pagedTransitionOffset.snapTo(direction * vpWidth)
-                                    launch {
-                                        pagedOutgoingOffset.animateTo(
-                                            -direction * vpWidth,
-                                            tween(durationMillis = 200, easing = FastOutSlowInEasing)
-                                        )
-                                    }
-                                    pagedTransitionOffset.animateTo(
-                                        0f,
-                                        tween(durationMillis = 200, easing = FastOutSlowInEasing)
-                                    )
-                                    transitionFromIndex = null
-                                }
-                            }
-                        }
-                        pagedSwipeAccumulatedX = 0f
-                        transientZoom = PdfTransientZoom()
-                    }
-                )
-            )
     ) {
         SideEffect {
             Log.d(
@@ -757,177 +644,190 @@ fun PdfReaderLayout(
             else -> {
                 if (isVertical) {
                     val pages = buildVerticalPages()
-                    pages.filter {
-                        it.topPx + it.heightPx >= verticalScrollPx && it.topPx <= verticalScrollPx + viewport!!.heightPx
-                    }.forEach { page ->
-                        PdfPageSurface(
-                            pageIndex = page.pageIndex,
-                            pageBitmap = pageBitmaps[page.pageIndex],
-                            tiles = pageTiles[page.pageIndex].orEmpty(),
-                            bitmapVersion = activeBitmapVersions[page.pageIndex] ?: 0,
-                            pageLayout = pageLayouts[page.pageIndex],
-                            selectionState = selectionState,
-                            uiScale = effectiveZoom,
-                            uiPanX = effectivePanX,
-                            uiPanY = effectivePanY,
-                            modifier = Modifier
-                                .offset {
-                                    IntOffset(
-                                        x = page.leftPx.toInt(),
-                                        y = (page.topPx - verticalScrollPx).toInt()
-                                    )
-                                }
-                                .size(
-                                    width = with(density) { page.widthPx.toDp() },
-                                    height = with(density) { page.heightPx.toDp() }
-                                ),
-                            contentWidthPx = page.widthPx,
-                            contentHeightPx = page.heightPx,
-                            colorFilter = imageColorFilter,
-                            onTap = { _, _ -> onMenuToggle() },
-                            onLongPress = { x, y ->
-                                val targetLayout = pageLayouts[page.pageIndex]
-                                val effZoom = committedZoom * transientZoom.scale
-                                val effPanX = committedPanX + transientZoom.panX
-                                val effPanY = committedPanY + transientZoom.panY
-                                handlePdfLongPress(page.pageIndex, x, y, targetLayout, effZoom, effPanX, effPanY)
-                            }
-                        )
-                    }
-                } else {
-                    val pageLayout = pageLayouts[pagedIndex]
-                    val fromIdx = transitionFromIndex
-                    val fromLayout = if (fromIdx != null) pageLayouts[fromIdx] else null
+
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(backgroundColor)
-                    ) {
-                        // Outgoing page slides out behind (rendered first = lower z-order)
-                        if (fromIdx != null && fromLayout != null) {
-                            PdfPageSurface(
-                                pageIndex = fromIdx,
-                                pageBitmap = pageBitmaps[fromIdx],
-                                tiles = pageTiles[fromIdx].orEmpty(),
-                                bitmapVersion = activeBitmapVersions[fromIdx] ?: 0,
-                                pageLayout = fromLayout,
-                                selectionState = selectionState,
-                                uiScale = effectiveZoom,
-                                uiPanX = effectivePanX + pagedOutgoingOffset.value,
-                                uiPanY = effectivePanY,
-                                modifier = Modifier
-                                    .offset {
-                                        IntOffset(
-                                            fromLayout.contentLeftPx.toInt(),
-                                            fromLayout.contentTopPx.toInt()
-                                        )
-                                    }
-                                    .size(
-                                        width = with(density) { fromLayout.displayWidthPx.toDp() },
-                                        height = with(density) { fromLayout.displayHeightPx.toDp() }
-                                    ),
-                                contentWidthPx = fromLayout.displayWidthPx,
-                                contentHeightPx = fromLayout.displayHeightPx,
-                                colorFilter = imageColorFilter,
-                                onTap = { _, _ -> },
-                                onLongPress = { _, _ -> }
+                            .graphicsLayer(
+                                scaleX = effectiveZoom,
+                                scaleY = effectiveZoom,
+                                translationX = effectivePanX,
+                                translationY = effectivePanY
                             )
-                        }
-                        // Incoming (current) page slides in on top
-                        if (pageLayout != null) {
+                            .pdfGestureInterop(
+                                PdfGestureCallbacks(
+                                    onTap = { _, _ -> onMenuToggle() },
+                                    onLongPress = { x, y ->
+                                        val targetPage = currentPage
+                                        val targetLayout = pageLayouts[targetPage]
+                                        val effZoom = committedZoom * transientZoom.scale
+                                        val effPanX = committedPanX + transientZoom.panX
+                                        val effPanY = committedPanY + transientZoom.panY
+                                        handlePdfLongPress(targetPage, x, y, targetLayout, effZoom, effPanX, effPanY)
+                                    },
+                                    onZoomPan = { zoomFactor, panX, panY ->
+                                        val nextScale = (transientZoom.scale * zoomFactor).coerceIn(1f / committedZoom, 5f / committedZoom)
+                                        val notZoomed = nextScale <= 1.02f / committedZoom
+                                        val deltaX: Float
+                                        val deltaY: Float
+                                        if (zoomFactor != 1f) {
+                                            val focusX = interopState.lastScaleFocusX
+                                            val focusY = interopState.lastScaleFocusY
+                                            val pages = buildVerticalPages()
+                                            val pageInfo = pages.firstOrNull { it.pageIndex == currentPage }
+                                            val contentOriginX = pageInfo?.leftPx ?: 0f
+                                            val contentOriginY = (pageInfo?.topPx ?: 0f) - verticalScrollPx
+                                            val currentEffPanX = committedPanX + transientZoom.panX
+                                            val currentEffPanY = committedPanY + transientZoom.panY
+                                            val focusInContentX = (focusX - contentOriginX - currentEffPanX) / committedZoom
+                                            val focusInContentY = (focusY - contentOriginY - currentEffPanY) / committedZoom
+                                            deltaX = focusInContentX * (zoomFactor - 1f) * committedZoom
+                                            deltaY = focusInContentY * (zoomFactor - 1f) * committedZoom
+                                        } else {
+                                            deltaX = panX
+                                            deltaY = panY
+                                        }
+                                        transientZoom = PdfTransientZoom(
+                                            scale = nextScale,
+                                            panX = transientZoom.panX + if (notZoomed) 0f else deltaX,
+                                            panY = transientZoom.panY + if (notZoomed) 0f else deltaY,
+                                            active = true
+                                        )
+                                        if (effectiveZoom <= 1.02f && abs(panY) > 0f) {
+                                            val maxScroll = max(
+                                                0f,
+                                                (buildVerticalPages().lastOrNull()?.let { it.topPx + it.heightPx } ?: 0f) - (viewport?.heightPx ?: 0)
+                                            )
+                                            verticalScrollPx = (verticalScrollPx - panY).coerceIn(0f, maxScroll)
+                                        }
+                                    },
+                                    onGestureEnd = {
+                                        val committedScale = (committedZoom * transientZoom.scale).coerceIn(1f, 5f)
+                                        val (panX, panY) = clampPan(
+                                            pageIndex = currentPage,
+                                            zoom = committedScale,
+                                            panX = committedPanX + transientZoom.panX,
+                                            panY = committedPanY + transientZoom.panY
+                                        )
+                                        committedZoom = committedScale
+                                        committedPanX = panX
+                                        committedPanY = panY
+                                        transientZoom = PdfTransientZoom()
+                                    }
+                                )
+                            )
+                    ) {
+                        pages.filter {
+                            it.topPx + it.heightPx >= verticalScrollPx / effectiveZoom &&
+                                it.topPx <= (verticalScrollPx + viewport!!.heightPx) / effectiveZoom
+                        }.forEach { page ->
                             PdfPageSurface(
-                                pageIndex = pagedIndex,
-                                pageBitmap = pageBitmaps[pagedIndex],
-                                tiles = pageTiles[pagedIndex].orEmpty(),
-                                bitmapVersion = activeBitmapVersions[pagedIndex] ?: 0,
-                                pageLayout = pageLayout,
+                                pageIndex = page.pageIndex,
+                                pageBitmap = pageBitmaps[page.pageIndex],
+                                tiles = pageTiles[page.pageIndex].orEmpty(),
+                                bitmapVersion = activeBitmapVersions[page.pageIndex] ?: 0,
+                                pageLayout = pageLayouts[page.pageIndex],
                                 selectionState = selectionState,
-                                uiScale = effectiveZoom,
-                                uiPanX = effectivePanX + pagedTransitionOffset.value,
-                                uiPanY = effectivePanY,
+                                uiScale = 1f,
+                                uiPanX = 0f,
+                                uiPanY = 0f,
                                 modifier = Modifier
                                     .offset {
                                         IntOffset(
-                                            pageLayout.contentLeftPx.toInt(),
-                                            pageLayout.contentTopPx.toInt()
+                                            x = page.leftPx.toInt(),
+                                            y = (page.topPx - verticalScrollPx).toInt()
                                         )
                                     }
                                     .size(
-                                        width = with(density) { pageLayout.displayWidthPx.toDp() },
-                                        height = with(density) { pageLayout.displayHeightPx.toDp() }
+                                        width = with(density) { page.widthPx.toDp() },
+                                        height = with(density) { page.heightPx.toDp() }
                                     ),
-                                contentWidthPx = pageLayout.displayWidthPx,
-                                contentHeightPx = pageLayout.displayHeightPx,
+                                contentWidthPx = page.widthPx,
+                                contentHeightPx = page.heightPx,
                                 colorFilter = imageColorFilter,
-                                onTap = { tapX, width ->
-                                    when {
-                                        effectiveZoom <= 1.02f && tapX < width * 0.2f && pagedIndex > 0 -> {
-                                            val next = pagedIndex - 1
-                                            val from = pagedIndex
-                                            pagedIndex = next
-                                            onPageChanged(next)
-                                            onPageSelected(next)
-                                            transitionFromIndex = from
-                                            scope.launch {
-                                                val vpWidth = viewport?.widthPx?.toFloat() ?: 400f
-                                                pagedOutgoingOffset.snapTo(0f)
-                                                pagedTransitionOffset.snapTo(-vpWidth)
-                                                launch {
-                                                    pagedOutgoingOffset.animateTo(
-                                                        vpWidth,
-                                                        tween(durationMillis = 180, easing = FastOutSlowInEasing)
-                                                    )
-                                                }
-                                                pagedTransitionOffset.animateTo(
-                                                    0f,
-                                                    tween(durationMillis = 180, easing = FastOutSlowInEasing)
-                                                )
-                                                transitionFromIndex = null
-                                            }
-                                        }
-
-                                        effectiveZoom <= 1.02f && tapX > width * 0.8f && pagedIndex < totalPages - 1 -> {
-                                            val next = pagedIndex + 1
-                                            val from = pagedIndex
-                                            pagedIndex = next
-                                            onPageChanged(next)
-                                            onPageSelected(next)
-                                            transitionFromIndex = from
-                                            scope.launch {
-                                                val vpWidth = viewport?.widthPx?.toFloat() ?: 400f
-                                                pagedOutgoingOffset.snapTo(0f)
-                                                pagedTransitionOffset.snapTo(vpWidth)
-                                                launch {
-                                                    pagedOutgoingOffset.animateTo(
-                                                        -vpWidth,
-                                                        tween(durationMillis = 180, easing = FastOutSlowInEasing)
-                                                    )
-                                                }
-                                                pagedTransitionOffset.animateTo(
-                                                    0f,
-                                                    tween(durationMillis = 180, easing = FastOutSlowInEasing)
-                                                )
-                                                transitionFromIndex = null
-                                            }
-                                        }
-
-                                        else -> onMenuToggle()
-                                    }
-                                },
+                                onTap = { _, _ -> onMenuToggle() },
                                 onLongPress = { x, y ->
-                                    val targetLayout = pageLayouts[pagedIndex]
+                                    val targetLayout = pageLayouts[page.pageIndex]
                                     val effZoom = committedZoom * transientZoom.scale
                                     val effPanX = committedPanX + transientZoom.panX
                                     val effPanY = committedPanY + transientZoom.panY
-                                    handlePdfLongPress(pagedIndex, x, y, targetLayout, effZoom, effPanX, effPanY)
+                                    handlePdfLongPress(page.pageIndex, x, y, targetLayout, effZoom, effPanX, effPanY)
                                 }
                             )
-                        } else {
-                            Text(
-                                text = "No page layout for index $pagedIndex",
-                                color = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
+                        }
+                    }
+                } else {
+                    val pagerState = rememberPagerState(
+                        initialPage = pagedIndex,
+                        pageCount = { totalPages }
+                    )
+
+                    LaunchedEffect(pagerState.currentPage) {
+                        if (pagerState.currentPage != pagedIndex) {
+                            pagedIndex = pagerState.currentPage
+                            onPageChanged(pagerState.currentPage)
+                            onPageSelected(pagerState.currentPage)
+                        }
+                    }
+
+                    LaunchedEffect(pagedIndex) {
+                        if (pagerState.currentPage != pagedIndex) {
+                            pagerState.animateScrollToPage(pagedIndex)
+                        }
+                    }
+
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize(),
+                        userScrollEnabled = committedZoom <= 1.02f,
+                        beyondViewportPageCount = 1
+                    ) { pageIndex ->
+                        val pageLayout = pageLayouts[pageIndex]
+                        if (pageLayout != null) {
+                            LaunchedEffect(pageIndex) {
+                                renderPage(pageIndex)
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(backgroundColor)
+                            ) {
+                                PdfPageSurface(
+                                    pageIndex = pageIndex,
+                                    pageBitmap = pageBitmaps[pageIndex],
+                                    tiles = pageTiles[pageIndex].orEmpty(),
+                                    bitmapVersion = activeBitmapVersions[pageIndex] ?: 0,
+                                    pageLayout = pageLayout,
+                                    selectionState = selectionState,
+                                    uiScale = effectiveZoom,
+                                    uiPanX = effectivePanX,
+                                    uiPanY = effectivePanY,
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .padding(horizontal = 2.dp),
+                                    contentWidthPx = pageLayout.displayWidthPx,
+                                    contentHeightPx = pageLayout.displayHeightPx,
+                                    colorFilter = imageColorFilter,
+                                    onTap = { tapX, width ->
+                                        when {
+                                            effectiveZoom <= 1.02f && tapX < width * 0.2f && pageIndex > 0 -> {
+                                                scope.launch { pagerState.animateScrollToPage(pageIndex - 1) }
+                                            }
+                                            effectiveZoom <= 1.02f && tapX > width * 0.8f && pageIndex < totalPages - 1 -> {
+                                                scope.launch { pagerState.animateScrollToPage(pageIndex + 1) }
+                                            }
+                                            else -> onMenuToggle()
+                                        }
+                                    },
+                                    onLongPress = { x, y ->
+                                        val targetLayout = pageLayouts[pageIndex]
+                                        val effZoom = committedZoom * transientZoom.scale
+                                        val effPanX = committedPanX + transientZoom.panX
+                                        val effPanY = committedPanY + transientZoom.panY
+                                        handlePdfLongPress(pageIndex, x, y, targetLayout, effZoom, effPanX, effPanY)
+                                    }
+                                )
+                            }
                         }
                     }
                 }

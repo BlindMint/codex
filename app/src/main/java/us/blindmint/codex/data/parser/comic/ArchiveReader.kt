@@ -81,7 +81,6 @@ class ArchiveReader @Inject constructor() {
                 var entryCount = 0
                 sevenZFile?.use { szf ->
                     for (entry in szf.entries) {
-                        android.util.Log.d("SevenZArchiveHandle", "Entry: ${entry.name}, isDir: ${entry.isDirectory}")
                         if (!entry.isDirectory && ArchiveReader.isImageFile(entry.name)) {
                             _entries.add(SevenZArchiveEntry(entry))
                             entryCount++
@@ -205,12 +204,10 @@ class ArchiveReader @Inject constructor() {
                 }
 
                 // Read all entries (must happen for ALL code paths)
-                android.util.Log.d("CodexComic", "Reading entries from zip file")
                 val entries = zipFile!!.entries()
                 var entryCount = 0
                 while (entries.hasMoreElements()) {
                     val entry = entries.nextElement()
-                    android.util.Log.d("CodexComic", "Entry: ${entry.name}, isDir: ${entry.isDirectory}")
                     if (!entry.isDirectory && ArchiveReader.isImageFile(entry.name)) {
                         _entries.add(LibArchiveEntry(ZipEntryAdapter(entry)))
                         entryCount++
