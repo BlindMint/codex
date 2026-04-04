@@ -136,12 +136,19 @@ private class PdfGestureInteropState {
     var callbacks: PdfGestureCallbacks? = null
     var widthProvider: (() -> Float)? = null
     var contextProvider: (() -> android.content.Context)? = null
+    // In paged mode the HorizontalPager must handle single-finger swipes when not
+    // zoomed, so we only consume events when a pinch is in progress or the view is
+    // already zoomed.  In vertical mode we always consume (original behaviour).
+    var isZoomed: Boolean = false
+    var isPagedMode: Boolean = false
 
     fun handleMotionEvent(event: MotionEvent, currentCallbacks: PdfGestureCallbacks): Boolean {
         callbacks = currentCallbacks
         ensureDetectors()
         gestureDetector?.onTouchEvent(event)
         scaleDetector?.onTouchEvent(event)
+
+        val isMultiTouch = event.pointerCount > 1 || scaleDetector?.isInProgress == true
 
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
@@ -165,14 +172,21 @@ private class PdfGestureInteropState {
             }
 
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                scalingInProgress = false
                 callbacks?.onGestureEnd?.invoke()
                 accumulatedPanX = 0f
                 accumulatedPanY = 0f
             }
         }
 
-        return true
+        // In paged mode pass single-finger events through to the pager when not
+        // zoomed so that horizontal swipe navigation keeps working.
+        return if (isPagedMode) isMultiTouch || isZoomed else true
     }
+
+    // Set to true from onScaleBegin so that onLongPress (which fires after ~500 ms
+    // of the *first* finger being held down) is ignored during a pinch gesture.
+    private var scalingInProgress = false
 
     private fun ensureDetectors() {
         if (gestureDetector != null && scaleDetector != null) return
@@ -186,18 +200,29 @@ private class PdfGestureInteropState {
                 }
 
                 override fun onLongPress(e: MotionEvent) {
-                    callbacks?.onLongPress?.invoke(e.x, e.y)
+                    if (!scalingInProgress) {
+                        callbacks?.onLongPress?.invoke(e.x, e.y)
+                    }
                 }
             }
         )
         scaleDetector = ScaleGestureDetector(
             context,
             object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+                    scalingInProgress = true
+                    return true
+                }
+
                 override fun onScale(detector: ScaleGestureDetector): Boolean {
                     lastScaleFocusX = detector.focusX
                     lastScaleFocusY = detector.focusY
                     callbacks?.onZoomPan?.invoke(detector.scaleFactor, 0f, 0f)
                     return true
+                }
+
+                override fun onScaleEnd(detector: ScaleGestureDetector) {
+                    scalingInProgress = false
                 }
             }
         )
@@ -293,6 +318,11 @@ fun PdfReaderLayout(
             TAG,
             "state: isLoading=$isLoading totalPages=$totalPages viewport=$viewport pagedIndex=$pagedIndex currentPage=$currentPage hasSession=${session != null} hasController=${renderController != null} layouts=${pageLayouts.size} bitmaps=${pageBitmaps.size}"
         )
+        // Keep gesture interop flags in sync after every recomposition so the
+        // handler always sees the latest zoom / mode state without needing to
+        // re-run the DisposableEffect.
+        interopState.isZoomed = effectiveZoom > 1.02f
+        interopState.isPagedMode = !isVertical
     }
 
     val visibleBitmapCount = if (isVertical) {
@@ -429,29 +459,25 @@ fun PdfReaderLayout(
         val layout = pageLayouts[pageIndex] ?: return 0f to 0f
         val currentViewport = viewport ?: return 0f to 0f
         if (zoom <= 1.02f) return 0f to 0f
-        val maxPanX = max(0f, (layout.displayWidthPx - currentViewport.widthPx) / 2f)
-        val maxPanY = max(0f, (layout.displayHeightPx - currentViewport.heightPx) / 2f)
+        // Page layouts are kept at their base (zoom=1) size; the graphicsLayer applies
+        // all visual scaling.  The visual content size is therefore
+        //   displayWidthPx * zoom  ×  displayHeightPx * zoom
+        // and the pan bounds keep that content within the viewport.
+        val maxPanX = max(0f, (layout.displayWidthPx * zoom - currentViewport.widthPx) / 2f)
+        val maxPanY = max(0f, (layout.displayHeightPx * zoom - currentViewport.heightPx) / 2f)
         return panX.coerceIn(-maxPanX, maxPanX) to panY.coerceIn(-maxPanY, maxPanY)
     }
 
+    // bitmapX / bitmapY are pixel coordinates in the rendered bitmap at committedZoom.
+    // Callers are responsible for inverting the graphicsLayer transform from screen
+    // coordinates to page-local display coordinates, then multiplying by committedZoom.
     fun handlePdfLongPress(
         pageIndex: Int,
-        pressX: Float,
-        pressY: Float,
-        pageLayout: PdfPageLayout?,
-        effectiveZoom: Float,
-        effectivePanX: Float,
-        effectivePanY: Float
+        bitmapX: Float,
+        bitmapY: Float
     ) {
         val activeSession = session ?: return
         val currentViewport = viewport ?: return
-        if (pageLayout == null) return
-
-        val contentLeftPx = pageLayout.contentLeftPx
-        val contentTopPx = pageLayout.contentTopPx
-
-        val bitmapX = (pressX - contentLeftPx - effectivePanX) / effectiveZoom
-        val bitmapY = (pressY - contentTopPx - effectivePanY) / effectiveZoom
 
         scope.launch {
             val selection = withContext(Dispatchers.IO) {
@@ -658,12 +684,31 @@ fun PdfReaderLayout(
                                 PdfGestureCallbacks(
                                     onTap = { _, _ -> onMenuToggle() },
                                     onLongPress = { x, y ->
-                                        val targetPage = currentPage
-                                        val targetLayout = pageLayouts[targetPage]
+                                        val vpW = viewport?.widthPx?.toFloat() ?: 0f
+                                        val vpH = viewport?.heightPx?.toFloat() ?: 0f
                                         val effZoom = committedZoom * transientZoom.scale
                                         val effPanX = committedPanX + transientZoom.panX
                                         val effPanY = committedPanY + transientZoom.panY
-                                        handlePdfLongPress(targetPage, x, y, targetLayout, effZoom, effPanX, effPanY)
+                                        // Inverse graphicsLayer(TransformOrigin.Center) on the
+                                        // fillMaxSize outer Box to get Box-local coordinates.
+                                        val localX = (x - effPanX - vpW / 2f) / effZoom + vpW / 2f
+                                        val localY = (y - effPanY - vpH / 2f) / effZoom + vpH / 2f
+                                        val pages = buildVerticalPages()
+                                        val targetPage = pages.firstOrNull { page ->
+                                            localX >= page.leftPx &&
+                                            localX < page.leftPx + page.widthPx &&
+                                            localY >= page.topPx - verticalScrollPx &&
+                                            localY < page.topPx - verticalScrollPx + page.heightPx
+                                        } ?: pages.firstOrNull { it.pageIndex == currentPage }
+                                        if (targetPage != null) {
+                                            val pageLocalX = localX - targetPage.leftPx
+                                            val pageLocalY = localY - (targetPage.topPx - verticalScrollPx)
+                                            handlePdfLongPress(
+                                                targetPage.pageIndex,
+                                                pageLocalX * committedZoom,
+                                                pageLocalY * committedZoom
+                                            )
+                                        }
                                     },
                                     onZoomPan = { zoomFactor, panX, panY ->
                                         val nextScale = (transientZoom.scale * zoomFactor).coerceIn(1f / committedZoom, 5f / committedZoom)
@@ -673,16 +718,15 @@ fun PdfReaderLayout(
                                         if (zoomFactor != 1f) {
                                             val focusX = interopState.lastScaleFocusX
                                             val focusY = interopState.lastScaleFocusY
-                                            val pages = buildVerticalPages()
-                                            val pageInfo = pages.firstOrNull { it.pageIndex == currentPage }
-                                            val contentOriginX = pageInfo?.leftPx ?: 0f
-                                            val contentOriginY = (pageInfo?.topPx ?: 0f) - verticalScrollPx
+                                            val vpW = viewport?.widthPx?.toFloat() ?: 0f
+                                            val vpH = viewport?.heightPx?.toFloat() ?: 0f
                                             val currentEffPanX = committedPanX + transientZoom.panX
                                             val currentEffPanY = committedPanY + transientZoom.panY
-                                            val focusInContentX = (focusX - contentOriginX - currentEffPanX) / committedZoom
-                                            val focusInContentY = (focusY - contentOriginY - currentEffPanY) / committedZoom
-                                            deltaX = focusInContentX * (zoomFactor - 1f) * committedZoom
-                                            deltaY = focusInContentY * (zoomFactor - 1f) * committedZoom
+                                            // Correct focal-point formula for graphicsLayer with
+                                            // TransformOrigin.Center: keep the pinch centroid
+                                            // stationary on screen as the scale changes.
+                                            deltaX = (zoomFactor - 1f) * (currentEffPanX - focusX + vpW / 2f)
+                                            deltaY = (zoomFactor - 1f) * (currentEffPanY - focusY + vpH / 2f)
                                         } else {
                                             deltaX = panX
                                             deltaY = panY
@@ -717,9 +761,24 @@ fun PdfReaderLayout(
                                 )
                             )
                     ) {
+                        // Derive the visible content range in un-zoomed content
+                        // coordinates from the graphicsLayer transform
+                        // (TransformOrigin.Center + translation).
+                        //
+                        // For a container of height vpH scaled by `effectiveZoom`
+                        // around its centre with translationY = effectivePanY, a
+                        // page at local offset `y` (= topPx - verticalScrollPx) is
+                        // on-screen when:
+                        //
+                        //   screenY = (y - vpH/2) * zoom + vpH/2 + panY  ∈ [0, vpH]
+                        //
+                        // Solving for y gives the visible content band below.
+                        val vpH = viewport!!.heightPx.toFloat()
+                        val halfVp = vpH / 2f
+                        val minVisible = verticalScrollPx + halfVp - (halfVp + effectivePanY) / effectiveZoom
+                        val maxVisible = verticalScrollPx + halfVp + (halfVp - effectivePanY) / effectiveZoom
                         pages.filter {
-                            it.topPx + it.heightPx >= verticalScrollPx / effectiveZoom &&
-                                it.topPx <= (verticalScrollPx + viewport!!.heightPx) / effectiveZoom
+                            it.topPx + it.heightPx >= minVisible && it.topPx <= maxVisible
                         }.forEach { page ->
                             PdfPageSurface(
                                 pageIndex = page.pageIndex,
@@ -746,13 +805,7 @@ fun PdfReaderLayout(
                                 contentHeightPx = page.heightPx,
                                 colorFilter = imageColorFilter,
                                 onTap = { _, _ -> onMenuToggle() },
-                                onLongPress = { x, y ->
-                                    val targetLayout = pageLayouts[page.pageIndex]
-                                    val effZoom = committedZoom * transientZoom.scale
-                                    val effPanX = committedPanX + transientZoom.panX
-                                    val effPanY = committedPanY + transientZoom.panY
-                                    handlePdfLongPress(page.pageIndex, x, y, targetLayout, effZoom, effPanX, effPanY)
-                                }
+                                onLongPress = { _, _ -> }
                             )
                         }
                     }
@@ -765,6 +818,11 @@ fun PdfReaderLayout(
                     LaunchedEffect(pagerState.currentPage) {
                         if (pagerState.currentPage != pagedIndex) {
                             pagedIndex = pagerState.currentPage
+                            // Reset zoom so each new page starts unzoomed.
+                            committedZoom = 1f
+                            committedPanX = 0f
+                            committedPanY = 0f
+                            transientZoom = PdfTransientZoom()
                             onPageChanged(pagerState.currentPage)
                             onPageSelected(pagerState.currentPage)
                         }
@@ -776,57 +834,157 @@ fun PdfReaderLayout(
                         }
                     }
 
-                    HorizontalPager(
-                        state = pagerState,
-                        modifier = Modifier.fillMaxSize(),
-                        userScrollEnabled = committedZoom <= 1.02f,
-                        beyondViewportPageCount = 1
-                    ) { pageIndex ->
-                        val pageLayout = pageLayouts[pageIndex]
-                        if (pageLayout != null) {
-                            LaunchedEffect(pageIndex) {
-                                renderPage(pageIndex)
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(backgroundColor)
-                            ) {
-                                PdfPageSurface(
-                                    pageIndex = pageIndex,
-                                    pageBitmap = pageBitmaps[pageIndex],
-                                    tiles = pageTiles[pageIndex].orEmpty(),
-                                    bitmapVersion = activeBitmapVersions[pageIndex] ?: 0,
-                                    pageLayout = pageLayout,
-                                    selectionState = selectionState,
-                                    uiScale = effectiveZoom,
-                                    uiPanX = effectivePanX,
-                                    uiPanY = effectivePanY,
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                        .padding(horizontal = 2.dp),
-                                    contentWidthPx = pageLayout.displayWidthPx,
-                                    contentHeightPx = pageLayout.displayHeightPx,
-                                    colorFilter = imageColorFilter,
-                                    onTap = { tapX, width ->
-                                        when {
-                                            effectiveZoom <= 1.02f && tapX < width * 0.2f && pageIndex > 0 -> {
-                                                scope.launch { pagerState.animateScrollToPage(pageIndex - 1) }
-                                            }
-                                            effectiveZoom <= 1.02f && tapX > width * 0.8f && pageIndex < totalPages - 1 -> {
-                                                scope.launch { pagerState.animateScrollToPage(pageIndex + 1) }
-                                            }
-                                            else -> onMenuToggle()
-                                        }
+                    // Wrap the pager in a gesture-interop Box so pinch-zoom works.
+                    // The interop only consumes events when a pinch is in progress or
+                    // the page is already zoomed; single-finger swipes are passed
+                    // through to the pager for normal page navigation.
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .pdfGestureInterop(
+                                PdfGestureCallbacks(
+                                    onTap = { _, _ ->
+                                        // Only handle the tap here when zoomed; otherwise
+                                        // each page surface handles its own tap for nav.
+                                        if (committedZoom > 1.02f) onMenuToggle()
                                     },
                                     onLongPress = { x, y ->
-                                        val targetLayout = pageLayouts[pageIndex]
-                                        val effZoom = committedZoom * transientZoom.scale
-                                        val effPanX = committedPanX + transientZoom.panX
-                                        val effPanY = committedPanY + transientZoom.panY
-                                        handlePdfLongPress(pageIndex, x, y, targetLayout, effZoom, effPanX, effPanY)
+                                        val vp = viewport
+                                        val targetLayout = pageLayouts[pagedIndex]
+                                        if (vp != null && targetLayout != null) {
+                                            val vpW = vp.widthPx.toFloat()
+                                            val vpH = vp.heightPx.toFloat()
+                                            val dw = targetLayout.displayWidthPx
+                                            val dh = targetLayout.displayHeightPx
+                                            // PdfPageSurface handles long presses within its layout
+                                            // bounds (detectTapGestures.onLongPress).  This outer
+                                            // handler covers the extended-content zone that only
+                                            // exists when zoomed in — i.e. the area where the
+                                            // visually enlarged page overflows beyond the surface's
+                                            // layout bounds (which graphicsLayer never changes).
+                                            val surfaceLeft = (vpW - dw) / 2f
+                                            val surfaceTop = (vpH - dh) / 2f
+                                            val outsideLayoutBounds =
+                                                x < surfaceLeft || x > surfaceLeft + dw ||
+                                                y < surfaceTop || y > surfaceTop + dh
+                                            if (outsideLayoutBounds) {
+                                                val effZoom = committedZoom * transientZoom.scale
+                                                val effPanX = committedPanX + transientZoom.panX
+                                                val effPanY = committedPanY + transientZoom.panY
+                                                val lx = (x - vpW / 2f - effPanX) / effZoom + dw / 2f
+                                                val ly = (y - vpH / 2f - effPanY) / effZoom + dh / 2f
+                                                handlePdfLongPress(pagedIndex, lx * committedZoom, ly * committedZoom)
+                                            }
+                                        }
+                                    },
+                                    onZoomPan = { zoomFactor, panX, panY ->
+                                        val nextScale = (transientZoom.scale * zoomFactor).coerceIn(1f / committedZoom, 5f / committedZoom)
+                                        val notZoomed = nextScale <= 1.02f / committedZoom
+                                        val deltaX: Float
+                                        val deltaY: Float
+                                        if (zoomFactor != 1f) {
+                                            val focusX = interopState.lastScaleFocusX
+                                            val focusY = interopState.lastScaleFocusY
+                                            val vpW = viewport?.widthPx?.toFloat() ?: 0f
+                                            val vpH = viewport?.heightPx?.toFloat() ?: 0f
+                                            val currentEffPanX = committedPanX + transientZoom.panX
+                                            val currentEffPanY = committedPanY + transientZoom.panY
+                                            deltaX = (zoomFactor - 1f) * (currentEffPanX - focusX + vpW / 2f)
+                                            deltaY = (zoomFactor - 1f) * (currentEffPanY - focusY + vpH / 2f)
+                                        } else {
+                                            deltaX = panX
+                                            deltaY = panY
+                                        }
+                                        transientZoom = PdfTransientZoom(
+                                            scale = nextScale,
+                                            panX = transientZoom.panX + if (notZoomed) 0f else deltaX,
+                                            panY = transientZoom.panY + if (notZoomed) 0f else deltaY,
+                                            active = true
+                                        )
+                                    },
+                                    onGestureEnd = {
+                                        val committedScale = (committedZoom * transientZoom.scale).coerceIn(1f, 5f)
+                                        val (panX, panY) = clampPan(
+                                            pageIndex = pagedIndex,
+                                            zoom = committedScale,
+                                            panX = committedPanX + transientZoom.panX,
+                                            panY = committedPanY + transientZoom.panY
+                                        )
+                                        committedZoom = committedScale
+                                        committedPanX = panX
+                                        committedPanY = panY
+                                        transientZoom = PdfTransientZoom()
                                     }
                                 )
+                            )
+                    ) {
+                        HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier.fillMaxSize(),
+                            userScrollEnabled = committedZoom <= 1.02f,
+                            beyondViewportPageCount = 1
+                        ) { pageIndex ->
+                            val pageLayout = pageLayouts[pageIndex]
+                            if (pageLayout != null) {
+                                LaunchedEffect(pageIndex) {
+                                    renderPage(pageIndex)
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(backgroundColor)
+                                ) {
+                                    // Only apply zoom/pan to the current page; adjacent
+                                    // pages visible during swipe animation stay at 1:1.
+                                    val isCurrentPage = pageIndex == pagedIndex
+                                    PdfPageSurface(
+                                        pageIndex = pageIndex,
+                                        pageBitmap = pageBitmaps[pageIndex],
+                                        tiles = pageTiles[pageIndex].orEmpty(),
+                                        bitmapVersion = activeBitmapVersions[pageIndex] ?: 0,
+                                        pageLayout = pageLayout,
+                                        selectionState = selectionState,
+                                        uiScale = if (isCurrentPage) effectiveZoom else 1f,
+                                        uiPanX = if (isCurrentPage) effectivePanX else 0f,
+                                        uiPanY = if (isCurrentPage) effectivePanY else 0f,
+                                        modifier = Modifier
+                                            .align(Alignment.Center)
+                                            .padding(horizontal = 2.dp),
+                                        contentWidthPx = pageLayout.displayWidthPx,
+                                        contentHeightPx = pageLayout.displayHeightPx,
+                                        colorFilter = imageColorFilter,
+                                        onTap = { tapX, width ->
+                                            when {
+                                                effectiveZoom <= 1.02f && tapX < width * 0.2f && pageIndex > 0 -> {
+                                                    scope.launch { pagerState.animateScrollToPage(pageIndex - 1) }
+                                                }
+                                                effectiveZoom <= 1.02f && tapX > width * 0.8f && pageIndex < totalPages - 1 -> {
+                                                    scope.launch { pagerState.animateScrollToPage(pageIndex + 1) }
+                                                }
+                                                else -> onMenuToggle()
+                                            }
+                                        },
+                                        onLongPress = { x, y ->
+                                            // Only handle for the current page; adjacent pages
+                                            // shown during swipe animation stay interactive but
+                                            // should not trigger selection.
+                                            if (isCurrentPage) {
+                                                val dw = pageLayout.displayWidthPx
+                                                val dh = pageLayout.displayHeightPx
+                                                val effZoom = committedZoom * transientZoom.scale
+                                                val effPanX = committedPanX + transientZoom.panX
+                                                val effPanY = committedPanY + transientZoom.panY
+                                                // (x,y) are in PdfPageSurface outer-Box layout coords.
+                                                // Invert the inner content-Box graphicsLayer transform
+                                                // (offset+scale around center) to get page display
+                                                // coords, then scale to bitmap pixels.
+                                                val lx = (x - dw / 2f - effPanX) / effZoom + dw / 2f
+                                                val ly = (y - dh / 2f - effPanY) / effZoom + dh / 2f
+                                                handlePdfLongPress(pageIndex, lx * committedZoom, ly * committedZoom)
+                                            }
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -866,10 +1024,13 @@ private fun PdfPageSurface(
     Box(
         modifier = modifier
             .background(Color.Transparent)
-            .pointerInput(onTap) {
+            .pointerInput(onTap, onLongPress) {
                 detectTapGestures(
                     onTap = { offset ->
                         onTap(offset.x, size.width.toFloat())
+                    },
+                    onLongPress = { offset ->
+                        onLongPress(offset.x, offset.y)
                     }
                 )
             }
