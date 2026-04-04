@@ -101,7 +101,7 @@ private suspend fun PointerInputScope.detectLongPressNonBlocking(
 
 @OptIn(FlowPreview::class)
 @Composable
-fun ImageBasedReaderLayout(
+fun ComicReaderDisplay(
     bookTitle: String,
     currentPage: Int,
     initialPage: Int = 0,
@@ -514,7 +514,7 @@ fun ImageBasedReaderLayout(
             }
 
             if (showPageIndicator && totalPages > 0) {
-                ComicPageIndicator(
+                PageIndicator(
                     currentPage = currentPage,
                     totalPages = totalPages,
                     modifier = Modifier.align(Alignment.BottomCenter)

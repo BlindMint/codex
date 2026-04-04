@@ -26,7 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import us.blindmint.codex.ui.main.MainModel
 
 @Composable
-fun ComicPageIndicator(
+fun PageIndicator(
     currentPage: Int,
     totalPages: Int,
     modifier: Modifier = Modifier,

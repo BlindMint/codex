@@ -25,6 +25,7 @@ import us.blindmint.codex.domain.library.display.toLibraryTitlePosition
 import us.blindmint.codex.domain.library.sort.LibrarySortOrder
 import us.blindmint.codex.domain.library.sort.toLibrarySortOrder
 import us.blindmint.codex.domain.reader.BackgroundImage
+import androidx.compose.ui.graphics.Color
 import us.blindmint.codex.domain.reader.BackgroundScaleMode
 import us.blindmint.codex.domain.reader.CustomFont
 import us.blindmint.codex.domain.reader.ReaderColorEffects
@@ -54,7 +55,6 @@ import us.blindmint.codex.presentation.core.constants.provideLanguages
 import us.blindmint.codex.ui.theme.Theme
 import us.blindmint.codex.ui.theme.toTheme
 import java.util.Locale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 
 /**
@@ -144,6 +144,9 @@ data class MainState(
     val comicProgressBarFontSize: Int = provideDefaultValue { 8 },
     val comicProgressCount: ReaderProgressCount = provideDefaultValue { ReaderProgressCount.PAGE },
     val comicBackgroundColor: String = provideDefaultValue { "DEFAULT" },
+    val comicCustomBackgroundColor: String = provideDefaultValue { "FFFFFF" },
+    val comicVolumeKeysEnabled: Boolean = provideDefaultValue { true },
+    val comicVolumeKeysInverted: Boolean = provideDefaultValue { false },
 
     // Background Image Settings
     val backgroundImage: BackgroundImage? = provideDefaultValue { null },
@@ -582,6 +585,18 @@ data class MainState(
                     comicBackgroundColor = provideValue(
                         COMIC_BACKGROUND_COLOR
                     ) { comicBackgroundColor },
+
+                    comicCustomBackgroundColor = provideValue(
+                        COMIC_CUSTOM_BACKGROUND_COLOR
+                    ) { comicCustomBackgroundColor },
+
+                    comicVolumeKeysEnabled = provideValue(
+                        COMIC_VOLUME_KEYS_ENABLED
+                    ) { comicVolumeKeysEnabled },
+
+                    comicVolumeKeysInverted = provideValue(
+                        COMIC_VOLUME_KEYS_INVERTED
+                    ) { comicVolumeKeysInverted },
 
                     // Speed Reader Settings
                     speedReadingWpm = provideValue(

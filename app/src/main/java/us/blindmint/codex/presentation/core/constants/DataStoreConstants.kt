@@ -127,6 +127,9 @@ object DataStoreConstants {
     val COMIC_PROGRESS_BAR_FONT_SIZE = intPreferencesKey("comic_progress_bar_font_size")
     val COMIC_PROGRESS_COUNT = stringPreferencesKey("comic_progress_count")
     val COMIC_BACKGROUND_COLOR = stringPreferencesKey("comic_background_color")
+    val COMIC_CUSTOM_BACKGROUND_COLOR = stringPreferencesKey("comic_custom_background_color")
+    val COMIC_VOLUME_KEYS_ENABLED = booleanPreferencesKey("comic_volume_keys_enabled")
+    val COMIC_VOLUME_KEYS_INVERTED = booleanPreferencesKey("comic_volume_keys_inverted")
 
     // Speed Reader settings
     val SPEED_READING_WPM = intPreferencesKey("speed_reading_wpm")

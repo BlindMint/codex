@@ -40,6 +40,12 @@ fun LazyListScope.ComicsReaderSettingsCategory(
         item {
             ComicInvertTapsOption()
         }
+        item {
+            ComicVolumeKeysOption()
+        }
+        item {
+            ComicVolumeKeysInvertedOption()
+        }
     }
 
     // Display subsection

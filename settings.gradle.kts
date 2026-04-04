@@ -20,3 +20,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "codex"
 include(":app")
+include(":mupdf-android-fitz")

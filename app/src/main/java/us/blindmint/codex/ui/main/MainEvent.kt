@@ -124,6 +124,9 @@ sealed class MainEvent {
     data class OnChangeComicProgressBarFontSize(val value: Int) : MainEvent()
     data class OnChangeComicProgressCount(val value: String) : MainEvent()
     data class OnChangeComicBackgroundColor(val value: String) : MainEvent()
+    data class OnChangeComicCustomBackgroundColor(val value: String) : MainEvent()
+    data class OnChangeComicVolumeKeysEnabled(val value: Boolean) : MainEvent()
+    data class OnChangeComicVolumeKeysInverted(val value: Boolean) : MainEvent()
 
     // Speed Reader Events
     data class OnChangeSpeedReadingWpm(val value: Int) : MainEvent()
