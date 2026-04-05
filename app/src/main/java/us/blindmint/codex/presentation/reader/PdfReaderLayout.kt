@@ -15,6 +15,8 @@ import android.view.ViewConfiguration
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -55,6 +57,7 @@ import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
@@ -834,90 +837,7 @@ fun PdfReaderLayout(
                         }
                     }
 
-                    // Wrap the pager in a gesture-interop Box so pinch-zoom works.
-                    // The interop only consumes events when a pinch is in progress or
-                    // the page is already zoomed; single-finger swipes are passed
-                    // through to the pager for normal page navigation.
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .pdfGestureInterop(
-                                PdfGestureCallbacks(
-                                    onTap = { _, _ ->
-                                        // Only handle the tap here when zoomed; otherwise
-                                        // each page surface handles its own tap for nav.
-                                        if (committedZoom > 1.02f) onMenuToggle()
-                                    },
-                                    onLongPress = { x, y ->
-                                        val vp = viewport
-                                        val targetLayout = pageLayouts[pagedIndex]
-                                        if (vp != null && targetLayout != null) {
-                                            val vpW = vp.widthPx.toFloat()
-                                            val vpH = vp.heightPx.toFloat()
-                                            val dw = targetLayout.displayWidthPx
-                                            val dh = targetLayout.displayHeightPx
-                                            // PdfPageSurface handles long presses within its layout
-                                            // bounds (detectTapGestures.onLongPress).  This outer
-                                            // handler covers the extended-content zone that only
-                                            // exists when zoomed in — i.e. the area where the
-                                            // visually enlarged page overflows beyond the surface's
-                                            // layout bounds (which graphicsLayer never changes).
-                                            val surfaceLeft = (vpW - dw) / 2f
-                                            val surfaceTop = (vpH - dh) / 2f
-                                            val outsideLayoutBounds =
-                                                x < surfaceLeft || x > surfaceLeft + dw ||
-                                                y < surfaceTop || y > surfaceTop + dh
-                                            if (outsideLayoutBounds) {
-                                                val effZoom = committedZoom * transientZoom.scale
-                                                val effPanX = committedPanX + transientZoom.panX
-                                                val effPanY = committedPanY + transientZoom.panY
-                                                val lx = (x - vpW / 2f - effPanX) / effZoom + dw / 2f
-                                                val ly = (y - vpH / 2f - effPanY) / effZoom + dh / 2f
-                                                handlePdfLongPress(pagedIndex, lx * committedZoom, ly * committedZoom)
-                                            }
-                                        }
-                                    },
-                                    onZoomPan = { zoomFactor, panX, panY ->
-                                        val nextScale = (transientZoom.scale * zoomFactor).coerceIn(1f / committedZoom, 5f / committedZoom)
-                                        val notZoomed = nextScale <= 1.02f / committedZoom
-                                        val deltaX: Float
-                                        val deltaY: Float
-                                        if (zoomFactor != 1f) {
-                                            val focusX = interopState.lastScaleFocusX
-                                            val focusY = interopState.lastScaleFocusY
-                                            val vpW = viewport?.widthPx?.toFloat() ?: 0f
-                                            val vpH = viewport?.heightPx?.toFloat() ?: 0f
-                                            val currentEffPanX = committedPanX + transientZoom.panX
-                                            val currentEffPanY = committedPanY + transientZoom.panY
-                                            deltaX = (zoomFactor - 1f) * (currentEffPanX - focusX + vpW / 2f)
-                                            deltaY = (zoomFactor - 1f) * (currentEffPanY - focusY + vpH / 2f)
-                                        } else {
-                                            deltaX = panX
-                                            deltaY = panY
-                                        }
-                                        transientZoom = PdfTransientZoom(
-                                            scale = nextScale,
-                                            panX = transientZoom.panX + if (notZoomed) 0f else deltaX,
-                                            panY = transientZoom.panY + if (notZoomed) 0f else deltaY,
-                                            active = true
-                                        )
-                                    },
-                                    onGestureEnd = {
-                                        val committedScale = (committedZoom * transientZoom.scale).coerceIn(1f, 5f)
-                                        val (panX, panY) = clampPan(
-                                            pageIndex = pagedIndex,
-                                            zoom = committedScale,
-                                            panX = committedPanX + transientZoom.panX,
-                                            panY = committedPanY + transientZoom.panY
-                                        )
-                                        committedZoom = committedScale
-                                        committedPanX = panX
-                                        committedPanY = panY
-                                        transientZoom = PdfTransientZoom()
-                                    }
-                                )
-                            )
-                    ) {
+                    Box(modifier = Modifier.fillMaxSize()) {
                         HorizontalPager(
                             state = pagerState,
                             modifier = Modifier.fillMaxSize(),
@@ -949,7 +869,39 @@ fun PdfReaderLayout(
                                         uiPanY = if (isCurrentPage) effectivePanY else 0f,
                                         modifier = Modifier
                                             .align(Alignment.Center)
-                                            .padding(horizontal = 2.dp),
+                                            .padding(horizontal = 2.dp)
+                                            .then(
+                                                if (isCurrentPage) {
+                                                    Modifier.pagedZoomPanGesture(
+                                                        isZoomed = { effectiveZoom > 1.02f },
+                                                        onZoomPan = { zoomDelta, panDelta ->
+                                                            val newScale = (transientZoom.scale * zoomDelta).coerceIn(1f / committedZoom, 5f / committedZoom)
+                                                            // Check effective zoom (committed * transient) not just transient,
+                                                            // so pan is preserved when zooming out from a committed zoom > 1.
+                                                            val newEffectiveZoom = committedZoom * newScale
+                                                            transientZoom = PdfTransientZoom(
+                                                                scale = newScale,
+                                                                panX = if (newEffectiveZoom > 1.02f) transientZoom.panX + panDelta.x else 0f,
+                                                                panY = if (newEffectiveZoom > 1.02f) transientZoom.panY + panDelta.y else 0f,
+                                                                active = true
+                                                            )
+                                                        },
+                                                        onGestureEnd = {
+                                                            val committedScale = (committedZoom * transientZoom.scale).coerceIn(1f, 5f)
+                                                            val (newPanX, newPanY) = clampPan(
+                                                                pageIndex = pagedIndex,
+                                                                zoom = committedScale,
+                                                                panX = committedPanX + transientZoom.panX,
+                                                                panY = committedPanY + transientZoom.panY
+                                                            )
+                                                            committedZoom = committedScale
+                                                            committedPanX = newPanX
+                                                            committedPanY = newPanY
+                                                            transientZoom = PdfTransientZoom()
+                                                        }
+                                                    )
+                                                } else Modifier
+                                            ),
                                         contentWidthPx = pageLayout.displayWidthPx,
                                         contentHeightPx = pageLayout.displayHeightPx,
                                         colorFilter = imageColorFilter,
@@ -999,6 +951,83 @@ fun PdfReaderLayout(
                 }
             }
         }
+    }
+}
+
+/**
+ * Handles zoom and pan gestures for paged PDF reading using PointerEventPass.Initial
+ * so events are intercepted before HorizontalPager's scrollable (which uses Main pass).
+ *
+ * - Pinch: consumed, triggers zoom
+ * - Single-finger drag when already zoomed: consumed, triggers pan
+ * - Single-finger drag when not zoomed: passes through to HorizontalPager for page navigation
+ */
+private fun Modifier.pagedZoomPanGesture(
+    isZoomed: () -> Boolean,
+    onZoomPan: (zoomDelta: Float, panDelta: Offset) -> Unit,
+    onGestureEnd: () -> Unit
+): Modifier = this.pointerInput(Unit) {
+    awaitEachGesture {
+        var gestureActive = false
+        val down = awaitFirstDown(requireUnconsumed = false)
+        var lastCentroid = Offset.Zero
+        var lastSpan = 0f
+        var isPinchGesture = false
+        // Separate position tracker for single-finger pan, initialised when we
+        // first enter single-finger mode to avoid a jump from the initial DOWN.
+        var lastSinglePosition: Offset? = null
+
+        while (true) {
+            val event = awaitPointerEvent(PointerEventPass.Initial)
+            val pointers = event.changes.filter { it.pressed }
+            val count = pointers.size
+
+            when {
+                count >= 2 -> {
+                    // Two-finger pinch — consume and handle zoom
+                    lastSinglePosition = null  // reset single-finger tracker on re-pinch
+                    if (!isPinchGesture) {
+                        isPinchGesture = true
+                        gestureActive = true
+                        val p1 = pointers[0].position
+                        val p2 = pointers[1].position
+                        lastCentroid = (p1 + p2) / 2f
+                        lastSpan = (p1 - p2).getDistance()
+                    }
+                    val p1 = pointers[0].position
+                    val p2 = pointers[1].position
+                    val centroid = (p1 + p2) / 2f
+                    val span = (p1 - p2).getDistance()
+                    val zoomDelta = if (lastSpan > 0) span / lastSpan else 1f
+                    val panDelta = centroid - lastCentroid
+                    onZoomPan(zoomDelta, panDelta)
+                    lastCentroid = centroid
+                    lastSpan = span
+                    pointers.forEach { it.consume() }
+                }
+                count == 1 && (isPinchGesture || isZoomed()) -> {
+                    // Single finger after pinch, or single finger on an already-zoomed page: pan
+                    val pointer = pointers[0]
+                    val prev = lastSinglePosition ?: pointer.position  // first frame: zero delta
+                    lastSinglePosition = pointer.position
+                    val delta = pointer.position - prev
+                    if (delta != Offset.Zero) {
+                        gestureActive = true
+                        onZoomPan(1f, delta)
+                    }
+                    pointer.consume()
+                }
+                count == 1 && !isPinchGesture -> {
+                    // Single finger, not zoomed, no pinch started — let HorizontalPager handle
+                    break
+                }
+                else -> break
+            }
+
+            if (event.changes.none { it.pressed }) break
+        }
+
+        if (gestureActive) onGestureEnd()
     }
 }
 
