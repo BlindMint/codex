@@ -96,7 +96,8 @@ private data class PdfGestureCallbacks(
     val onTap: (tapX: Float, width: Float) -> Unit,
     val onLongPress: (tapX: Float, tapY: Float) -> Unit,
     val onZoomPan: (zoomFactor: Float, panX: Float, panY: Float) -> Unit,
-    val onGestureEnd: () -> Unit
+    val onGestureEnd: () -> Unit,
+    val totalContentHeight: Float = 0f
 )
 
 private data class PdfVisiblePage(
@@ -693,6 +694,7 @@ fun PdfReaderLayout(
             else -> {
                 if (isVertical) {
                     val pages = buildVerticalPages()
+                    val totalContentHeight = pages.lastOrNull()?.let { it.topPx + it.heightPx } ?: 0f
 
                     Box(
                         modifier = Modifier
@@ -767,25 +769,27 @@ fun PdfReaderLayout(
                                             )
                                             verticalScrollPx = (verticalScrollPx - panY).coerceIn(0f, maxScroll)
                                         }
-                                    },
-                                     onGestureEnd = {
-                                         val committedScale = (committedZoom * transientZoom.scale).coerceIn(1f, 5f)
-                                         val totalPanX = committedPanX + transientZoom.panX
-                                         val totalPanY = committedPanY + transientZoom.panY
-                                          val (panX, panY) = if (committedScale > 1.02f && currentPageLayout != null && viewport != null) {
-                                              val layout = currentPageLayout!!
-                                              val vp = viewport!!
-                                              val maxPanXLocal = max(0f, (layout.displayWidthPx * committedScale - vp.widthPx) / 2f)
-                                              val maxPanYLocal = max(0f, (layout.displayHeightPx * committedScale - vp.heightPx) / 2f)
-                                              totalPanX.coerceIn(-maxPanXLocal, maxPanXLocal) to totalPanY.coerceIn(-maxPanYLocal, maxPanYLocal)
-                                          } else {
-                                              0f to 0f
-                                          }
-                                         committedZoom = committedScale
-                                         committedPanX = panX
-                                         committedPanY = panY
-                                         transientZoom = PdfTransientZoom()
-                                     }
+                                     },
+                                      onGestureEnd = {
+                                          val committedScale = (committedZoom * transientZoom.scale).coerceIn(1f, 5f)
+                                          val totalPanX = committedPanX + transientZoom.panX
+                                          val totalPanY = committedPanY + transientZoom.panY
+                                           val (panX, panY) = if (committedScale > 1.02f && ((isVertical && totalContentHeight > 0f) || (!isVertical && currentPageLayout != null)) && viewport != null) {
+                                               val vp = viewport!!
+                                               val contentWidth = if (isVertical) vp.widthPx.toFloat() else currentPageLayout!!.displayWidthPx
+                                               val contentHeight = if (isVertical) totalContentHeight else currentPageLayout!!.displayHeightPx
+                                               val maxPanXLocal = max(0f, (contentWidth * committedScale - vp.widthPx) / 2f)
+                                               val maxPanYLocal = max(0f, (contentHeight * committedScale - vp.heightPx) / 2f)
+                                               totalPanX.coerceIn(-maxPanXLocal, maxPanXLocal) to totalPanY.coerceIn(-maxPanYLocal, maxPanYLocal)
+                                           } else {
+                                               0f to 0f
+                                           }
+                                          committedZoom = committedScale
+                                          committedPanX = panX
+                                          committedPanY = panY
+                                          transientZoom = PdfTransientZoom()
+                                      },
+                                      totalContentHeight = totalContentHeight
                                 )
                             )
                     ) {
