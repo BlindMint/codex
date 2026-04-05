@@ -885,36 +885,46 @@ fun PdfReaderLayout(
                                             .align(Alignment.Center)
                                             .padding(horizontal = 2.dp)
                                             .then(
-                                                if (isCurrentPage) {
-                                                    Modifier.pagedZoomPanGesture(
-                                                        isZoomed = { effectiveZoom > 1.02f },
-                                                        onZoomPan = { zoomDelta, panDelta ->
-                                                            val newScale = (transientZoom.scale * zoomDelta).coerceIn(1f / committedZoom, 5f / committedZoom)
-                                                            // Check effective zoom (committed * transient) not just transient,
-                                                            // so pan is preserved when zooming out from a committed zoom > 1.
-                                                            val newEffectiveZoom = committedZoom * newScale
-                                                            transientZoom = PdfTransientZoom(
-                                                                scale = newScale,
-                                                                panX = if (newEffectiveZoom > 1.02f) transientZoom.panX + panDelta.x else 0f,
-                                                                panY = if (newEffectiveZoom > 1.02f) transientZoom.panY + panDelta.y else 0f,
-                                                                active = true
-                                                            )
-                                                        },
-                                                        onGestureEnd = {
-                                                            val committedScale = (committedZoom * transientZoom.scale).coerceIn(1f, 5f)
-                                                            val (newPanX, newPanY) = clampPan(
-                                                                pageIndex = pagedIndex,
-                                                                zoom = committedScale,
-                                                                panX = committedPanX + transientZoom.panX,
-                                                                panY = committedPanY + transientZoom.panY
-                                                            )
-                                                            committedZoom = committedScale
-                                                            committedPanX = newPanX
-                                                            committedPanY = newPanY
-                                                            transientZoom = PdfTransientZoom()
-                                                        }
-                                                    )
-                                                } else Modifier
+                                                 if (isCurrentPage) {
+                                                     Modifier.pagedZoomPanGesture(
+                                                         isZoomed = { committedZoom * transientZoom.scale > 1.02f },
+                                                         onZoomPan = { zoomDelta, panDelta ->
+                                                             val newScale = (transientZoom.scale * zoomDelta).coerceIn(1f / committedZoom, 5f / committedZoom)
+                                                             val newEffectiveZoom = committedZoom * newScale
+                                                             val totalPanX = committedPanX + transientZoom.panX + panDelta.x
+                                                             val totalPanY = committedPanY + transientZoom.panY + panDelta.y
+                                                             val (clampedTotalPanX, clampedTotalPanY) = if (newEffectiveZoom > 1.02f) {
+                                                                 clampPan(
+                                                                     pageIndex = pagedIndex,
+                                                                     zoom = newEffectiveZoom,
+                                                                     panX = totalPanX,
+                                                                     panY = totalPanY
+                                                                 )
+                                                             } else {
+                                                                 0f to 0f
+                                                             }
+                                                             transientZoom = PdfTransientZoom(
+                                                                 scale = newScale,
+                                                                 panX = clampedTotalPanX - committedPanX,
+                                                                 panY = clampedTotalPanY - committedPanY,
+                                                                 active = true
+                                                             )
+                                                         },
+                                                         onGestureEnd = {
+                                                             val committedScale = (committedZoom * transientZoom.scale).coerceIn(1f, 5f)
+                                                             val (newPanX, newPanY) = clampPan(
+                                                                 pageIndex = pagedIndex,
+                                                                 zoom = committedScale,
+                                                                 panX = committedPanX + transientZoom.panX,
+                                                                 panY = committedPanY + transientZoom.panY
+                                                             )
+                                                             committedZoom = committedScale
+                                                             committedPanX = newPanX
+                                                             committedPanY = newPanY
+                                                             transientZoom = PdfTransientZoom()
+                                                         }
+                                                     )
+                                                 } else Modifier
                                             ),
                                         contentWidthPx = pageLayout.displayWidthPx,
                                         contentHeightPx = pageLayout.displayHeightPx,
