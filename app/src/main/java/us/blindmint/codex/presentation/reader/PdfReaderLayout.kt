@@ -423,7 +423,12 @@ fun PdfReaderLayout(
         }
         pageStates[pageIndex] = ReaderPageState.Loading
         try {
-            val layout = pageLayouts[pageIndex] ?: updatePageLayout(pageIndex, zoom)
+            // In paged mode, layouts are always kept at zoom=1.0 so that the
+            // graphicsLayer visual scale (effectiveZoom) is applied on top without
+            // doubling up. If a layout is somehow missing, create it at 1.0 so the
+            // content box size doesn't change when zoom > 1.
+            val layoutZoom = if (isVertical) zoom else 1f
+            val layout = pageLayouts[pageIndex] ?: updatePageLayout(pageIndex, layoutZoom)
             val result = activeController.render(
                 PdfRenderRequest(
                     pageIndex = pageIndex,
@@ -432,9 +437,17 @@ fun PdfReaderLayout(
                     invertColors = false
                 )
             )
-            if (layout != null) {
+            // In paged mode at zoom > 1, tile rects are in zoom=1.0 display space but the
+            // render matrix uses zoom=N. This causes the device offset/scissor to capture
+            // the wrong (more-zoomed) page region, which overlays the base image and makes
+            // the content appear to zoom in an extra time after the render delay.
+            // Skip tile updates for paged zoom > 1; the base bitmap re-rendered at
+            // committedZoom provides sufficient quality. At zoom=1.0 the coordinate
+            // spaces match so tiles work correctly in both modes.
+            val shouldUpdateTiles = layout != null && (isVertical || zoom <= 1.02f)
+            if (shouldUpdateTiles) {
                 pageTiles[pageIndex] = activeController.getVisibleTiles(
-                    layout.visibleTileRequests(
+                    layout!!.visibleTileRequests(
                         viewport = currentViewport,
                         zoomScale = zoom,
                         panX = panX,
@@ -454,6 +467,7 @@ fun PdfReaderLayout(
             }
             pageStates[pageIndex] = ReaderPageState.Ready
         } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
             pageStates[pageIndex] = ReaderPageState.Error(e.message ?: "Unknown error", e)
         }
     }
