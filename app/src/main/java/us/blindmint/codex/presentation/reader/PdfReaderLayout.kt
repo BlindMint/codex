@@ -1062,6 +1062,7 @@ private fun Modifier.verticalZoomPanGesture(
     onScrollPan: (panY: Float) -> Unit
 ): Modifier {
     val scope = rememberCoroutineScope()
+    var flingJob: kotlinx.coroutines.Job? = null
     return this.pointerInput(Unit) {
         awaitEachGesture {
             var gestureActive = false
@@ -1083,6 +1084,8 @@ private fun Modifier.verticalZoomPanGesture(
 
                 when {
                     count >= 2 -> {
+                        flingJob?.cancel()
+                        flingJob = null
                         lastSinglePosition = null
                         if (!isPinchGesture) {
                             isPinchGesture = true
@@ -1105,6 +1108,8 @@ private fun Modifier.verticalZoomPanGesture(
                         pointers.forEach { it.consume() }
                     }
                     count == 1 && (isPinchGesture || isZoomed()) -> {
+                        flingJob?.cancel()
+                        flingJob = null
                         val pointer = pointers[0]
                         val prev = lastSinglePosition ?: pointer.position
                         lastSinglePosition = pointer.position
@@ -1122,6 +1127,8 @@ private fun Modifier.verticalZoomPanGesture(
                         pointer.consume()
                     }
                     count == 1 && !isPinchGesture -> {
+                        flingJob?.cancel()
+                        flingJob = null
                         val pointer = pointers[0]
                         val prev = lastSinglePosition ?: pointer.position
                         lastSinglePosition = pointer.position
@@ -1143,13 +1150,13 @@ private fun Modifier.verticalZoomPanGesture(
 
             if (gestureActive) {
                 if (abs(velocityY) > 2000f) {
-                    scope.launch {
+                    flingJob = scope.launch {
                         var lastValue = 0f
                         val flingAnimatable = Animatable(0f)
                         flingAnimatable.animateDecay(
                             initialVelocity = velocityY / getEffectiveZoom().coerceAtLeast(1f),
                             animationSpec = androidx.compose.animation.core.exponentialDecay(
-                                frictionMultiplier = 1.5f
+                                frictionMultiplier = 0.5f
                             )
                         ) {
                             val delta = this.value - lastValue
