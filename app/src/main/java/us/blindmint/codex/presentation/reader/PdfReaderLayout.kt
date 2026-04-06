@@ -181,6 +181,16 @@ private class PdfGestureInteropState {
                 accumulatedPanX = 0f
                 accumulatedPanY = 0f
             }
+            MotionEvent.ACTION_POINTER_UP -> {
+                val upIndex = event.actionIndex
+                val remainingIndex = if (upIndex == 0) 1 else 0
+                if (remainingIndex < event.pointerCount) {
+                    lastX = event.getX(remainingIndex)
+                    lastY = event.getY(remainingIndex)
+                    lastScaleFocusX = event.getX(remainingIndex)
+                    lastScaleFocusY = event.getY(remainingIndex)
+                }
+            }
         }
 
         // In paged mode pass single-finger events through to the pager when not
@@ -739,7 +749,6 @@ fun PdfReaderLayout(
                                     },
                                     onZoomPan = { zoomFactor, panX, panY ->
                                         val nextScale = (transientZoom.scale * zoomFactor).coerceIn(1f / committedZoom, 5f / committedZoom)
-                                        val notZoomed = nextScale <= 1.02f / committedZoom
                                         val deltaX: Float
                                         val deltaY: Float
                                         if (zoomFactor != 1f) {
@@ -749,22 +758,31 @@ fun PdfReaderLayout(
                                             val vpH = viewport?.heightPx?.toFloat() ?: 0f
                                             val currentEffPanX = committedPanX + transientZoom.panX
                                             val currentEffPanY = committedPanY + transientZoom.panY
-                                            // Correct focal-point formula for graphicsLayer with
-                                            // TransformOrigin.Center: keep the pinch centroid
-                                            // stationary on screen as the scale changes.
                                             deltaX = (zoomFactor - 1f) * (currentEffPanX - focusX + vpW / 2f)
                                             deltaY = (zoomFactor - 1f) * (currentEffPanY - focusY + vpH / 2f)
                                         } else {
                                             deltaX = panX
                                             deltaY = panY
                                         }
+                                        val newEffectiveZoom = committedZoom * nextScale
+                                        val totalPanX = committedPanX + transientZoom.panX + deltaX
+                                        val totalPanY = committedPanY + transientZoom.panY + deltaY
+                                        val (clampedPanX, clampedPanY) = if (newEffectiveZoom > 1.02f && viewport != null) {
+                                            val vp = viewport!!
+                                            val maxPanXLocal = max(0f, (vp.widthPx * newEffectiveZoom - vp.widthPx) / 2f)
+                                            val maxPanYLocal = max(0f, (vp.heightPx * newEffectiveZoom - vp.heightPx) / 2f)
+                                            totalPanX.coerceIn(-maxPanXLocal, maxPanXLocal) to
+                                            totalPanY.coerceIn(-maxPanYLocal, maxPanYLocal)
+                                        } else {
+                                            0f to 0f
+                                        }
                                         transientZoom = PdfTransientZoom(
                                             scale = nextScale,
-                                            panX = transientZoom.panX + if (notZoomed) 0f else deltaX,
-                                            panY = transientZoom.panY + if (notZoomed) 0f else deltaY,
+                                            panX = clampedPanX - committedPanX,
+                                            panY = clampedPanY - committedPanY,
                                             active = true
                                         )
-                                        if (effectiveZoom <= 1.02f && abs(panY) > 0f) {
+                                        if (newEffectiveZoom <= 1.02f && abs(panY) > 0f) {
                                             val maxScroll = max(
                                                 0f,
                                                 (buildVerticalPages().lastOrNull()?.let { it.topPx + it.heightPx } ?: 0f) - (viewport?.heightPx ?: 0)
@@ -772,20 +790,20 @@ fun PdfReaderLayout(
                                             verticalScrollPx = (verticalScrollPx - panY).coerceIn(0f, maxScroll)
                                         }
                                      },
-                                      onGestureEnd = {
-                                          val committedScale = (committedZoom * transientZoom.scale).coerceIn(1f, 5f)
-                                          val totalPanX = committedPanX + transientZoom.panX
-                                          val totalPanY = committedPanY + transientZoom.panY
-                                           val (panX, panY) = if (committedScale > 1.02f && ((isVertical && totalContentHeight > 0f) || (!isVertical && currentPageLayout != null)) && viewport != null) {
-                                               val vp = viewport!!
-                                               val contentWidth = if (isVertical) vp.widthPx.toFloat() else currentPageLayout!!.displayWidthPx
-                                               val contentHeight = if (isVertical) totalContentHeight else currentPageLayout!!.displayHeightPx
-                                               val maxPanXLocal = max(0f, (contentWidth * committedScale - vp.widthPx) / 2f)
-                                               val maxPanYLocal = max(0f, (contentHeight * committedScale - vp.heightPx) / 2f)
-                                               totalPanX.coerceIn(-maxPanXLocal, maxPanXLocal) to totalPanY.coerceIn(-maxPanYLocal, maxPanYLocal)
-                                           } else {
-                                               0f to 0f
-                                           }
+                                       onGestureEnd = {
+                                           val committedScale = (committedZoom * transientZoom.scale).coerceIn(1f, 5f)
+                                           val totalPanX = committedPanX + transientZoom.panX
+                                           val totalPanY = committedPanY + transientZoom.panY
+                                           val (panX, panY) = if (committedScale > 1.02f && viewport != null) {
+                                                val vp = viewport!!
+                                                val contentWidth = vp.widthPx.toFloat()
+                                                val contentHeight = vp.heightPx.toFloat()
+                                                val maxPanXLocal = max(0f, (contentWidth * committedScale - vp.widthPx) / 2f)
+                                                val maxPanYLocal = max(0f, (contentHeight * committedScale - vp.heightPx) / 2f)
+                                                totalPanX.coerceIn(-maxPanXLocal, maxPanXLocal) to totalPanY.coerceIn(-maxPanYLocal, maxPanYLocal)
+                                            } else {
+                                                0f to 0f
+                                            }
                                           committedZoom = committedScale
                                           committedPanX = panX
                                           committedPanY = panY
