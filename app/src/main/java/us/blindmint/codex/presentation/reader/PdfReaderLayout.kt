@@ -1143,7 +1143,7 @@ private fun Modifier.verticalZoomPanGesture(
 
             if (gestureActive) {
                 if (abs(velocityY) > 2000f) {
-                    val distanceTimeFactor = 0.4f
+                    val distanceTimeFactor = 1.5f
                     val totalDy = (distanceTimeFactor * velocityY / 2) / getEffectiveZoom().coerceAtLeast(1f)
                     scope.launch {
                         var lastValue = 0f
@@ -1151,8 +1151,8 @@ private fun Modifier.verticalZoomPanGesture(
                         flingAnimatable.animateTo(
                             targetValue = totalDy,
                             animationSpec = androidx.compose.animation.core.tween(
-                                durationMillis = 400,
-                                easing = androidx.compose.animation.core.FastOutSlowInEasing
+                                durationMillis = 1500,
+                                easing = androidx.compose.animation.core.LinearEasing
                             )
                         ) {
                             val delta = this.value - lastValue
