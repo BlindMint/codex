@@ -293,21 +293,10 @@ fun PdfReaderLayout(
     val activeBitmapVersions = remember { mutableStateMapOf<Int, Int>() }
     val pageStates = remember { mutableStateMapOf<Int, ReaderPageState>() }
 
-    var maxPanX by remember { mutableFloatStateOf(0f) }
-    var maxPanY by remember { mutableFloatStateOf(0f) }
     var currentPageLayout by remember { mutableStateOf<PdfPageLayout?>(null) }
 
     LaunchedEffect(viewport, pageLayouts, committedZoom, pagedIndex) {
-        val layout = pageLayouts[pagedIndex] ?: pageLayouts[currentPage]
-        currentPageLayout = layout
-        val currentViewport = viewport
-        if (layout != null && currentViewport != null) {
-            maxPanX = max(0f, (layout.displayWidthPx * committedZoom - currentViewport.widthPx) / 2f)
-            maxPanY = max(0f, (layout.displayHeightPx * committedZoom - currentViewport.heightPx) / 2f)
-        } else {
-            maxPanX = 0f
-            maxPanY = 0f
-        }
+        currentPageLayout = pageLayouts[pagedIndex] ?: pageLayouts[currentPage]
     }
 
     val isVertical = readingDirection == "VERTICAL"
@@ -453,11 +442,9 @@ fun PdfReaderLayout(
         }
         pageStates[pageIndex] = ReaderPageState.Loading
         try {
-            // In paged mode, layouts are always kept at zoom=1.0 so that the
-            // graphicsLayer visual scale (effectiveZoom) is applied on top without
-            // doubling up. If a layout is somehow missing, create it at 1.0 so the
-            // content box size doesn't change when zoom > 1.
-            val layoutZoom = if (isVertical) zoom else 1f
+            // Layouts are always kept at zoom=1.0 so that the graphicsLayer visual
+            // scale (effectiveZoom) is applied on top without doubling up.
+            val layoutZoom = 1f
             val layout = pageLayouts[pageIndex] ?: updatePageLayout(pageIndex, layoutZoom)
             val result = activeController.render(
                 PdfRenderRequest(
@@ -620,7 +607,7 @@ fun PdfReaderLayout(
         }
     }
 
-    LaunchedEffect(viewport, totalPages, verticalScrollPx, isVertical, pagedIndex) {
+    LaunchedEffect(viewport, totalPages, verticalScrollPx, isVertical, pagedIndex, committedZoom) {
         val currentViewport = viewport ?: return@LaunchedEffect
         if (totalPages <= 0) return@LaunchedEffect
         withContext(Dispatchers.IO) {
@@ -711,12 +698,6 @@ fun PdfReaderLayout(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .graphicsLayer(
-                                scaleX = effectiveZoom,
-                                scaleY = effectiveZoom,
-                                translationX = effectivePanX,
-                                translationY = effectivePanY
-                            )
                             .verticalZoomPanGesture(
                                 isZoomed = { effectiveZoom > 1.02f },
                                 onZoomPan = { zoomFactor, panX, panY ->
@@ -764,8 +745,15 @@ fun PdfReaderLayout(
                                         0f,
                                         (buildVerticalPages().lastOrNull()?.let { it.topPx + it.heightPx } ?: 0f) - (viewport?.heightPx ?: 0)
                                     )
-                                    verticalScrollPx = (verticalScrollPx - panY).coerceIn(0f, maxScroll)
+                                    val scrollDelta = panY / effectiveZoom
+                                    verticalScrollPx = (verticalScrollPx - scrollDelta).coerceIn(0f, maxScroll)
                                 }
+                            )
+                            .graphicsLayer(
+                                scaleX = effectiveZoom,
+                                scaleY = effectiveZoom,
+                                translationX = effectivePanX,
+                                translationY = effectivePanY
                             )
                     ) {
                         // Derive the visible content range in un-zoomed content
@@ -1097,7 +1085,11 @@ private fun Modifier.verticalZoomPanGesture(
                     val delta = pointer.position - prev
                     if (delta != Offset.Zero) {
                         gestureActive = true
-                        onZoomPan(1f, delta.x, delta.y)
+                        if (isPinchGesture) {
+                            onZoomPan(1f, delta.x, delta.y)
+                        } else {
+                            onScrollPan(delta.y)
+                        }
                     }
                     pointer.consume()
                 }
