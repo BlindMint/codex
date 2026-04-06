@@ -115,6 +115,11 @@ private data class PdfTransientZoom(
     val active: Boolean = false
 )
 
+private data class VerticalPagesInfo(
+    val pages: List<PdfVisiblePage>,
+    val totalContentHeight: Float
+)
+
 private fun Modifier.pdfGestureInterop(callbacks: PdfGestureCallbacks): Modifier {
     return this.pointerInteropFilter {
         val gestureState = PdfGestureInteropStateHolder.state ?: return@pointerInteropFilter false
@@ -301,6 +306,32 @@ fun PdfReaderLayout(
 
     val isVertical = readingDirection == "VERTICAL"
 
+    var lastLayoutsVersion by remember { mutableIntStateOf(0) }
+    var cachedVerticalPages: List<PdfVisiblePage>? by remember { mutableStateOf(null) }
+    var cachedTotalContentHeight: Float by remember { mutableFloatStateOf(0f) }
+
+    if (lastLayoutsVersion != pageLayouts.size) {
+        lastLayoutsVersion = pageLayouts.size
+        var top = 0f
+        val pages = (0 until totalPages).mapNotNull { pageIndex ->
+            val layout = pageLayouts[pageIndex] ?: return@mapNotNull null
+            val page = PdfVisiblePage(
+                pageIndex = pageIndex,
+                topPx = top,
+                leftPx = 0f,
+                widthPx = layout.displayWidthPx,
+                heightPx = layout.displayHeightPx
+            )
+            top += layout.displayHeightPx + VERTICAL_PAGE_SPACING_PX
+            page
+        }
+        cachedVerticalPages = pages
+        cachedTotalContentHeight = pages.lastOrNull()?.let { it.topPx + it.heightPx } ?: 0f
+    }
+
+    val verticalPages: List<PdfVisiblePage> = cachedVerticalPages ?: emptyList()
+    val verticalPagesTotalHeight: Float = cachedTotalContentHeight
+
     @Suppress("UNUSED_VARIABLE")
     val _unusedComicScaleType = comicScaleType
 
@@ -396,26 +427,10 @@ fun PdfReaderLayout(
         return layout
     }
 
-    fun buildVerticalPages(): List<PdfVisiblePage> {
-        var top = 0f
-        return (0 until totalPages).mapNotNull { pageIndex ->
-            val layout = pageLayouts[pageIndex] ?: return@mapNotNull null
-            val page = PdfVisiblePage(
-                pageIndex = pageIndex,
-                topPx = top,
-                leftPx = 0f,
-                widthPx = layout.displayWidthPx,
-                heightPx = layout.displayHeightPx
-            )
-            top += layout.displayHeightPx + VERTICAL_PAGE_SPACING_PX
-            page
-        }
-    }
-
     LaunchedEffect(currentPage, isVertical, totalPages, pageLayouts.size) {
         if (totalPages <= 0) return@LaunchedEffect
         if (isVertical) {
-            val pages = buildVerticalPages()
+            val pages = verticalPages
             val target = pages.firstOrNull { it.pageIndex == currentPage } ?: return@LaunchedEffect
             val vpHeight = viewport?.heightPx?.toFloat() ?: return@LaunchedEffect
             // Only snap when the target page is not already visible — prevents fighting
@@ -454,14 +469,13 @@ fun PdfReaderLayout(
                     invertColors = false
                 )
             )
-            // In paged mode at zoom > 1, tile rects are in zoom=1.0 display space but the
-            // render matrix uses zoom=N. This causes the device offset/scissor to capture
-            // the wrong (more-zoomed) page region, which overlays the base image and makes
-            // the content appear to zoom in an extra time after the render delay.
-            // Skip tile updates for paged zoom > 1; the base bitmap re-rendered at
-            // committedZoom provides sufficient quality. At zoom=1.0 the coordinate
-            // spaces match so tiles work correctly in both modes.
-            val shouldUpdateTiles = layout != null && (isVertical || zoom <= 1.02f)
+            // Tile rects are in zoom=1.0 display space but the render matrix uses zoom=N.
+            // This causes the device offset/scissor to capture the wrong (more-zoomed)
+            // page region, which overlays the base image and makes the content appear to
+            // zoom in an extra time after the render delay.
+            // Skip tile updates when zoomed; the base bitmap re-rendered at committedZoom
+            // provides sufficient quality. At zoom=1.0 the coordinate spaces match.
+            val shouldUpdateTiles = layout != null && zoom <= 1.02f
             if (shouldUpdateTiles) {
                 pageTiles[pageIndex] = activeController.getVisibleTiles(
                     layout!!.visibleTileRequests(
@@ -612,7 +626,7 @@ fun PdfReaderLayout(
         if (totalPages <= 0) return@LaunchedEffect
         withContext(Dispatchers.IO) {
             if (isVertical) {
-                val pages = buildVerticalPages()
+                val pages = verticalPages
                 val preloadMargin = currentViewport.heightPx.toFloat()
                 val visiblePages = pages.filter {
                     it.topPx + it.heightPx >= verticalScrollPx - preloadMargin &&
@@ -692,8 +706,8 @@ fun PdfReaderLayout(
 
             else -> {
                 if (isVertical) {
-                    val pages = buildVerticalPages()
-                    val totalContentHeight = pages.lastOrNull()?.let { it.topPx + it.heightPx } ?: 0f
+                    val pages = verticalPages
+                    val totalContentHeight = verticalPagesTotalHeight
 
                     Box(
                         modifier = Modifier
@@ -743,7 +757,7 @@ fun PdfReaderLayout(
                                 onScrollPan = { panY ->
                                     val maxScroll = max(
                                         0f,
-                                        (buildVerticalPages().lastOrNull()?.let { it.topPx + it.heightPx } ?: 0f) - (viewport?.heightPx ?: 0)
+                                        verticalPagesTotalHeight - (viewport?.heightPx ?: 0)
                                     )
                                     val scrollDelta = panY / effectiveZoom
                                     verticalScrollPx = (verticalScrollPx - scrollDelta).coerceIn(0f, maxScroll)
