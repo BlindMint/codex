@@ -50,12 +50,12 @@ class WebtoonFrame @JvmOverloads constructor(
 
     inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
-            recycler?.onScaleBegin()
+            recycler?.onScaleBegin(detector.focusX, detector.focusY)
             return true
         }
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
-            recycler?.onScale(detector.scaleFactor)
+            recycler?.onScale(detector.scaleFactor, detector.focusX, detector.focusY)
             return true
         }
 

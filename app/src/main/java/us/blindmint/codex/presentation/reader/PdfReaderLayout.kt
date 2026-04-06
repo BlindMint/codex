@@ -215,6 +215,8 @@ private class PdfGestureInteropState {
             object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
                 override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
                     scalingInProgress = true
+                    lastScaleFocusX = detector.focusX
+                    lastScaleFocusY = detector.focusY
                     return true
                 }
 

@@ -45,6 +45,10 @@ class WebtoonRecyclerView @JvmOverloads constructor(
     private var firstVisibleItemPosition = 0
     private var lastVisibleItemPosition = 0
     private var currentScale = DEFAULT_RATE
+    private var scaleFocusX = 0f
+    private var scaleFocusY = 0f
+    private var contentFocusX = 0f
+    private var contentFocusY = 0f
     var zoomOutDisabled = false
         set(value) {
             field = value
@@ -130,13 +134,15 @@ class WebtoonRecyclerView @JvmOverloads constructor(
         }
     }
 
-    fun onScale(scaleFactor: Float) {
+    fun onScale(scaleFactor: Float, focusX: Float, focusY: Float) {
         currentScale *= scaleFactor
         currentScale = currentScale.coerceIn(
             minRate,
             MAX_SCALE_RATE,
         )
 
+        pivotX = focusX
+        pivotY = focusY
         setScaleRate(currentScale)
 
         layoutParams.height = if (currentScale < 1) {
@@ -146,13 +152,17 @@ class WebtoonRecyclerView @JvmOverloads constructor(
         }
         halfHeight = layoutParams.height / 2
 
-        if (currentScale != DEFAULT_RATE) {
-            x = getPositionX(x)
-            y = getPositionY(y)
-        } else {
-            x = 0f
-            y = 0f
-        }
+            if (currentScale != DEFAULT_RATE) {
+                // Keep the content point under the focal point fixed by repositioning the view
+                // screenCoord = contentCoord * scale + viewPosition
+                // We want: focusX = contentFocusX * currentScale + x
+                // Therefore: x = focusX - contentFocusX * currentScale
+                x = getPositionX(focusX - contentFocusX * currentScale)
+                y = getPositionY(focusY - contentFocusY * currentScale)
+            } else {
+                x = 0f
+                y = 0f
+            }
 
         requestLayout()
     }
@@ -162,7 +172,19 @@ class WebtoonRecyclerView @JvmOverloads constructor(
         scaleY = rate
     }
 
-    fun onScaleBegin() {
+    fun onScaleBegin(focusX: Float, focusY: Float) {
+        scaleFocusX = focusX
+        scaleFocusY = focusY
+        // Calculate which content point is under the focal point
+        // First clamp current position to valid bounds so focal point calculation is correct
+        if (currentScale != DEFAULT_RATE) {
+            x = getPositionX(x)
+            y = getPositionY(y)
+        }
+        if (currentScale > 0) {
+            contentFocusX = (focusX - x) / currentScale
+            contentFocusY = (focusY - y) / currentScale
+        }
         if (detector.isDoubleTapping) {
             detector.isQuickScaling = true
         }
