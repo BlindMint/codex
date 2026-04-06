@@ -7,12 +7,14 @@
 package us.blindmint.codex.data.parser.comic
 
 import android.util.Log
+import us.blindmint.codex.data.parser.NaturalOrderComparator
 import us.blindmint.codex.domain.file.CachedFile
 import java.io.File
 import java.io.InputStream
 import javax.inject.Inject
 
 private const val TAG = "ArchiveReader"
+private const val CBR_DEBUG_TAG = "CodexComicSlider"
 
 class ArchiveReader @Inject constructor() {
 
@@ -77,18 +79,22 @@ class ArchiveReader @Inject constructor() {
                     }
                 }
 
-                // Read all entries
-                var entryCount = 0
+// Read all entries
                 sevenZFile?.use { szf ->
                     for (entry in szf.entries) {
                         if (!entry.isDirectory && ArchiveReader.isImageFile(entry.name)) {
                             _entries.add(SevenZArchiveEntry(entry))
-                            entryCount++
                         }
                     }
                 }
 
-                android.util.Log.d("SevenZArchiveHandle", "Found $entryCount image entries")
+                // Sort entries by name using natural ordering (alphanumeric sorting)
+                // to ensure correct page sequence (e.g., page1 < page2 < page10)
+                _entries.sortWith(Comparator { a, b ->
+                    NaturalOrderComparator.compare(a.entry.name, b.entry.name)
+                })
+
+                android.util.Log.d("SevenZArchiveHandle", "Found ${_entries.size} image entries")
 
                 // Re-open for reading (SevenZFile can only be iterated once)
                 cachedFile.rawFile?.let { cachedRawFile ->
@@ -215,8 +221,11 @@ class ArchiveReader @Inject constructor() {
                 }
                 android.util.Log.d("CodexComic", "Found $entryCount image entries")
 
-                // Sort entries by name for consistent ordering
-                _entries.sortBy { it.entry.getPath() }
+                // Sort entries by name using natural ordering (alphanumeric sorting)
+                // to ensure correct page sequence (e.g., page1 < page2 < page10)
+                _entries.sortWith(Comparator { a, b ->
+                    NaturalOrderComparator.compare(a.entry.getPath(), b.entry.getPath())
+                })
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to load archive: ${cachedFile.path}", e)
                 throw e
@@ -292,17 +301,20 @@ class ArchiveReader @Inject constructor() {
                 // Use cached file if available (preferred for content:// URIs)
                 cachedFile.rawFile?.let { cachedRawFile ->
                     archive = com.github.junrar.Archive(cachedRawFile)
+                    android.util.Log.d(CBR_DEBUG_TAG, "[RarArchiveHandle] Opened archive from rawFile: ${cachedRawFile.absolutePath}")
                 } ?: run {
                     // Fallback: Try to access the file directly first (for file:// URIs)
                     if (cachedFile.uri.scheme == "file") {
                         try {
                             archive = com.github.junrar.Archive(java.io.File(cachedFile.path))
+                            android.util.Log.d(CBR_DEBUG_TAG, "[RarArchiveHandle] Opened archive from path: ${cachedFile.path}")
                         } catch (e: java.io.FileNotFoundException) {
-                            // If direct access fails, try to copy via InputStream
+                            // If direct file access fails, try to copy via InputStream
                             Log.w(TAG, "Direct file access failed, trying InputStream copy for: ${cachedFile.path}")
                             tempFile = createTempFileFromInputStream()
                             if (tempFile != null) {
                                 archive = com.github.junrar.Archive(tempFile)
+                                android.util.Log.d(CBR_DEBUG_TAG, "[RarArchiveHandle] Opened archive from tempFile: ${tempFile!!.absolutePath}")
                             } else {
                                 throw Exception("Failed to access file: both direct access and InputStream copy failed")
                             }
@@ -312,6 +324,7 @@ class ArchiveReader @Inject constructor() {
                         tempFile = createTempFileFromUri()
                         if (tempFile != null) {
                             archive = com.github.junrar.Archive(tempFile)
+                            android.util.Log.d(CBR_DEBUG_TAG, "[RarArchiveHandle] Opened archive from URI tempFile: ${tempFile!!.absolutePath}")
                         } else {
                             throw Exception("Failed to create temp file from URI")
                         }
@@ -325,8 +338,21 @@ class ArchiveReader @Inject constructor() {
                     }
                 }
 
-                // Sort entries by filename for consistent ordering
-                _entries.sortBy { it.header.fileName }
+                android.util.Log.d(CBR_DEBUG_TAG, "[RarArchiveHandle] Total entries found: ${_entries.size}")
+                for (i in _entries.indices) {
+                    android.util.Log.d(CBR_DEBUG_TAG, "[RarArchiveHandle] Entry $i: ${_entries[i].header.fileName}")
+                }
+
+                // Sort entries by filename using natural ordering (alphanumeric sorting)
+                // to ensure correct page sequence (e.g., page1 < page2 < page10)
+                _entries.sortWith(Comparator { a, b ->
+                    NaturalOrderComparator.compare(a.header.fileName, b.header.fileName)
+                })
+
+                android.util.Log.d(CBR_DEBUG_TAG, "[RarArchiveHandle] After sorting:")
+                for (i in _entries.indices) {
+                    android.util.Log.d(CBR_DEBUG_TAG, "[RarArchiveHandle] Entry $i: ${_entries[i].header.fileName}")
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to load RAR archive: ${cachedFile.path}", e)
                 throw e
@@ -373,6 +399,7 @@ class ArchiveReader @Inject constructor() {
         override fun getInputStream(entry: ArchiveEntry): InputStream {
             val rarHeader = (entry as RarArchiveEntry).header
             archive?.let { arch ->
+                android.util.Log.d(CBR_DEBUG_TAG, "[RarArchiveHandle] getInputStream called for: ${rarHeader.fileName}")
                 return arch.getInputStream(rarHeader)
             }
             throw IllegalStateException("Archive not open")

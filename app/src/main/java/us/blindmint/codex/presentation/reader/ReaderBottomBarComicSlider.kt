@@ -6,7 +6,10 @@
 
 package us.blindmint.codex.presentation.reader
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,6 +37,8 @@ import us.blindmint.codex.domain.reader.ReaderProgressCount
 import us.blindmint.codex.domain.util.HorizontalAlignment
 import us.blindmint.codex.presentation.core.components.common.StyledText
 
+private const val SLIDER_TAG = "CodexComicSlider"
+
 @Composable
 fun ReaderBottomBarComicSlider(
     currentPage: Int,
@@ -52,9 +57,20 @@ fun ReaderBottomBarComicSlider(
     if (totalPages <= 0) return
 
     var sliderValue by remember { mutableFloatStateOf((currentPage + 1).toFloat()) }
+    val interactionSource = remember { MutableInteractionSource() }
+    val isDragged by interactionSource.collectIsDraggedAsState()
 
-    LaunchedEffect(currentPage) {
-        sliderValue = (currentPage + 1).toFloat()
+    Log.d(SLIDER_TAG, "[\u27A4 Slider] initial: currentPage=$currentPage, sliderValue=${sliderValue}, isDragged=$isDragged")
+
+    LaunchedEffect(currentPage, isDragged) {
+        Log.d(SLIDER_TAG, "[\u27A4 Slider] LaunchedEffect fired: currentPage=$currentPage, isDragged=$isDragged, sliderValue=$sliderValue")
+        if (!isDragged) {
+            val newSliderVal = (currentPage + 1).toFloat()
+            Log.d(SLIDER_TAG, "[\u27A4 Slider] updating sliderValue: $sliderValue -> $newSliderVal")
+            sliderValue = newSliderVal
+        } else {
+            Log.d(SLIDER_TAG, "[\u27A4 Slider] skipping update (isDragged=true)")
+        }
     }
 
     Column(modifier = modifier) {
@@ -101,13 +117,18 @@ fun ReaderBottomBarComicSlider(
                 value = sliderValue,
                 valueRange = 1f..totalPages.toFloat(),
                 enabled = !lockMenu,
+                interactionSource = interactionSource,
                 onValueChange = { newValue ->
                     sliderValue = newValue
                 },
                 onValueChangeFinished = {
                     val newPage = sliderValue.toInt().coerceIn(1, totalPages) - 1
+                    Log.d(SLIDER_TAG, "[\u2192 onValueChangeFinished] newPage=$newPage, currentPage=$currentPage, sliderValue=$sliderValue")
                     if (newPage != currentPage) {
+                        Log.d(SLIDER_TAG, "[\u2192 onValueChangeFinished] calling onPageSelected($newPage)")
                         onPageSelected(newPage)
+                    } else {
+                        Log.d(SLIDER_TAG, "[\u2192 onValueChangeFinished] skipping (same page)")
                     }
                 },
                 colors = SliderDefaults.colors(

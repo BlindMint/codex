@@ -37,6 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import us.blindmint.codex.data.parser.comic.ArchiveReader
 import us.blindmint.codex.data.util.CachedFileFactory
@@ -90,43 +92,45 @@ fun ComicReaderLayout(
     val loadedPages = remember {
         object : LinkedHashMap<Int, Pair<ImageBitmap, Bitmap>>(16, 0.75f, true) {
             override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, Pair<ImageBitmap, Bitmap>>?): Boolean {
-                if (size > MAX_CACHED_PAGES) {
-                    eldest?.value?.second?.recycle()
-                    return true
-                }
                 return false
             }
         }
     }
 
+    val loadMutex = remember { Mutex() }
+
     suspend fun loadPage(pageIndex: Int): ImageBitmap? {
         loadedPages[pageIndex]?.first?.let { return it }
 
-        try {
-            archiveHandle?.let { archive ->
-                if (pageIndex < archive.entries.size) {
-                    val entry = archive.entries[pageIndex]
-                    Log.d("CodexComic", "Lazy loading page ${pageIndex + 1}")
+        return loadMutex.withLock {
+            loadedPages[pageIndex]?.first?.let { return@withLock it }
 
-                    archive.getInputStream(entry).use { input ->
-                        val options = BitmapFactory.Options().apply {
-                            inPreferredConfig = Bitmap.Config.ARGB_8888
-                        }
-                        val bitmap = BitmapFactory.decodeStream(input, null, options)
-                        if (bitmap != null) {
-                            val imageBitmap = bitmap.asImageBitmap()
-                            loadedPages[pageIndex] = imageBitmap to bitmap
-                            Log.d("CodexComic", "Loaded page ${pageIndex + 1} at full quality")
-                            return imageBitmap
+            try {
+                archiveHandle?.let { archive ->
+                    if (pageIndex < archive.entries.size) {
+                        val entry = archive.entries[pageIndex]
+                        Log.d("CodexComic", "Lazy loading page ${pageIndex + 1}")
+
+                        archive.getInputStream(entry).use { input ->
+                            val options = BitmapFactory.Options().apply {
+                                inPreferredConfig = Bitmap.Config.ARGB_8888
+                            }
+                            val bitmap = BitmapFactory.decodeStream(input, null, options)
+                            if (bitmap != null) {
+                                val imageBitmap = bitmap.asImageBitmap()
+                                loadedPages[pageIndex] = imageBitmap to bitmap
+                                Log.d("CodexComic", "Loaded page ${pageIndex + 1} at full quality")
+                                return@withLock imageBitmap
+                            }
                         }
                     }
                 }
+            } catch (e: Exception) {
+                Log.w("CodexComic", "Failed to load page $pageIndex: ${e.message}", e)
             }
-        } catch (e: Exception) {
-            Log.w("CodexComic", "Failed to load page $pageIndex: ${e.message}", e)
-        }
 
-        return null
+            null
+        }
     }
 
     LaunchedEffect(book.id) {
