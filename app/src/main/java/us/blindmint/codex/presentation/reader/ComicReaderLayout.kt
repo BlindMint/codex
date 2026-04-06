@@ -109,9 +109,8 @@ fun ComicReaderLayout(
                 archiveHandle?.let { archive ->
                     if (pageIndex < archive.entries.size) {
                         val entry = archive.entries[pageIndex]
-                        Log.d("CodexComic", "Lazy loading page ${pageIndex + 1}")
 
-                        archive.getInputStream(entry).use { input ->
+                        archive.getInputStream(entry)?.use { input ->
                             val options = BitmapFactory.Options().apply {
                                 inPreferredConfig = Bitmap.Config.ARGB_8888
                             }
@@ -119,7 +118,6 @@ fun ComicReaderLayout(
                             if (bitmap != null) {
                                 val imageBitmap = bitmap.asImageBitmap()
                                 loadedPages[pageIndex] = imageBitmap to bitmap
-                                Log.d("CodexComic", "Loaded page ${pageIndex + 1} at full quality")
                                 return@withLock imageBitmap
                             }
                         }
@@ -150,21 +148,18 @@ fun ComicReaderLayout(
             }
         }
 
+        var archive: ArchiveReader.ArchiveHandle? = null
         try {
             withContext(Dispatchers.IO) {
-                Log.d("CodexComic", "Starting to load comic: ${book.title}")
-
                 val cachedFile = CachedFileFactory.fromBook(context, book)
                 if (cachedFile == null) {
-                    Log.e("CodexComic", "Failed to create CachedFile for comic")
                     errorMessage = "Failed to access comic file"
                     return@withContext
                 }
 
                 val archiveReader = ArchiveReader()
-                val archive = archiveReader.openArchive(cachedFile)
+                archive = archiveReader.openArchive(cachedFile)
 
-                Log.d("CodexComic", "Archive opened, entries: ${archive.entries.size}")
                 archiveHandle = archive
                 totalPages = archive.entries.size
                 onTotalPagesLoaded(archive.entries.size)
@@ -174,12 +169,12 @@ fun ComicReaderLayout(
                 }
             }
         } catch (e: kotlinx.coroutines.CancellationException) {
+            archive?.close()
             throw e
         } catch (e: Exception) {
-            Log.e("CodexComic", "Failed to load comic archive", e)
             errorMessage = "Failed to load comic: ${e.message}"
+            archive?.close()
         } finally {
-            Log.d("CodexComic", "Comic archive loading finished")
             isLoading = false
             onLoadingComplete()
         }

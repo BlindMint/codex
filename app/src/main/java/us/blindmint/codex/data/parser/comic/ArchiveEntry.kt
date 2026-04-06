@@ -6,7 +6,7 @@
 
 package us.blindmint.codex.data.parser.comic
 
-interface ArchiveEntry {
+interface ComicArchiveEntry {
     fun getPath(): String
     fun getSize(): Long
     fun isDirectory(): Boolean

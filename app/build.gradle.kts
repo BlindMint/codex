@@ -228,8 +228,8 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("org.simpleframework:simple-xml:2.7.1")
 
-    // Comic archive support
-    implementation("com.github.junrar:junrar:7.5.5")
+    // Comic archive support - libarchive JNI (supports RAR5)
+    implementation("me.zhanghai.android.libarchive:library:1.1.6")
     implementation("org.apache.commons:commons-compress:1.26.0")
     implementation("org.tukaani:xz:1.9")
 

@@ -39,17 +39,17 @@ class ComicFileParser @Inject constructor(
                 archiveReader.openArchive(cachedFile).use { archive ->
                     val pageCount = archive.entries.size
                     val coverImage: CoverImage? = try {
-val firstImageEntry = archive.entries
-    .filter { !it.isDirectory() }
-    .sortedWith(Comparator { a, b ->
-        NaturalOrderComparator.compare(a.getPath(), b.getPath())
-    })
-    .firstOrNull()
+                        val firstImageEntry = archive.entries
+                            .filter { !it.isDirectory() }
+                            .sortedWith(Comparator { a, b ->
+                                NaturalOrderComparator.compare(a.getPath(), b.getPath())
+                            })
+                            .firstOrNull()
 
                         firstImageEntry?.let { entry ->
-                            archive.getInputStream(entry).use { input ->
+                            archive.getInputStream(entry)?.use { input ->
                                 val options = BitmapFactory.Options().apply {
-                                    inSampleSize = 4 // Downsample for cover thumbnail
+                                    inSampleSize = 4
                                 }
                                 BitmapFactory.decodeStream(input, null, options)
                             }
