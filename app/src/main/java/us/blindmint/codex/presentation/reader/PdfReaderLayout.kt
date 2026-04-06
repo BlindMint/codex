@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -714,6 +715,7 @@ fun PdfReaderLayout(
                             .fillMaxSize()
                             .verticalZoomPanGesture(
                                 isZoomed = { effectiveZoom > 1.02f },
+                                getEffectiveZoom = { effectiveZoom },
                                 onZoomPan = { zoomFactor, panX, panY ->
                                     val nextScale = (transientZoom.scale * zoomFactor).coerceIn(1f / committedZoom, 5f / committedZoom)
                                     val newEffectiveZoom = committedZoom * nextScale
@@ -1051,80 +1053,118 @@ private fun Modifier.pagedZoomPanGesture(
     }
 }
 
+@Composable
 private fun Modifier.verticalZoomPanGesture(
     isZoomed: () -> Boolean,
+    getEffectiveZoom: () -> Float,
     onZoomPan: (zoomFactor: Float, panX: Float, panY: Float) -> Unit,
     onGestureEnd: () -> Unit,
     onScrollPan: (panY: Float) -> Unit
-): Modifier = this.pointerInput(Unit) {
-    awaitEachGesture {
-        var gestureActive = false
-        val down = awaitFirstDown(requireUnconsumed = false)
-        var lastCentroid = Offset.Zero
-        var lastSpan = 0f
-        var isPinchGesture = false
-        var lastSinglePosition: Offset? = null
+): Modifier {
+    val scope = rememberCoroutineScope()
+    return this.pointerInput(Unit) {
+        awaitEachGesture {
+            var gestureActive = false
+            val down = awaitFirstDown(requireUnconsumed = false)
+            var lastCentroid = Offset.Zero
+            var lastSpan = 0f
+            var isPinchGesture = false
+            var lastSinglePosition: Offset? = null
+            var lastEventTime = System.nanoTime()
+            var velocityY = 0f
+            var lastDragY = 0f
 
-        while (true) {
-            val event = awaitPointerEvent(PointerEventPass.Initial)
-            val pointers = event.changes.filter { it.pressed }
-            val count = pointers.size
+            while (true) {
+                val event = awaitPointerEvent(PointerEventPass.Initial)
+                val pointers = event.changes.filter { it.pressed }
+                val count = pointers.size
+                val currentTime = System.nanoTime()
+                val deltaTime = (currentTime - lastEventTime).toFloat().coerceAtLeast(1f)
 
-            when {
-                count >= 2 -> {
-                    lastSinglePosition = null
-                    if (!isPinchGesture) {
-                        isPinchGesture = true
-                        gestureActive = true
+                when {
+                    count >= 2 -> {
+                        lastSinglePosition = null
+                        if (!isPinchGesture) {
+                            isPinchGesture = true
+                            gestureActive = true
+                            val p1 = pointers[0].position
+                            val p2 = pointers[1].position
+                            lastCentroid = (p1 + p2) / 2f
+                            lastSpan = (p1 - p2).getDistance()
+                        }
                         val p1 = pointers[0].position
                         val p2 = pointers[1].position
-                        lastCentroid = (p1 + p2) / 2f
-                        lastSpan = (p1 - p2).getDistance()
+                        val centroid = (p1 + p2) / 2f
+                        val span = (p1 - p2).getDistance()
+                        val zoomDelta = if (lastSpan > 0) span / lastSpan else 1f
+                        val panDelta = centroid - lastCentroid
+                        velocityY = 0f
+                        onZoomPan(zoomDelta, panDelta.x, panDelta.y)
+                        lastCentroid = centroid
+                        lastSpan = span
+                        pointers.forEach { it.consume() }
                     }
-                    val p1 = pointers[0].position
-                    val p2 = pointers[1].position
-                    val centroid = (p1 + p2) / 2f
-                    val span = (p1 - p2).getDistance()
-                    val zoomDelta = if (lastSpan > 0) span / lastSpan else 1f
-                    val panDelta = centroid - lastCentroid
-                    onZoomPan(zoomDelta, panDelta.x, panDelta.y)
-                    lastCentroid = centroid
-                    lastSpan = span
-                    pointers.forEach { it.consume() }
-                }
-                count == 1 && (isPinchGesture || isZoomed()) -> {
-                    val pointer = pointers[0]
-                    val prev = lastSinglePosition ?: pointer.position
-                    lastSinglePosition = pointer.position
-                    val delta = pointer.position - prev
-                    if (delta != Offset.Zero) {
-                        gestureActive = true
-                        if (isPinchGesture) {
-                            onZoomPan(1f, delta.x, delta.y)
-                        } else {
+                    count == 1 && (isPinchGesture || isZoomed()) -> {
+                        val pointer = pointers[0]
+                        val prev = lastSinglePosition ?: pointer.position
+                        lastSinglePosition = pointer.position
+                        val delta = pointer.position - prev
+                        if (delta != Offset.Zero) {
+                            gestureActive = true
+                            if (isPinchGesture) {
+                                onZoomPan(1f, delta.x, delta.y)
+                            } else {
+                                velocityY = (delta.y / deltaTime) * 1e9f
+                                lastDragY = pointer.position.y
+                                onScrollPan(delta.y)
+                            }
+                        }
+                        pointer.consume()
+                    }
+                    count == 1 && !isPinchGesture -> {
+                        val pointer = pointers[0]
+                        val prev = lastSinglePosition ?: pointer.position
+                        lastSinglePosition = pointer.position
+                        val delta = pointer.position - prev
+                        if (delta != Offset.Zero) {
+                            gestureActive = true
+                            velocityY = (delta.y / deltaTime) * 1e9f
+                            lastDragY = pointer.position.y
                             onScrollPan(delta.y)
                         }
+                        pointer.consume()
                     }
-                    pointer.consume()
+                    else -> break
                 }
-                count == 1 && !isPinchGesture -> {
-                    val pointer = pointers[0]
-                    val prev = lastSinglePosition ?: pointer.position
-                    lastSinglePosition = pointer.position
-                    val delta = pointer.position - prev
-                    if (delta != Offset.Zero) {
-                        gestureActive = true
-                        onScrollPan(delta.y)
-                    }
-                    pointer.consume()
-                }
-                else -> break
+
+                lastEventTime = currentTime
+                if (event.changes.none { it.pressed }) break
             }
 
-            if (event.changes.none { it.pressed }) break
+            if (gestureActive) {
+                if (abs(velocityY) > 2000f) {
+                    val distanceTimeFactor = 0.4f
+                    val totalDy = (distanceTimeFactor * velocityY / 2) / getEffectiveZoom().coerceAtLeast(1f)
+                    scope.launch {
+                        var lastValue = 0f
+                        val flingAnimatable = Animatable(0f)
+                        flingAnimatable.animateTo(
+                            targetValue = totalDy,
+                            animationSpec = androidx.compose.animation.core.tween(
+                                durationMillis = 400,
+                                easing = androidx.compose.animation.core.FastOutSlowInEasing
+                            )
+                        ) {
+                            val delta = this.value - lastValue
+                            lastValue = this.value
+                            onScrollPan(delta)
+                        }
+                    }
+                } else {
+                    onGestureEnd()
+                }
+            }
         }
-
-        if (gestureActive) onGestureEnd()
     }
 }
 
