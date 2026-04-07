@@ -222,24 +222,24 @@ class MainActivity : AppCompatActivity() {
                                     .togetherWith(androidx.compose.animation.ExitTransition.None)
                             } else when (lastEvent) {
                                 StackEvent.Default -> {
-                                    if (isReaderScreen) {
-                                        Transitions.FadeTransitionIn
-                                            .togetherWith(Transitions.FadeTransitionOut)
-                                    } else {
-                                        Transitions.SlidingTransitionIn
-                                            .togetherWith(Transitions.SlidingTransitionOut)
-                                    }
+                                     if (isReaderScreen) {
+                                         Transitions.FadeTransitionIn
+                                             .togetherWith(Transitions.FadeTransitionOut)
+                                     } else {
+                                         Transitions.FadeTransitionIn
+                                             .togetherWith(Transitions.FadeTransitionOut)
+                                     }
                                 }
 
-                                StackEvent.Pop -> {
-                                    if (isReaderScreen) {
-                                        Transitions.FadeTransitionIn
-                                            .togetherWith(Transitions.FadeTransitionOut)
-                                    } else {
-                                        Transitions.BackSlidingTransitionIn
-                                            .togetherWith(Transitions.BackSlidingTransitionOut)
-                                    }
-                                }
+                                 StackEvent.Pop -> {
+                                     if (isReaderScreen) {
+                                         Transitions.FadeTransitionIn
+                                             .togetherWith(Transitions.FadeTransitionOut)
+                                     } else {
+                                         Transitions.FadeTransitionIn
+                                             .togetherWith(Transitions.FadeTransitionOut)
+                                     }
+                                 }
                             }
                         },
                         contentKey = {
