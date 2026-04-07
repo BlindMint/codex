@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 import us.blindmint.codex.R
 import us.blindmint.codex.data.parser.BaseFileParser
 import us.blindmint.codex.data.parser.BookFactory
+import us.blindmint.codex.data.parser.NaturalOrderComparator
 import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.library.book.BookWithCover
 import us.blindmint.codex.domain.ui.UIText
@@ -40,13 +41,15 @@ class ComicFileParser @Inject constructor(
                     val coverImage: CoverImage? = try {
                         val firstImageEntry = archive.entries
                             .filter { !it.isDirectory() }
-                            .sortedBy { it.getPath() }
+                            .sortedWith(Comparator { a, b ->
+                                NaturalOrderComparator.compare(a.getPath(), b.getPath())
+                            })
                             .firstOrNull()
 
                         firstImageEntry?.let { entry ->
-                            archive.getInputStream(entry).use { input ->
+                            archive.getInputStream(entry)?.use { input ->
                                 val options = BitmapFactory.Options().apply {
-                                    inSampleSize = 4 // Downsample for cover thumbnail
+                                    inSampleSize = 4
                                 }
                                 BitmapFactory.decodeStream(input, null, options)
                             }

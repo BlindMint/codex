@@ -832,7 +832,7 @@
     <string name="play">Play</string>
     <string name="pause">Pause</string>
     <string name="speed_reading_reader_settings">Speed reading</string>
-    <string name="speed_reading_tab">Speed reading</string>
+    <string name="speed_reading_tab">Speed</string>
     <string name="speed_reading_general_tab">General</string>
     <string name="speed_reading_focus_tab">Focus</string>
     <string name="speed_reading_wpm">Words per minute</string>
@@ -908,7 +908,7 @@
 
     <!-- Comic Reader Settings -->
     <string name="books_tab">Books</string>
-    <string name="comics_tab">Comics</string>
+    <string name="comics_tab">PDF/Comics</string>
     <string name="reading_direction">Reading direction</string>
     <string name="reading_direction_ltr">Left to right</string>
     <string name="reading_direction_rtl">Right to left</string>
@@ -942,7 +942,11 @@
     <string name="background_color_gray">Gray</string>
     <string name="background_color_white">White</string>
     <string name="background_color_black">Black</string>
-    <string name="background_color_auto">Auto</string>
+    <string name="background_color_custom">Custom</string>
+    <string name="custom_color_picker_title">Custom Background Color</string>
+    <string name="red">Red</string>
+    <string name="green">Green</string>
+    <string name="blue">Blue</string>
     <string name="zoom_start">Zoom start</string>
     <string name="zoom_automatic">Automatic</string>
     <string name="zoom_left">Left</string>
@@ -954,5 +958,9 @@
     <string name="landscape_zoom_desc">Enable zoom when device is in landscape mode</string>
     <string name="remove_item">Remove Item</string>
     <string name="confirm_remove_item">Are you sure you want to remove "%1$s"?</string>
+    <string name="volume_keys">Volume keys</string>
+    <string name="volume_keys_description">Use volume buttons to turn pages</string>
+    <string name="volume_keys_inverted">Invert volume keys</string>
+    <string name="volume_keys_inverted_description">Swap up/down page navigation</string>
 
- </resources>
+  </resources>

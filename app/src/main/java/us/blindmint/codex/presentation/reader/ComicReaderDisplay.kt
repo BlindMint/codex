@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -63,6 +64,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.util.LinkedHashMap
 
 private const val TAG = "ImageBasedReader"
+private const val SLIDER_TAG = "CodexComicSlider"
 private const val MAX_CACHED_PAGES = 50
 private const val PREFETCH_PAGES = 5
 
@@ -101,7 +103,7 @@ private suspend fun PointerInputScope.detectLongPressNonBlocking(
 
 @OptIn(FlowPreview::class)
 @Composable
-fun ImageBasedReaderLayout(
+fun ComicReaderDisplay(
     bookTitle: String,
     currentPage: Int,
     initialPage: Int = 0,
@@ -129,10 +131,6 @@ fun ImageBasedReaderLayout(
     val loadedPages = remember {
         object : LinkedHashMap<Int, Pair<ImageBitmap, Bitmap>>(16, 0.75f, true) {
             override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, Pair<ImageBitmap, Bitmap>>?): Boolean {
-                if (size > MAX_CACHED_PAGES) {
-                    eldest?.value?.second?.recycle()
-                    return true
-                }
                 return false
             }
         }
@@ -188,6 +186,7 @@ fun ImageBasedReaderLayout(
     var verticalOffsetY by remember { mutableFloatStateOf(0f) }
 
     var storedLogicalPage by remember { mutableIntStateOf(0) }
+    var programmaticScrollTarget by remember { mutableIntStateOf(-1) }
 
     LaunchedEffect(currentPage) {
         storedLogicalPage = currentPage
@@ -197,7 +196,17 @@ fun ImageBasedReaderLayout(
         if (totalPages > 0 && storedLogicalPage >= 0) {
             val targetPhysicalPage = mapLogicalToPhysicalPage(storedLogicalPage)
             if (isVertical) {
-                lazyListState.scrollToItem(targetPhysicalPage)
+                val visibleItems = lazyListState.layoutInfo.visibleItemsInfo
+                val firstVisibleIndex = visibleItems.firstOrNull()?.index
+                val isAlreadyAtTop = firstVisibleIndex == targetPhysicalPage
+                if (!isAlreadyAtTop) {
+                    programmaticScrollTarget = targetPhysicalPage
+                    lazyListState.scrollToItem(targetPhysicalPage)
+                    launch {
+                        kotlinx.coroutines.delay(100)
+                        programmaticScrollTarget = -1
+                    }
+                }
                 try {
                     kotlinx.coroutines.flow.flow {
                         while (lazyListState.isScrollInProgress) {
@@ -227,7 +236,7 @@ fun ImageBasedReaderLayout(
         val physicalPage = mapLogicalToPhysicalPage(currentPage)
         for (offset in -PREFETCH_PAGES..PREFETCH_PAGES) {
             val targetPage = physicalPage + offset
-            if (targetPage in 0 until totalPages && !loadedPages.containsKey(targetPage)) {
+            if (targetPage in 0 until totalPages) {
                 withContext(Dispatchers.IO) {
                     loadPage(mapPhysicalToLogicalPage(targetPage))
                 }
@@ -248,13 +257,20 @@ fun ImageBasedReaderLayout(
     }
 
     LaunchedEffect(lazyListState, isRTL, isVertical) {
-        snapshotFlow { lazyListState.firstVisibleItemIndex }
-            .debounce(50)
-            .collect { physicalIndex ->
+        snapshotFlow { 
+            lazyListState.firstVisibleItemIndex to programmaticScrollTarget
+        }
+            .debounce(500)
+            .collect { (physicalIndex, scrollTarget) ->
                 if (isVertical && totalPages > 0) {
-                    val logicalPage = mapPhysicalToLogicalPage(physicalIndex)
-                    onPageChanged(logicalPage)
-                    prefetchPages(logicalPage)
+                    if (scrollTarget == -1 || scrollTarget == physicalIndex) {
+                        val logicalPage = mapPhysicalToLogicalPage(physicalIndex)
+                        Log.d(SLIDER_TAG, "[\u2190 snapshotFlow] emitting onPageChanged($logicalPage) physicalIndex=$physicalIndex scrollTarget=$scrollTarget")
+                        onPageChanged(logicalPage)
+                        prefetchPages(logicalPage)
+                    } else {
+                        Log.d(SLIDER_TAG, "[\u2190 snapshotFlow] SKIPPED: physicalIndex=$physicalIndex scrollTarget=$scrollTarget")
+                    }
                 }
             }
     }
@@ -280,14 +296,38 @@ fun ImageBasedReaderLayout(
             }
 
             LaunchedEffect(currentPage, totalPages, isRTL) {
+                Log.d(SLIDER_TAG, "[\u2B06 LaunchedEffect] fired: currentPage=$currentPage, totalPages=$totalPages, isRTL=$isRTL, isVertical=$isVertical")
                 if (currentPage in 0 until totalPages && totalPages > 0) {
                     val targetPhysicalPage = mapLogicalToPhysicalPage(currentPage)
 
-                    if (pagerState.currentPage != targetPhysicalPage) {
-                        pagerState.scrollToPage(targetPhysicalPage)
-                    }
-                    if (lazyListState.firstVisibleItemIndex != targetPhysicalPage) {
-                        lazyListState.scrollToItem(targetPhysicalPage)
+                    if (!isVertical) {
+                        if (pagerState.currentPage != targetPhysicalPage) {
+                            Log.d(SLIDER_TAG, "[\u2B06 LaunchedEffect] PAGER scroll to $targetPhysicalPage")
+                            pagerState.scrollToPage(targetPhysicalPage)
+                        }
+                    } else {
+                        val visibleItems = lazyListState.layoutInfo.visibleItemsInfo
+                        val firstVisibleIndex = visibleItems.firstOrNull()?.index
+                        val lastMeasuredIndex = visibleItems.lastOrNull()?.index ?: -1
+                        val isAlreadyAtTop = firstVisibleIndex == targetPhysicalPage
+                        Log.d(SLIDER_TAG, "[\u2B06 LaunchedEffect] VERTICAL: targetPhysicalPage=$targetPhysicalPage, firstVisibleIndex=$firstVisibleIndex, lastMeasuredIndex=$lastMeasuredIndex, isAlreadyAtTop=$isAlreadyAtTop")
+                        if (!isAlreadyAtTop) {
+                            programmaticScrollTarget = targetPhysicalPage
+                            if (lastMeasuredIndex < targetPhysicalPage) {
+                                Log.d(SLIDER_TAG, "[\u2B06 LaunchedEffect] VERTICAL: target not measured yet, pre-scrolling to $lastMeasuredIndex first")
+                                lazyListState.scrollToItem(lastMeasuredIndex)
+                            }
+                            kotlinx.coroutines.delay(200)
+                            val currentLastMeasured = lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                            Log.d(SLIDER_TAG, "[\u2B06 LaunchedEffect] VERTICAL: scrollToItem($targetPhysicalPage) (lastMeasuredNow=$currentLastMeasured)")
+                            lazyListState.scrollToItem(targetPhysicalPage)
+                            launch {
+                                kotlinx.coroutines.delay(200)
+                                programmaticScrollTarget = -1
+                            }
+                        } else {
+                            Log.d(SLIDER_TAG, "[\u2B06 LaunchedEffect] VERTICAL: skipping scroll (already at top)")
+                        }
                     }
                 }
             }
@@ -417,10 +457,8 @@ fun ImageBasedReaderLayout(
                             state = lazyListState,
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(
-                                top = (WindowInsets.displayCutout.asPaddingValues()
-                                    .calculateTopPadding())
-                                    .coerceAtLeast(18.dp),
-                                bottom = (WindowInsets.displayCutout.asPaddingValues()
+                                top = 0.dp,
+                                bottom = if (isVertical) 0.dp else (WindowInsets.displayCutout.asPaddingValues()
                                     .calculateBottomPadding())
                                     .coerceAtLeast(18.dp),
                             )
@@ -433,10 +471,8 @@ fun ImageBasedReaderLayout(
                                 var pageImage by remember(logicalPage) { mutableStateOf<ImageBitmap?>(null) }
 
                                 LaunchedEffect(logicalPage) {
-                                    if (pageImage == null) {
-                                        withContext(Dispatchers.IO) {
-                                            pageImage = loadPage(logicalPage)
-                                        }
+                                    withContext(Dispatchers.IO) {
+                                        pageImage = loadPage(logicalPage)
                                     }
                                 }
 
@@ -502,6 +538,7 @@ fun ImageBasedReaderLayout(
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
+                                            .height(1200.dp)
                                             .padding(vertical = 16.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
@@ -514,7 +551,7 @@ fun ImageBasedReaderLayout(
             }
 
             if (showPageIndicator && totalPages > 0) {
-                ComicPageIndicator(
+                PageIndicator(
                     currentPage = currentPage,
                     totalPages = totalPages,
                     modifier = Modifier.align(Alignment.BottomCenter)

@@ -6,6 +6,7 @@
 
 package us.blindmint.codex.presentation.reader
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,6 +39,8 @@ import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.presentation.core.util.noRippleClickable
 import us.blindmint.codex.ui.theme.readerBarsColor
 
+private const val BUG_TAG = "ComicBug"
+
 @Composable
 fun ComicReaderBottomBar(
     currentPage: Int,
@@ -54,7 +57,10 @@ fun ComicReaderBottomBar(
 
     var sliderValue by remember { mutableFloatStateOf((currentPage + 1).toFloat()) }
 
+    Log.d(BUG_TAG, "[B1] ComicReaderBottomBar: currentPage=$currentPage, totalPages=$totalPages")
+
     LaunchedEffect(currentPage) {
+        Log.d(BUG_TAG, "[B2] ComicReaderBottomBar LaunchedEffect: currentPage=$currentPage")
         sliderValue = (currentPage + 1).toFloat()
     }
 
@@ -95,7 +101,9 @@ fun ComicReaderBottomBar(
                     onValueChange = {},
                     onValueChangeFinished = {
                         val newPage = sliderValue.toInt().coerceIn(1, totalPages) - 1
+                        Log.d(BUG_TAG, "[B3] ComicReaderBottomBar onValueChangeFinished: newPage=$newPage, currentPage=$currentPage")
                         if (newPage != currentPage) {
+                            Log.d(BUG_TAG, "[B3] >>> ComicReaderBottomBar calling onPageSelected($newPage)")
                             onPageSelected(newPage)
                         }
                     },

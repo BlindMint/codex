@@ -185,8 +185,7 @@ dependencies {
 
     // MuPDF - high quality PDF rendering with built-in search
     // Licensed under AGPLv3, compatible with GPL-3.0 project
-    implementation("com.artifex.mupdf:viewer:1.15.+")
-    implementation("com.artifex.mupdf:fitz:1.15.+")
+    implementation(project(":mupdf-android-fitz"))
 
     // Bouncy Castle (JDK 8+ compatible - works with JDK 21)
     implementation("org.bouncycastle:bcprov-jdk18on:1.83")
@@ -229,8 +228,8 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("org.simpleframework:simple-xml:2.7.1")
 
-    // Comic archive support
-    implementation("com.github.junrar:junrar:7.5.5")
+    // Comic archive support - libarchive JNI (supports RAR5)
+    implementation("me.zhanghai.android.libarchive:library:1.1.6")
     implementation("org.apache.commons:commons-compress:1.26.0")
     implementation("org.tukaani:xz:1.9")
 

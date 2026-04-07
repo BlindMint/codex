@@ -36,8 +36,8 @@ abstract class BaseFileParser : FileParser {
     protected inline fun <T> safeParse(block: () -> T?): T? {
         return try {
             block()
-        } catch (e: Exception) {
-            Log.e(tag, "Exception parsing: ${e.message}", e)
+        } catch (e: Throwable) {
+            Log.e(tag, "Error parsing: ${e.message}", e)
             null
         }
     }

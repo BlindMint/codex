@@ -909,19 +909,14 @@ class ReaderModel @Inject constructor(
                 }
 
                 is ReaderEvent.OnComicPageChanged -> {
+                    android.util.Log.d("ComicBug", "[M4] OnComicPageChanged RECEIVED: event.currentPage=${event.currentPage}, isComicScrollRestorationComplete=${_state.value.isComicScrollRestorationComplete}")
                     launch(Dispatchers.IO) {
                         val scrollRestorationComplete = _state.value.isComicScrollRestorationComplete
 
-                        android.util.Log.d("ComicPageChanged", "OnComicPageChanged event received")
-                        android.util.Log.d("ComicPageChanged", "  event.currentPage: ${event.currentPage}")
-                        android.util.Log.d("ComicPageChanged", "  scrollRestorationComplete: $scrollRestorationComplete")
+                        android.util.Log.d("ComicBug", "[M5] OnComicPageChanged handling: event.currentPage=${event.currentPage}, scrollRestorationComplete=$scrollRestorationComplete")
 
-                        // Ignore ALL page change events until scroll restoration is complete.
-                        // During initial load, the pager/list starts at page 0 and fires events
-                        // before the LaunchedEffect can scroll to the saved page. We must not
-                        // update state with these spurious page 0 values.
                         if (!scrollRestorationComplete) {
-                            android.util.Log.d("ComicPageChanged", "  IGNORING - scroll restoration not complete")
+                            android.util.Log.d("ComicBug", "[M5] IGNORING - scroll restoration not complete")
                             return@launch
                         }
 
@@ -931,7 +926,7 @@ class ReaderModel @Inject constructor(
                             (event.currentPage + 1).toFloat() / totalComicPages
                         } else 0f
 
-                        // Update in-memory state immediately for responsive UI
+                        android.util.Log.d("ComicBug", "[M6] Updating state: currentComicPage=${event.currentPage}")
                         _state.update {
                             it.copy(
                                 currentComicPage = event.currentPage,
@@ -943,28 +938,28 @@ class ReaderModel @Inject constructor(
                             )
                         }
 
-                        // Debounce the database write to avoid burst writes during fast page flipping.
-                        // The OnLeave handler saves the final page regardless, so intermediate saves
-                        // only need to be periodic for crash resilience.
                         comicProgressSaveJob?.cancel()
                         comicProgressSaveJob = viewModelScope.launch(Dispatchers.IO) {
                             delay(500)
-                            android.util.Log.d("ComicPageChanged", "  SAVING to database: bookId=${currentBook.id}, lastPageRead=${event.currentPage}, progress=$newProgress")
+                            android.util.Log.d("ComicBug", "[M7] Debounced save to DB: lastPageRead=${event.currentPage}")
                             bookRepository.updateComicPdfProgress(
                                 bookId = currentBook.id,
                                 lastPageRead = event.currentPage,
                                 progress = newProgress
                             )
-                            android.util.Log.d("ComicPageChanged", "  Database save complete")
                         }
                     }
                 }
 
                 is ReaderEvent.OnComicPageSelected -> {
+                    android.util.Log.d("ComicBug", "[M1] OnComicPageSelected RECEIVED: event.page=${event.page}")
+                    android.util.Log.d("ComicBug", "[M1] currentComicPage was=${_state.value.currentComicPage}, totalComicPages=${_state.value.totalComicPages}")
                     launch(Dispatchers.IO) {
                         val currentBook = _state.value.book
                         val totalComicPages = _state.value.totalComicPages
+                        android.util.Log.d("ComicBug", "[M2] OnComicPageSelected handling: page=${event.page}, totalComicPages=$totalComicPages")
                         _state.update {
+                            android.util.Log.d("ComicBug", "[M2] Updating state: currentComicPage=${event.page}, book.currentPage=${event.page}")
                             it.copy(
                                 currentComicPage = event.page,
                                 book = it.book.copy(
@@ -981,11 +976,13 @@ class ReaderModel @Inject constructor(
                             (event.page + 1).toFloat() / totalComicPages
                         } else 0f
 
+                        android.util.Log.d("ComicBug", "[M3] Saving to database: bookId=${currentBook.id}, lastPageRead=${event.page}, progress=$newProgress")
                         bookRepository.updateComicPdfProgress(
                             bookId = currentBook.id,
                             lastPageRead = event.page,
                             progress = newProgress
                         )
+                        android.util.Log.d("ComicBug", "[M3] Database save complete")
                     }
                 }
 
