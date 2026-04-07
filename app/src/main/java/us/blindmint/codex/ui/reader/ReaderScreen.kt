@@ -163,10 +163,12 @@ data class ReaderScreen(
             }
         }
         val backgroundColor = animateColorAsState(
-            targetValue = settingsState.value.selectedColorPreset.backgroundColor
+            targetValue = settingsState.value.selectedColorPreset.backgroundColor,
+            animationSpec = tween(durationMillis = 150)
         )
         val fontColor = animateColorAsState(
-            targetValue = settingsState.value.selectedColorPreset.fontColor
+            targetValue = settingsState.value.selectedColorPreset.fontColor,
+            animationSpec = tween(durationMillis = 150)
         )
 
         val isDarkTheme = isSystemInDarkTheme()
@@ -182,7 +184,8 @@ data class ReaderScreen(
                     if (isDarkTheme) Color.Black else Color.White
                 }
                 else -> if (isDarkTheme) Color.Black else Color.White
-            }
+            },
+            animationSpec = tween(durationMillis = 150)
         )
 
         val effectiveBackgroundColor = if (state.value.book.isPageBased) {
@@ -416,19 +419,9 @@ data class ReaderScreen(
                     }
 
                     ReaderProgressCount.PAGE -> {
-                        val totalChars = state.value.text.sumOf { text ->
-                            when (text) {
-                                is ReaderText.Text -> text.line.text.length
-                                else -> 0
-                            }
-                        }
+                        val totalChars = state.value.totalChars
                         val currentIndex = (state.value.book.progress * state.value.text.lastIndex).roundToInt()
-                        val currentChars = state.value.text.take(currentIndex + 1).sumOf { text ->
-                            when (text) {
-                                is ReaderText.Text -> text.line.text.length
-                                else -> 0
-                            }
-                        }
+                        val currentChars = state.value.cumulativeChars.getOrElse(currentIndex + 1) { totalChars }
                         val currentPage = (currentChars / CHARACTERS_PER_PAGE) + 1
                         val totalPages = (totalChars / CHARACTERS_PER_PAGE) + 1
                         "$currentPage / $totalPages"

@@ -127,13 +127,24 @@ class ReaderModel @Inject constructor(
                         // Invalidate word cache when new text is loaded
                         invalidateWordCache()
 
+                        val cumulativeChars = text.scan(0) { acc, readerText ->
+                            acc + when (readerText) {
+                                is ReaderText.Text -> readerText.line.text.length
+                                else -> 0
+                            }
+                        }
+
+                        val totalChars = cumulativeChars.lastOrNull() ?: 0
+
                         _state.update {
                             it.copy(
                                 showMenu = false,
                                 book = it.book.copy(
                                     lastOpened = lastOpened
                                 ),
-                                text = text
+                                text = text,
+                                totalChars = totalChars,
+                                cumulativeChars = cumulativeChars
                             )
                         }
 
@@ -182,15 +193,9 @@ class ReaderModel @Inject constructor(
                                   )
                                   updateChapter(index = finalScrollIndex)
 
-                                  // Wait for scroll animation to actually complete before hiding loading
-                                  // This ensures smooth transition without visible jump
-                                  snapshotFlow {
-                                      val layoutInfo = _state.value.listState.layoutInfo
-                                      val isAtTarget = layoutInfo.visibleItemsInfo.any { it.index == finalScrollIndex } ||
-                                                       finalScrollIndex >= layoutInfo.totalItemsCount - 1
-                                      val isNotScrolling = !_state.value.listState.isScrollInProgress
-                                      isAtTarget && isNotScrolling
-                                  }.first { complete -> complete }
+                                   // Wait for scroll animation to complete before hiding loading
+                                   // Use a timeout to avoid indefinite waiting
+                                   delay(200)
                               }
 
                               _state.update {

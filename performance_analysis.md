@@ -136,18 +136,28 @@ Settings have 60+ granular sub-screens, increasing overhead.
 ## Implementation Plan
 
 ### Phase 1: High-Impact Reader Fixes
-- Progress caching and `remember` optimization
-- Scroll restoration improvements
-- Menu animation tweaks
+- [ ] Progress caching and `remember` optimization
+- [ ] Scroll restoration improvements
+- [ ] Menu animation tweaks
 
 ### Phase 2: Library Performance
-- DB-level sorting/filtering
-- Refresh delay removal
-- Search debounce reduction
+- [ ] DB-level sorting/filtering
+- [ ] Refresh delay removal
+- [ ] Search debounce reduction
 
 ### Phase 3: Polish Improvements
-- Navigation transitions
-- Settings consolidation (if needed)
+- [ ] Navigation transitions
+- [ ] Settings consolidation (if needed)
+
+## Testing Checklist
+After each phase or major change:
+- [ ] Build debug APK and test on device/emulator
+- [ ] Verify reading experience: open large book (50MB+), scroll smoothly, check progress bar updates
+- [ ] Test library: add 1000+ books, scroll list, search with debounce, sort by various criteria
+- [ ] Check animations: menu show/hide, screen transitions, no stutters
+- [ ] Monitor performance: Use Android Studio Profiler for frame drops, CPU usage during scrolling/animations
+- [ ] Edge cases: Empty library, very large books, rapid page turning in comics
+- [ ] Regression test: Ensure no crashes, book opening/closing works, settings persist
 
 ### Testing Recommendations
 - Benchmark with 10,000+ book library and 50MB+ books
