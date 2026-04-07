@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -537,6 +538,7 @@ fun ComicReaderDisplay(
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
+                                            .height(1200.dp)
                                             .padding(vertical = 16.dp),
                                         contentAlignment = Alignment.Center
                                     ) {

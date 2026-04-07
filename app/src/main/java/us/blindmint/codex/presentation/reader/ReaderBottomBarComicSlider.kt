@@ -7,22 +7,21 @@
 package us.blindmint.codex.presentation.reader
 
 import android.util.Log
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,9 +35,12 @@ import androidx.compose.ui.unit.sp
 import us.blindmint.codex.domain.reader.ReaderProgressCount
 import us.blindmint.codex.domain.util.HorizontalAlignment
 import us.blindmint.codex.presentation.core.components.common.StyledText
+import us.blindmint.codex.presentation.core.components.material.Slider
 
 private const val SLIDER_TAG = "CodexComicSlider"
+private const val BUG_TAG = "ComicBug"
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun ReaderBottomBarComicSlider(
     currentPage: Int,
@@ -56,25 +58,15 @@ fun ReaderBottomBarComicSlider(
 
     if (totalPages <= 0) return
 
-    var sliderValue by remember { mutableFloatStateOf((currentPage + 1).toFloat()) }
+    var sliderDragValue by remember { mutableIntStateOf(currentPage) }
     val interactionSource = remember { MutableInteractionSource() }
     val isDragged by interactionSource.collectIsDraggedAsState()
 
-    Log.d(SLIDER_TAG, "[\u27A4 Slider] initial: currentPage=$currentPage, sliderValue=${sliderValue}, isDragged=$isDragged")
+    val sliderValue = if (isDragged) sliderDragValue else currentPage
 
-    LaunchedEffect(currentPage, isDragged) {
-        Log.d(SLIDER_TAG, "[\u27A4 Slider] LaunchedEffect fired: currentPage=$currentPage, isDragged=$isDragged, sliderValue=$sliderValue")
-        if (!isDragged) {
-            val newSliderVal = (currentPage + 1).toFloat()
-            Log.d(SLIDER_TAG, "[\u27A4 Slider] updating sliderValue: $sliderValue -> $newSliderVal")
-            sliderValue = newSliderVal
-        } else {
-            Log.d(SLIDER_TAG, "[\u27A4 Slider] skipping update (isDragged=true)")
-        }
-    }
+    Log.d(BUG_TAG, "[S1] Slider COMPOSABLE: currentPage=$currentPage, sliderValue=$sliderValue, isDragged=$isDragged, lockMenu=$lockMenu")
 
     Column(modifier = modifier) {
-        // Progress text display
         if (showProgressBar) {
             Box(
                 modifier = Modifier
@@ -83,10 +75,10 @@ fun ReaderBottomBarComicSlider(
                 contentAlignment = progressBarAlignment.alignment
             ) {
                 DisableSelection {
-                    val displayPage = sliderValue.toInt().coerceIn(1, totalPages)
+                    val displayPage = (sliderValue + 1).coerceIn(1, totalPages)
                     val progressText = when (progressCount) {
                         ReaderProgressCount.PERCENTAGE -> {
-                            val percentage = ((displayPage).toFloat() / totalPages * 100).toInt()
+                            val percentage = (displayPage.toFloat() / totalPages * 100).toInt()
                             "$percentage%"
                         }
                         ReaderProgressCount.PAGE -> "$displayPage/$totalPages"
@@ -115,27 +107,27 @@ fun ReaderBottomBarComicSlider(
         CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
             Slider(
                 value = sliderValue,
-                valueRange = 1f..totalPages.toFloat(),
+                valueRange = 0..totalPages - 1,
                 enabled = !lockMenu,
                 interactionSource = interactionSource,
                 onValueChange = { newValue ->
-                    sliderValue = newValue
+                    sliderDragValue = newValue
                 },
                 onValueChangeFinished = {
-                    val newPage = sliderValue.toInt().coerceIn(1, totalPages) - 1
-                    Log.d(SLIDER_TAG, "[\u2192 onValueChangeFinished] newPage=$newPage, currentPage=$currentPage, sliderValue=$sliderValue")
+                    val newPage = sliderDragValue
+                    Log.d(BUG_TAG, "[S3] Slider onValueChangeFinished: newPage=$newPage, currentPage=$currentPage, sliderValue=$sliderDragValue")
                     if (newPage != currentPage) {
-                        Log.d(SLIDER_TAG, "[\u2192 onValueChangeFinished] calling onPageSelected($newPage)")
+                        Log.d(BUG_TAG, "[S3] >>> Slider calling onPageSelected($newPage)")
                         onPageSelected(newPage)
                     } else {
-                        Log.d(SLIDER_TAG, "[\u2192 onValueChangeFinished] skipping (same page)")
+                        Log.d(BUG_TAG, "[S3] Slider skipping (same page)")
                     }
                 },
                 colors = SliderDefaults.colors(
-                    inactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(0.15f),
+                    inactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f),
                     disabledActiveTrackColor = MaterialTheme.colorScheme.primary,
                     disabledThumbColor = MaterialTheme.colorScheme.primary,
-                    disabledInactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(0.15f),
+                    disabledInactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f),
                 )
             )
         }
