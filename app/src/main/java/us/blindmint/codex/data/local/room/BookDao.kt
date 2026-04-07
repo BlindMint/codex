@@ -31,7 +31,7 @@ interface BookDao {
         book: BookEntity
     )
 
-    @Query("SELECT * FROM bookentity")
+    @Query("SELECT * FROM bookentity ORDER BY lastOpened DESC, title ASC")
     suspend fun getAllBooks(): List<BookEntity>
 
     /**
@@ -195,7 +195,7 @@ interface BookDao {
      * as a substring. Used to reduce the FuzzyWuzzy candidate set from the full library to only
      * likely matches, dramatically cutting search time for large libraries.
      */
-    @Query("SELECT * FROM bookentity WHERE LOWER(title) LIKE '%' || LOWER(:query) || '%' OR LOWER(authors) LIKE '%' || LOWER(:query) || '%'")
+    @Query("SELECT * FROM bookentity WHERE LOWER(title) LIKE '%' || LOWER(:query) || '%' OR LOWER(authors) LIKE '%' || LOWER(:query) || '%' ORDER BY lastOpened DESC, title ASC")
     suspend fun searchBooksByTitleOrAuthor(query: String): List<BookEntity>
 
     @Query("SELECT * FROM bookentity WHERE opdsSourceUrl = :url")
