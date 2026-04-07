@@ -106,7 +106,6 @@ class LibraryModel @Inject constructor(
                     yield()
                     getBooksFromDatabase()
 
-                    delay(500)
                     _state.update {
                         it.copy(
                             isRefreshing = false,
@@ -156,7 +155,7 @@ class LibraryModel @Inject constructor(
                         refreshJob = launch(Dispatchers.IO) { getBooksFromDatabase() }
                     } else {
                         searchQueryChange = launch(Dispatchers.IO) {
-                            delay(500)
+                            delay(200)
                             yield()
                             onEvent(LibraryEvent.OnSearch)
                         }

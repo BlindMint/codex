@@ -7,12 +7,21 @@
 package us.blindmint.codex.ui.book_info
 
 import android.os.Parcelable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,6 +63,7 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
 
         val state = screenModel.state.collectAsStateWithLifecycle()
         val listState = rememberLazyListState()
+        var isVisible by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
             screenModel.init(
@@ -63,6 +73,9 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                     navigator.pop()
                 }
             )
+            // Delay the visibility to allow init to complete
+            kotlinx.coroutines.delay(100)
+            isVisible = true
         }
 
         DisposableEffect(Unit) {
@@ -73,7 +86,10 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
 
         Box(Modifier.fillMaxSize())
 
-        if (state.value.book.id == bookId) {
+        AnimatedVisibility(
+            visible = isVisible && state.value.book.id == bookId,
+            enter = fadeIn(animationSpec = tween(durationMillis = 300)) + scaleIn(initialScale = 0.95f, animationSpec = tween(durationMillis = 300))
+        ) {
             BookInfoContent(
                 book = state.value.book,
                 bottomSheet = state.value.bottomSheet,

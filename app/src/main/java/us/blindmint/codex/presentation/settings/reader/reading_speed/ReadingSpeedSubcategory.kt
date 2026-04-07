@@ -15,11 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
-import us.blindmint.codex.presentation.settings.reader.reading_speed.components.HighlightedReadingOption
-import us.blindmint.codex.presentation.settings.reader.reading_speed.components.HighlightedReadingThicknessOption
-import us.blindmint.codex.presentation.settings.reader.reading_speed.components.PerceptionExpanderOption
-import us.blindmint.codex.presentation.settings.reader.reading_speed.components.PerceptionExpanderPaddingOption
-import us.blindmint.codex.presentation.settings.reader.reading_speed.components.PerceptionExpanderThicknessOption
+import us.blindmint.codex.presentation.settings.reader.reading_speed.components.ReadingAidsMasterOption
 
 fun LazyListScope.ReadingSpeedSubcategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary },
@@ -34,23 +30,7 @@ fun LazyListScope.ReadingSpeedSubcategory(
         showDivider = showDivider
     ) {
         item {
-            HighlightedReadingOption()
-        }
-
-        item {
-            HighlightedReadingThicknessOption()
-        }
-
-        item {
-            PerceptionExpanderOption()
-        }
-
-        item {
-            PerceptionExpanderPaddingOption()
-        }
-
-        item {
-            PerceptionExpanderThicknessOption()
+            ReadingAidsMasterOption()
         }
     }
 }

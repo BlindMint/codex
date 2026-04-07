@@ -27,7 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
-import us.blindmint.codex.utils.FuzzySearchHelper
+import us.blindmint.codex.utils.SearchHelper
 
 @Composable
 fun SettingsLayout(
@@ -116,7 +116,7 @@ fun SettingsLayout(
         if (searchQuery.isBlank()) {
             allSettingsItems
         } else {
-            FuzzySearchHelper.searchSettings(
+            SearchHelper.searchSettings(
                 items = allSettingsItems,
                 query = searchQuery,
                 threshold = 50

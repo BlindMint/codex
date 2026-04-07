@@ -22,6 +22,7 @@ import us.blindmint.codex.presentation.settings.reader.reading_mode.ReadingModeS
 import us.blindmint.codex.presentation.settings.reader.reading_speed.ReadingSpeedSubcategory
 import us.blindmint.codex.presentation.settings.reader.search.SearchSubcategory
 import us.blindmint.codex.presentation.settings.reader.speed_reading.SpeedReadingSubcategory
+import us.blindmint.codex.presentation.settings.reader.system.SystemSubcategory
 import us.blindmint.codex.presentation.settings.reader.text.TextSubcategory
 
 fun LazyListScope.BooksReaderSettingsCategory(
@@ -63,6 +64,11 @@ fun LazyListScope.BooksReaderSettingsCategory(
 fun LazyListScope.SpeedReadingReaderSettingsCategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary }
 ) {
+    SystemSubcategory(
+        titleColor = titleColor,
+        showDivider = true
+    )
+
     SpeedReadingSubcategory(
         tab = null, // Show all speed reading settings in one tab
         titleColor = titleColor,

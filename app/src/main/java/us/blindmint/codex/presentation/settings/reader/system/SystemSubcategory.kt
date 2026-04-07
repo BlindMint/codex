@@ -20,7 +20,7 @@ import us.blindmint.codex.presentation.settings.reader.misc.components.HideBarsO
 import us.blindmint.codex.presentation.settings.reader.misc.components.KeepScreenOnOption
 import us.blindmint.codex.presentation.settings.reader.system.components.CustomScreenBrightnessOption
 import us.blindmint.codex.presentation.settings.reader.system.components.ScreenBrightnessOption
-import us.blindmint.codex.presentation.settings.reader.system.components.ScreenOrientationOption
+import us.blindmint.codex.presentation.settings.reader.system.components.ScreenOrientationDropdownOption
 
 fun LazyListScope.SystemSubcategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary },
@@ -55,7 +55,7 @@ fun LazyListScope.SystemSubcategory(
         }
 
         item {
-            ScreenOrientationOption()
+            ScreenOrientationDropdownOption()
         }
     }
 }

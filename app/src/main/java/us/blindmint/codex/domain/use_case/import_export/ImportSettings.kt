@@ -8,9 +8,8 @@ package us.blindmint.codex.domain.use_case.import_export
 
 import android.content.Context
 import androidx.datastore.preferences.core.Preferences
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import android.net.Uri
+import kotlinx.serialization.json.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import us.blindmint.codex.domain.repository.DataStoreRepository
 import us.blindmint.codex.domain.use_case.color_preset.ReorderColorPresets
@@ -29,14 +28,29 @@ class ImportSettings @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
 
+    private fun jsonElementToMap(jsonObject: JsonObject): Map<String, Any> {
+        return jsonObject.mapValues { (_, element) -> jsonElementToAny(element) }
+    }
+
+    private fun jsonElementToAny(element: JsonElement): Any {
+        return when {
+            element is JsonObject -> jsonElementToMap(element)
+            element is JsonArray -> element.map { jsonElementToAny(it) }
+            element.jsonPrimitive.isString -> element.jsonPrimitive.content
+            element.jsonPrimitive.booleanOrNull != null -> element.jsonPrimitive.boolean
+            element.jsonPrimitive.longOrNull != null -> element.jsonPrimitive.long
+            element.jsonPrimitive.doubleOrNull != null -> element.jsonPrimitive.double
+            else -> element.jsonPrimitive.content // Fallback
+        }
+    }
+
     suspend fun execute(uri: Uri): Result<Unit> {
         return try {
-            val json = context.contentResolver.openInputStream(uri)?.use { inputStream ->
+            val jsonString = context.contentResolver.openInputStream(uri)?.use { inputStream ->
                 inputStream.bufferedReader().use { it.readText() }
             } ?: return Result.failure(Exception("Cannot read file"))
-            val gson = Gson()
-            val type = object : TypeToken<Map<String, Any>>() {}.type
-            val importedSettings: Map<String, Any> = gson.fromJson(json, type)
+            val jsonElement = Json.parseToJsonElement(jsonString)
+            val importedSettings: Map<String, Any> = jsonElementToMap(jsonElement.jsonObject)
 
             // Separate color presets from other settings for special handling
             val colorPresetsData = importedSettings["colorPresets"]
@@ -99,6 +113,32 @@ class ImportSettings @Inject constructor(
                         DataStoreConstants.PROGRESS_BAR_ALIGNMENT.name -> repository.putDataToDataStore(DataStoreConstants.PROGRESS_BAR_ALIGNMENT, value as String)
                         DataStoreConstants.PROGRESS_BAR_FONT_SIZE.name -> repository.putDataToDataStore(DataStoreConstants.PROGRESS_BAR_FONT_SIZE, (value as Double).toInt())
                         DataStoreConstants.PROGRESS_COUNT.name -> repository.putDataToDataStore(DataStoreConstants.PROGRESS_COUNT, value as String)
+                        DataStoreConstants.SPEED_READING_WPM.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_WPM, (value as Double).toInt())
+                        DataStoreConstants.SPEED_READING_MANUAL_SENTENCE_PAUSE_ENABLED.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_MANUAL_SENTENCE_PAUSE_ENABLED, value as Boolean)
+                        DataStoreConstants.SPEED_READING_SENTENCE_PAUSE_DURATION.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_SENTENCE_PAUSE_DURATION, (value as Double).toInt())
+                        DataStoreConstants.SPEED_READING_OSD_ENABLED.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_OSD_ENABLED, value as Boolean)
+                        DataStoreConstants.SPEED_READING_WORD_SIZE.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_WORD_SIZE, (value as Double).toInt())
+                        DataStoreConstants.SPEED_READING_ACCENT_CHARACTER_ENABLED.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_ACCENT_CHARACTER_ENABLED, value as Boolean)
+                        DataStoreConstants.SPEED_READING_ACCENT_COLOR.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_ACCENT_COLOR, value as String)
+                        DataStoreConstants.SPEED_READING_ACCENT_OPACITY.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_ACCENT_OPACITY, value as Double)
+                        DataStoreConstants.SPEED_READING_SHOW_VERTICAL_INDICATORS.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_SHOW_VERTICAL_INDICATORS, value as Boolean)
+                        DataStoreConstants.SPEED_READING_VERTICAL_INDICATORS_SIZE.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_VERTICAL_INDICATORS_SIZE, (value as Double).toInt())
+                        DataStoreConstants.SPEED_READING_VERTICAL_INDICATOR_TYPE.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_VERTICAL_INDICATOR_TYPE, value as String)
+                        DataStoreConstants.SPEED_READING_SHOW_HORIZONTAL_BARS.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_SHOW_HORIZONTAL_BARS, value as Boolean)
+                        DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_THICKNESS.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_THICKNESS, (value as Double).toInt())
+                        DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_LENGTH.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_LENGTH, value as Double)
+                        DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_DISTANCE.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_DISTANCE, (value as Double).toInt())
+                        DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_COLOR.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_COLOR, value as String)
+                        DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_OPACITY.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_OPACITY, value as Double)
+                        DataStoreConstants.SPEED_READING_FOCAL_POINT_POSITION.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_FOCAL_POINT_POSITION, value as Double)
+                        DataStoreConstants.SPEED_READING_OSD_HEIGHT.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_OSD_HEIGHT, value as Double)
+                        DataStoreConstants.SPEED_READING_OSD_SEPARATION.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_OSD_SEPARATION, value as Double)
+                        DataStoreConstants.SPEED_READING_AUTO_HIDE_OSD.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_AUTO_HIDE_OSD, value as Boolean)
+                        DataStoreConstants.SPEED_READING_CENTER_WORD.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_CENTER_WORD, value as Boolean)
+                        DataStoreConstants.SPEED_READING_FOCUS_INDICATORS.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_FOCUS_INDICATORS, value as String)
+                        DataStoreConstants.SPEED_READING_CUSTOM_FONT_ENABLED.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_CUSTOM_FONT_ENABLED, value as Boolean)
+                        DataStoreConstants.SPEED_READING_SELECTED_FONT_FAMILY.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_SELECTED_FONT_FAMILY, value as String)
+                        DataStoreConstants.SPEED_READING_KEEP_SCREEN_ON.name -> repository.putDataToDataStore(DataStoreConstants.SPEED_READING_KEEP_SCREEN_ON, value as Boolean)
                     }
                 } catch (e: Exception) {
                     // Skip this setting if type conversion fails
@@ -243,6 +283,31 @@ class ImportSettings @Inject constructor(
             DataStoreConstants.PROGRESS_BAR_ALIGNMENT.name,
             DataStoreConstants.PROGRESS_BAR_FONT_SIZE.name,
             DataStoreConstants.PROGRESS_COUNT.name,
+            DataStoreConstants.SPEED_READING_WPM.name,
+            DataStoreConstants.SPEED_READING_MANUAL_SENTENCE_PAUSE_ENABLED.name,
+            DataStoreConstants.SPEED_READING_SENTENCE_PAUSE_DURATION.name,
+            DataStoreConstants.SPEED_READING_OSD_ENABLED.name,
+            DataStoreConstants.SPEED_READING_WORD_SIZE.name,
+            DataStoreConstants.SPEED_READING_ACCENT_CHARACTER_ENABLED.name,
+            DataStoreConstants.SPEED_READING_ACCENT_COLOR.name,
+            DataStoreConstants.SPEED_READING_ACCENT_OPACITY.name,
+            DataStoreConstants.SPEED_READING_SHOW_VERTICAL_INDICATORS.name,
+            DataStoreConstants.SPEED_READING_VERTICAL_INDICATORS_SIZE.name,
+            DataStoreConstants.SPEED_READING_VERTICAL_INDICATOR_TYPE.name,
+            DataStoreConstants.SPEED_READING_SHOW_HORIZONTAL_BARS.name,
+            DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_THICKNESS.name,
+            DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_LENGTH.name,
+            DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_DISTANCE.name,
+            DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_COLOR.name,
+            DataStoreConstants.SPEED_READING_HORIZONTAL_BARS_OPACITY.name,
+            DataStoreConstants.SPEED_READING_FOCAL_POINT_POSITION.name,
+            DataStoreConstants.SPEED_READING_OSD_HEIGHT.name,
+            DataStoreConstants.SPEED_READING_OSD_SEPARATION.name,
+            DataStoreConstants.SPEED_READING_AUTO_HIDE_OSD.name,
+            DataStoreConstants.SPEED_READING_CENTER_WORD.name,
+            DataStoreConstants.SPEED_READING_FOCUS_INDICATORS.name,
+            DataStoreConstants.SPEED_READING_CUSTOM_FONT_ENABLED.name,
+            DataStoreConstants.SPEED_READING_SELECTED_FONT_FAMILY.name,
             DataStoreConstants.SPEED_READING_KEEP_SCREEN_ON.name
             // Note: "colorPresets" is handled separately
         )

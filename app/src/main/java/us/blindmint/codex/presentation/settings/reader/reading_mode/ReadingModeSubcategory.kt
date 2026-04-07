@@ -15,11 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
-import us.blindmint.codex.presentation.settings.reader.reading_mode.components.HorizontalGestureAlphaAnimOption
-import us.blindmint.codex.presentation.settings.reader.reading_mode.components.HorizontalGestureOption
-import us.blindmint.codex.presentation.settings.reader.reading_mode.components.HorizontalGesturePullAnimOption
-import us.blindmint.codex.presentation.settings.reader.reading_mode.components.HorizontalGestureScrollOption
-import us.blindmint.codex.presentation.settings.reader.reading_mode.components.HorizontalGestureSensitivityOption
+import us.blindmint.codex.presentation.settings.reader.reading_mode.components.HorizontalGesturePresetOption
 
 fun LazyListScope.ReadingModeSubcategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary },
@@ -34,23 +30,7 @@ fun LazyListScope.ReadingModeSubcategory(
         showDivider = showDivider
     ) {
         item {
-            HorizontalGestureOption()
-        }
-
-        item {
-            HorizontalGestureScrollOption()
-        }
-
-        item {
-            HorizontalGestureSensitivityOption()
-        }
-
-        item {
-            HorizontalGesturePullAnimOption()
-        }
-
-        item {
-            HorizontalGestureAlphaAnimOption()
+            HorizontalGesturePresetOption()
         }
     }
 }

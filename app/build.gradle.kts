@@ -216,8 +216,7 @@ dependencies {
     // Scrollbar
     implementation("com.github.nanihadesuka:LazyColumnScrollbar:2.2.0")
 
-    // Gson
-    implementation("com.google.code.gson:gson:2.11.0")
+
 
     // Markdown
     implementation("org.commonmark:commonmark:0.24.0")
@@ -233,8 +232,7 @@ dependencies {
     implementation("org.apache.commons:commons-compress:1.26.0")
     implementation("org.tukaani:xz:1.9")
 
-    // Fuzzy search
-    implementation("me.xdrop:fuzzywuzzy:1.4.0")
+
 
     // xxHash for content hashing (deduplication)
     implementation("org.lz4:lz4-java:1.8.0")

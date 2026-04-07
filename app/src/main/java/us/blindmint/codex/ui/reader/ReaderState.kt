@@ -70,5 +70,13 @@ data class ReaderState(
     val isComicScrollRestorationComplete: Boolean = false,
 
     // Inverse color mode for PDF faux dark mode
-    val isInverseColorEnabled: Boolean = false
+    val isInverseColorEnabled: Boolean = false,
+
+    // Cached progress strings to avoid recomputation
+    val cachedBookProgress: String = "",
+    val cachedChapterProgress: String = "",
+
+    // Precomputed total characters for PAGE mode
+    val totalChars: Int = 0,
+    val cumulativeChars: List<Int> = emptyList()
 )

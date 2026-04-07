@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.FilterChip
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -43,10 +44,14 @@ fun ChipsWithTitle(
         SettingsSubcategoryTitle(title = title, padding = 0.dp)
         Spacer(modifier = Modifier.height(8.dp))
 
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            content = {
+        androidx.compose.foundation.layout.Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = androidx.compose.ui.Alignment.Center
+        ) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 chips.forEach { item ->
                     FilterChip(
                         modifier = Modifier.height(36.dp),
@@ -58,10 +63,10 @@ fun ChipsWithTitle(
                                 maxLines = 1
                             )
                         },
-                        onClick = { onClick(item) },
+                        onClick = { onClick(item) }
                     )
                 }
-            },
-        )
+            }
+        }
     }
 }

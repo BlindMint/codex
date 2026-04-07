@@ -82,7 +82,7 @@ import us.blindmint.codex.ui.library.LibraryScreen
 import us.blindmint.codex.ui.settings.BrowseSettingsScreen
 import us.blindmint.codex.ui.settings.opds.download.OpdsDownloadModel
 import java.net.URI
-import us.blindmint.codex.utils.FuzzySearchHelper
+import us.blindmint.codex.utils.SearchHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -490,7 +490,7 @@ fun OpdsCatalogContent(
                     android.util.Log.d("OPDS_DEBUG", "Books found: ${allBooks.size}")
 
                     val books = if (showSearch && searchQuery.isNotBlank()) {
-                        FuzzySearchHelper.searchEntries(allBooks, searchQuery)
+                        SearchHelper.searchEntries(allBooks, searchQuery)
                     } else allBooks
 
                     if (categories.isNotEmpty()) {

@@ -36,9 +36,9 @@ import kotlin.math.roundToInt
 object Transitions {
     val DefaultTransitionIn = fadeIn(tween(300))
     val DefaultTransitionOut = fadeOut(tween(300))
+    val FadeTransitionIn = fadeIn(tween(100))
 
-    val FadeTransitionIn = fadeIn(tween(250)) + scaleIn(tween(250), initialScale = 0.975f)
-    val FadeTransitionOut = fadeOut(tween(250))
+    val FadeTransitionOut = fadeOut(tween(100))
 
     val SlidingTransitionIn = fadeIn(tween(350)) +
             slideInHorizontally(tween(350)) { it / 16 }

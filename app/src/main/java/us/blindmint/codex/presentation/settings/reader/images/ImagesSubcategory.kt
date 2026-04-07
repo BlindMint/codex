@@ -15,11 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import us.blindmint.codex.R
 import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
-import us.blindmint.codex.presentation.settings.reader.images.components.ImagesAlignmentOption
-import us.blindmint.codex.presentation.settings.reader.images.components.ImagesColorEffectsOption
-import us.blindmint.codex.presentation.settings.reader.images.components.ImagesCornersRoundnessOption
-import us.blindmint.codex.presentation.settings.reader.images.components.ImagesOption
-import us.blindmint.codex.presentation.settings.reader.images.components.ImagesWidthOption
+import us.blindmint.codex.presentation.settings.reader.images.components.ImageStylePresetOption
 
 fun LazyListScope.ImagesSubcategory(
     titleColor: @Composable () -> Color = { MaterialTheme.colorScheme.primary },
@@ -34,23 +30,7 @@ fun LazyListScope.ImagesSubcategory(
         showDivider = showDivider
     ) {
         item {
-            ImagesOption()
-        }
-
-        item {
-            ImagesColorEffectsOption()
-        }
-
-        item {
-            ImagesCornersRoundnessOption()
-        }
-
-        item {
-            ImagesAlignmentOption()
-        }
-
-        item {
-            ImagesWidthOption()
+            ImageStylePresetOption()
         }
     }
 }
