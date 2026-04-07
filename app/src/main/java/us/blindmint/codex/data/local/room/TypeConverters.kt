@@ -7,13 +7,9 @@
 package us.blindmint.codex.data.local.room
 
 import androidx.room.TypeConverter
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import us.blindmint.codex.domain.library.book.BookSource
 
 class TypeConverters {
-
-    private val gson = Gson()
 
     @TypeConverter
     fun fromStringList(value: String?): List<String> {

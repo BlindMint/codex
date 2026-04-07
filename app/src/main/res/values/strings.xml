@@ -323,6 +323,7 @@
     <string name="custom_fonts_option">Custom fonts</string>
     <string name="add_custom_font">Add custom font</string>
     <string name="delete_custom_font">Delete</string>
+    <string name="confirm_delete_custom_font">Are you sure you want to delete the custom font "%1$s"? This action cannot be undone.</string>
     <string name="font_thickness_option">Font thickness</string>
     <string name="font_style_option">Font style</string>
     <string name="font_size_option">Font size</string>
