@@ -89,10 +89,12 @@ class BookRepositoryImpl @Inject constructor(
             candidates
         } else {
             candidates.filter { bookEntity ->
-                val titleMatch = FuzzySearch.partialRatio(query.lowercase(), bookEntity.title.lowercase()) > 0
+                val fuzzyThreshold = if (query.length < 3) 0 else 60
+                val titleMatch = FuzzySearch.partialRatio(query.lowercase(), bookEntity.title.lowercase()) > fuzzyThreshold
                 val authorMatch = bookEntity.authors.any { author ->
-                    FuzzySearch.partialRatio(query.lowercase(), author.lowercase()) > 0
+                    FuzzySearch.partialRatio(query.lowercase(), author.lowercase()) > fuzzyThreshold
                 }
+
                 titleMatch || authorMatch
             }
         }
