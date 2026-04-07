@@ -18,7 +18,7 @@ import us.blindmint.codex.presentation.settings.components.SettingsSubcategory
 
 import us.blindmint.codex.presentation.settings.reader.font.components.FontFamilyChipsOption
 import us.blindmint.codex.presentation.settings.reader.font.components.FontSizeOption
-import us.blindmint.codex.presentation.settings.reader.font.components.FontStyleOption
+import us.blindmint.codex.presentation.settings.reader.font.components.FontStyleIconOption
 import us.blindmint.codex.presentation.settings.reader.font.components.FontThicknessSliderOption
 import us.blindmint.codex.presentation.settings.reader.font.components.LetterSpacingOption
 
@@ -43,7 +43,7 @@ fun LazyListScope.FontSubcategory(
         }
 
         item {
-            FontStyleOption()
+            FontStyleIconOption()
         }
 
         item {
