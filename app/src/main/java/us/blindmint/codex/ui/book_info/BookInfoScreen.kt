@@ -9,7 +9,9 @@ package us.blindmint.codex.ui.book_info
 import android.os.Parcelable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -72,7 +74,7 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
                 }
             )
             // Delay the visibility to allow init to complete
-            kotlinx.coroutines.delay(50)
+            kotlinx.coroutines.delay(100)
             isVisible = true
         }
 
@@ -86,7 +88,7 @@ data class BookInfoScreen(val bookId: Int) : Screen, Parcelable {
 
         AnimatedVisibility(
             visible = isVisible && state.value.book.id == bookId,
-            enter = fadeIn(animationSpec = tween(durationMillis = 200))
+            enter = fadeIn(animationSpec = tween(durationMillis = 300)) + scaleIn(initialScale = 0.95f, animationSpec = tween(durationMillis = 300))
         ) {
             BookInfoContent(
                 book = state.value.book,
