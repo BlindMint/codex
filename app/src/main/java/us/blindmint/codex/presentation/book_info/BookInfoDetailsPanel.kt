@@ -84,7 +84,7 @@ fun BookInfoDetailsPanel(
 
     AnimatedVisibility(
         visible = isVisible,
-        enter = fadeIn(animationSpec = tween(durationMillis = 150))
+        enter = fadeIn(animationSpec = tween(durationMillis = 200)) + scaleIn(initialScale = 0.975f, animationSpec = tween(durationMillis = 200))
     ) {
     val pattern = remember { SimpleDateFormat("HH:mm dd MMM yyyy", Locale.getDefault()) }
     val lastOpened = remember(book.lastOpened) { pattern.format(Date(book.lastOpened ?: 0)) }
