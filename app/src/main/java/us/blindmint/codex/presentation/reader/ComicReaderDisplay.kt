@@ -363,18 +363,24 @@ fun ComicReaderDisplay(
                                 .pointerInput(showMenu) {
                                     awaitEachGesture {
                                         val down = awaitFirstDown(requireUnconsumed = false)
+                                        val downTime = down.uptimeMillis
                                         val startPos = down.position
                                         var upPos = startPos
+                                        var lastChange: androidx.compose.ui.input.pointer.PointerInputChange? = null
 
                                         do {
                                             val event = awaitPointerEvent()
                                             val change = event.changes.firstOrNull() ?: break
+                                            lastChange = change
                                             if (!change.pressed) {
                                                 upPos = change.position
                                             }
                                         } while (event.changes.any { it.pressed })
 
-                                        if ((upPos - startPos).getDistance() < viewConfiguration.touchSlop) {
+                                        val distance = (upPos - startPos).getDistance()
+                                        val elapsed = (lastChange?.uptimeMillis ?: 0) - downTime
+
+                                        if (distance < viewConfiguration.touchSlop && elapsed > 150) {
                                             if (showMenu) {
                                                 onMenuToggle()
                                             } else {
@@ -484,18 +490,24 @@ fun ComicReaderDisplay(
                                             .pointerInput(showMenu) {
                                                 awaitEachGesture {
                                                     val down = awaitFirstDown(requireUnconsumed = false)
+                                                    val downTime = down.uptimeMillis
                                                     val startPos = down.position
                                                     var upPos = startPos
+                                                    var lastChange: androidx.compose.ui.input.pointer.PointerInputChange? = null
 
                                                     do {
                                                         val event = awaitPointerEvent(PointerEventPass.Initial)
                                                         val change = event.changes.firstOrNull() ?: break
+                                                        lastChange = change
                                                         if (!change.pressed) {
                                                             upPos = change.position
                                                         }
                                                     } while (event.changes.any { it.pressed })
 
-                                                    if ((upPos - startPos).getDistance() < viewConfiguration.touchSlop) {
+                                                    val distance = (upPos - startPos).getDistance()
+                                                    val elapsed = (lastChange?.uptimeMillis ?: 0) - downTime
+
+                                                    if (distance < viewConfiguration.touchSlop && elapsed > 150) {
                                                         val width = size.width.toFloat()
                                                         if (!showMenu && (upPos.x < width * 0.2f || upPos.x > width * 0.8f)) {
                                                             return@awaitEachGesture

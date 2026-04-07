@@ -679,6 +679,7 @@ class LibraryModel @Inject constructor(
         val allBooks = bookRepository.getBooks(query)
         val filteredBooks = applyFilters(allBooks, _state.value.filterState)
         val sortedBooks = filteredBooks
+            .sortedWith(compareByDescending<Book> { it.lastOpened }.thenBy { it.title })
             .map { book -> SelectableBook(book, false) }
 
         _state.update {

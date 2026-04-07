@@ -11,6 +11,7 @@ import android.os.Parcelable
 import android.util.Log
 import android.view.WindowManager
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues

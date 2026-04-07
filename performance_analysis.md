@@ -136,18 +136,18 @@ Settings have 60+ granular sub-screens, increasing overhead.
 ## Implementation Plan
 
 ### Phase 1: High-Impact Reader Fixes
-- [ ] Progress caching and `remember` optimization
-- [ ] Scroll restoration improvements
-- [ ] Menu animation tweaks
+- [x] Progress caching and `remember` optimization
+- [x] Scroll restoration improvements
+- [x] Menu animation tweaks
 
 ### Phase 2: Library Performance
-- [ ] DB-level sorting/filtering
-- [ ] Refresh delay removal
-- [ ] Search debounce reduction
+- [x] Refresh delay removal
+- [x] Search debounce reduction
+- [~] DB-level sorting/filtering (sorting kept in-memory due to lastOpened not in DB)
 
 ### Phase 3: Polish Improvements
-- [ ] Navigation transitions
-- [ ] Settings consolidation (if needed)
+- [x] Navigation transitions
+- [x] Settings consolidation (if needed) - skipped as low impact
 
 ## Testing Checklist
 After each phase or major change:
