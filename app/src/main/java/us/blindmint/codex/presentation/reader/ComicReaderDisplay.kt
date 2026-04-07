@@ -380,7 +380,7 @@ fun ComicReaderDisplay(
                                         val distance = (upPos - startPos).getDistance()
                                         val elapsed = (lastChange?.uptimeMillis ?: 0) - downTime
 
-                                        if (distance < viewConfiguration.touchSlop && elapsed > 150) {
+                                                    if (distance < viewConfiguration.touchSlop && elapsed > 80) {
                                             if (showMenu) {
                                                 onMenuToggle()
                                             } else {
@@ -507,7 +507,7 @@ fun ComicReaderDisplay(
                                                     val distance = (upPos - startPos).getDistance()
                                                     val elapsed = (lastChange?.uptimeMillis ?: 0) - downTime
 
-                                                    if (distance < viewConfiguration.touchSlop && elapsed > 150) {
+                                        if (distance < viewConfiguration.touchSlop && elapsed > 80) {
                                                         val width = size.width.toFloat()
                                                         if (!showMenu && (upPos.x < width * 0.2f || upPos.x > width * 0.8f)) {
                                                             return@awaitEachGesture
