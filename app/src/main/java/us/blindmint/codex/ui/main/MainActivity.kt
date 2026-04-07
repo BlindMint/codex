@@ -227,7 +227,7 @@ class MainActivity : AppCompatActivity() {
                                              .togetherWith(Transitions.FadeTransitionOut)
                                      } else {
                                          Transitions.FadeTransitionIn
-                                             .togetherWith(androidx.compose.animation.ExitTransition.None)
+                                             .togetherWith(Transitions.FadeTransitionOut)
                                      }
                                  }
 
@@ -237,7 +237,7 @@ class MainActivity : AppCompatActivity() {
                                              .togetherWith(Transitions.FadeTransitionOut)
                                      } else {
                                          Transitions.FadeTransitionIn
-                                             .togetherWith(androidx.compose.animation.ExitTransition.None)
+                                             .togetherWith(Transitions.FadeTransitionOut)
                                      }
                                  }
                             }
