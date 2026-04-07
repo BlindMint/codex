@@ -24,11 +24,11 @@ import us.blindmint.codex.data.util.CachedFileFactory
 import us.blindmint.codex.data.parser.FileParser
 import us.blindmint.codex.data.parser.SpeedReaderWordExtractor
 import us.blindmint.codex.data.parser.TextParser
+import us.blindmint.codex.utils.minSubstringDistance
 import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.file.CachedFileCompat
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.BookWithCover
-import me.xdrop.fuzzywuzzy.FuzzySearch
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.SpeedReaderWord
 import us.blindmint.codex.domain.repository.BookRepository
@@ -72,34 +72,49 @@ class BookRepositoryImpl @Inject constructor(
     /**
      * Get all books matching [query] from database.
      * Empty [query] equals to all books.
-     * Uses fuzzy search to match against title and authors.
+     * Uses native fuzzy search to match against title and authors.
      */
     override suspend fun getBooks(query: String): List<Book> {
         Log.i(GET_BOOKS, "Searching for books with query: \"$query\".")
 
-        // For non-blank queries, use a DB LIKE pre-filter to reduce the candidate set
-        // before running the more expensive FuzzyWuzzy comparison.
-        val candidates = if (query.isBlank()) {
+        val lowerQuery = query.lowercase()
+        val threshold = maxOf(1, lowerQuery.length / 3)  // Dynamic threshold
+
+        // Pre-filter with DB LIKE for speed (checks if title or any author contains any query char)
+        val candidates = if (lowerQuery.isBlank()) {
             database.getAllBooks()
         } else {
-            database.searchBooksByTitleOrAuthor(query)
+            database.getAllBooks().filter { book ->
+                val lowerTitle = book.title.lowercase()
+                val lowerAuthors = book.authors.joinToString(" ").lowercase()
+                lowerQuery.any { char -> char in lowerTitle || char in lowerAuthors }
+            }
         }
 
-        val filteredBooks = if (query.isBlank()) {
+        val filteredBooks = if (lowerQuery.isBlank()) {
             candidates
         } else {
             candidates.filter { bookEntity ->
-                val titleMatch = FuzzySearch.partialRatio(query.lowercase(), bookEntity.title.lowercase()) > 10
-                val authorMatch = bookEntity.authors.any { author ->
-                    FuzzySearch.partialRatio(query.lowercase(), author.lowercase()) > 10
-                }
+                val lowerTitle = bookEntity.title.lowercase()
+                val titleDist = minSubstringDistance(lowerQuery, lowerTitle, threshold)
+                val authorDist = bookEntity.authors.minOfOrNull { author ->
+                    minSubstringDistance(lowerQuery, author.lowercase(), threshold)
+                } ?: Int.MAX_VALUE
 
-                titleMatch || authorMatch
+                minOf(titleDist, authorDist) <= threshold
+            }.sortedBy { bookEntity ->
+                val lowerTitle = bookEntity.title.lowercase()
+                val titleDist = minSubstringDistance(lowerQuery, lowerTitle, threshold)
+                val authorDist = bookEntity.authors.minOfOrNull { author ->
+                    minSubstringDistance(lowerQuery, author.lowercase(), threshold)
+                } ?: Int.MAX_VALUE
+                minOf(titleDist, authorDist)
             }
         }
 
         Log.i(GET_BOOKS, "Found ${filteredBooks.size} books (from ${candidates.size} candidates).")
 
+        // Rest of the method (history lookup, mapping) remains unchanged
         val bookIds = filteredBooks.map { it.id }
         val histories = database.getLatestHistoryForBooks(bookIds)
         val historyMap: Map<Int, HistoryEntity?> = histories.groupBy { it.bookId }.mapValues { entry -> entry.value.firstOrNull() }

@@ -6,20 +6,17 @@
 
 package us.blindmint.codex.utils
 
-import me.xdrop.fuzzywuzzy.FuzzySearch
 import us.blindmint.codex.domain.opds.OpdsEntry
 import us.blindmint.codex.presentation.settings.Preference
 import us.blindmint.codex.presentation.settings.SettingsItem
 
 /**
- * Fuzzy search utility for OPDS catalog browsing and settings.
+ * Search utility for OPDS catalog browsing and settings.
  *
  * Provides fuzzy search capabilities to improve discoverability in OPDS catalogs and settings menus.
- * Uses the FuzzyWuzzy library for string similarity matching.
- *
- * @property threshold Minimum similarity score (0-100) to consider a match
+ * Uses native Levenshtein distance for string similarity matching.
  */
-object FuzzySearchHelper {
+object SearchHelper {
 
     /**
      * Search through OPDS entries using fuzzy matching.
@@ -40,15 +37,15 @@ object FuzzySearchHelper {
 
         val entryScores = entries.map { entry ->
             val titleScore = entry.title?.let { title ->
-                FuzzySearch.partialRatio(queryLower, title.lowercase())
+                partialSimilarity(queryLower, title.lowercase())
             } ?: 0
 
             val authorScore = entry.author?.let { author ->
-                FuzzySearch.partialRatio(queryLower, author.lowercase())
+                partialSimilarity(queryLower, author.lowercase())
             } ?: 0
 
             val summaryScore = entry.summary?.let { summary ->
-                FuzzySearch.partialRatio(queryLower, summary.lowercase())
+                partialSimilarity(queryLower, summary.lowercase())
             } ?: 0
 
             val maxScore = maxOf(titleScore, authorScore, summaryScore)
@@ -80,7 +77,7 @@ object FuzzySearchHelper {
         val queryLower = query.lowercase()
 
         val itemScores = items.map { item ->
-            val titleScore = FuzzySearch.partialRatio(queryLower, item.title.lowercase())
+            val titleScore = partialSimilarity(queryLower, item.title.lowercase())
             val maxScore = titleScore
 
             Pair(item, maxScore)
@@ -113,9 +110,9 @@ object FuzzySearchHelper {
             items.forEach { item ->
                 if (!item.enabled || item.title.isBlank()) return@forEach
 
-                val titleScore = FuzzySearch.partialRatio(queryLower, item.title.lowercase())
+                val titleScore = partialSimilarity(queryLower, item.title.lowercase())
                 val subtitleScore = item.subtitle?.let {
-                    FuzzySearch.partialRatio(queryLower, it.lowercase())
+                    partialSimilarity(queryLower, it.lowercase())
                 } ?: 0
 
                 val maxScore = maxOf(titleScore, subtitleScore)
@@ -147,9 +144,9 @@ object FuzzySearchHelper {
                 is Preference.PreferenceItem<*, *> -> {
                     if (!pref.enabled || pref.title.isBlank()) return@forEach
 
-                    val titleScore = FuzzySearch.partialRatio(queryLower, pref.title.lowercase())
+                    val titleScore = partialSimilarity(queryLower, pref.title.lowercase())
                     val subtitleScore = pref.subtitle?.let {
-                        FuzzySearch.partialRatio(queryLower, it.lowercase())
+                        partialSimilarity(queryLower, it.lowercase())
                     } ?: 0
 
                     val maxScore = maxOf(titleScore, subtitleScore)

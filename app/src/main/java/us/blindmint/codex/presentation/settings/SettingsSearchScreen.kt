@@ -55,7 +55,7 @@ import us.blindmint.codex.presentation.navigator.NavigatorBackIconButton
 import us.blindmint.codex.domain.navigator.Screen
 import us.blindmint.codex.presentation.core.components.common.LazyColumnWithScrollbar
 import us.blindmint.codex.presentation.core.components.common.StyledText
-import us.blindmint.codex.utils.FuzzySearchHelper
+import us.blindmint.codex.utils.SearchHelper
 import us.blindmint.codex.ui.settings.ReaderSettingsScreen
 import us.blindmint.codex.ui.settings.AppearanceSettingsScreen
 import us.blindmint.codex.ui.library.LibrarySettingsScreen
@@ -274,7 +274,7 @@ private fun buildSearchResults(
     isLtr: Boolean
 ): List<SearchResultItem> {
     return screens.flatMap { screenData ->
-        FuzzySearchHelper.searchPreferences(
+        SearchHelper.searchPreferences(
             preferences = screenData.preferences,
             query = searchKey,
             threshold = 60,
