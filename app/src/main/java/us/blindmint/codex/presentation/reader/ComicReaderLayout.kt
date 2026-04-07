@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -97,6 +98,7 @@ fun ComicReaderLayout(
     }
 
     val loadMutex = remember { Mutex() }
+    val listState = rememberLazyListState()
 
     suspend fun loadPage(pageIndex: Int): ImageBitmap? {
         loadedPages[pageIndex]?.first?.let { return it }
@@ -220,6 +222,7 @@ fun ComicReaderLayout(
                 comicScaleType = comicScaleType,
                 showMenu = showMenu,
                 showPageIndicator = showPageIndicator,
+                listState = listState,
                 onLoadingComplete = onLoadingComplete,
                 onScrollRestorationComplete = onScrollRestorationComplete,
                 onMenuToggle = onMenuToggle,

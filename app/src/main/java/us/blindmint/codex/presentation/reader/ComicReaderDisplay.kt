@@ -116,6 +116,7 @@ fun ComicReaderDisplay(
     comicScaleType: Int,
     showMenu: Boolean,
     showPageIndicator: Boolean,
+    listState: LazyListState,
     onLoadingComplete: () -> Unit,
     onScrollRestorationComplete: () -> Unit,
     onMenuToggle: () -> Unit,
@@ -360,9 +361,10 @@ fun ComicReaderDisplay(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .pointerInput(showMenu) {
+                                .pointerInput(showMenu, listState) {
                                     awaitEachGesture {
                                         val down = awaitFirstDown(requireUnconsumed = false)
+                                        if (listState.isScrollInProgress) return@awaitEachGesture
                                         val downTime = down.uptimeMillis
                                         val startPos = down.position
                                         var upPos = startPos
@@ -378,9 +380,8 @@ fun ComicReaderDisplay(
                                         } while (event.changes.any { it.pressed })
 
                                         val distance = (upPos - startPos).getDistance()
-                                        val elapsed = (lastChange?.uptimeMillis ?: 0) - downTime
 
-                                        if (distance < viewConfiguration.touchSlop && (showMenu || elapsed > 120)) {
+                                        if (distance < viewConfiguration.touchSlop) {
                                             if (showMenu) {
                                                 onMenuToggle()
                                             } else {
@@ -487,27 +488,24 @@ fun ComicReaderDisplay(
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .pointerInput(showMenu) {
+                                            .pointerInput(showMenu, listState) {
                                                 awaitEachGesture {
                                                     val down = awaitFirstDown(requireUnconsumed = false)
-                                                    val downTime = down.uptimeMillis
+                                                    if (listState.isScrollInProgress) return@awaitEachGesture
                                                     val startPos = down.position
                                                     var upPos = startPos
-                                                    var lastChange: androidx.compose.ui.input.pointer.PointerInputChange? = null
 
                                                     do {
                                                         val event = awaitPointerEvent(PointerEventPass.Initial)
                                                         val change = event.changes.firstOrNull() ?: break
-                                                        lastChange = change
                                                         if (!change.pressed) {
                                                             upPos = change.position
                                                         }
                                                     } while (event.changes.any { it.pressed })
 
                                                     val distance = (upPos - startPos).getDistance()
-                                                    val elapsed = (lastChange?.uptimeMillis ?: 0) - downTime
 
-                                                    if (distance < viewConfiguration.touchSlop && (showMenu || elapsed > 120)) {
+                                                    if (distance < viewConfiguration.touchSlop) {
                                                         val width = size.width.toFloat()
                                                         if (!showMenu && (upPos.x < width * 0.2f || upPos.x > width * 0.8f)) {
                                                             return@awaitEachGesture
