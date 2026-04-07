@@ -221,15 +221,15 @@ class MainActivity : AppCompatActivity() {
                                 androidx.compose.animation.EnterTransition.None
                                     .togetherWith(androidx.compose.animation.ExitTransition.None)
                             } else when (lastEvent) {
-                                StackEvent.Default -> {
+                                 StackEvent.Default -> {
                                      if (isReaderScreen) {
                                          Transitions.FadeTransitionIn
                                              .togetherWith(Transitions.FadeTransitionOut)
                                      } else {
                                          Transitions.FadeTransitionIn
-                                             .togetherWith(Transitions.FadeTransitionOut)
+                                             .togetherWith(androidx.compose.animation.ExitTransition.None)
                                      }
-                                }
+                                 }
 
                                  StackEvent.Pop -> {
                                      if (isReaderScreen) {
@@ -237,7 +237,7 @@ class MainActivity : AppCompatActivity() {
                                              .togetherWith(Transitions.FadeTransitionOut)
                                      } else {
                                          Transitions.FadeTransitionIn
-                                             .togetherWith(Transitions.FadeTransitionOut)
+                                             .togetherWith(androidx.compose.animation.ExitTransition.None)
                                      }
                                  }
                             }
