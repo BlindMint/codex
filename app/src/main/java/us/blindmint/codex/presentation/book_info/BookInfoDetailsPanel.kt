@@ -78,13 +78,13 @@ fun BookInfoDetailsPanel(
     var isVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(50)
+        kotlinx.coroutines.delay(25)
         isVisible = true
     }
 
     AnimatedVisibility(
         visible = isVisible,
-        enter = fadeIn(animationSpec = tween(durationMillis = 300)) + scaleIn(initialScale = 0.95f, animationSpec = tween(durationMillis = 300))
+        enter = fadeIn(animationSpec = tween(durationMillis = 150))
     ) {
     val pattern = remember { SimpleDateFormat("HH:mm dd MMM yyyy", Locale.getDefault()) }
     val lastOpened = remember(book.lastOpened) { pattern.format(Date(book.lastOpened ?: 0)) }
