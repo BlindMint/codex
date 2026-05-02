@@ -907,8 +907,28 @@ class ReaderModel @Inject constructor(
 
                 is ReaderEvent.OnComicTotalPagesLoaded -> {
                     _state.update {
+                        val clampedPage = if (event.totalPages > 0) {
+                            it.currentComicPage.coerceIn(0, event.totalPages - 1)
+                        } else {
+                            it.currentComicPage
+                        }
+                        val progress = if (event.totalPages > 0) {
+                            (clampedPage + 1).toFloat() / event.totalPages
+                        } else {
+                            it.book.progress
+                        }
                         it.copy(
-                            totalComicPages = event.totalPages
+                            totalComicPages = event.totalPages,
+                            currentComicPage = clampedPage,
+                            book = if (it.book.isPageBased && clampedPage != it.currentComicPage) {
+                                it.book.copy(
+                                    currentPage = clampedPage,
+                                    lastPageRead = clampedPage,
+                                    progress = progress
+                                )
+                            } else {
+                                it.book
+                            }
                         )
                     }
                 }

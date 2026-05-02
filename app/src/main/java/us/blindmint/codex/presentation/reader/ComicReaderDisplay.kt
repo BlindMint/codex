@@ -62,6 +62,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.LinkedHashMap
+import kotlin.math.max
 
 private const val TAG = "ImageBasedReader"
 private const val SLIDER_TAG = "CodexComicSlider"
@@ -97,6 +98,54 @@ private suspend fun PointerInputScope.detectLongPressNonBlocking(
 
         if (cancelled == null) {
             onLongPress(startPos)
+        }
+    }
+}
+
+private suspend fun PointerInputScope.detectCenterTapNonConsuming(
+    onCenterTap: () -> Unit
+) {
+    awaitEachGesture {
+        val down = awaitFirstDown(requireUnconsumed = false)
+        val startPos = down.position
+        var upPos = startPos
+        var upTime = down.uptimeMillis
+        var maxDistance = 0f
+        var consumed = down.isConsumed
+        var multiTouch = false
+
+        do {
+            val event = awaitPointerEvent(PointerEventPass.Final)
+            if (event.changes.size > 1) {
+                multiTouch = true
+            }
+            consumed = consumed || event.changes.any { it.isConsumed }
+
+            val change = event.changes.firstOrNull { it.id == down.id }
+                ?: event.changes.firstOrNull()
+            if (change != null) {
+                maxDistance = max(maxDistance, (change.position - startPos).getDistance())
+                if (!change.pressed) {
+                    upPos = change.position
+                    upTime = change.uptimeMillis
+                }
+            }
+        } while (event.changes.any { it.pressed })
+
+        val width = size.width.toFloat()
+        val height = size.height.toFloat()
+        val isCenterTap = upPos.x in (width * 0.2f)..(width * 0.8f) &&
+            upPos.y in (height * 0.2f)..(height * 0.8f)
+        val duration = upTime - down.uptimeMillis
+
+        if (
+            !multiTouch &&
+            !consumed &&
+            maxDistance < viewConfiguration.touchSlop &&
+            duration < viewConfiguration.longPressTimeoutMillis &&
+            isCenterTap
+        ) {
+            onCenterTap()
         }
     }
 }
@@ -180,7 +229,7 @@ fun ComicReaderDisplay(
         pageCount = { maxOf(1, totalPages) }
     )
 
-    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = 0)
+    val lazyListState = listState
 
     var verticalZoomScale by remember { mutableFloatStateOf(1f) }
     var verticalOffsetX by remember { mutableFloatStateOf(0f) }
@@ -365,27 +414,32 @@ fun ComicReaderDisplay(
                                     awaitEachGesture {
                                         val down = awaitFirstDown(requireUnconsumed = false)
                                         if (listState.isScrollInProgress) return@awaitEachGesture
-                                        val downTime = down.uptimeMillis
                                         val startPos = down.position
                                         var upPos = startPos
-                                        var lastChange: androidx.compose.ui.input.pointer.PointerInputChange? = null
+                                        var upTime = down.uptimeMillis
 
                                         do {
                                             val event = awaitPointerEvent()
                                             val change = event.changes.firstOrNull() ?: break
-                                            lastChange = change
                                             if (!change.pressed) {
                                                 upPos = change.position
+                                                upTime = change.uptimeMillis
                                             }
                                         } while (event.changes.any { it.pressed })
 
                                         val distance = (upPos - startPos).getDistance()
+                                        val duration = upTime - down.uptimeMillis
 
-                                        if (distance < viewConfiguration.touchSlop) {
+                                        if (distance < viewConfiguration.touchSlop && duration < viewConfiguration.longPressTimeoutMillis) {
+                                            val width = size.width.toFloat()
+                                            val height = size.height.toFloat()
+                                            val isCenterTap = upPos.x in (width * 0.2f)..(width * 0.8f) &&
+                                                upPos.y in (height * 0.2f)..(height * 0.8f)
                                             if (showMenu) {
-                                                onMenuToggle()
+                                                if (isCenterTap) {
+                                                    onMenuToggle()
+                                                }
                                             } else {
-                                                val width = size.width.toFloat()
                                                 when {
                                                     upPos.x < width * 0.2f -> {
                                                         scope.launch {
@@ -403,7 +457,7 @@ fun ComicReaderDisplay(
                                                         }
                                                     }
 
-                                                    else -> onMenuToggle()
+                                                    isCenterTap -> onMenuToggle()
                                                 }
                                             }
                                         }
@@ -459,10 +513,20 @@ fun ComicReaderDisplay(
                         }
                     }
                 } else {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        LazyColumn(
-                            state = lazyListState,
-                            modifier = Modifier.fillMaxSize(),
+	                    Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .pointerInput(showMenu, lazyListState) {
+                                    detectCenterTapNonConsuming {
+                                        if (!lazyListState.isScrollInProgress) {
+                                            onMenuToggle()
+                                        }
+                                    }
+                                }
+                        ) {
+	                        LazyColumn(
+	                            state = lazyListState,
+	                            modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(
                                 top = 0.dp,
                                 bottom = if (isVertical) 0.dp else (WindowInsets.displayCutout.asPaddingValues()
@@ -485,38 +549,12 @@ fun ComicReaderDisplay(
 
                                 if (pageImage != null) {
                                     val webtoonContentScale = if (contentScale == ContentScale.Fit) ContentScale.FillWidth else contentScale
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .pointerInput(showMenu, listState) {
-                                                awaitEachGesture {
-                                                    val down = awaitFirstDown(requireUnconsumed = false)
-                                                    if (listState.isScrollInProgress) return@awaitEachGesture
-                                                    val startPos = down.position
-                                                    var upPos = startPos
-
-                                                    do {
-                                                        val event = awaitPointerEvent(PointerEventPass.Initial)
-                                                        val change = event.changes.firstOrNull() ?: break
-                                                        if (!change.pressed) {
-                                                            upPos = change.position
-                                                        }
-                                                    } while (event.changes.any { it.pressed })
-
-                                                    val distance = (upPos - startPos).getDistance()
-
-                                                    if (distance < viewConfiguration.touchSlop) {
-                                                        val width = size.width.toFloat()
-                                                        if (!showMenu && (upPos.x < width * 0.2f || upPos.x > width * 0.8f)) {
-                                                            return@awaitEachGesture
-                                                        }
-                                                        onMenuToggle()
-                                                    }
-                                                }
-                                            }
-                                            .pointerInput(onLongPress, logicalPage, pageImage) {
-                                                if (onLongPress == null) return@pointerInput
-                                                detectLongPressNonBlocking { startPos ->
+	                                    Box(
+	                                        modifier = Modifier
+	                                            .fillMaxWidth()
+	                                            .pointerInput(onLongPress, logicalPage, pageImage) {
+	                                                if (onLongPress == null) return@pointerInput
+	                                                detectLongPressNonBlocking { startPos ->
                                                     val bitmapW = pageImage?.width?.toFloat() ?: return@detectLongPressNonBlocking
                                                     val bitmapH = pageImage?.height?.toFloat() ?: return@detectLongPressNonBlocking
                                                     val containerW = size.width.toFloat()
