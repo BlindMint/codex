@@ -93,4 +93,10 @@
 -dontwarn org.tukaani.xz.LZMAInputStream
 -dontwarn org.tukaani.xz.PowerPCOptions
 -dontwarn org.tukaani.xz.SPARCOptions
+
+# Optional compile-time annotations referenced by Tink/security-crypto.
+-dontwarn com.google.errorprone.annotations.CanIgnoreReturnValue
+-dontwarn com.google.errorprone.annotations.CheckReturnValue
+-dontwarn com.google.errorprone.annotations.Immutable
+-dontwarn com.google.errorprone.annotations.RestrictedApi
 -dontwarn org.tukaani.xz.X86Options

@@ -10,7 +10,6 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
-import us.blindmint.codex.data.repository.FileSystemRepositoryImpl
 import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.repository.FileSystemRepository
 import us.blindmint.codex.domain.util.ContentHasher
@@ -40,7 +39,9 @@ class BulkImportBooksFromFolder @Inject constructor(
 
         val supportedExtensions = provideExtensions()
         val existingPathsAndHashes = bookRepository.getAllFilePathsAndHashes()
-        val existingPaths = existingPathsAndHashes.map { it.first }
+        val existingPaths = existingPathsAndHashes.mapTo(mutableSetOf()) { it.first.lowercase() }
+        val existingHashes = existingPathsAndHashes
+            .mapNotNullTo(mutableSetOf()) { it.second.takeIf(String::isNotBlank) }
         var importedCount = 0
 
         val allFiles = getAllFilesFromFolder(folderUri)
@@ -50,9 +51,7 @@ class BulkImportBooksFromFolder @Inject constructor(
             val isSupported = supportedExtensions.any { ext ->
                 cachedFile.name.endsWith(ext, ignoreCase = true)
             }
-            val alreadyExists = existingPaths.any { existingPath ->
-                existingPath.equals(cachedFile.uri.toString(), ignoreCase = true)
-            }
+            val alreadyExists = cachedFile.uri.toString().lowercase() in existingPaths
             val canAccess = cachedFile.canAccess()
 
             isSupported && !alreadyExists && canAccess
@@ -62,27 +61,22 @@ class BulkImportBooksFromFolder @Inject constructor(
 
         supportedFiles.forEachIndexed { index, cachedFile ->
             try {
+                val contentHash = try {
+                    ContentHasher.computePartialHash(context, cachedFile.uri)
+                } catch (e: Exception) {
+                    Log.w(BULK_IMPORT, "Could not hash ${cachedFile.name}: ${e.message}")
+                    ""
+                }
+
+                if (contentHash.isNotEmpty() && contentHash in existingHashes) {
+                    Log.i(BULK_IMPORT, "Skipping duplicate (by hash): ${cachedFile.name}")
+                    onProgress(BulkImportProgress(index + 1, supportedFiles.size, cachedFile.name))
+                    return@forEachIndexed
+                }
+
                 val nullableBook = fileSystemRepository.getBookFromFile(cachedFile)
                 when (nullableBook) {
                     is us.blindmint.codex.domain.library.book.NullableBook.NotNull -> {
-                        // Partial hash (first 64 KB) — fast duplicate detection for renamed/moved files.
-                        // Done after parse so files that fail to parse are never hashed.
-                        val contentHash = try {
-                            ContentHasher.computePartialHash(context, cachedFile.uri)
-                        } catch (e: Exception) {
-                            Log.w(BULK_IMPORT, "Could not hash ${cachedFile.name}: ${e.message}")
-                            ""
-                        }
-
-                        if (contentHash.isNotEmpty()) {
-                            val existingByHash = bookRepository.getBookByContentHash(contentHash)
-                            if (existingByHash != null) {
-                                Log.i(BULK_IMPORT, "Skipping duplicate (by hash): ${cachedFile.name}")
-                                onProgress(BulkImportProgress(index + 1, supportedFiles.size, cachedFile.name))
-                                return@forEachIndexed
-                            }
-                        }
-
                         val bookWithHash = nullableBook.bookWithCover!!.copy(
                             book = nullableBook.bookWithCover.book.copy(
                                 contentHash = contentHash,
@@ -90,9 +84,13 @@ class BulkImportBooksFromFolder @Inject constructor(
                             )
                         )
                         insertBook.execute(bookWithHash)
+                        if (contentHash.isNotEmpty()) {
+                            existingHashes += contentHash
+                        }
+                        existingPaths += cachedFile.uri.toString().lowercase()
                         importedCount++
                         Log.i(BULK_IMPORT, "Imported: ${cachedFile.name}")
-                        onProgress(BulkImportProgress(importedCount, supportedFiles.size, cachedFile.name))
+                        onProgress(BulkImportProgress(index + 1, supportedFiles.size, cachedFile.name))
                     }
                     is us.blindmint.codex.domain.library.book.NullableBook.Null -> {
                         Log.w(BULK_IMPORT, "Failed to parse: ${cachedFile.name} - ${nullableBook.message}")

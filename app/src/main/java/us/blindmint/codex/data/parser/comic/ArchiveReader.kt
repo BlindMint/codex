@@ -16,6 +16,8 @@ import us.blindmint.codex.data.parser.NaturalOrderComparator
 import us.blindmint.codex.domain.file.CachedFile
 import java.io.InputStream
 import java.nio.ByteBuffer
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 import kotlin.concurrent.Volatile
 import javax.inject.Inject
 
@@ -44,9 +46,54 @@ class ArchiveReader @Inject constructor() {
     fun openArchive(cachedFile: CachedFile): ArchiveHandle {
         val format = getArchiveFormat(cachedFile)
         return when (format) {
-            ArchiveFormat.ZIP, ArchiveFormat.RAR, ArchiveFormat.SEVEN_Z -> LibArchiveHandle(cachedFile)
+            ArchiveFormat.ZIP -> ZipArchiveHandle(cachedFile)
+            ArchiveFormat.RAR, ArchiveFormat.SEVEN_Z -> LibArchiveHandle(cachedFile)
             ArchiveFormat.UNKNOWN -> throw IllegalArgumentException("Unsupported archive format for file: ${cachedFile.name}")
         }
+    }
+
+    private class ZipArchiveHandle(cachedFile: CachedFile) : ArchiveHandle {
+        private val zipFile: ZipFile
+
+        private val _entries: List<ZipArchiveEntryImpl>
+
+        init {
+            val file = cachedFile.rawFile
+                ?: throw IllegalStateException("No raw file available for ${cachedFile.name}")
+
+            zipFile = ZipFile(file)
+            _entries = zipFile.entries()
+                .asSequence()
+                .filter { !it.isDirectory && ArchiveReader.isImageFile(it.name) }
+                .map { ZipArchiveEntryImpl(it) }
+                .sortedWith(Comparator { a, b ->
+                    NaturalOrderComparator.compare(a.getPath(), b.getPath())
+                })
+                .toList()
+        }
+
+        override val entries: List<ComicArchiveEntry>
+            get() = _entries
+
+        override fun getInputStream(entry: ComicArchiveEntry): InputStream? {
+            val zipEntry = (entry as? ZipArchiveEntryImpl)?.zipEntry
+                ?: zipFile.getEntry(entry.getPath())
+                ?: return null
+            return zipFile.getInputStream(zipEntry)
+        }
+
+        override fun getEntryCount(): Int = _entries.size
+
+        override fun close() {
+            zipFile.close()
+        }
+    }
+
+    private class ZipArchiveEntryImpl(val zipEntry: ZipEntry) : ComicArchiveEntry {
+        override fun getPath(): String = zipEntry.name
+        override fun getSize(): Long = zipEntry.size
+        override fun isDirectory(): Boolean = zipEntry.isDirectory
+        override fun getMtime(): Long = zipEntry.time
     }
 
     private class LibArchiveInputStream(buffer: Long, size: Long) : InputStream() {

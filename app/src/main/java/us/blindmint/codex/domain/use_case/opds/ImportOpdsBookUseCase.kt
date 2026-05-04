@@ -329,21 +329,40 @@ class ImportOpdsBookUseCase @Inject constructor(
             }
         }
 
-        val (bookBytes, suggestedFilename) = opdsRepository.downloadBook(resolvedUrl, username, password, onProgress)
+        val downloadTempFile = File(application.cacheDir, "temp_book_${System.currentTimeMillis()}.download")
+        val download = try {
+            opdsRepository.downloadBook(resolvedUrl, downloadTempFile, username, password, onProgress)
+        } catch (e: Exception) {
+            downloadTempFile.delete()
+            throw e
+        }
 
-        val extension = determineExtension(acquisitionLink.type, acquisitionLink.href, suggestedFilename)
+        val extension = determineExtension(acquisitionLink.type, acquisitionLink.href, download.suggestedFilename)
 
         val tempFile = File(application.cacheDir, "temp_book_${System.currentTimeMillis()}$extension")
-        tempFile.writeBytes(bookBytes)
-        android.util.Log.d("OPDS_DEBUG", "Saved ${bookBytes.size} bytes to temp file: ${tempFile.absolutePath}")
+        if (download.file != tempFile) {
+            if (tempFile.exists()) tempFile.delete()
+            download.file.renameTo(tempFile).takeIf { it } ?: run {
+                download.file.inputStream().use { input ->
+                    tempFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                download.file.delete()
+            }
+        }
+        android.util.Log.d("OPDS_DEBUG", "Saved ${download.bytesDownloaded} bytes to temp file: ${tempFile.absolutePath}")
 
         // Debug: Check if file looks like a ZIP/EPUB
         try {
-            val firstBytes = bookBytes.take(4).toByteArray()
+            val firstBytes = ByteArray(4)
+            val bytesForHeader = tempFile.inputStream().use { it.read(firstBytes) }
             val hexString = firstBytes.joinToString("") { "%02x".format(it) }
             android.util.Log.d("OPDS_DEBUG", "First 4 bytes of file: $hexString (should be 504b for ZIP)")
-            if (bookBytes.size > 100) {
-                val header = String(bookBytes.take(100).toByteArray(), Charsets.UTF_8)
+            if (bytesForHeader > 0 && tempFile.length() > 100) {
+                val headerBytes = ByteArray(100)
+                tempFile.inputStream().use { it.read(headerBytes) }
+                val header = String(headerBytes, Charsets.UTF_8)
                 if (header.contains("<html", ignoreCase = true)) {
                     android.util.Log.e("OPDS_DEBUG", "Downloaded file appears to be HTML, not a book file!")
                     android.util.Log.d("OPDS_DEBUG", "HTML content preview: ${header.take(200)}")
@@ -356,13 +375,6 @@ class ImportOpdsBookUseCase @Inject constructor(
         try {
             // Parse the file using a direct File-based approach
             android.util.Log.d("OPDS_DEBUG", "Attempting to parse file: ${tempFile.name} (extension: $extension)")
-
-            // Create a simple wrapper that provides the raw file
-            val simpleCachedFile = object {
-                val rawFile = tempFile
-                val name = tempFile.name
-                val path = tempFile.absolutePath
-            }
 
             // For EPUB files, parse directly
             val parsedBook = if (extension == ".epub") {
@@ -471,12 +483,14 @@ class ImportOpdsBookUseCase @Inject constructor(
                 }
             }
 
-            val contentHash = ContentHasher.computeHashFromBytes(bookBytes)
+            val contentHash = tempFile.inputStream().use { input ->
+                ContentHasher.computeHashFromStream(input)
+            }
             val bookWithPath = parsedBook.book.copy(
                 filePath = bookFile.uri.toString(),
                 opdsCalibreId = calibreId,
                 contentHash = contentHash,
-                fileSize = bookBytes.size.toLong()
+                fileSize = tempFile.length()
             )
             val bookWithMetadata = opdsMetadataMapper.applyOpdsMetadataToBook(bookWithPath, opdsEntry)
 
@@ -488,6 +502,7 @@ class ImportOpdsBookUseCase @Inject constructor(
             )
         } finally {
             tempFile.delete()
+            downloadTempFile.delete()
         }
     }
 

@@ -13,6 +13,7 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
 import androidx.core.net.toUri
+import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import us.blindmint.codex.data.local.dto.BookEntity
@@ -47,6 +48,8 @@ private const val GET_BOOKS_BY_ID = "GET BOOKS, REPO"
 private const val INSERT_BOOK = "INSERT BOOK, REPO"
 private const val UPDATE_BOOK = "UPDATE BOOK, REPO"
 private const val DELETE_BOOKS = "DELETE BOOKS, REPO"
+private const val TEXT_CACHE_MAX_UNITS = 3_000_000
+private const val WORD_CACHE_MAX_UNITS = 1_000_000
 
 @Suppress("DEPRECATION")
 @Singleton
@@ -58,15 +61,58 @@ class BookRepositoryImpl @Inject constructor(
     private val bookMapper: BookMapper
 ) : BookRepository {
 
-    private val textCache = LruCache<Int, List<ReaderText>>(5)
+    private data class ReaderCacheKey(
+        val bookId: Int,
+        val filePath: String,
+        val fileSize: Long,
+        val lastModified: Long,
+        val contentHash: String
+    )
 
-    private val speedReaderWordCache = LruCache<Int, List<SpeedReaderWord>>(10)
+    private val textCache = object : LruCache<ReaderCacheKey, List<ReaderText>>(TEXT_CACHE_MAX_UNITS) {
+        override fun sizeOf(key: ReaderCacheKey, value: List<ReaderText>): Int {
+            return estimateReaderTextCacheUnits(value).coerceAtLeast(1)
+        }
+    }
+
+    private val speedReaderWordCache = object : LruCache<ReaderCacheKey, List<SpeedReaderWord>>(WORD_CACHE_MAX_UNITS) {
+        override fun sizeOf(key: ReaderCacheKey, value: List<SpeedReaderWord>): Int {
+            return estimateSpeedReaderWordCacheUnits(value).coerceAtLeast(1)
+        }
+    }
+
+    private fun estimateReaderTextCacheUnits(readerText: List<ReaderText>): Int {
+        return readerText.sumOf { item ->
+            when (item) {
+                is ReaderText.Chapter -> item.title.length
+                is ReaderText.Text -> item.line.text.length
+                is ReaderText.Image -> 250_000
+                ReaderText.Separator -> 1
+            }
+        }
+    }
+
+    private fun estimateSpeedReaderWordCacheUnits(words: List<SpeedReaderWord>): Int {
+        return words.sumOf { word -> word.text.length + 16 }
+    }
 
     /**
      * Creates a CachedFile from book.filePath, handling both file paths and content URIs.
      */
     private fun getCachedFile(book: BookEntity): CachedFile? {
         return CachedFileFactory.fromBookEntity(application, book)
+    }
+
+    private fun buildReaderCacheKey(book: BookEntity, cachedFile: CachedFile): ReaderCacheKey {
+        val fileSize = runCatching { cachedFile.size }.getOrDefault(book.fileSize)
+        val lastModified = runCatching { cachedFile.lastModified }.getOrDefault(0L)
+        return ReaderCacheKey(
+            bookId = book.id,
+            filePath = book.filePath,
+            fileSize = fileSize,
+            lastModified = lastModified,
+            contentHash = book.contentHash
+        )
     }
 
     /**
@@ -84,32 +130,23 @@ class BookRepositoryImpl @Inject constructor(
         val candidates = if (lowerQuery.isBlank()) {
             database.getAllBooks()
         } else {
-            database.getAllBooks().filter { book ->
-                val lowerTitle = book.title.lowercase()
-                val lowerAuthors = book.authors.joinToString(" ").lowercase()
-                lowerQuery.any { char -> char in lowerTitle || char in lowerAuthors }
-            }
+            database.getBooksBySearchCharacterQuery(buildSearchCharacterQuery(lowerQuery))
         }
 
         val filteredBooks = if (lowerQuery.isBlank()) {
             candidates
         } else {
-            candidates.filter { bookEntity ->
+            candidates.mapNotNull { bookEntity ->
                 val lowerTitle = bookEntity.title.lowercase()
                 val titleDist = minSubstringDistance(lowerQuery, lowerTitle, threshold)
                 val authorDist = bookEntity.authors.minOfOrNull { author ->
                     minSubstringDistance(lowerQuery, author.lowercase(), threshold)
                 } ?: Int.MAX_VALUE
 
-                minOf(titleDist, authorDist) <= threshold
-            }.sortedBy { bookEntity ->
-                val lowerTitle = bookEntity.title.lowercase()
-                val titleDist = minSubstringDistance(lowerQuery, lowerTitle, threshold)
-                val authorDist = bookEntity.authors.minOfOrNull { author ->
-                    minSubstringDistance(lowerQuery, author.lowercase(), threshold)
-                } ?: Int.MAX_VALUE
-                minOf(titleDist, authorDist)
-            }
+                val score = minOf(titleDist, authorDist)
+                if (score <= threshold) bookEntity to score else null
+            }.sortedBy { (_, score) -> score }
+                .map { (bookEntity, _) -> bookEntity }
         }
 
         Log.i(GET_BOOKS, "Found ${filteredBooks.size} books (from ${candidates.size} candidates).")
@@ -121,6 +158,30 @@ class BookRepositoryImpl @Inject constructor(
 
         return filteredBooks.map { entity ->
             bookMapper.toBook(entity).copy(lastOpened = historyMap[entity.id]?.time)
+        }
+    }
+
+    private fun buildSearchCharacterQuery(lowerQuery: String): SimpleSQLiteQuery {
+        val chars = lowerQuery.toSet()
+        val selection = chars.joinToString(" OR ") {
+            "LOWER(title) LIKE ? ESCAPE '\\' OR LOWER(authors) LIKE ? ESCAPE '\\'"
+        }
+        val args = chars.flatMap { char ->
+            val pattern = "%${char.toString().escapeLikePattern()}%"
+            listOf(pattern, pattern)
+        }.toTypedArray()
+
+        return SimpleSQLiteQuery("SELECT * FROM bookentity WHERE $selection", args)
+    }
+
+    private fun String.escapeLikePattern(): String {
+        return buildString(length) {
+            this@escapeLikePattern.forEach { char ->
+                when (char) {
+                    '\\', '%', '_' -> append('\\')
+                }
+                append(char)
+            }
         }
     }
 
@@ -152,8 +213,16 @@ class BookRepositoryImpl @Inject constructor(
             return emptyList()
         }
 
+        val book = database.findBookById(bookId)
+        val cachedFile = getCachedFile(book)
+        if (cachedFile == null || !cachedFile.canAccess()) {
+            Log.e("SPEED_READER_WORDS", "[START] File [$bookId] does not exist")
+            return emptyList()
+        }
+        val cacheKey = buildReaderCacheKey(book, cachedFile)
+
         // Check cache first
-        speedReaderWordCache.get(bookId)?.let { cachedWords ->
+        speedReaderWordCache.get(cacheKey)?.let { cachedWords ->
             Log.d("SPEED_READER_WORDS", "[CACHE HIT] Loaded words for [$bookId] from cache")
             Log.d("SPEED_READER_WORDS", "[CACHE HIT]   cachedWords.size=${cachedWords.size}")
             Log.d("SPEED_READER_WORDS", "[CACHE HIT]   Returning cached words immediately")
@@ -172,7 +241,7 @@ class BookRepositoryImpl @Inject constructor(
 
         Log.d("SPEED_READER_WORDS", "[EXTRACTION] readerText.size=${readerText.size}, extracting words...")
         val words = SpeedReaderWordExtractor.extractWithPreprocessing(readerText)
-        speedReaderWordCache.put(bookId, words)
+        speedReaderWordCache.put(cacheKey, words)
 
         Log.d("SPEED_READER_WORDS", "[EXTRACTION] Extracted ${words.size} words for [$bookId]")
         Log.d("SPEED_READER_WORDS", "[EXTRACTION] Cached words in speedReaderWordCache")
@@ -204,13 +273,6 @@ class BookRepositoryImpl @Inject constructor(
             return emptyList()
         }
 
-        // Check cache first for instant loading
-        textCache.get(bookId)?.let { cachedText ->
-            Log.d("SPEED_READER_GET_TEXT", "[TEXT CACHE HIT] Loaded text of [$bookId] from cache")
-            Log.d("SPEED_READER_GET_TEXT", "[TEXT CACHE HIT]   cachedText.size=${cachedText.size}")
-            return cachedText
-        }
-
         Log.d("SPEED_READER_GET_TEXT", "[TEXT CACHE MISS] Text not in cache, parsing file...")
         val book = database.findBookById(bookId)
         Log.d("SPEED_READER_GET_TEXT", "[TEXT CACHE MISS]   book.title=${book?.title}")
@@ -219,6 +281,14 @@ class BookRepositoryImpl @Inject constructor(
         if (cachedFile == null || !cachedFile.canAccess()) {
             Log.e("SPEED_READER_GET_TEXT", "[TEXT CACHE MISS] File [$bookId] does not exist")
             return emptyList()
+        }
+        val cacheKey = buildReaderCacheKey(book, cachedFile)
+
+        // Check cache after resolving the file identity so replaced files do not reuse stale text.
+        textCache.get(cacheKey)?.let { cachedText ->
+            Log.d("SPEED_READER_GET_TEXT", "[TEXT CACHE HIT] Loaded text of [$bookId] from cache")
+            Log.d("SPEED_READER_GET_TEXT", "[TEXT CACHE HIT]   cachedText.size=${cachedText.size}")
+            return cachedText
         }
 
         Log.d("SPEED_READER_GET_TEXT", "[PARSING] Calling textParser.parse()...")
@@ -234,17 +304,17 @@ class BookRepositoryImpl @Inject constructor(
         }
 
         // Cache the parsed text for future use
-        textCache.put(bookId, readerText)
+        textCache.put(cacheKey, readerText)
         Log.d("SPEED_READER_GET_TEXT", "[CACHING] Cached text in textCache")
 
         // Extract and cache words for speed reader
-        val wordsAlreadyCached = speedReaderWordCache.get(bookId)
+        val wordsAlreadyCached = speedReaderWordCache.get(cacheKey)
         Log.d("SPEED_READER_GET_TEXT", "[WORD CACHE CHECK] wordsAlreadyCached=${wordsAlreadyCached != null}")
 
         if (wordsAlreadyCached == null) {
             Log.d("SPEED_READER_GET_TEXT", "[WORD EXTRACTION] Extracting words from readerText...")
             val words = SpeedReaderWordExtractor.extractWithPreprocessing(readerText)
-            speedReaderWordCache.put(bookId, words)
+            speedReaderWordCache.put(cacheKey, words)
             Log.d("SPEED_READER_GET_TEXT", "[WORD EXTRACTION]   Extracted ${words.size} words")
             Log.d("SPEED_READER_GET_TEXT", "[WORD EXTRACTION]   Cached in speedReaderWordCache")
         } else {

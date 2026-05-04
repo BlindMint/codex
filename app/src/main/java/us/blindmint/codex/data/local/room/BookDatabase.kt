@@ -21,6 +21,7 @@ import us.blindmint.codex.data.local.dto.ColorPresetEntity
 import us.blindmint.codex.data.local.dto.HistoryEntity
 import us.blindmint.codex.data.local.dto.OpdsSourceEntity
 import java.io.File
+import org.json.JSONArray
 
 @Database(
     entities = [
@@ -31,8 +32,8 @@ import java.io.File
         BookmarkEntity::class,
         OpdsSourceEntity::class,
     ],
-    version = 27,
-    exportSchema = false
+    version = 28,
+    exportSchema = true
 )
 abstract class BookDatabase : RoomDatabase() {
     abstract val dao: BookDao
@@ -288,6 +289,44 @@ object DatabaseHelper {
             db.execSQL("CREATE INDEX IF NOT EXISTS `index_HistoryEntity_bookId` ON `HistoryEntity` (`bookId`)")
             db.execSQL("CREATE INDEX IF NOT EXISTS `index_BookmarkEntity_bookId` ON `BookmarkEntity` (`bookId`)")
             db.execSQL("CREATE INDEX IF NOT EXISTS `index_BookProgressHistoryEntity_filePath` ON `BookProgressHistoryEntity` (`filePath`)")
+        }
+    }
+
+    val MIGRATION_27_28 = object : Migration(27, 28) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.query("SELECT `id`, `authors`, `tags`, `series`, `languages` FROM `BookEntity`").use { cursor ->
+                val updateStatement = db.compileStatement(
+                    """
+                    UPDATE `BookEntity`
+                    SET `authors` = ?, `tags` = ?, `series` = ?, `languages` = ?
+                    WHERE `id` = ?
+                    """.trimIndent()
+                )
+
+                while (cursor.moveToNext()) {
+                    val id = cursor.getLong(0)
+                    updateStatement.clearBindings()
+                    updateStatement.bindString(1, csvToJson(cursor.getString(1)))
+                    updateStatement.bindString(2, csvToJson(cursor.getString(2)))
+                    updateStatement.bindString(3, csvToJson(cursor.getString(3)))
+                    updateStatement.bindString(4, csvToJson(cursor.getString(4)))
+                    updateStatement.bindLong(5, id)
+                    updateStatement.executeUpdateDelete()
+                }
+            }
+        }
+
+        private fun csvToJson(value: String?): String {
+            val trimmed = value?.trim().orEmpty()
+            if (trimmed.isEmpty()) return "[]"
+            if (trimmed.startsWith("[")) return trimmed
+
+            val items = trimmed
+                .split(",")
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+
+            return JSONArray(items).toString()
         }
     }
 }

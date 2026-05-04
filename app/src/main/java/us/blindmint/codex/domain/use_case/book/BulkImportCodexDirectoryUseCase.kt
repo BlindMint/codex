@@ -13,6 +13,7 @@ import us.blindmint.codex.domain.library.book.BookSource
 import us.blindmint.codex.domain.opf.OpfMetadata
 import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.storage.CodexDirectoryManager
+import us.blindmint.codex.domain.util.ContentHasher
 import us.blindmint.codex.presentation.core.constants.provideExtensions
 import javax.inject.Inject
 
@@ -51,7 +52,10 @@ class BulkImportCodexDirectoryUseCase @Inject constructor(
 
         Log.i(BULK_IMPORT_CODEX, "Downloads directory: ${downloadsDir.uri}")
         val supportedExtensions = provideExtensions()
-        val existingPaths = bookRepository.getBooks("").map { it.filePath }
+        val existingPathsAndHashes = bookRepository.getAllFilePathsAndHashes()
+        val existingPaths = existingPathsAndHashes.mapTo(mutableSetOf()) { it.first.lowercase() }
+        val existingHashes = existingPathsAndHashes
+            .mapNotNullTo(mutableSetOf()) { it.second.takeIf(String::isNotBlank) }
         Log.i(BULK_IMPORT_CODEX, "Found ${existingPaths.size} existing books")
 
         var importedCount = 0
@@ -90,6 +94,7 @@ class BulkImportCodexDirectoryUseCase @Inject constructor(
                 folder = folder,
                 supportedExtensions = supportedExtensions,
                 existingPaths = existingPaths,
+                existingHashes = existingHashes,
                 onProgress = {
                     onProgress(BulkImportCodexProgress(index + 1, allBookFolders.size, it))
                 }
@@ -110,7 +115,8 @@ class BulkImportCodexDirectoryUseCase @Inject constructor(
     private suspend fun processBookFolder(
         folder: DocumentFile,
         supportedExtensions: List<String>,
-        existingPaths: List<String>,
+        existingPaths: MutableSet<String>,
+        existingHashes: MutableSet<String>,
         onProgress: (String) -> Unit
     ): us.blindmint.codex.domain.library.book.BookWithCover? {
         Log.d(BULK_IMPORT_CODEX, "Processing folder: ${folder.name}")
@@ -137,12 +143,20 @@ class BulkImportCodexDirectoryUseCase @Inject constructor(
         val bookFile = bookFiles.first()
         val bookUriString = bookFile.uri.toString()
 
-        val alreadyExists = existingPaths.any { existingPath ->
-            existingPath.equals(bookUriString, ignoreCase = true)
+        if (bookUriString.lowercase() in existingPaths) {
+            Log.d(BULK_IMPORT_CODEX, "Book already exists: ${bookFile.name}")
+            return null
         }
 
-        if (alreadyExists) {
-            Log.d(BULK_IMPORT_CODEX, "Book already exists: ${bookFile.name}")
+        val contentHash = try {
+            ContentHasher.computePartialHash(application, bookFile.uri)
+        } catch (e: Exception) {
+            Log.w(BULK_IMPORT_CODEX, "Could not hash ${bookFile.name}: ${e.message}")
+            ""
+        }
+
+        if (contentHash.isNotEmpty() && contentHash in existingHashes) {
+            Log.d(BULK_IMPORT_CODEX, "Book already exists by hash: ${bookFile.name}")
             return null
         }
 
@@ -180,7 +194,9 @@ class BulkImportCodexDirectoryUseCase @Inject constructor(
 
             finalBook = finalBook.copy(
                 source = BookSource.OPDS,
-                category = us.blindmint.codex.domain.library.category.Category.READING
+                category = us.blindmint.codex.domain.library.category.Category.READING,
+                contentHash = contentHash,
+                fileSize = bookFile.length()
             )
 
             val bookWithCover = us.blindmint.codex.domain.library.book.BookWithCover(
@@ -189,6 +205,10 @@ class BulkImportCodexDirectoryUseCase @Inject constructor(
             )
 
             insertBook.execute(bookWithCover)
+            existingPaths += bookUriString.lowercase()
+            if (contentHash.isNotEmpty()) {
+                existingHashes += contentHash
+            }
             bookWithCover
         } catch (e: Exception) {
             Log.e(BULK_IMPORT_CODEX, "Error processing ${bookFile.name}", e)

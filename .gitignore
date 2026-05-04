@@ -56,8 +56,8 @@ app/release/
 .release_backup/
 logs/
 
-# Schemas (if not needed)
-app/schemas/
+# Room schemas are tracked for migration validation.
+app/schemas/ua.blindmint.codex.data.local.room.BookDatabase/
 
 # Test data (if sensitive)
 testdata/

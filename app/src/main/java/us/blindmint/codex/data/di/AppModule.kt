@@ -82,7 +82,8 @@ object AppModule {
                 DatabaseHelper.MIGRATION_23_24,
                 DatabaseHelper.MIGRATION_24_25,
                 DatabaseHelper.MIGRATION_25_26, // fixes isComic field for existing comic books
-                DatabaseHelper.MIGRATION_26_27  // adds indices on HistoryEntity.bookId, BookmarkEntity.bookId, BookProgressHistoryEntity.filePath
+                DatabaseHelper.MIGRATION_26_27, // adds indices on HistoryEntity.bookId, BookmarkEntity.bookId, BookProgressHistoryEntity.filePath
+                DatabaseHelper.MIGRATION_27_28  // migrates list metadata storage from CSV to JSON arrays
             )
             .build()
             .dao

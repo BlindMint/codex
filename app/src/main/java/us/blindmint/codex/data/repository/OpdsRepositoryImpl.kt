@@ -20,10 +20,12 @@ import us.blindmint.codex.data.remote.OpdsApiService
 import us.blindmint.codex.data.remote.dto.OpdsFeedDto
 import us.blindmint.codex.data.remote.dto.opds2.Opds2FeedDto
 import us.blindmint.codex.data.remote.dto.opds2.Opds2PublicationDto
+import us.blindmint.codex.domain.repository.OpdsDownload
 import us.blindmint.codex.domain.opds.OpdsEntry
 import us.blindmint.codex.domain.opds.OpdsFeed
 import us.blindmint.codex.domain.opds.OpdsLink
 import us.blindmint.codex.domain.repository.OpdsRepository
+import java.io.File
 import java.util.Base64
 import javax.inject.Inject
 
@@ -66,10 +68,6 @@ class OpdsRepositoryImpl @Inject constructor() : OpdsRepository {
 
             val contentType = response.header("Content-Type") ?: ""
             val body = response.body?.string() ?: throw Exception("Empty response body")
-
-            // Log first 500 chars of response for debugging
-            val preview = body.take(500).replace("\n", " ").replace("\r", " ")
-            android.util.Log.d("OPDS_DEBUG", "Response preview: $preview${if (body.length > 500) "..." else ""}")
 
             // Detect feed format based on content-type or content inspection
             when {
@@ -161,7 +159,7 @@ class OpdsRepositoryImpl @Inject constructor() : OpdsRepository {
         }
     }
 
-    override suspend fun downloadBook(url: String, username: String?, password: String?, onProgress: ((Float) -> Unit)?): Pair<ByteArray, String?> {
+    override suspend fun downloadBook(url: String, destination: File, username: String?, password: String?, onProgress: ((Float) -> Unit)?): OpdsDownload {
         android.util.Log.d("OPDS_DEBUG", "Downloading book from URL: $url")
         return withContext(Dispatchers.IO) {
             try {
@@ -177,38 +175,34 @@ class OpdsRepositoryImpl @Inject constructor() : OpdsRepository {
 
                 val body = response.body ?: throw Exception("Empty response body")
                 val contentLength = body.contentLength()
-                val buffer = okio.Buffer()
 
                 var bytesRead = 0L
-                val source = body.source()
+                destination.parentFile?.mkdirs()
+                body.byteStream().use { input ->
+                    destination.outputStream().use { output ->
+                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                        while (true) {
+                            val read = input.read(buffer)
+                            if (read == -1) break
+                            output.write(buffer, 0, read)
+                            bytesRead += read
 
-                while (true) {
-                    val read = source.read(buffer, 8192)
-                    if (read == -1L) break
-                    bytesRead += read
-
-                    if (contentLength > 0 && onProgress != null) {
-                        val progress = bytesRead.toFloat() / contentLength.toFloat()
-                        onProgress(progress)
+                            if (contentLength > 0 && onProgress != null) {
+                                val progress = bytesRead.toFloat() / contentLength.toFloat()
+                                onProgress(progress)
+                            }
+                        }
                     }
                 }
 
-                val result = buffer.readByteArray()
-                android.util.Log.d("OPDS_DEBUG", "Downloaded ${result.size} bytes")
+                android.util.Log.d("OPDS_DEBUG", "Downloaded $bytesRead bytes")
 
                 // Extract filename from content-disposition header
                 val contentDisposition = response.header("content-disposition")
                 val filename = extractFilenameFromContentDisposition(contentDisposition)
                 android.util.Log.d("OPDS_DEBUG", "Suggested filename: $filename")
 
-                // Log first 200 chars of content for debugging (if it's text)
-                val contentType = response.header("Content-Type") ?: ""
-                if (contentType.contains("text") || contentType.contains("html") || result.size < 1000) {
-                    val preview = String(result.take(200).toByteArray(), Charsets.UTF_8)
-                    android.util.Log.d("OPDS_DEBUG", "Content preview: $preview")
-                }
-
-                Pair(result, filename)
+                OpdsDownload(destination, filename, bytesRead)
             } catch (e: Exception) {
                 when (e) {
                     is java.net.UnknownHostException -> throw Exception("Unknown host: ${e.message}")
@@ -255,7 +249,7 @@ class OpdsRepositoryImpl @Inject constructor() : OpdsRepository {
     private fun createOkHttpClient(username: String? = null, password: String? = null): OkHttpClient {
         val builder = OkHttpClient.Builder()
             .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
+                level = HttpLoggingInterceptor.Level.NONE
             })
             // Add UTF-8 Accept-Charset header for proper character handling
             .addInterceptor { chain ->

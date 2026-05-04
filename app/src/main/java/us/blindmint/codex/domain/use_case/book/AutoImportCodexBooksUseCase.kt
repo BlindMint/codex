@@ -18,6 +18,7 @@ import us.blindmint.codex.domain.opf.OpfMetadata
 import us.blindmint.codex.domain.repository.BookRepository
 import us.blindmint.codex.domain.storage.CodexDirectoryManager
 import us.blindmint.codex.domain.ui.UIText
+import us.blindmint.codex.domain.util.ContentHasher
 import us.blindmint.codex.presentation.core.constants.provideExtensions
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -62,7 +63,9 @@ class AutoImportCodexBooksUseCase @Inject constructor(
         Log.d(AUTO_IMPORT, "Supported extensions: $supportedExtensions")
 
         val existingPathsAndHashes = bookRepository.getAllFilePathsAndHashes()
-        val existingPaths = existingPathsAndHashes.map { it.first }
+        val existingPaths = existingPathsAndHashes.mapTo(mutableSetOf()) { it.first.lowercase() }
+        val existingHashes = existingPathsAndHashes
+            .mapNotNullTo(mutableSetOf()) { it.second.takeIf(String::isNotBlank) }
         Log.d(AUTO_IMPORT, "Found ${existingPaths.size} existing books in library")
 
         // Double-check that we have access to the directory
@@ -123,7 +126,7 @@ class AutoImportCodexBooksUseCase @Inject constructor(
                     return@forEachIndexed
                 }
 
-                val importedBook = processBookFolder(folder, supportedExtensions, existingPaths)
+                val importedBook = processBookFolder(folder, supportedExtensions, existingPaths, existingHashes)
                 if (importedBook != null) {
                     importedCount++
                     Log.i(AUTO_IMPORT, "Auto-imported: ${folder.name}")
@@ -142,7 +145,8 @@ class AutoImportCodexBooksUseCase @Inject constructor(
     private suspend fun processBookFolder(
         folder: DocumentFile,
         supportedExtensions: List<String>,
-        existingPaths: List<String>
+        existingPaths: MutableSet<String>,
+        existingHashes: MutableSet<String>
     ): us.blindmint.codex.domain.library.book.BookWithCover? {
         Log.d(AUTO_IMPORT, "Processing folder: ${folder.name} (${folder.uri})")
 
@@ -178,15 +182,25 @@ class AutoImportCodexBooksUseCase @Inject constructor(
 
         // Check if already imported
         val bookUriString = bookFile.uri.toString()
-        val alreadyExists = existingPaths.any { existingPath ->
-            existingPath.equals(bookUriString, ignoreCase = true)
-        }
+        val alreadyExists = bookUriString.lowercase() in existingPaths
 
         Log.d(AUTO_IMPORT, "Book URI: $bookUriString")
         Log.d(AUTO_IMPORT, "Already exists in library: $alreadyExists")
 
         if (alreadyExists) {
             Log.d(AUTO_IMPORT, "Book already exists, skipping: ${bookFile.name}")
+            return null
+        }
+
+        val contentHash = try {
+            ContentHasher.computePartialHash(application, bookFile.uri)
+        } catch (e: Exception) {
+            Log.w(AUTO_IMPORT, "Could not hash ${bookFile.name}: ${e.message}")
+            ""
+        }
+
+        if (contentHash.isNotEmpty() && contentHash in existingHashes) {
+            Log.d(AUTO_IMPORT, "Book already exists by hash, skipping: ${bookFile.name}")
             return null
         }
 
@@ -234,7 +248,9 @@ class AutoImportCodexBooksUseCase @Inject constructor(
             // Mark as OPDS source and set category to READING (currently reading)
             finalBook = finalBook.copy(
                 source = BookSource.OPDS,
-                category = us.blindmint.codex.domain.library.category.Category.READING
+                category = us.blindmint.codex.domain.library.category.Category.READING,
+                contentHash = contentHash,
+                fileSize = bookFile.length()
             )
             Log.d(AUTO_IMPORT, "Marked book as OPDS source")
 
@@ -249,6 +265,10 @@ class AutoImportCodexBooksUseCase @Inject constructor(
             insertBook.execute(bookWithCover)
 
             Log.i(AUTO_IMPORT, "Successfully imported: ${bookFile.name}")
+            existingPaths += bookUriString.lowercase()
+            if (contentHash.isNotEmpty()) {
+                existingHashes += contentHash
+            }
             return bookWithCover
 
         } catch (e: Exception) {

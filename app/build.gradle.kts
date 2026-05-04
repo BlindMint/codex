@@ -64,8 +64,8 @@ android {
         }
 
         getByName("release") {
-            isMinifyEnabled = false  // Temporarily disable to test
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
 
             proguardFiles("proguard-rules.pro")
             signingConfig = signingConfigs.getByName("release")
@@ -75,6 +75,7 @@ android {
             initWith(getByName("release"))
             applicationIdSuffix = ".release.debug"
             signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release", "debug")
         }
     }
 
@@ -243,4 +244,6 @@ dependencies {
     // Paging Library 3 for efficient list rendering
     implementation("androidx.paging:paging-runtime-ktx:3.3.0")
     implementation("androidx.paging:paging-compose:3.3.0")
+
+    testImplementation("junit:junit:4.13.2")
 }

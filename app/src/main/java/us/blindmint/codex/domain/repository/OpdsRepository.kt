@@ -7,6 +7,13 @@
 package us.blindmint.codex.domain.repository
 
 import us.blindmint.codex.domain.opds.OpdsFeed
+import java.io.File
+
+data class OpdsDownload(
+    val file: File,
+    val suggestedFilename: String?,
+    val bytesDownloaded: Long
+)
 
 interface OpdsRepository {
 
@@ -16,7 +23,7 @@ interface OpdsRepository {
 
     suspend fun search(feed: OpdsFeed, query: String, username: String? = null, password: String? = null): OpdsFeed
 
-    suspend fun downloadBook(url: String, username: String? = null, password: String? = null, onProgress: ((Float) -> Unit)? = null): Pair<ByteArray, String?>
+    suspend fun downloadBook(url: String, destination: File, username: String? = null, password: String? = null, onProgress: ((Float) -> Unit)? = null): OpdsDownload
 
     suspend fun downloadCover(url: String, username: String? = null, password: String? = null): ByteArray?
 }

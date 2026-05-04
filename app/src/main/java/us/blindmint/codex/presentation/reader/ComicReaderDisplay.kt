@@ -6,7 +6,6 @@
 
 package us.blindmint.codex.presentation.reader
 
-import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -61,12 +60,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import java.util.LinkedHashMap
 import kotlin.math.max
 
 private const val TAG = "ImageBasedReader"
 private const val SLIDER_TAG = "CodexComicSlider"
-private const val MAX_CACHED_PAGES = 50
 private const val PREFETCH_PAGES = 5
 
 /**
@@ -177,14 +174,6 @@ fun ComicReaderDisplay(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-
-    val loadedPages = remember {
-        object : LinkedHashMap<Int, Pair<ImageBitmap, Bitmap>>(16, 0.75f, true) {
-            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, Pair<ImageBitmap, Bitmap>>?): Boolean {
-                return false
-            }
-        }
-    }
 
     val isRTL = readingDirection == "RTL"
     val isVertical = readingDirection == "VERTICAL" || readerMode == "WEBTOON"
@@ -323,13 +312,6 @@ fun ComicReaderDisplay(
                     }
                 }
             }
-    }
-
-    DisposableEffect(bookTitle) {
-        onDispose {
-            loadedPages.values.forEach { it.second.recycle() }
-            loadedPages.clear()
-        }
     }
 
     Box(

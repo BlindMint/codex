@@ -53,15 +53,16 @@ class EpubTextParser @Inject constructor(
 
             withContext(Dispatchers.IO) {
                 ZipFile(rawFile).use { zip ->
-                    val tocEntry = zip.entries().toList().find { entry ->
+                    val zipEntries = zip.entries().toList()
+                    val tocEntry = zipEntries.find { entry ->
                         entry.name.endsWith(".ncx", ignoreCase = true)
                     }
-                    val opfEntry = zip.entries().toList().find { entry ->
+                    val opfEntry = zipEntries.find { entry ->
                         entry.name.endsWith(".opf", ignoreCase = true)
                     }
 
-                    val chapterEntries = zip.getChapterEntries(opfEntry)
-                    val imageEntries = zip.entries().toList().filter {
+                    val chapterEntries = zip.getChapterEntries(opfEntry, zipEntries)
+                    val imageEntries = zipEntries.filter {
                         provideImageExtensions().any { format ->
                             it.name.endsWith(format, ignoreCase = true)
                         }
@@ -291,13 +292,15 @@ class EpubTextParser @Inject constructor(
      *
      * @return List of chapter entries in correct order (do not reorder).
      */
-    private fun ZipFile.getChapterEntries(opfEntry: ZipEntry?): List<ZipEntry> {
+    private fun ZipFile.getChapterEntries(
+        opfEntry: ZipEntry?,
+        zipEntries: List<ZipEntry>
+    ): List<ZipEntry> {
         opfEntry?.let {
             val opfContent = getInputStream(opfEntry).bufferedReader().use {
                 it.readText()
             }
             val document = Jsoup.parse(opfContent)
-            val zipEntries = entries().toList()
 
             val manifestItems = document.select("manifest > item").associate {
                 it.attr("id") to it.attr("href")
@@ -322,7 +325,7 @@ class EpubTextParser @Inject constructor(
         }
 
         Log.w(EPUB_TAG, "Could not parse OPF, manual filtering.")
-        return entries().toList().filter { entry ->
+        return zipEntries.filter { entry ->
             listOf(".html", ".htm", ".xhtml").any {
                 entry.name.endsWith(it, ignoreCase = true)
             }

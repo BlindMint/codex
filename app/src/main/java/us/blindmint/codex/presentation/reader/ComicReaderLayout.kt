@@ -6,6 +6,8 @@
 
 package us.blindmint.codex.presentation.reader
 
+import android.app.ActivityManager
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
@@ -46,9 +48,12 @@ import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.presentation.core.util.LocalActivity
 import us.blindmint.codex.presentation.core.components.common.StyledText
 import us.blindmint.codex.ui.main.MainModel
+import kotlin.math.max
 import kotlin.math.min
 
 private const val MAX_CACHED_PAGES = 50
+private const val MIN_CACHE_BYTES = 32L * 1024L * 1024L
+private const val MAX_CACHE_BYTES = 192L * 1024L * 1024L
 private const val PREFETCH_PAGES = 5
 
 @Composable
@@ -88,11 +93,47 @@ fun ComicReaderLayout(
     var totalPages by remember { mutableIntStateOf(0) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val maxCacheBytes = remember(context) { context.comicBitmapCacheBudgetBytes() }
 
-    val loadedPages = remember {
+    val loadedPages = remember(maxCacheBytes) {
         object : LinkedHashMap<Int, Pair<ImageBitmap, Bitmap>>(16, 0.75f, true) {
+            private var currentBytes = 0L
+
+            override fun put(key: Int, value: Pair<ImageBitmap, Bitmap>): Pair<ImageBitmap, Bitmap>? {
+                val previous = super.put(key, value)
+                currentBytes += value.second.byteCount.toLong()
+                previous?.let {
+                    currentBytes -= it.second.byteCount.toLong()
+                    it.second.recycle()
+                }
+                trimToBudget()
+                return previous
+            }
+
             override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, Pair<ImageBitmap, Bitmap>>?): Boolean {
-                return false
+                val shouldRemove = size > MAX_CACHED_PAGES
+                if (shouldRemove) {
+                    eldest?.value?.second?.let {
+                        currentBytes -= it.byteCount.toLong()
+                        it.recycle()
+                    }
+                }
+                return shouldRemove
+            }
+
+            override fun clear() {
+                currentBytes = 0L
+                super.clear()
+            }
+
+            private fun trimToBudget() {
+                val iterator = entries.iterator()
+                while (size > 1 && currentBytes > maxCacheBytes && iterator.hasNext()) {
+                    val entry = iterator.next()
+                    currentBytes -= entry.value.second.byteCount.toLong()
+                    entry.value.second.recycle()
+                    iterator.remove()
+                }
             }
         }
     }
@@ -232,6 +273,12 @@ fun ComicReaderLayout(
             )
         }
     }
+}
+
+private fun Context.comicBitmapCacheBudgetBytes(): Long {
+    val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+    val memoryClassBytes = (activityManager?.memoryClass ?: 256).toLong() * 1024L * 1024L
+    return max(MIN_CACHE_BYTES, min(MAX_CACHE_BYTES, memoryClassBytes / 8L))
 }
 
 @Composable

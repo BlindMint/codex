@@ -11,8 +11,10 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RawQuery
 import androidx.room.Update
 import androidx.room.Upsert
+import androidx.sqlite.db.SupportSQLiteQuery
 import us.blindmint.codex.data.local.dto.BookEntity
 import us.blindmint.codex.data.local.dto.BookmarkEntity
 import us.blindmint.codex.data.local.dto.BookProgressHistoryEntity
@@ -33,6 +35,9 @@ interface BookDao {
 
     @Query("SELECT * FROM bookentity")
     suspend fun getAllBooks(): List<BookEntity>
+
+    @RawQuery
+    suspend fun getBooksBySearchCharacterQuery(query: SupportSQLiteQuery): List<BookEntity>
 
     /**
      * Lightweight query returning only filePath and contentHash.
