@@ -126,6 +126,11 @@ private data class VerticalPagesInfo(
     val totalContentHeight: Float
 )
 
+private enum class PdfSingleFingerDragMode {
+    HorizontalPan,
+    VerticalScroll
+}
+
 private suspend fun PointerInputScope.detectCenterTapNonConsuming(
     onCenterTap: () -> Unit
 ) {
@@ -772,15 +777,38 @@ fun PdfReaderLayout(
 	                if (isVertical) {
 	                    val pages = verticalPages
 	                    val totalContentHeight = verticalPagesTotalHeight
-                        val maxVerticalScroll = max(
-                            0f,
-                            totalContentHeight - (viewport?.heightPx ?: 0).toFloat()
-                        )
+
+                        fun verticalScrollBounds(zoom: Float, panY: Float): Pair<Float, Float> {
+                            val viewportHeight = viewport?.heightPx?.toFloat() ?: return 0f to 0f
+                            if (viewportHeight <= 0f || totalContentHeight <= 0f) return 0f to 0f
+                            if (zoom <= 1.02f) {
+                                return 0f to max(0f, totalContentHeight - viewportHeight)
+                            }
+
+                            val halfViewport = viewportHeight / 2f
+                            val minScroll = (
+                                -halfViewport + (halfViewport + panY) / zoom
+                            ).coerceAtMost(0f)
+                            val maxScroll = (
+                                totalContentHeight - halfViewport - (halfViewport - panY) / zoom
+                            ).coerceAtLeast(minScroll)
+                            return minScroll to maxScroll
+                        }
+
+                        fun clampVerticalScroll(scrollPx: Float, zoom: Float, panY: Float): Float {
+                            val (minScroll, maxScroll) = verticalScrollBounds(zoom, panY)
+                            return scrollPx.coerceIn(minScroll, maxScroll)
+                        }
+
                         val verticalScrollableState = rememberScrollableState { delta ->
-                            if (effectiveZoom > 1.02f) return@rememberScrollableState 0f
+                            val zoomForScroll = effectiveZoom.coerceAtLeast(1f)
                             val previousScroll = verticalScrollPx
-                            verticalScrollPx = (verticalScrollPx - delta).coerceIn(0f, maxVerticalScroll)
-                            previousScroll - verticalScrollPx
+                            verticalScrollPx = clampVerticalScroll(
+                                scrollPx = verticalScrollPx - delta / zoomForScroll,
+                                zoom = effectiveZoom,
+                                panY = effectivePanY
+                            )
+                            (previousScroll - verticalScrollPx) * zoomForScroll
                         }
 
 	                    Box(
@@ -831,13 +859,18 @@ fun PdfReaderLayout(
                                     committedZoom = committedScale
                                     committedPanX = panX
 	                                    committedPanY = panY
+                                    verticalScrollPx = clampVerticalScroll(
+                                        scrollPx = verticalScrollPx,
+                                        zoom = committedScale,
+                                        panY = panY
+                                    )
 	                                    transientZoom = PdfTransientZoom()
 	                                }
 	                            )
                                 .scrollable(
                                     state = verticalScrollableState,
                                     orientation = Orientation.Vertical,
-                                    enabled = effectiveZoom <= 1.02f,
+                                    enabled = true,
                                     flingBehavior = ScrollableDefaults.flingBehavior()
                                 )
 	                            .graphicsLayer(
@@ -1145,6 +1178,8 @@ private fun Modifier.verticalZoomPanGesture(
             var lastSpan = 0f
             var isPinchGesture = false
             var lastSinglePosition: Offset? = null
+            var singleFingerStart: Offset? = down.position
+            var singleFingerDragMode: PdfSingleFingerDragMode? = null
 
             while (true) {
                 val event = awaitPointerEvent(PointerEventPass.Initial)
@@ -1154,6 +1189,8 @@ private fun Modifier.verticalZoomPanGesture(
                 when {
                     count >= 2 -> {
                         lastSinglePosition = null
+                        singleFingerStart = null
+                        singleFingerDragMode = null
                         if (!isPinchGesture) {
                             isPinchGesture = true
                             gestureActive = true
@@ -1175,18 +1212,35 @@ private fun Modifier.verticalZoomPanGesture(
                     }
                     count == 1 && (isPinchGesture || isZoomed()) -> {
                         val pointer = pointers[0]
-                        val prev = lastSinglePosition ?: pointer.position
+                        val prev = lastSinglePosition
+                        if (prev == null) {
+                            lastSinglePosition = pointer.position
+                            if (singleFingerStart == null) {
+                                singleFingerStart = pointer.position
+                            }
+                            continue
+                        }
                         lastSinglePosition = pointer.position
                         val delta = pointer.position - prev
-                        if (delta != Offset.Zero) {
-                            gestureActive = true
-                            if (isPinchGesture) {
-                                onZoomPan(1f, delta.x, delta.y)
+                        val start = singleFingerStart ?: prev
+                        val totalDelta = pointer.position - start
+
+                        if (singleFingerDragMode == null) {
+                            if (totalDelta.getDistance() < viewConfiguration.touchSlop) {
+                                continue
+                            }
+                            singleFingerDragMode = if (abs(totalDelta.x) > abs(totalDelta.y)) {
+                                PdfSingleFingerDragMode.HorizontalPan
                             } else {
-                                onZoomPan(1f, delta.x, delta.y)
+                                PdfSingleFingerDragMode.VerticalScroll
                             }
                         }
-                        pointer.consume()
+
+                        if (singleFingerDragMode == PdfSingleFingerDragMode.HorizontalPan && delta.x != 0f) {
+                            gestureActive = true
+                            onZoomPan(1f, delta.x, 0f)
+                            pointer.consume()
+                        }
                     }
                     count == 1 && !isPinchGesture -> {
                         break
