@@ -76,19 +76,19 @@ COMMIT_CREATED=false
 # ==============================================================================
 
 log_info() {
-    echo -e "${BLUE}ℹ${NC} $1"
+    echo -e "${BLUE}[i]${NC} $1"
 }
 
 log_success() {
-    echo -e "${GREEN}✓${NC} $1"
+    echo -e "${GREEN}[+]${NC} $1"
 }
 
 log_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
+    echo -e "${YELLOW}[!]${NC} $1"
 }
 
 log_error() {
-    echo -e "${RED}✗${NC} $1"
+    echo -e "${RED}[x]${NC} $1"
 }
 
 log_header() {
@@ -462,9 +462,9 @@ prompt_version_selection() {
     echo "Current version: ${CURRENT_VERSION} (versionCode: ${CURRENT_VERSION_CODE})"
     echo ""
     echo "Select version bump type:"
-    echo "[1] Major (${CURRENT_VERSION} → $(echo "$CURRENT_VERSION" | awk -F. '{print ($1+1)".0.0"}'))"
-    echo "[2] Minor (${CURRENT_VERSION} → $(echo "$CURRENT_VERSION" | awk -F. '{print $1"."($2+1)".0"}'))"
-    echo "[3] Patch (${CURRENT_VERSION} → $(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2"."($3+1)}'))"
+    echo "[1] Major (${CURRENT_VERSION} -> $(echo "$CURRENT_VERSION" | awk -F. '{print ($1+1)".0.0"}'))"
+    echo "[2] Minor (${CURRENT_VERSION} -> $(echo "$CURRENT_VERSION" | awk -F. '{print $1"."($2+1)".0"}'))"
+    echo "[3] Patch (${CURRENT_VERSION} -> $(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2"."($3+1)}'))"
     echo "[4] Custom (enter manually)"
     echo "[q] Quit"
     echo ""
