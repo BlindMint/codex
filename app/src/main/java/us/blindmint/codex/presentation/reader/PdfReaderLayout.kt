@@ -954,10 +954,66 @@ fun PdfReaderLayout(
                         }
                     }
 
+                    fun onPagedZoomPan(zoomDelta: Float, panDelta: Offset) {
+                        val newScale = (transientZoom.scale * zoomDelta)
+                            .coerceIn(1f / committedZoom, 5f / committedZoom)
+                        val newEffectiveZoom = committedZoom * newScale
+                        val totalPanX = committedPanX + transientZoom.panX + panDelta.x
+                        val totalPanY = committedPanY + transientZoom.panY + panDelta.y
+                        val (clampedTotalPanX, clampedTotalPanY) = if (
+                            newEffectiveZoom > 1.02f && currentPageLayout != null && viewport != null
+                        ) {
+                            val layout = currentPageLayout!!
+                            val vp = viewport!!
+                            val maxPanXLocal = max(0f, (layout.displayWidthPx * newEffectiveZoom - vp.widthPx) / 2f)
+                            val maxPanYLocal = max(0f, (layout.displayHeightPx * newEffectiveZoom - vp.heightPx) / 2f)
+                            totalPanX.coerceIn(-maxPanXLocal, maxPanXLocal) to
+                                totalPanY.coerceIn(-maxPanYLocal, maxPanYLocal)
+                        } else {
+                            0f to 0f
+                        }
+                        transientZoom = PdfTransientZoom(
+                            scale = newScale,
+                            panX = clampedTotalPanX - committedPanX,
+                            panY = clampedTotalPanY - committedPanY,
+                            active = true
+                        )
+                    }
+
+                    fun commitPagedGesture() {
+                        val committedScale = (committedZoom * transientZoom.scale).coerceIn(1f, 5f)
+                        val totalPanX = committedPanX + transientZoom.panX
+                        val totalPanY = committedPanY + transientZoom.panY
+                        val (newPanX, newPanY) = if (
+                            committedScale > 1.02f && currentPageLayout != null && viewport != null
+                        ) {
+                            val layout = currentPageLayout!!
+                            val vp = viewport!!
+                            val maxPanXLocal = max(0f, (layout.displayWidthPx * committedScale - vp.widthPx) / 2f)
+                            val maxPanYLocal = max(0f, (layout.displayHeightPx * committedScale - vp.heightPx) / 2f)
+                            totalPanX.coerceIn(-maxPanXLocal, maxPanXLocal) to
+                                totalPanY.coerceIn(-maxPanYLocal, maxPanYLocal)
+                        } else {
+                            0f to 0f
+                        }
+                        committedZoom = committedScale
+                        committedPanX = newPanX
+                        committedPanY = newPanY
+                        transientZoom = PdfTransientZoom()
+                    }
+
                     Box(modifier = Modifier.fillMaxSize()) {
                         HorizontalPager(
                             state = pagerState,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                // The pager owns the full viewport, so it continues to
+                                // receive a fresh drag after a pinch has ended.
+                                .pagedZoomPanGesture(
+                                    isZoomed = { committedZoom * transientZoom.scale > 1.02f },
+                                    onZoomPan = ::onPagedZoomPan,
+                                    onGestureEnd = ::commitPagedGesture
+                                ),
                             userScrollEnabled = committedZoom <= 1.02f,
                             beyondViewportPageCount = 1
                         ) { pageIndex ->
@@ -986,53 +1042,7 @@ fun PdfReaderLayout(
                                         uiPanY = if (isCurrentPage) effectivePanY else 0f,
                                         modifier = Modifier
                                             .align(Alignment.Center)
-                                            .padding(horizontal = 2.dp)
-                                            .then(
-                                                 if (isCurrentPage) {
-                                                     Modifier.pagedZoomPanGesture(
-                                                         isZoomed = { committedZoom * transientZoom.scale > 1.02f },
-                                                         onZoomPan = { zoomDelta, panDelta ->
-                                                             val newScale = (transientZoom.scale * zoomDelta).coerceIn(1f / committedZoom, 5f / committedZoom)
-                                                             val newEffectiveZoom = committedZoom * newScale
-                                                             val totalPanX = committedPanX + transientZoom.panX + panDelta.x
-                                                             val totalPanY = committedPanY + transientZoom.panY + panDelta.y
-                                                               val (clampedTotalPanX, clampedTotalPanY) = if (newEffectiveZoom > 1.02f && currentPageLayout != null && viewport != null) {
-                                                                   val layout = currentPageLayout!!
-                                                                   val vp = viewport!!
-                                                                   val maxPanXLocal = max(0f, (layout.displayWidthPx * newEffectiveZoom - vp.widthPx) / 2f)
-                                                                   val maxPanYLocal = max(0f, (layout.displayHeightPx * newEffectiveZoom - vp.heightPx) / 2f)
-                                                                   totalPanX.coerceIn(-maxPanXLocal, maxPanXLocal) to totalPanY.coerceIn(-maxPanYLocal, maxPanYLocal)
-                                                               } else {
-                                                                   0f to 0f
-                                                               }
-                                                             transientZoom = PdfTransientZoom(
-                                                                 scale = newScale,
-                                                                 panX = clampedTotalPanX - committedPanX,
-                                                                 panY = clampedTotalPanY - committedPanY,
-                                                                 active = true
-                                                             )
-                                                         },
-                                                          onGestureEnd = {
-                                                              val committedScale = (committedZoom * transientZoom.scale).coerceIn(1f, 5f)
-                                                              val totalPanX = committedPanX + transientZoom.panX
-                                                              val totalPanY = committedPanY + transientZoom.panY
-                                                               val (newPanX, newPanY) = if (committedScale > 1.02f && currentPageLayout != null && viewport != null) {
-                                                                   val layout = currentPageLayout!!
-                                                                   val vp = viewport!!
-                                                                   val maxPanXLocal = max(0f, (layout.displayWidthPx * committedScale - vp.widthPx) / 2f)
-                                                                   val maxPanYLocal = max(0f, (layout.displayHeightPx * committedScale - vp.heightPx) / 2f)
-                                                                   totalPanX.coerceIn(-maxPanXLocal, maxPanXLocal) to totalPanY.coerceIn(-maxPanYLocal, maxPanYLocal)
-                                                               } else {
-                                                                   0f to 0f
-                                                               }
-                                                              committedZoom = committedScale
-                                                              committedPanX = newPanX
-                                                              committedPanY = newPanY
-                                                              transientZoom = PdfTransientZoom()
-                                                          }
-                                                     )
-                                                 } else Modifier
-                                            ),
+                                            .padding(horizontal = 2.dp),
                                         contentWidthPx = pageLayout.displayWidthPx,
                                         contentHeightPx = pageLayout.displayHeightPx,
                                         colorFilter = imageColorFilter,
@@ -1095,72 +1105,81 @@ fun PdfReaderLayout(
  * - Single-finger drag when already zoomed: consumed, triggers pan
  * - Single-finger drag when not zoomed: passes through to HorizontalPager for page navigation
  */
+@Composable
 private fun Modifier.pagedZoomPanGesture(
     isZoomed: () -> Boolean,
     onZoomPan: (zoomDelta: Float, panDelta: Offset) -> Unit,
     onGestureEnd: () -> Unit
-): Modifier = this.pointerInput(Unit) {
-    awaitEachGesture {
-        var gestureActive = false
-        val down = awaitFirstDown(requireUnconsumed = false)
-        var lastCentroid = Offset.Zero
-        var lastSpan = 0f
-        var isPinchGesture = false
-        // Separate position tracker for single-finger pan, initialised when we
-        // first enter single-finger mode to avoid a jump from the initial DOWN.
-        var lastSinglePosition: Offset? = null
+): Modifier {
+    // Pointer-input coroutines can outlive recomposition. Read the latest
+    // predicate and callbacks without restarting an in-progress gesture.
+    val currentIsZoomed by rememberUpdatedState(isZoomed)
+    val currentOnZoomPan by rememberUpdatedState(onZoomPan)
+    val currentOnGestureEnd by rememberUpdatedState(onGestureEnd)
 
-        while (true) {
-            val event = awaitPointerEvent(PointerEventPass.Initial)
-            val pointers = event.changes.filter { it.pressed }
-            val count = pointers.size
+    return this.pointerInput(Unit) {
+        awaitEachGesture {
+            var gestureActive = false
+            val down = awaitFirstDown(requireUnconsumed = false)
+            var lastCentroid = Offset.Zero
+            var lastSpan = 0f
+            var isPinchGesture = false
+            // Separate position tracker for single-finger pan, initialised when we
+            // first enter single-finger mode to avoid a jump from the initial DOWN.
+            var lastSinglePosition: Offset? = null
 
-            when {
-                count >= 2 -> {
-                    // Two-finger pinch — consume and handle zoom
-                    lastSinglePosition = null  // reset single-finger tracker on re-pinch
-                    if (!isPinchGesture) {
-                        isPinchGesture = true
-                        gestureActive = true
+            while (true) {
+                val event = awaitPointerEvent(PointerEventPass.Initial)
+                val pointers = event.changes.filter { it.pressed }
+                val count = pointers.size
+
+                when {
+                    count >= 2 -> {
+                        // Two-finger pinch — consume and handle zoom
+                        lastSinglePosition = null  // reset single-finger tracker on re-pinch
+                        if (!isPinchGesture) {
+                            isPinchGesture = true
+                            gestureActive = true
+                            val p1 = pointers[0].position
+                            val p2 = pointers[1].position
+                            lastCentroid = (p1 + p2) / 2f
+                            lastSpan = (p1 - p2).getDistance()
+                        }
                         val p1 = pointers[0].position
                         val p2 = pointers[1].position
-                        lastCentroid = (p1 + p2) / 2f
-                        lastSpan = (p1 - p2).getDistance()
+                        val centroid = (p1 + p2) / 2f
+                        val span = (p1 - p2).getDistance()
+                        val zoomDelta = if (lastSpan > 0) span / lastSpan else 1f
+                        val panDelta = centroid - lastCentroid
+                        currentOnZoomPan(zoomDelta, panDelta)
+                        lastCentroid = centroid
+                        lastSpan = span
+                        pointers.forEach { it.consume() }
                     }
-                    val p1 = pointers[0].position
-                    val p2 = pointers[1].position
-                    val centroid = (p1 + p2) / 2f
-                    val span = (p1 - p2).getDistance()
-                    val zoomDelta = if (lastSpan > 0) span / lastSpan else 1f
-                    val panDelta = centroid - lastCentroid
-                    onZoomPan(zoomDelta, panDelta)
-                    lastCentroid = centroid
-                    lastSpan = span
-                    pointers.forEach { it.consume() }
-                }
-                count == 1 && (isPinchGesture || isZoomed()) -> {
-                    // Single finger after pinch, or single finger on an already-zoomed page: pan
-                    val pointer = pointers[0]
-                    val prev = lastSinglePosition ?: pointer.position  // first frame: zero delta
-                    lastSinglePosition = pointer.position
-                    val delta = pointer.position - prev
-                    if (delta != Offset.Zero) {
-                        gestureActive = true
-                        onZoomPan(1f, delta)
+                    count == 1 && (isPinchGesture || currentIsZoomed()) -> {
+                        // Single finger after pinch, or single finger on an already-zoomed page: pan
+                        val pointer = pointers[0]
+                        val prev = lastSinglePosition ?: pointer.position  // first frame: zero delta
+                        lastSinglePosition = pointer.position
+                        val delta = pointer.position - prev
+                        if (delta != Offset.Zero) {
+                            gestureActive = true
+                            currentOnZoomPan(1f, delta)
+                        }
+                        pointer.consume()
                     }
-                    pointer.consume()
+                    count == 1 && !isPinchGesture -> {
+                        // Single finger, not zoomed, no pinch started — let HorizontalPager handle
+                        break
+                    }
+                    else -> break
                 }
-                count == 1 && !isPinchGesture -> {
-                    // Single finger, not zoomed, no pinch started — let HorizontalPager handle
-                    break
-                }
-                else -> break
+
+                if (event.changes.none { it.pressed }) break
             }
 
-            if (event.changes.none { it.pressed }) break
+            if (gestureActive) currentOnGestureEnd()
         }
-
-        if (gestureActive) onGestureEnd()
     }
 }
 
@@ -1170,6 +1189,12 @@ private fun Modifier.verticalZoomPanGesture(
     onZoomPan: (zoomFactor: Float, panX: Float, panY: Float) -> Unit,
     onGestureEnd: () -> Unit
 ): Modifier {
+    // See pagedZoomPanGesture: observe recomposed state without restarting an
+    // active gesture.
+    val currentIsZoomed by rememberUpdatedState(isZoomed)
+    val currentOnZoomPan by rememberUpdatedState(onZoomPan)
+    val currentOnGestureEnd by rememberUpdatedState(onGestureEnd)
+
     return this.pointerInput(Unit) {
         awaitEachGesture {
             var gestureActive = false
@@ -1205,12 +1230,12 @@ private fun Modifier.verticalZoomPanGesture(
                         val span = (p1 - p2).getDistance()
                         val zoomDelta = if (lastSpan > 0) span / lastSpan else 1f
                         val panDelta = centroid - lastCentroid
-                        onZoomPan(zoomDelta, panDelta.x, panDelta.y)
+                        currentOnZoomPan(zoomDelta, panDelta.x, panDelta.y)
                         lastCentroid = centroid
                         lastSpan = span
                         pointers.forEach { it.consume() }
                     }
-                    count == 1 && (isPinchGesture || isZoomed()) -> {
+                    count == 1 && (isPinchGesture || currentIsZoomed()) -> {
                         val pointer = pointers[0]
                         val prev = lastSinglePosition
                         if (prev == null) {
@@ -1238,7 +1263,7 @@ private fun Modifier.verticalZoomPanGesture(
 
                         if (singleFingerDragMode == PdfSingleFingerDragMode.HorizontalPan && delta.x != 0f) {
                             gestureActive = true
-                            onZoomPan(1f, delta.x, 0f)
+                            currentOnZoomPan(1f, delta.x, 0f)
                             pointer.consume()
                         }
                     }
@@ -1252,7 +1277,7 @@ private fun Modifier.verticalZoomPanGesture(
             }
 
             if (gestureActive) {
-                onGestureEnd()
+                currentOnGestureEnd()
             }
         }
     }
