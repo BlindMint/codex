@@ -215,14 +215,16 @@ class OpfParser @Inject constructor(
      * Load cover image bitmap from the folder containing the OPF file.
      */
     suspend fun loadCoverImage(opfFolder: DocumentFile, coverPath: String?): Bitmap? = withContext(Dispatchers.IO) {
-        if (coverPath.isNullOrBlank()) return@withContext null
-
         try {
             // Find the cover file in the folder
-            val coverFileName = coverPath.substringAfterLast("/")
-            val coverFile = opfFolder.listFiles().find { file ->
-                file.name.equals(coverFileName, ignoreCase = true) ||
-                file.name.equals(coverPath, ignoreCase = true)
+            val coverFile = if (coverPath.isNullOrBlank()) {
+                null
+            } else {
+                val coverFileName = coverPath.substringAfterLast("/")
+                opfFolder.listFiles().find { file ->
+                    file.name.equals(coverFileName, ignoreCase = true) ||
+                        file.name.equals(coverPath, ignoreCase = true)
+                }
             }
 
             if (coverFile != null) {
@@ -231,16 +233,11 @@ class OpfParser @Inject constructor(
                 }
             } else {
                 // Try common cover names as fallback
-                val commonCoverNames = listOf("cover.jpg", "cover.jpeg", "cover.png", "cover.gif")
-                for (name in commonCoverNames) {
-                    val file = opfFolder.findFile(name)
-                    if (file != null) {
-                        return@withContext context.contentResolver.openInputStream(file.uri)?.use { inputStream ->
-                            BitmapFactory.decodeStream(inputStream)
-                        }
-                    }
-                }
-                null
+                val commonCoverNames = setOf("cover.jpg", "cover.jpeg", "cover.png", "cover.webp", "cover.gif")
+                val fallback = opfFolder.listFiles().firstOrNull {
+                    it.name?.lowercase() in commonCoverNames
+                } ?: return@withContext null
+                context.contentResolver.openInputStream(fallback.uri)?.use(BitmapFactory::decodeStream)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error loading cover image: $coverPath", e)

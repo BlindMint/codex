@@ -8,27 +8,32 @@ package us.blindmint.codex.data.util
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import android.provider.DocumentsContract
 import android.util.Log
 import androidx.core.net.toUri
-import us.blindmint.codex.data.parser.comic.ArchiveReader
+import dagger.hilt.android.qualifiers.ApplicationContext
 import us.blindmint.codex.domain.file.CachedFile
-import us.blindmint.codex.domain.library.book.Book
 import java.io.File
 import java.io.FileOutputStream
+import java.io.InputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
 private const val TAG = "CoverExtractor"
 
 @Singleton
-class CoverExtractor @Inject constructor() {
+class CoverExtractor @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
     data class CoverResult(
         val bitmap: Bitmap,
@@ -37,34 +42,162 @@ class CoverExtractor @Inject constructor() {
 
     suspend fun extractPdfPageAsCover(
         cachedFile: CachedFile,
-        pageNumber: Int
+        pageNumber: Int,
+        maxWidth: Int = 800,
+        maxHeight: Int = 1200
     ): Bitmap? {
         return try {
             val rawFile = cachedFile.rawFile ?: return null
-            val fd = ParcelFileDescriptor.open(rawFile, ParcelFileDescriptor.MODE_READ_ONLY)
-            val renderer = PdfRenderer(fd)
-            
-            if (pageNumber < 0 || pageNumber >= renderer.pageCount) {
-                renderer.close()
-                fd.close()
-                return null
+            ParcelFileDescriptor.open(rawFile, ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+                PdfRenderer(fd).use { renderer ->
+                    if (pageNumber < 0 || pageNumber >= renderer.pageCount) return null
+
+                    renderer.openPage(pageNumber).use { page ->
+                        val scale = minOf(
+                            maxWidth.toFloat() / page.width,
+                            maxHeight.toFloat() / page.height,
+                            1f
+                        )
+                        val width = (page.width * scale).toInt().coerceAtLeast(1)
+                        val height = (page.height * scale).toInt().coerceAtLeast(1)
+                        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                        bitmap.eraseColor(Color.WHITE)
+                        page.render(
+                            bitmap,
+                            null,
+                            Matrix().apply { setScale(scale, scale) },
+                            PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY
+                        )
+                        bitmap
+                    }
+                }
             }
-            
-            val page = renderer.openPage(pageNumber)
-            val width = page.width * 2
-            val height = page.height * 2
-            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            bitmap.eraseColor(Color.WHITE)
-            page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-            page.close()
-            renderer.close()
-            fd.close()
-            
-            bitmap
         } catch (e: Exception) {
             Log.e(TAG, "Failed to extract PDF page as cover", e)
             null
         }
+    }
+
+    fun resizeForStorage(
+        bitmap: Bitmap,
+        maxWidth: Int = 800,
+        maxHeight: Int = 1200
+    ): Bitmap {
+        if (bitmap.width <= maxWidth && bitmap.height <= maxHeight) return bitmap
+
+        val scale = minOf(
+            maxWidth.toFloat() / bitmap.width,
+            maxHeight.toFloat() / bitmap.height
+        )
+        return Bitmap.createScaledBitmap(
+            bitmap,
+            (bitmap.width * scale).toInt().coerceAtLeast(1),
+            (bitmap.height * scale).toInt().coerceAtLeast(1),
+            true
+        )
+    }
+
+    fun extractSidecarCover(cachedFile: CachedFile): Bitmap? {
+        return try {
+            when (cachedFile.uri.scheme) {
+                "file" -> cachedFile.uri.path?.let(::File)?.let(::findFileSidecar)
+                null, "" -> File(cachedFile.path).let(::findFileSidecar)
+                "content" -> findDocumentSidecar(cachedFile)
+                else -> null
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to locate sidecar cover for ${cachedFile.name}", e)
+            null
+        }
+    }
+
+    private fun findFileSidecar(bookFile: File): Bitmap? {
+        val bookBase = bookFile.nameWithoutExtension.lowercase()
+        val candidate = bookFile.parentFile?.listFiles()
+            ?.asSequence()
+            ?.filter { it.isFile && isImageName(it.name) }
+            ?.map { it to sidecarPriority(it.name, bookBase) }
+            ?.filter { it.second < Int.MAX_VALUE }
+            ?.sortedWith(compareBy<Pair<File, Int>> { it.second }.thenBy { it.first.name.lowercase() })
+            ?.firstOrNull()
+            ?.first
+            ?: return null
+        return decodeBounded { candidate.inputStream() }
+    }
+
+    private fun findDocumentSidecar(cachedFile: CachedFile): Bitmap? {
+        if (!DocumentsContract.isDocumentUri(context, cachedFile.uri)) return null
+        val documentId = DocumentsContract.getDocumentId(cachedFile.uri)
+        val separator = documentId.lastIndexOf('/')
+        if (separator < 0) return null
+        val parentId = documentId.substring(0, separator)
+        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(cachedFile.uri, parentId)
+        val bookBase = cachedFile.name.substringBeforeLast('.').lowercase()
+        val candidates = mutableListOf<Triple<Int, String, String>>()
+
+        context.contentResolver.query(
+            childrenUri,
+            arrayOf(
+                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                DocumentsContract.Document.COLUMN_MIME_TYPE
+            ),
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            val idColumn = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
+            val nameColumn = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+            val mimeColumn = cursor.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE)
+            while (cursor.moveToNext()) {
+                val name = cursor.getString(nameColumn) ?: continue
+                val mime = cursor.getString(mimeColumn).orEmpty()
+                if (!mime.startsWith("image/") && !isImageName(name)) continue
+                val priority = sidecarPriority(name, bookBase)
+                if (priority < Int.MAX_VALUE) {
+                    candidates += Triple(priority, name.lowercase(), cursor.getString(idColumn))
+                }
+            }
+        }
+
+        val document = candidates.minWithOrNull(
+            compareBy<Triple<Int, String, String>> { it.first }.thenBy { it.second }
+        ) ?: return null
+        val uri = DocumentsContract.buildDocumentUriUsingTree(cachedFile.uri, document.third)
+        return decodeBounded { context.contentResolver.openInputStream(uri) }
+    }
+
+    private fun sidecarPriority(fileName: String, bookBase: String): Int {
+        val name = fileName.substringBeforeLast('.').lowercase()
+        return when {
+            name == bookBase -> 0
+            name in setOf("cover", "folder", "front", "frontcover", "front_cover", "poster") -> 1
+            "cover" in name -> 2
+            "front" in name || "folder" in name -> 3
+            else -> Int.MAX_VALUE
+        }
+    }
+
+    private fun isImageName(name: String): Boolean {
+        return name.substringAfterLast('.', "").lowercase() in
+            setOf("jpg", "jpeg", "png", "webp", "gif", "bmp")
+    }
+
+    private fun decodeBounded(
+        maxWidth: Int = 1600,
+        maxHeight: Int = 2400,
+        openStream: () -> InputStream?
+    ): Bitmap? {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        openStream()?.use { BitmapFactory.decodeStream(it, null, bounds) }
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+
+        var sampleSize = 1
+        while (bounds.outWidth / sampleSize > maxWidth || bounds.outHeight / sampleSize > maxHeight) {
+            sampleSize *= 2
+        }
+        val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+        return openStream()?.use { BitmapFactory.decodeStream(it, null, options) }
     }
 
     suspend fun extractComicPageAsCover(
