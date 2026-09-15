@@ -68,6 +68,9 @@ interface BookDao {
     @Update
     suspend fun updateBooks(books: List<BookEntity>)
 
+    @Query("UPDATE bookentity SET image = :image WHERE id = :id")
+    suspend fun updateCover(id: Int, image: String?)
+
     @Query("UPDATE bookentity SET speedReaderWordIndex = :wordIndex, speedReaderHasBeenOpened = 1 WHERE id = :id")
     suspend fun updateSpeedReaderProgress(id: Int, wordIndex: Int)
 

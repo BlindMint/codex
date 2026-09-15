@@ -14,6 +14,7 @@ import us.blindmint.codex.data.parser.fodt.FodtFileParser
 import us.blindmint.codex.data.parser.html.HtmlFileParser
 import us.blindmint.codex.data.parser.pdf.PdfFileParser
 import us.blindmint.codex.data.parser.txt.TxtFileParser
+import us.blindmint.codex.data.util.CoverExtractor
 import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.library.book.BookWithCover
 import javax.inject.Inject
@@ -28,6 +29,7 @@ class FileParserImpl @Inject constructor(
     private val htmlFileParser: HtmlFileParser,
     private val fodtFileParser: FodtFileParser,
     private val comicFileParser: ComicFileParser,
+    private val coverExtractor: CoverExtractor,
 ) : FileParser {
 
     override suspend fun parse(cachedFile: CachedFile): BookWithCover? {
@@ -36,7 +38,7 @@ class FileParserImpl @Inject constructor(
             return null
         }
 
-        return when (FormatDetector.detect(cachedFile.name)) {
+        val parsed = when (FormatDetector.detect(cachedFile.name)) {
             FormatDetector.Format.PDF -> pdfFileParser.parse(cachedFile)
             FormatDetector.Format.EPUB -> epubFileParser.parse(cachedFile)
             FormatDetector.Format.TXT -> txtFileParser.parse(cachedFile)
@@ -48,6 +50,12 @@ class FileParserImpl @Inject constructor(
                 Log.e(FILE_PARSER, "Wrong file format, could not find supported extension.")
                 null
             }
+        }
+
+        return if (parsed != null && parsed.coverImage == null) {
+            parsed.copy(coverImage = coverExtractor.extractSidecarCover(cachedFile))
+        } else {
+            parsed
         }
     }
 }

@@ -6,7 +6,10 @@
 
 package us.blindmint.codex.data.parser.fb2
 
+import android.graphics.BitmapFactory
+import android.util.Base64
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.jsoup.parser.Parser
 import us.blindmint.codex.R
 import us.blindmint.codex.data.parser.BaseFileParser
@@ -51,8 +54,23 @@ class Fb2FileParser @Inject constructor() : BaseFileParser() {
                 title = title,
                 authors = authors,
                 description = description,
-                filePath = cachedFile.uri.toString()
+                filePath = cachedFile.uri.toString(),
+                coverImage = document?.let(::extractCover)
             )
         }
+    }
+
+    private fun extractCover(document: Document): android.graphics.Bitmap? {
+        val image = document.selectFirst("coverpage image") ?: return null
+        val href = image.attributes().asList()
+            .firstOrNull { it.key.equals("href", true) || it.key.endsWith(":href", true) }
+            ?.value
+            ?.removePrefix("#")
+            ?.takeIf { it.isNotBlank() }
+            ?: return null
+        val binary = document.select("binary").firstOrNull { it.attr("id") == href }
+            ?: return null
+        val bytes = Base64.decode(binary.text().filterNot(Char::isWhitespace), Base64.DEFAULT)
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     }
 }

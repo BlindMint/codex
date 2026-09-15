@@ -10,12 +10,15 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument
 import us.blindmint.codex.R
 import us.blindmint.codex.data.parser.BaseFileParser
 import us.blindmint.codex.data.parser.BookFactory
+import us.blindmint.codex.data.util.CoverExtractor
 import us.blindmint.codex.domain.file.CachedFile
 import us.blindmint.codex.domain.library.book.BookWithCover
 import us.blindmint.codex.domain.ui.UIText
 import javax.inject.Inject
 
-class PdfFileParser @Inject constructor() : BaseFileParser() {
+class PdfFileParser @Inject constructor(
+    private val coverExtractor: CoverExtractor
+) : BaseFileParser() {
 
     override val tag = "PDF Parser"
 
@@ -39,7 +42,8 @@ class PdfFileParser @Inject constructor() : BaseFileParser() {
                 authors = authors,
                 description = description,
                 filePath = cachedFile.uri.toString(),
-                pageCount = pageCount
+                pageCount = pageCount,
+                coverImage = coverExtractor.extractPdfPageAsCover(cachedFile, 0)
             )
         }
     }

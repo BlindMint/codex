@@ -166,12 +166,15 @@ class BulkImportCodexDirectoryUseCase @Inject constructor(
             }
 
             var finalBook = parsedBook.book
+            var finalCover = parsedBook.coverImage
 
             if (opfFile != null) {
                 try {
                     val opfMetadata = opfParser.parse(opfFile)
                     if (opfMetadata != null) {
                         finalBook = mergeOpfMetadata(finalBook, opfMetadata)
+                        finalCover = opfParser.loadCoverImage(folder, opfMetadata.coverPath)
+                            ?: finalCover
                     }
                 } catch (e: Exception) {
                     Log.w(BULK_IMPORT_CODEX, "Failed to parse OPF: ${opfFile.name}", e)
@@ -185,7 +188,7 @@ class BulkImportCodexDirectoryUseCase @Inject constructor(
 
             val bookWithCover = us.blindmint.codex.domain.library.book.BookWithCover(
                 book = finalBook,
-                coverImage = parsedBook.coverImage
+                coverImage = finalCover
             )
 
             insertBook.execute(bookWithCover)

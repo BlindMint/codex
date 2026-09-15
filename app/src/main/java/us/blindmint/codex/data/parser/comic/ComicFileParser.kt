@@ -10,6 +10,8 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jsoup.Jsoup
+import org.jsoup.parser.Parser
 import us.blindmint.codex.R
 import us.blindmint.codex.data.parser.BaseFileParser
 import us.blindmint.codex.data.parser.BookFactory
@@ -37,14 +39,19 @@ class ComicFileParser @Inject constructor(
         return withContext(Dispatchers.IO) {
             safeParse {
                 archiveReader.openArchive(cachedFile).use { archive ->
-                    val pageCount = archive.entries.size
+                    val imageEntries = archive.entries
+                        .filter { ArchiveReader.isImageFile(it.getPath()) }
+                    val pageCount = imageEntries.size
                     val coverImage: CoverImage? = try {
-                        val firstImageEntry = archive.entries
-                            .filter { !it.isDirectory() }
-                            .sortedWith(Comparator { a, b ->
-                                NaturalOrderComparator.compare(a.getPath(), b.getPath())
-                            })
-                            .firstOrNull()
+                        val firstImageEntry = findComicInfoCover(archive, imageEntries)
+                            ?: imageEntries.minWithOrNull(
+                                Comparator { a, b ->
+                                    val priority = coverNamePriority(a.getPath())
+                                        .compareTo(coverNamePriority(b.getPath()))
+                                    if (priority != 0) priority
+                                    else NaturalOrderComparator.compare(a.getPath(), b.getPath())
+                                }
+                            )
 
                         firstImageEntry?.let { entry ->
                             archive.getInputStream(entry)?.use { input ->
@@ -73,5 +80,42 @@ class ComicFileParser @Inject constructor(
     private fun isComicFile(cachedFile: CachedFile): Boolean {
         val extension = cachedFile.name.substringAfterLast('.').lowercase()
         return extension in supportedExtensions
+    }
+
+    private fun coverNamePriority(path: String): Int {
+        val name = path.substringAfterLast('/').substringAfterLast('\\')
+            .substringBeforeLast('.')
+            .lowercase()
+        return when {
+            name == "cover" -> 0
+            name in setOf("front", "frontcover", "front_cover", "folder", "poster") -> 1
+            "frontcover" in name || "front_cover" in name -> 2
+            "cover" in name -> 3
+            "front" in name || "folder" in name -> 4
+            else -> 10
+        }
+    }
+
+    private fun findComicInfoCover(
+        archive: ArchiveReader.ArchiveHandle,
+        imageEntries: List<ComicArchiveEntry>
+    ): ComicArchiveEntry? {
+        val path = archive.allEntryPaths.firstOrNull {
+            it.substringAfterLast('/').substringAfterLast('\\')
+                .equals("ComicInfo.xml", ignoreCase = true)
+        } ?: return null
+        val document = archive.getInputStream(path)?.use {
+            Jsoup.parse(it, null, "", Parser.xmlParser())
+        } ?: return null
+        val page = document.select("Page, page").firstOrNull { element ->
+            element.attributes().asList().any { attribute ->
+                attribute.key.equals("Type", ignoreCase = true) &&
+                    attribute.value.replace(" ", "").equals("FrontCover", ignoreCase = true)
+            }
+        } ?: return null
+        val index = page.attributes().asList().firstOrNull {
+            it.key.equals("Image", ignoreCase = true)
+        }?.value?.toIntOrNull() ?: return null
+        return imageEntries.getOrNull(index)
     }
 }

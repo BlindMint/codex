@@ -115,6 +115,7 @@ class ArchiveReader @Inject constructor() {
         private val address: Long
 
         private val _entries = mutableListOf<LibArchiveEntryImpl>()
+        private val _allEntryPaths = mutableListOf<String>()
 
         init {
             val file = cachedFile.rawFile
@@ -128,8 +129,11 @@ class ArchiveReader @Inject constructor() {
             LibArchiveInputStream(address, size).use { archiveStream ->
                 while (true) {
                     val entryInfo = archiveStream.getNextEntry() ?: break
-                    if (entryInfo.isFile && ArchiveReader.isImageFile(entryInfo.name)) {
-                        _entries.add(LibArchiveEntryImpl(entryInfo.name))
+                    if (entryInfo.isFile) {
+                        _allEntryPaths.add(entryInfo.name)
+                        if (ArchiveReader.isImageFile(entryInfo.name)) {
+                            _entries.add(LibArchiveEntryImpl(entryInfo.name))
+                        }
                     }
                 }
             }
@@ -142,13 +146,19 @@ class ArchiveReader @Inject constructor() {
         override val entries: List<ComicArchiveEntry>
             get() = _entries
 
+        override val allEntryPaths: List<String>
+            get() = _allEntryPaths
+
         override fun getInputStream(entry: ComicArchiveEntry): InputStream? {
-            val libEntry = entry as LibArchiveEntryImpl
+            return getInputStream(entry.getPath())
+        }
+
+        override fun getInputStream(path: String): InputStream? {
             val archive = LibArchiveInputStream(address, size)
             return try {
                 while (true) {
                     val entryInfo = archive.getNextEntry() ?: break
-                    if (entryInfo.name == libEntry.getPath()) {
+                    if (entryInfo.name == path) {
                         val byteArray = archive.readBytes()
                         archive.close()
                         return byteArray.inputStream()
@@ -180,7 +190,9 @@ class ArchiveReader @Inject constructor() {
 
     interface ArchiveHandle : AutoCloseable {
         val entries: List<ComicArchiveEntry>
+        val allEntryPaths: List<String>
         fun getInputStream(entry: ComicArchiveEntry): InputStream?
+        fun getInputStream(path: String): InputStream?
         fun getEntryCount(): Int
     }
 }

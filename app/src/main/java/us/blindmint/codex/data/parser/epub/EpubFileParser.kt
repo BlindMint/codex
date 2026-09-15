@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
+import org.jsoup.parser.Parser
 import us.blindmint.codex.R
 import us.blindmint.codex.data.parser.BaseFileParser
 import us.blindmint.codex.data.parser.BookFactory
@@ -19,6 +20,8 @@ import us.blindmint.codex.domain.library.book.BookWithCover
 import us.blindmint.codex.domain.library.category.Category
 import us.blindmint.codex.domain.ui.UIText
 import java.io.File
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.util.zip.ZipFile
 import javax.inject.Inject
 
@@ -58,7 +61,16 @@ class EpubFileParser @Inject constructor() : BaseFileParser() {
                     }.toList()
                     android.util.Log.d(tag, "Found ${opfFiles.size} OPF files: ${opfFiles.map { it.name }}")
 
-                    val opfEntry = opfFiles.firstOrNull() ?: run {
+                    val declaredOpfPath = zip.getEntry("META-INF/container.xml")?.let { containerEntry ->
+                        zip.getInputStream(containerEntry).use { input ->
+                            Jsoup.parse(input, null, "", Parser.xmlParser())
+                                .selectFirst("rootfile")
+                                ?.attr("full-path")
+                        }
+                    }?.takeIf { it.isNotBlank() }
+                    val opfEntry = opfFiles.firstOrNull {
+                        it.name.equals(declaredOpfPath, ignoreCase = true)
+                    } ?: opfFiles.firstOrNull() ?: run {
                         android.util.Log.e(tag, "No OPF file found in EPUB")
                         return@withContext
                     }
@@ -93,21 +105,29 @@ class EpubFileParser @Inject constructor() : BaseFileParser() {
                         }
                     }
 
-                    val coverImage = document
-                        .select("metadata > meta[name=cover]")
-                        .attr("content")
-                        .run {
-                            if (isNotBlank()) {
-                                document
-                                    .select("manifest > item[id=$this]")
-                                    .attr("href")
-                                    .apply { if (isNotBlank()) return@run this }
-                            }
-
-                            document
-                                .select("manifest > item[media-type*=image]")
-                                .firstOrNull()?.attr("href")
+                    val manifestItems = document.select("manifest > item")
+                    val coverId = document.selectFirst("metadata > meta[name=cover]")
+                        ?.attr("content")
+                        ?.trim()
+                    val coverImage = manifestItems.firstOrNull { item ->
+                        item.attr("properties").split(Regex("\\s+")).any {
+                            it.equals("cover-image", ignoreCase = true)
                         }
+                    }?.attr("href")?.takeIf { it.isNotBlank() }
+                        ?: manifestItems.firstOrNull { item ->
+                            coverId != null && item.attr("id") == coverId
+                        }?.attr("href")?.takeIf { it.isNotBlank() }
+                        ?: manifestItems.firstOrNull { item ->
+                            item.attr("media-type").startsWith("image/")
+                        }?.attr("href")?.takeIf { it.isNotBlank() }
+                        ?: document.selectFirst("guide > reference[type=cover]")
+                            ?.attr("href")?.takeIf { it.isNotBlank() }
+                        ?: manifestItems.firstOrNull { item ->
+                            val id = item.attr("id").lowercase()
+                            val href = item.attr("href").lowercase()
+                            item.attr("media-type").startsWith("image/") &&
+                                (id.contains("cover") || href.contains("cover") || href.contains("front"))
+                        }?.attr("href")?.takeIf { it.isNotBlank() }
 
                     book = BookFactory.createWithDefaults(
                         title = title,
@@ -115,7 +135,7 @@ class EpubFileParser @Inject constructor() : BaseFileParser() {
                         description = description,
                         filePath = cachedFile.uri.toString(),
                         category = Category.entries[0],
-                        coverImage = extractCoverImageBitmap(rawFile, coverImage)
+                        coverImage = extractCoverImageBitmap(rawFile, opfEntry.name, coverImage)
                     )
                 }
             }
@@ -126,20 +146,40 @@ class EpubFileParser @Inject constructor() : BaseFileParser() {
         }
     }
 
-    private fun extractCoverImageBitmap(file: File, coverImagePath: String?): Bitmap? {
+    private fun extractCoverImageBitmap(
+        file: File,
+        opfPath: String,
+        coverImagePath: String?
+    ): Bitmap? {
         if (coverImagePath.isNullOrBlank()) {
             return null
         }
 
-        ZipFile(file).use { zip ->
-            zip.entries().asSequence().forEach { entry ->
-                if (entry.name.endsWith(coverImagePath)) {
-                    val imageBytes = zip.getInputStream(entry).readBytes()
-                    return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+        val decodedPath = URLDecoder.decode(
+            coverImagePath.substringBefore('#').replace("+", "%2B"),
+            StandardCharsets.UTF_8.name()
+        )
+        val opfDirectory = opfPath.substringBeforeLast('/', "")
+        val resolvedPath = listOf(opfDirectory, decodedPath)
+            .filter { it.isNotBlank() }
+            .joinToString("/")
+            .split('/')
+            .fold(mutableListOf<String>()) { parts, part ->
+                when (part) {
+                    "", "." -> Unit
+                    ".." -> if (parts.isNotEmpty()) parts.removeAt(parts.lastIndex)
+                    else -> parts.add(part)
                 }
+                parts
             }
-        }
+            .joinToString("/")
 
-        return null
+        ZipFile(file).use { zip ->
+            val entry = zip.entries().asSequence().firstOrNull {
+                it.name.equals(resolvedPath, ignoreCase = true)
+            } ?: return null
+            val imageBytes = zip.getInputStream(entry).use { it.readBytes() }
+            return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+        }
     }
 }

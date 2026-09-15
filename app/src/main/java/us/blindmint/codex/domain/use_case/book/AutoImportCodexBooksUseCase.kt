@@ -215,6 +215,7 @@ class AutoImportCodexBooksUseCase @Inject constructor(
 
             // If OPF file exists, merge metadata
             var finalBook = parsedBook.book
+            var finalCover = parsedBook.coverImage
             if (opfFile != null) {
                 try {
                     Log.d(AUTO_IMPORT, "Parsing OPF metadata file")
@@ -222,6 +223,8 @@ class AutoImportCodexBooksUseCase @Inject constructor(
                     if (opfMetadata != null) {
                         Log.d(AUTO_IMPORT, "Merging OPF metadata: ${opfMetadata.title}")
                         finalBook = mergeOpfMetadata(finalBook, opfMetadata)
+                        finalCover = opfParser.loadCoverImage(folder, opfMetadata.coverPath)
+                            ?: finalCover
                         Log.d(AUTO_IMPORT, "Merged OPF metadata for: ${bookFile.name}")
                     } else {
                         Log.d(AUTO_IMPORT, "OPF parsing returned null")
@@ -241,7 +244,7 @@ class AutoImportCodexBooksUseCase @Inject constructor(
             // Create BookWithCover
             val bookWithCover = us.blindmint.codex.domain.library.book.BookWithCover(
                 book = finalBook,
-                coverImage = parsedBook.coverImage
+                coverImage = finalCover
             )
 
             // Insert into database

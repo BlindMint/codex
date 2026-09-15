@@ -8,9 +8,7 @@ package us.blindmint.codex.data.repository
 
 import android.app.Application
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
-import android.provider.MediaStore
 import android.util.Log
 import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
@@ -21,19 +19,18 @@ import us.blindmint.codex.data.local.dto.HistoryEntity
 import us.blindmint.codex.data.local.room.BookDao
 import us.blindmint.codex.data.mapper.book.BookMapper
 import us.blindmint.codex.data.util.CachedFileFactory
+import us.blindmint.codex.data.util.CoverExtractor
 import us.blindmint.codex.data.parser.FileParser
 import us.blindmint.codex.data.parser.SpeedReaderWordExtractor
 import us.blindmint.codex.data.parser.TextParser
 import us.blindmint.codex.utils.minSubstringDistance
 import us.blindmint.codex.domain.file.CachedFile
-import us.blindmint.codex.domain.file.CachedFileCompat
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.BookWithCover
 import us.blindmint.codex.domain.reader.ReaderText
 import us.blindmint.codex.domain.reader.SpeedReaderWord
 import us.blindmint.codex.domain.repository.BookRepository
 import java.io.BufferedOutputStream
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
@@ -55,7 +52,8 @@ class BookRepositoryImpl @Inject constructor(
     private val database: BookDao,
     private val fileParser: FileParser,
     private val textParser: TextParser,
-    private val bookMapper: BookMapper
+    private val bookMapper: BookMapper,
+    private val coverExtractor: CoverExtractor
 ) : BookRepository {
 
     private val textCache = LruCache<Int, List<ReaderText>>(5)
@@ -265,38 +263,7 @@ class BookRepositoryImpl @Inject constructor(
     ) {
         Log.i(INSERT_BOOK, "Inserting ${bookWithCover.book.title}.")
 
-        val filesDir = application.filesDir
-        val coversDir = File(filesDir, "covers")
-
-        if (!coversDir.exists()) {
-            Log.i(INSERT_BOOK, "Created covers folder.")
-            coversDir.mkdirs()
-        }
-
-        var coverUri = ""
-
-        if (bookWithCover.coverImage != null) {
-            try {
-                coverUri = "${UUID.randomUUID()}.webp"
-                val cover = File(coversDir, coverUri)
-
-                withContext(Dispatchers.IO) {
-                    BufferedOutputStream(FileOutputStream(cover)).use { output ->
-                        bookWithCover.coverImage
-                            .copy(Bitmap.Config.RGB_565, false)
-                            .compress(Bitmap.CompressFormat.WEBP, 20, output)
-                            .let { success ->
-                                if (success) return@let
-                                throw Exception("Couldn't save cover image")
-                            }
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e(INSERT_BOOK, "Could not save cover.")
-                coverUri = ""
-                e.printStackTrace()
-            }
-        }
+        val coverUri = bookWithCover.coverImage?.let { saveCover(it) }
 
         // Check for existing progress history
         val existingProgress = database.getBookProgressHistory(bookWithCover.book.filePath)
@@ -312,9 +279,7 @@ class BookRepositoryImpl @Inject constructor(
         }
 
         val updatedBook = bookWithRestoredProgress.copy(
-            coverImage = if (coverUri.isNotBlank()) {
-                Uri.fromFile(File("$coversDir/$coverUri"))
-            } else null
+            coverImage = coverUri
         )
 
         val bookToInsert = bookMapper.toBookEntity(updatedBook)
@@ -343,6 +308,66 @@ class BookRepositoryImpl @Inject constructor(
                 )
             )
         )
+    }
+
+    override suspend fun replaceCover(bookId: Int, cover: Bitmap): Uri? {
+        val entity = database.findBookById(bookId)
+        val newUri = saveCover(cover) ?: return null
+
+        return try {
+            database.updateCover(bookId, newUri.toString())
+            entity.image?.let(::managedCoverFile)?.takeIf { it.toUri() != newUri }?.delete()
+            newUri
+        } catch (e: Exception) {
+            managedCoverFile(newUri.toString())?.delete()
+            Log.e(UPDATE_BOOK, "Could not replace cover for book $bookId", e)
+            null
+        }
+    }
+
+    private suspend fun saveCover(bitmap: Bitmap): Uri? = withContext(Dispatchers.IO) {
+        val coversDir = File(application.filesDir, "covers")
+        if (!coversDir.exists() && !coversDir.mkdirs()) return@withContext null
+
+        val fileName = "${UUID.randomUUID()}.webp"
+        val coverFile = File(coversDir, fileName)
+        val temporaryFile = File(coversDir, "$fileName.tmp")
+        val resized = coverExtractor.resizeForStorage(bitmap)
+
+        try {
+            BufferedOutputStream(FileOutputStream(temporaryFile)).use { output ->
+                if (!resized.compress(Bitmap.CompressFormat.WEBP, 84, output)) {
+                    throw IllegalStateException("Could not encode cover image")
+                }
+            }
+            if (!temporaryFile.renameTo(coverFile)) {
+                throw IllegalStateException("Could not finalize cover image")
+            }
+            coverFile.toUri()
+        } catch (e: Exception) {
+            temporaryFile.delete()
+            coverFile.delete()
+            Log.e(INSERT_BOOK, "Could not save cover", e)
+            null
+        } finally {
+            if (resized !== bitmap) resized.recycle()
+        }
+    }
+
+    private fun managedCoverFile(storedPath: String): File? {
+        val coversDir = File(application.filesDir, "covers")
+        val uri = storedPath.toUri()
+        val candidate = when (uri.scheme) {
+            "file" -> uri.path?.let(::File)
+            null, "" -> File(coversDir, storedPath)
+            else -> null
+        } ?: return null
+
+        return candidate.takeIf {
+            runCatching {
+                it.canonicalPath.startsWith(coversDir.canonicalPath + File.separator)
+            }.getOrDefault(false)
+        }
     }
 
     override suspend fun updateSpeedReaderProgress(bookId: Int, wordIndex: Int) {
@@ -382,8 +407,8 @@ class BookRepositoryImpl @Inject constructor(
             database.deleteBookProgressHistory(book.filePath)
 
             bookEntity.image?.let { imagePath ->
-                val coverFile = File(application.filesDir, "covers/$imagePath")
-                if (coverFile.exists()) {
+                val coverFile = managedCoverFile(imagePath)
+                if (coverFile?.exists() == true) {
                     coverFile.delete()
                     Log.i(DELETE_BOOKS, "Deleted cover image: $imagePath")
                 }

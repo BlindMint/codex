@@ -6,6 +6,8 @@
 
 package us.blindmint.codex.domain.repository
 
+import android.graphics.Bitmap
+import android.net.Uri
 import us.blindmint.codex.domain.library.book.Book
 import us.blindmint.codex.domain.library.book.BookWithCover
 import us.blindmint.codex.domain.reader.ReaderText
@@ -40,6 +42,11 @@ interface BookRepository {
     suspend fun updateBook(
         book: Book
     )
+
+    suspend fun replaceCover(
+        bookId: Int,
+        cover: Bitmap
+    ): Uri?
 
     suspend fun updateSpeedReaderProgress(
         bookId: Int,
