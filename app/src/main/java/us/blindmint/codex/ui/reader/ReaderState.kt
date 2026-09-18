@@ -33,6 +33,7 @@ data class ReaderState(
 
     val errorMessage: UIText? = null,
     val isLoading: Boolean = true,
+    val isFileMissing: Boolean = false,
 
     val showMenu: Boolean = false,
     val checkpoint: Checkpoint = Checkpoint(0, 0),
