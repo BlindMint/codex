@@ -67,6 +67,7 @@ import us.blindmint.codex.presentation.core.util.calculateProgress
 import us.blindmint.codex.presentation.core.util.setBrightness
 import us.blindmint.codex.presentation.navigator.LocalNavigator
 import us.blindmint.codex.presentation.reader.ReaderContent
+import us.blindmint.codex.presentation.reader.MissingBookFileDialog
 
 import us.blindmint.codex.ui.book_info.BookInfoScreen
 import us.blindmint.codex.ui.library.LibraryScreen
@@ -541,7 +542,13 @@ data class ReaderScreen(
             }
         }
 
-        // Render normal reader
+        if (state.value.isFileMissing) {
+            MissingBookFileDialog(
+                bookTitle = state.value.book.title,
+                navigateBack = { navigator.pop() }
+            )
+        } else {
+            // Render normal reader
             ReaderContent(
             book = state.value.book,
             text = state.value.text,
@@ -656,33 +663,30 @@ data class ReaderScreen(
             navigateBack = {
                 navigator.pop()
             },
-             navigateToBookInfo = { changePath ->
-                 if (changePath) BookInfoScreen.changePathChannel.trySend(true)
-                 navigator.push(
-                     BookInfoScreen(
-                         bookId = bookId,
-                     ),
-                     popping = true,
-                     saveInBackStack = false
-                 )
-              },
-               currentComicPage = state.value.currentComicPage,
-              totalComicPages = state.value.totalComicPages,
-              onComicPageSelected = { page ->
-                  screenModel.onEvent(ReaderEvent.OnComicPageSelected(page))
-              },
-               comicProgressBar = mainState.value.comicProgressBar,
-               comicProgressCount = mainState.value.comicProgressCount,
-               comicProgressBarPadding = comicProgressBarPadding,
-               comicProgressBarAlignment = mainState.value.comicProgressBarAlignment,
-               comicProgressBarFontSize = comicProgressBarFontSize,
-               comicReadingDirection = mainState.value.comicReadingDirection,
-               isInverseColorEnabled = state.value.isInverseColorEnabled,
-               onToggleInverseColor = { screenModel.onEvent(ReaderEvent.OnToggleInverseColor) }
-           )
-
-
-
-
-     }
- }
+            navigateToBookInfo = { changePath ->
+                if (changePath) BookInfoScreen.changePathChannel.trySend(true)
+                navigator.push(
+                    BookInfoScreen(
+                        bookId = bookId,
+                    ),
+                    popping = true,
+                    saveInBackStack = false
+                )
+            },
+            currentComicPage = state.value.currentComicPage,
+            totalComicPages = state.value.totalComicPages,
+            onComicPageSelected = { page ->
+                screenModel.onEvent(ReaderEvent.OnComicPageSelected(page))
+            },
+            comicProgressBar = mainState.value.comicProgressBar,
+            comicProgressCount = mainState.value.comicProgressCount,
+            comicProgressBarPadding = comicProgressBarPadding,
+            comicProgressBarAlignment = mainState.value.comicProgressBarAlignment,
+            comicProgressBarFontSize = comicProgressBarFontSize,
+            comicReadingDirection = mainState.value.comicReadingDirection,
+            isInverseColorEnabled = state.value.isInverseColorEnabled,
+            onToggleInverseColor = { screenModel.onEvent(ReaderEvent.OnToggleInverseColor) }
+        )
+        }
+    }
+}

@@ -26,13 +26,15 @@ import us.blindmint.codex.ui.history.HistoryScreen
 import us.blindmint.codex.ui.library.LibraryScreen
 import us.blindmint.codex.domain.ui.UIText
 import us.blindmint.codex.R
+import us.blindmint.codex.data.util.BookFileAvailability
 import javax.inject.Inject
 
 @HiltViewModel
 class SpeedReaderModel @Inject constructor(
     private val getBookById: GetBookById,
     private val getSpeedReaderWords: GetSpeedReaderWords,
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    private val bookFileAvailability: BookFileAvailability
 ) : ViewModel() {
 
     val book = mutableStateOf<Book?>(null)
@@ -42,6 +44,7 @@ class SpeedReaderModel @Inject constructor(
     // Track when UI is ready to show content (both words loaded AND position restored)
     val isReadyForDisplay = mutableStateOf(false)
     val errorMessage = mutableStateOf<UIText?>(null)
+    val isFileMissing = mutableStateOf(false)
 
     // Progress tracking
     val currentProgress = mutableFloatStateOf(0f)
@@ -68,6 +71,7 @@ class SpeedReaderModel @Inject constructor(
             totalWords.intValue = 0
             isLoading.value = true
             errorMessage.value = null
+            isFileMissing.value = false
             currentProgress.floatValue = 0f
             currentWordIndex.intValue = -1 // Invalid until book loads
             initialWordIndex.intValue = -1 // Will be set after book loads
@@ -78,6 +82,13 @@ class SpeedReaderModel @Inject constructor(
             if (loadedBook == null) {
                 Log.e("SPEED_READER_LOAD", "[3] Book not found in database!")
                 onError()
+                return@launch
+            }
+
+            if (!bookFileAvailability.isAvailable(loadedBook)) {
+                book.value = loadedBook
+                isFileMissing.value = true
+                isLoading.value = false
                 return@launch
             }
 

@@ -9,8 +9,9 @@
 package us.blindmint.codex.presentation.settings.library
 
 import androidx.compose.foundation.lazy.LazyListScope
-import us.blindmint.codex.presentation.settings.library.display.LibraryDisplaySubcategory
 import us.blindmint.codex.presentation.settings.library.covers.LibraryCoversSubcategory
+import us.blindmint.codex.presentation.settings.library.display.LibraryDisplaySubcategory
+import us.blindmint.codex.presentation.settings.library.maintenance.LibraryMaintenanceSubcategory
 import us.blindmint.codex.presentation.settings.library.sort.LibrarySortSubcategory
 import us.blindmint.codex.presentation.settings.library.tabs.LibraryTabsSubcategory
 
@@ -18,5 +19,6 @@ fun LazyListScope.LibrarySettingsCategory() {
     LibraryDisplaySubcategory()
     LibraryTabsSubcategory()
     LibrarySortSubcategory()
-    LibraryCoversSubcategory(showDivider = false)
+    LibraryCoversSubcategory()
+    LibraryMaintenanceSubcategory(showDivider = false)
 }

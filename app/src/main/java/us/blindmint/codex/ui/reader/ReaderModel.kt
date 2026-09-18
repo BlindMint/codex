@@ -46,6 +46,7 @@ import us.blindmint.codex.domain.use_case.book.GetBookById
 import us.blindmint.codex.domain.use_case.book.GetText
 import us.blindmint.codex.domain.use_case.book.UpdateBook
 import us.blindmint.codex.domain.repository.BookRepository
+import us.blindmint.codex.data.util.BookFileAvailability
 import us.blindmint.codex.domain.use_case.bookmark.GetBookmarksByBookId
 import us.blindmint.codex.domain.use_case.bookmark.InsertBookmark
 import us.blindmint.codex.domain.use_case.bookmark.DeleteBookmark
@@ -73,7 +74,8 @@ class ReaderModel @Inject constructor(
     private val insertBookmark: InsertBookmark,
     private val deleteBookmark: DeleteBookmark,
     private val deleteBookmarksByBookId: DeleteBookmarksByBookId,
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    private val bookFileAvailability: BookFileAvailability
 ) : ViewModel() {
 
     private val mutex = Mutex()
@@ -1046,6 +1048,18 @@ class ReaderModel @Inject constructor(
                 return@launch
             }
 
+            if (!bookFileAvailability.isAvailable(book)) {
+                _state.update {
+                    ReaderState(
+                        book = book,
+                        isLoading = false,
+                        isFileMissing = true
+                    )
+                }
+                systemBarsVisibility(show = true, activity = activity)
+                return@launch
+            }
+
             // If reusing existing text, don't reset the ViewModel state
             if (!reuseExistingText) {
                 eventJob.cancel()
@@ -1212,6 +1226,7 @@ class ReaderModel @Inject constructor(
 
     @OptIn(FlowPreview::class)
     fun updateProgress(listState: LazyListState) {
+        if (_state.value.isFileMissing) return
         // Skip if book is not loaded yet (empty/default book object)
         if (_state.value.book.id == -1 || _state.value.book.title.isBlank()) {
             Log.d("ReaderProgress", "Skipping progress update - book not loaded yet")

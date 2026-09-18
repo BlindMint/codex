@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.Font
 import us.blindmint.codex.presentation.reader.SpeedReadingScaffold
 import us.blindmint.codex.domain.reader.SpeedReadingVerticalIndicatorType
 import us.blindmint.codex.presentation.reader.SpeedReadingSettingsBottomSheet
+import us.blindmint.codex.presentation.reader.MissingBookFileDialog
 import us.blindmint.codex.ui.library.LibraryScreen
 import us.blindmint.codex.ui.history.HistoryScreen
 import androidx.compose.animation.animateColorAsState
@@ -363,6 +364,12 @@ data class SpeedReadingScreen(
             }
         }
 
+        if (speedReaderModel.isFileMissing.value) {
+            MissingBookFileDialog(
+                bookTitle = displayBook.title,
+                navigateBack = onExitWithSystemBars
+            )
+        } else {
         SpeedReadingScaffold(
             words = words,
             book = displayBook,
@@ -422,10 +429,11 @@ data class SpeedReadingScreen(
              onPlayPause = {},
              isReadyForDisplay = isReadyForDisplay
           )
+        }
 
         // Speed reading settings bottom sheet
         SpeedReadingSettingsBottomSheet(
-            show = speedReadingSettingsVisible.value,
+            show = speedReadingSettingsVisible.value && !speedReaderModel.isFileMissing.value,
             onDismiss = {
                 speedReadingSettingsVisible.value = false
             },
